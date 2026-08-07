@@ -11,7 +11,7 @@ This file breaks down the entire project into atomic, step-by-step tasks suitabl
 1. Pick one unclaimed task from the list below.
 2. Fork the repository and create your working branch.
 3. Open a GitHub Issue for your chosen task.
-4. Each task requires creating an **empty structure only**: a class, record DTO, enum, interface, DbContext configuration, or Angular component. 
+4. Each task requires creating an **empty structure only**: a class, record DTO, enum, interface, DbContext configuration, or Angular component.
 5. Methods should only have signatures throwing `NotImplementedException` or returning default values. No complex business logic is needed in initial stubs!
 6. Submit your Pull Request linking to the GitHub Issue.
 
@@ -49,88 +49,30 @@ Focus on core domain models, enums, and base entities. No database dependencies 
 - **Labels**: `good first issue`, `layer:domain`, `entity`
 - **Location**: `Buy2.Domain/Common/BaseEntity.cs`
 - **Instructions**: Create an abstract class named `BaseEntity`. Add an integer `Id` property and a `CreatedAt` (`DateTimeOffset`) property.
-- **Hint**:
-```csharp
-namespace Buy2.Domain.Common;
-
-public abstract class BaseEntity
-{
-    public int Id { get; set; }
-    public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
-}
-```
 
 ### Task 2: Create Role Entity
 - **Difficulty**: Very Easy
 - **Labels**: `good first issue`, `layer:domain`, `entity`
 - **Location**: `Buy2.Domain/Entities/Role.cs`
 - **Instructions**: Create a public class `Role` inheriting from `BaseEntity`. Add `RoleName` (`string`) and `PermissionsJson` (`string`).
-- **Hint**:
-```csharp
-namespace Buy2.Domain.Entities;
-
-public class Role : BaseEntity
-{
-    public string RoleName { get; set; } = string.Empty;
-    public string PermissionsJson { get; set; } = string.Empty;
-}
-```
 
 ### Task 3: Create JobRole Entity
 - **Difficulty**: Very Easy
 - **Labels**: `good first issue`, `layer:domain`, `entity`
 - **Location**: `Buy2.Domain/Entities/JobRole.cs`
 - **Instructions**: Create class `JobRole` inheriting from `BaseEntity`. Add `Title` (`string`), `DepartmentId` (`int`), and `RequiredQualificationsJson` (`string`).
-- **Hint**:
-```csharp
-namespace Buy2.Domain.Entities;
-
-public class JobRole : BaseEntity
-{
-    public string Title { get; set; } = string.Empty;
-    public int DepartmentId { get; set; }
-    public string RequiredQualificationsJson { get; set; } = string.Empty;
-}
-```
 
 ### Task 4: Create Employee Entity
 - **Difficulty**: Easy
 - **Labels**: `good first issue`, `layer:domain`, `entity`
 - **Location**: `Buy2.Domain/Entities/Employee.cs`
 - **Instructions**: Create class `Employee` inheriting from `BaseEntity`. Add `FirstName`, `LastName`, `Email`, `PhoneNumber`, `JobRoleId` (`int`), `RoleId` (`int`), and `SiteId` (`int`).
-- **Hint**:
-```csharp
-namespace Buy2.Domain.Entities;
-
-public class Employee : BaseEntity
-{
-    public string FirstName { get; set; } = string.Empty;
-    public string LastName { get; set; } = string.Empty;
-    public string Email { get; set; } = string.Empty;
-    public string PhoneNumber { get; set; } = string.Empty;
-    public int JobRoleId { get; set; }
-    public int RoleId { get; set; }
-    public int SiteId { get; set; }
-}
-```
 
 ### Task 5: Create Site Entity
 - **Difficulty**: Very Easy
 - **Labels**: `good first issue`, `layer:domain`, `entity`
 - **Location**: `Buy2.Domain/Entities/Site.cs`
 - **Instructions**: Create class `Site` inheriting from `BaseEntity`. Add `SiteName`, `Latitude` (`double`), `Longitude` (`double`), and `MacAddressWhitelistJson` (`string`).
-- **Hint**:
-```csharp
-namespace Buy2.Domain.Entities;
-
-public class Site : BaseEntity
-{
-    public string SiteName { get; set; } = string.Empty;
-    public double Latitude { get; set; }
-    public double Longitude { get; set; }
-    public string MacAddressWhitelistJson { get; set; } = string.Empty;
-}
-```
 
 ### Task 6: Create AttendanceProfile Entity
 - **Difficulty**: Easy
@@ -208,7 +150,7 @@ Application interfaces, DTO records, and CQRS contracts.
 - **Difficulty**: Very Easy
 - **Labels**: `good first issue`, `layer:application`, `dto`
 - **Location**: `Buy2.Application/Roles/DTOs/RoleDtos.cs`
-- **Instructions**: Create record DTOs `CreateRoleDto(string RoleName, Dictionary<string, List<string>> Permissions)`.
+- **Instructions**: Create record DTO `CreateRoleDto(string RoleName, Dictionary<string, List<string>> Permissions)`.
 
 ### Task 18: Create Employee DTO Records
 - **Difficulty**: Easy
