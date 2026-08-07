@@ -1,0 +1,74 @@
+name: PR Validation & Feedback Bot
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize]
+    branches: [ "main" ]
+
+jobs:
+  validate-pr:
+    name: Validate PR Naming & Code Build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Setup .NET SDK
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '9.0.x'
+
+    - name: Check Jira Key in PR Title / Branch
+      id: check-key
+      run: |
+        python -c "
+        import re, sys
+
+        title = '''${{ github.event.pull_request.title }}'''
+        branch = '''${{ github.event.pull_request.head.ref }}'''
+
+        m_task = re.search(r'Task\s*[-_]?\s*\d+', title, re.IGNORECASE) or re.search(r'Task\s*[-_]?\s*\d+', branch, re.IGNORECASE)
+        m_scrum = re.search(r'SCRUM[-_]?\d+', title, re.IGNORECASE) or re.search(r'SCRUM[-_]?\d+', branch, re.IGNORECASE)
+
+        has_key = bool(m_task or m_scrum)
+        with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+            f.write(f'missing_key={\"false\" if has_key else \"true\"}\n')
+        "
+
+    - name: Build .NET Solution
+      id: build-check
+      continue-on-error: true
+      run: dotnet build --configuration Release HR_system.slnx
+
+    - name: Post Automated Feedback Comment on PR
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const missingKey = '${{ steps.check-key.outputs.missing_key }}' === 'true';
+          const buildFailed = '${{ steps.build-check.outcome }}' === 'failure';
+
+          let commentBody = '## 🤖 Automated PR Validation Feedback\n\n';
+
+          if (!missingKey && !buildFailed) {
+            commentBody += '✅ **All Checks Passed!**\n- Jira key / Task reference detected.\n- .NET solution compiled successfully (`0 Error(s)`).\n\nReady for maintainer review!';
+          } else {
+            commentBody += '⚠️ **Action Needed on this Pull Request:**\n\n';
+            if (missingKey) {
+              commentBody += '- ❌ **Missing Jira Key**: Please include your Jira key (e.g. `SCRUM-6`) in your PR title or branch name.\n';
+            }
+            if (buildFailed) {
+              commentBody += '- ❌ **Build Failure**: The .NET solution failed to compile. Run `dotnet build` locally and fix errors.\n';
+            }
+            commentBody += '\n*Please push a fix to your branch to re-run validation!*';
+          }
+
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: commentBody
+          });
