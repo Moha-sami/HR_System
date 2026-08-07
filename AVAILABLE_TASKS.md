@@ -318,6 +318,9 @@ RESTful API Controller stubs returning ActionResult responses.
 
 ## Phase 5: Angular Frontend Layer (Tasks 43-50)
 
+> **Figma Design Reference**: [https://www.figma.com/design/JQ67DCkObzVjER8Safb5sw/BUY2-Junk-File?node-id=882-3040&p=f&t=GxfjGebSZZA9X7B0-0](https://www.figma.com/design/JQ67DCkObzVjER8Safb5sw/BUY2-Junk-File?node-id=882-3040&p=f&t=GxfjGebSZZA9X7B0-0)
+> All UI components must implement layouts, colors, and responsive specs from the official Figma design link above.
+
 TypeScript models, Angular Services, and Feature Components.
 
 ### Task 43: Create TypeScript Data Models
