@@ -1,0 +1,42 @@
+name: HR_system CI/CD Pipeline
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-dotnet:
+    name: Build & Test .NET Backend
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Setup .NET SDK
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '9.0.x'
+
+    - name: Restore & Build Solution
+      run: dotnet build --configuration Release HR_system.slnx
+
+  build-angular:
+    name: Verify Angular Frontend Scaffold
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js Environment
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+
+    - name: Check Frontend Workspace
+      run: |
+        cd src/Buy2.Frontend
+        ls -la
