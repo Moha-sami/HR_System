@@ -59,43 +59,43 @@ To ensure automatic tracking between GitHub and Jira, follow these simple naming
 
 Focus on core domain models, enums, and base entities. No database dependencies or framework logic.
 
-### Task 1: Create BaseEntity Class
+### Task 1: Create BaseEntity Class ✅ **[DONE]**
 - **Difficulty**: Very Easy
 - **Labels**: `good first issue`, `layer:domain`, `entity`
 - **Location**: `Buy2.Domain/Common/BaseEntity.cs`
 - **Instructions**: Create an abstract class named `BaseEntity`. Add an integer `Id` property and a `CreatedAt` (`DateTimeOffset`) property.
 
-### Task 2: Create Role Entity
+### Task 2: Create Role Entity ✅ **[DONE]**
 - **Difficulty**: Very Easy
 - **Labels**: `good first issue`, `layer:domain`, `entity`
 - **Location**: `Buy2.Domain/Entities/Role.cs`
 - **Instructions**: Create a public class `Role` inheriting from `BaseEntity`. Add `RoleName` (`string`) and `PermissionsJson` (`string`).
 
-### Task 3: Create JobRole Entity
+### Task 3: Create JobRole Entity ✅ **[DONE]**
 - **Difficulty**: Very Easy
 - **Labels**: `good first issue`, `layer:domain`, `entity`
 - **Location**: `Buy2.Domain/Entities/JobRole.cs`
 - **Instructions**: Create class `JobRole` inheriting from `BaseEntity`. Add `Title` (`string`), `DepartmentId` (`int`), and `RequiredQualificationsJson` (`string`).
 
-### Task 4: Create Employee Entity
+### Task 4: Create Employee Entity ✅ **[DONE]**
 - **Difficulty**: Easy
 - **Labels**: `good first issue`, `layer:domain`, `entity`
 - **Location**: `Buy2.Domain/Entities/Employee.cs`
 - **Instructions**: Create class `Employee` inheriting from `BaseEntity`. Add `FirstName`, `LastName`, `Email`, `PhoneNumber`, `JobRoleId` (`int`), `RoleId` (`int`), and `SiteId` (`int`).
 
-### Task 5: Create Site Entity
+### Task 5: Create Site Entity ✅ **[DONE]**
 - **Difficulty**: Very Easy
 - **Labels**: `good first issue`, `layer:domain`, `entity`
 - **Location**: `Buy2.Domain/Entities/Site.cs`
 - **Instructions**: Create class `Site` inheriting from `BaseEntity`. Add `SiteName`, `Latitude` (`double`), `Longitude` (`double`), and `MacAddressWhitelistJson` (`string`).
 
-### Task 6: Create AttendanceProfile Entity
+### Task 6: Create AttendanceProfile Entity ✅ **[DONE]**
 - **Difficulty**: Easy
 - **Labels**: `good first issue`, `layer:domain`, `entity`
 - **Location**: `Buy2.Domain/Entities/AttendanceProfile.cs`
 - **Instructions**: Create class `AttendanceProfile` inheriting from `BaseEntity`. Add `ProfileName`, `ExpectedClockIn` (`TimeSpan`), `ExpectedClockOut` (`TimeSpan`), and `RequiredWorkHours` (`double`).
 
-### Task 7: Create Shift Entity
+### Task 7: Create Shift Entity ✅ **[DONE]**
 - **Difficulty**: Easy
 - **Labels**: `good first issue`, `layer:domain`, `entity`
 - **Location**: `Buy2.Domain/Entities/Shift.cs`
@@ -119,13 +119,13 @@ Focus on core domain models, enums, and base entities. No database dependencies 
 - **Location**: `Buy2.Domain/Entities/RewardItem.cs`
 - **Instructions**: Create class `RewardItem` inheriting from `BaseEntity`. Add `RewardName`, `CostInPoints` (`int`), and `AvailableStock` (`int`).
 
-### Task 11: Create Gender and SalaryType Enums
+### Task 11: Create Gender and SalaryType Enums ✅ **[DONE]**
 - **Difficulty**: Very Easy
 - **Labels**: `good first issue`, `layer:domain`, `enum`
 - **Location**: `Buy2.Domain/Enums/DomainEnums.cs`
 - **Instructions**: Create public enums `Gender` (`Male = 1, Female = 2`) and `SalaryType` (`Fixed = 1, Hourly = 2`).
 
-### Task 12: Create ShiftStatus and ClaimStatus Enums
+### Task 12: Create ShiftStatus and ClaimStatus Enums ✅ **[DONE]**
 - **Difficulty**: Very Easy
 - **Labels**: `good first issue`, `layer:domain`, `enum`
 - **Location**: `Buy2.Domain/Enums/ShiftEnums.cs`
@@ -336,7 +336,7 @@ RESTful API Controller stubs returning ActionResult responses.
 > **Figma Design Reference**: [https://www.figma.com/design/JQ67DCkObzVjER8Safb5sw/BUY2-Junk-File?node-id=882-3040&p=f&t=GxfjGebSZZA9X7B0-0](https://www.figma.com/design/JQ67DCkObzVjER8Safb5sw/BUY2-Junk-File?node-id=882-3040&p=f&t=GxfjGebSZZA9X7B0-0)
 > All UI components must implement layouts, colors, and responsive specs from the official Figma design link above.
 
-### Task 43: Create TypeScript Data Models
+### Task 43: Create TypeScript Data Models ✅ **[DONE]**
 - **Difficulty**: Very Easy
 - **Labels**: `good first issue`, `layer:frontend`, `models`
 - **Location**: `Buy2.Frontend/src/app/core/models/hrms.models.ts`
