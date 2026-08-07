@@ -59,12 +59,6 @@ To ensure automatic tracking between GitHub and Jira, follow these simple naming
 
 Focus on core domain models, enums, and base entities. No database dependencies or framework logic.
 
-### Task 1: Create BaseEntity Class
-- **Difficulty**: Very Easy
-- **Labels**: `good first issue`, `layer:domain`, `entity`
-- **Location**: `Buy2.Domain/Common/BaseEntity.cs`
-- **Instructions**: Create an abstract class named `BaseEntity`. Add an integer `Id` property and a `CreatedAt` (`DateTimeOffset`) property.
-
 ### Task 2: Create Role Entity
 - **Difficulty**: Very Easy
 - **Labels**: `good first issue`, `layer:domain`, `entity`
