@@ -1,0 +1,20 @@
+<button
+  [type]="type()"
+  [disabled]="disabled() || loading()"
+  [class]="buttonClasses()"
+  (click)="clicked.emit()"
+>
+  <!-- Loading spinner -->
+  @if (loading()) {
+    <span class="spinner"></span>
+  }
+
+  <!-- Left icon slot -->
+  <ng-content select="[iconLeft]" />
+
+  <!-- Button text -->
+  <ng-content />
+
+  <!-- Right icon slot -->
+  <ng-content select="[iconRight]" />
+</button>
