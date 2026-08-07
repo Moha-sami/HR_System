@@ -6,6 +6,22 @@ This file breaks down the entire project into atomic, step-by-step tasks suitabl
 
 ---
 
+## Git Branching & Commit Naming Guidelines
+
+To ensure automatic tracking between GitHub and Jira, follow these simple naming rules:
+
+1. **Git Branch Name**: Include the Jira Issue Key (e.g., `SCRUM-6`):
+   - Example: `SCRUM-6-create-base-entity` or `feature/SCRUM-6-base-entity`
+   - *Tip: Click "Create branch" inside your Jira task card to copy the exact branch name automatically.*
+
+2. **Commit Message Format**:
+   - Example: `SCRUM-6: Create BaseEntity class`
+
+3. **Pull Request (PR) Title**:
+   - Example: `SCRUM-6: Create BaseEntity Class`
+
+---
+
 ## Instructions for Contributors
 
 1. Pick one unclaimed task from the list below.
@@ -320,8 +336,6 @@ RESTful API Controller stubs returning ActionResult responses.
 
 > **Figma Design Reference**: [https://www.figma.com/design/JQ67DCkObzVjER8Safb5sw/BUY2-Junk-File?node-id=882-3040&p=f&t=GxfjGebSZZA9X7B0-0](https://www.figma.com/design/JQ67DCkObzVjER8Safb5sw/BUY2-Junk-File?node-id=882-3040&p=f&t=GxfjGebSZZA9X7B0-0)
 > All UI components must implement layouts, colors, and responsive specs from the official Figma design link above.
-
-TypeScript models, Angular Services, and Feature Components.
 
 ### Task 43: Create TypeScript Data Models
 - **Difficulty**: Very Easy
