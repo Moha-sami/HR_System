@@ -1,6 +1,12 @@
-# Buy2 HRMS - Entity Relationship Diagram (ERD)
+# Buy2 HRMS - High-Definition Database ERD Specification
 
-Visual Entity Relationship Diagram detailing the database schema, primary/foreign keys, and cardinalities for the Buy2 HR Management System.
+Visual high-definition database schema architecture and entity relationships for the Buy2 HR Management System.
+
+![Buy2 HRMS Visual Database ERD Diagram](./database_erd_diagram.jpg)
+
+---
+
+## Interactive Mermaid Diagram
 
 ```mermaid
 erDiagram
@@ -143,11 +149,3 @@ erDiagram
         DateTimeOffset RedeemedAt
     }
 ```
-
----
-
-## Key Schema Principles
-
-1. **Primary Keys**: All entities inherit integer auto-increment primary keys (`Id PK`) from `BaseEntity`.
-2. **Foreign Keys**: Soft entity mappings use `FK` integer identifiers (e.g. `SiteId`, `JobRoleId`, `EmployeeId`).
-3. **JSON Metadata Columns**: Complex or dynamic rules (Permissions matrix, MAC whitelists, Qualification requirements) are stored as structured `JSON` strings for maximum schema flexibility.
