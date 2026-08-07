@@ -1,6 +1,6 @@
 # Buy2 HRMS - Database ERD Architecture Specification
 
-Complete database entity relationship documentation containing multi-view visual diagrams ordered from high-level clean overview to detailed architectural schematics.
+Complete database entity relationship documentation containing multi-view visual diagrams ordered from high-level clean overview to detailed relationship diagrams.
 
 ---
 
@@ -20,32 +20,24 @@ Complete database entity relationship documentation containing multi-view visual
 
 ---
 
-## 3. Ultra-Detailed Schema Architecture Chart
-
-*Full database schema layout with field data types, primary keys, and foreign keys.*
-
-![3. Detailed Schema Architecture Chart](./database_erd_diagram.jpg)
-
----
-
 ## Detailed Relationship Explanations
 
-| Source Entity | Relationship Action (Verb) | Target Entity | Business Logic & Rules |
-| :--- | :--- | :--- | :--- |
-| **`Role`** | `assigned to (1:N)` | **`Employee`** | Role defines modular permission toggles assigned to multiple employees. |
-| **`JobRole`** | `defines position for (1:N)` | **`Employee`** | Job position specifying required qualifications (POS, Management). |
-| **`Site`** | `maps primary branch for (1:N)` | **`Employee`** | Mappings for geofence coordinates and MAC whitelists. |
-| **`AttendanceProfile`** | `dictates clock-in rules for (1:N)` | **`Employee`** | Configures daily expected start/end times and break durations. |
-| **`Site`** | `hosts (1:N)` | **`Shift`** | Physical store branch location where work shifts take place. |
-| **`JobRole`** | `demands qualifications for (1:N)` | **`Shift`** | Shift requires employee to hold matching qualifications. |
-| **`Employee`** | `assigned to (1:N)` | **`Shift`** | Work shift block assigned to an employee on the schedule board. |
-| **`Shift`** | `listed in market as (1:N)` | **`ShiftClaim`** | Shift posted to the internal marketplace for claiming/swapping. |
-| **`Employee`** | `claims (1:N)` | **`ShiftClaim`** | Teammate submitting a claim to cover a marketplace shift. |
-| **`Employee`** | `owns compliance files (1:N)` | **`EmployeeDocument`** | Uploaded ID copies, medical leaves, and certificates. |
-| **`Employee`** | `receives infraction (1:N)` | **`DisciplinaryViolation`** | Disciplinary violations logged by managers with attached evidence. |
-| **`PointsRule`** | `triggers automation for (1:N)` | **`PointsTransaction`** | Rule logic evaluating clock-in delay to credit or debit wallet points. |
-| **`Employee`** | `accumulates/spends (1:N)` | **`PointsTransaction`** | Ledger transactions modifying employee points balance. |
-| **`RewardItem`** | `depletes stock for (1:N)` | **`RewardRedemption`** | Digital store voucher (Talabat, Noon) redeemed by employee points. |
+| Source Entity | Relationship Action (Verb) | Target Entity | Cardinality | Business Logic & Rules |
+| :--- | :--- | :--- | :--- | :--- |
+| **`Role`** | `assigned to` | **`Employee`** | **One to Many** | Role defines modular permission toggles assigned to multiple employees. |
+| **`JobRole`** | `defines position for` | **`Employee`** | **One to Many** | Job position specifying required qualifications (POS, Management). |
+| **`Site`** | `maps primary branch for` | **`Employee`** | **One to Many** | Mappings for geofence coordinates and MAC whitelists. |
+| **`AttendanceProfile`** | `dictates clock-in rules for` | **`Employee`** | **One to Many** | Configures daily expected start/end times and break durations. |
+| **`Site`** | `hosts` | **`Shift`** | **One to Many** | Physical store branch location where work shifts take place. |
+| **`JobRole`** | `demands qualifications for` | **`Shift`** | **One to Many** | Shift requires employee to hold matching qualifications. |
+| **`Employee`** | `assigned to` | **`Shift`** | **One to Many** | Work shift block assigned to an employee on the schedule board. |
+| **`Shift`** | `listed in market as` | **`ShiftClaim`** | **One to Many** | Shift posted to the internal marketplace for claiming/swapping. |
+| **`Employee`** | `claims` | **`ShiftClaim`** | **One to Many** | Teammate submitting a claim to cover a marketplace shift. |
+| **`Employee`** | `owns compliance files` | **`EmployeeDocument`** | **One to Many** | Uploaded ID copies, medical leaves, and certificates. |
+| **`Employee`** | `receives infraction` | **`DisciplinaryViolation`** | **One to Many** | Disciplinary violations logged by managers with attached evidence. |
+| **`PointsRule`** | `triggers automation for` | **`PointsTransaction`** | **One to Many** | Rule logic evaluating clock-in delay to credit or debit wallet points. |
+| **`Employee`** | `accumulates/spends` | **`PointsTransaction`** | **One to Many** | Ledger transactions modifying employee points balance. |
+| **`RewardItem`** | `depletes stock for` | **`RewardRedemption`** | **One to Many** | Digital store voucher (Talabat, Noon) redeemed by employee points. |
 
 ---
 
@@ -54,26 +46,26 @@ Complete database entity relationship documentation containing multi-view visual
 ```mermaid
 erDiagram
 
-    Role ||--o{ Employee : "assigned to (1:N)"
-    JobRole ||--o{ Employee : "defines position for (1:N)"
-    Site ||--o{ Employee : "maps primary branch for (1:N)"
-    AttendanceProfile ||--o{ Employee : "dictates clock-in rules for (1:N)"
+    Role ||--o{ Employee : "assigned to (One to Many)"
+    JobRole ||--o{ Employee : "defines position for (One to Many)"
+    Site ||--o{ Employee : "maps primary branch for (One to Many)"
+    AttendanceProfile ||--o{ Employee : "dictates clock-in rules for (One to Many)"
     
-    Site ||--o{ Shift : "hosts (1:N)"
-    JobRole ||--o{ Shift : "demands qualifications for (1:N)"
-    Employee ||--o{ Shift : "assigned to (1:N)"
+    Site ||--o{ Shift : "hosts (One to Many)"
+    JobRole ||--o{ Shift : "demands qualifications for (One to Many)"
+    Employee ||--o{ Shift : "assigned to (One to Many)"
     
-    Shift ||--o{ ShiftClaim : "listed in market as (1:N)"
-    Employee ||--o{ ShiftClaim : "claims (1:N)"
+    Shift ||--o{ ShiftClaim : "listed in market as (One to Many)"
+    Employee ||--o{ ShiftClaim : "claims (One to Many)"
     
-    Employee ||--o{ EmployeeDocument : "owns compliance files (1:N)"
-    Employee ||--o{ DisciplinaryViolation : "receives infraction (1:N)"
+    Employee ||--o{ EmployeeDocument : "owns compliance files (One to Many)"
+    Employee ||--o{ DisciplinaryViolation : "receives infraction (One to Many)"
     
-    Employee ||--o{ PointsTransaction : "accumulates/spends (1:N)"
-    PointsRule ||--o{ PointsTransaction : "triggers automation for (1:N)"
+    Employee ||--o{ PointsTransaction : "accumulates/spends (One to Many)"
+    PointsRule ||--o{ PointsTransaction : "triggers automation for (One to Many)"
     
-    Employee ||--o{ RewardRedemption : "purchases (1:N)"
-    RewardItem ||--o{ RewardRedemption : "depletes stock for (1:N)"
+    Employee ||--o{ RewardRedemption : "purchases (One to Many)"
+    RewardItem ||--o{ RewardRedemption : "depletes stock for (One to Many)"
 
     Role {
         int Id PK
