@@ -22,14 +22,13 @@ To ensure automatic tracking between GitHub and Jira, follow these simple naming
 
 ---
 
-## Instructions for Contributors
+## Instructions for Team Members & Contributors
 
-1. Pick one unclaimed task from the list below.
-2. Fork the repository and create your working branch.
-3. Open a GitHub Issue for your chosen task.
-4. Each task requires creating an **empty structure only**: a class, record DTO, enum, interface, DbContext configuration, or Angular component.
-5. Methods should only have signatures throwing `NotImplementedException` or returning default values. No complex business logic is needed in initial stubs!
-6. Submit your Pull Request linking to the GitHub Issue.
+1. Pick an unassigned task from your **Jira Sprint Board** (e.g., `SCRUM-6`).
+2. Create your working git branch including the Jira key (e.g., `SCRUM-6-base-entity`).
+3. Each task requires creating an **empty structure only**: a class, record DTO, enum, interface, DbContext configuration, or Angular component.
+4. Methods should only have signatures throwing `NotImplementedException` or returning default values. No complex business logic is needed in initial stubs!
+5. Submit your **Pull Request directly targeting `main`**. Once merged by the lead, Jira automatically updates your task to **Done**!
 
 ---
 
