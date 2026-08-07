@@ -1,4 +1,4 @@
-namespace Buy2.Domain.Entities;
+namespace Buy2.Domain.Entities{
 
 public class ShiftEntity : BaseEntity
 {
@@ -13,4 +13,5 @@ public class ShiftEntity : BaseEntity
     public DateTimeOffset EndTime { get; set; }
 
     public bool IsPublished { get; set; }
+}
 }
