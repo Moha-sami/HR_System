@@ -1,35 +1,118 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 @theme {
-  /* Brand */
+  /* ──────────────────────────────────────────────────────
+     Brand
+     ────────────────────────────────────────────────────── */
   --color-brand: #234199;
   --color-brand-foreground: #ffffff;
 
-  /* White & Black */
+  /* ──────────────────────────────────────────────────────
+     Primary — generated from brand #234199
+     ────────────────────────────────────────────────────── */
+  --color-primary-50: #f0f3fa;
+  --color-primary-100: #d9e1f2;
+  --color-primary-200: #b8c6e8;
+  --color-primary-300: #94a9dd;
+  --color-primary-400: #708dd3;
+  --color-primary-500: #4c71c9;
+  --color-primary-600: #234199;
+  --color-primary-700: #1e3885;
+  --color-primary-800: #182e6f;
+  --color-primary-900: #122358;
+  --color-primary-overlay: rgba(35, 65, 153, 0.1);
+
+  /* ──────────────────────────────────────────────────────
+     Secondary — neutral complement to primary
+     ────────────────────────────────────────────────────── */
+  --color-secondary-50: #f5f5f5;
+  --color-secondary-100: #e8e8e8;
+  --color-secondary-200: #d4d4d4;
+  --color-secondary-300: #bfbfbf;
+  --color-secondary-400: #a3a3a3;
+  --color-secondary-500: #8c8c8c;
+  --color-secondary-600: #737373;
+  --color-secondary-700: #5c5c5c;
+  --color-secondary-800: #454545;
+  --color-secondary-900: #2e2e2e;
+
+  /* ──────────────────────────────────────────────────────
+     Error — red for destructive actions
+     ────────────────────────────────────────────────────── */
+  --color-error-50: rgba(255, 0, 0, 0.06); /* #FF00000F — error bg */
+  --color-error-100: #ffc9bb;
+  --color-error-200: #ffa592;
+  --color-error-300: #ff816e;
+  --color-error-400: #ff5d4f;
+  --color-error-500: #ff0000; /* field border on error */
+  --color-error-600: #eb0000; /* error text */
+  --color-error-700: #ec1d27; /* delete button */
+  --color-error-800: #a2000b;
+  --color-error-900: #7d0005;
+
+  /* ──────────────────────────────────────────────────────
+     Success — green for positive feedback
+     ────────────────────────────────────────────────────── */
+  --color-success-50: #e8f8ee;
+  --color-success-100: #c5edcf;
+  --color-success-200: #9fe0ae;
+  --color-success-300: #76d28b;
+  --color-success-400: #54c670;
+  --color-success-500: #34b956;
+  --color-success-600: #289e45;
+  --color-success-700: #1c8335;
+  --color-success-800: #126826;
+  --color-success-900: #084d18;
+
+  /* ──────────────────────────────────────────────────────
+     Warning — amber for caution states
+     ────────────────────────────────────────────────────── */
+  --color-warning-50: #fff8e6;
+  --color-warning-100: #ffedb3;
+  --color-warning-200: #ffe180;
+  --color-warning-300: #ffd54d;
+  --color-warning-400: #ffc91a;
+  --color-warning-500: #f5b800;
+  --color-warning-600: #cca000;
+  --color-warning-700: #a17d00;
+  --color-warning-800: #775b00;
+  --color-warning-900: #4c3900;
+
+  /* ──────────────────────────────────────────────────────
+     Neutral — grays for text, borders, backgrounds
+     ────────────────────────────────────────────────────── */
+  --color-neutral-50: #f9fafb;
+  --color-neutral-100: #f3f4f6;
+  --color-neutral-200: #e5e7eb;
+  --color-neutral-300: #d1d5db;
+  --color-neutral-400: #9ca3af;
+  --color-neutral-500: #6b7280;
+  --color-neutral-600: #4b5563;
+  --color-neutral-700: #374151;
+  --color-neutral-800: #1f2937;
+  --color-neutral-900: #111827;
+
+  /* ──────────────────────────────────────────────────────
+     Utility
+     ────────────────────────────────────────────────────── */
   --color-white: #ffffff;
   --color-black: #000000;
-
-  /* Primary */
-  --color-primary-50: #F3F2FF;
-  --color-primary-100: #DAD9FF;
-  --color-primary-200: #C1C1FE;
-  --color-primary-300: #A7AAF9;
-  --color-primary-400: #8C93EE;
-  --color-primary-500: #737EDE;
-  --color-primary-600: #586AC9;
-  --color-primary-700: #4657AF;
-  --color-primary-800: #364590;
-  --color-primary-900: #29346E;
-
-  /* Error */
-  --color-error-50: #FFEDE8;
-  --color-error-100: #FFC9BB;
-  --color-error-200: #FFA592;
-  --color-error-300: #FF816E;
-  --color-error-400: #FF5D4F;
-  --color-error-500: #FC3835;
-  --color-error-600: #E30C21;
-  --color-error-700: #C50013;
-  --color-error-800: #A2000B;
-  --color-error-900: #7D0005;
 }
+
+/* ──────────────────────────────────────────────────────
+   Size Reference — Tailwind spacing/typography scale
+   ──────────────────────────────────────────────────────
+
+   SPACING (padding, margin, gap):
+   ┌─────────┬──────────┬────────┐n   │ Token   │ Value    │ Pixels │n   ├─────────┼──────────┼────────┤n   │ xs      │ 0.25rem  │ 4px    │n   │ sm      │ 0.5rem   │ 8px    │n   │ md      │ 1rem     │ 16px   │n   │ lg      │ 1.5rem   │ 24px   │n   │ xl      │ 2rem     │ 32px   │n   └─────────┴──────────┴────────┘
+
+   TYPOGRAPHY (font-size, line-height):
+   ┌─────────┬──────────┬────────┐n   │ Token   │ Value    │ Pixels │n   ├─────────┼──────────┼────────┤n   │ xs      │ 0.75rem  │ 12px   │n   │ sm      │ 0.875rem │ 14px   │n   │ base    │ 1rem     │ 16px   │n   │ lg      │ 1.125rem │ 18px   │n   │ xl      │ 1.25rem  │ 20px   │n   │ 2xl     │ 1.5rem   │ 24px   │n   └─────────┴──────────┴────────┘
+
+   BORDER RADIUS:
+   ┌─────────┬──────────┬────────┐n   │ Token   │ Value    │ Use    │n   ├─────────┼──────────┼────────┤n   │ sm      │ 0.25rem  │ 4px    │ badges, small elements │n   │ md      │ 0.5rem   │ 8px    │ inputs, cards │n   │ lg      │ 0.75rem  │ 12px   │ buttons, modals │n   │ xl      │ 1rem     │ 16px   │ large cards │n   │ full    │ 9999px   │ pill   │ pills, circles │n   └─────────┴──────────┴────────┘
+
+   BUTTON SIZES (reference):
+   ┌─────────┬──────────────────────┬──────────┐n   │ Size    │ Classes              │ Pixels   │n   ├─────────┼──────────────────────┼──────────┤n   │ sm      │ px-3 py-1.5 text-sm  │ 12px 6px, 14px │n   │ md      │ px-4 py-2 text-base  │ 16px 8px, 16px │n   │ lg      │ px-6 py-3 text-lg    │ 24px 12px, 18px │n   └─────────┴──────────────────────┴──────────┘
+
+   ────────────────────────────────────────────────────── */

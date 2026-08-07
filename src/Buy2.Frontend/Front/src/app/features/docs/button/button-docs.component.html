@@ -1,0 +1,451 @@
+<div class="min-h-screen bg-neutral-50">
+  <div class="max-w-6xl mx-auto px-8 py-12">
+    <!-- Header -->
+    <a routerLink="/docs" class="text-primary-600 hover:text-primary-700 text-sm mb-4 inline-block"
+      >← Back to Docs</a
+    >
+    <h1 class="text-3xl font-bold text-neutral-900 mb-2">Button Component</h1>
+    <p class="text-neutral-500 mb-8">
+      Reusable button with variants, sizes, shapes, icons, and loading state.
+    </p>
+
+    <!-- Selector -->
+    <div class="bg-white rounded-lg border border-neutral-200 p-4 mb-6">
+      <p class="text-xs text-neutral-500 mb-1">Selector</p>
+      <code class="text-sm text-neutral-600">&lt;app-button&gt;Text&lt;/app-button&gt;</code>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!-- VARIANTS                                               -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <section class="bg-white rounded-lg border border-neutral-200 p-6 mb-6">
+      <h2 class="text-lg font-semibold text-neutral-800 mb-4">Variants</h2>
+
+      <!-- Demo row -->
+      <div class="grid grid-cols-5 gap-4 mb-4">
+        <div class="text-center">
+          <div class="bg-neutral-50 rounded-lg p-4 flex items-center justify-center h-16">
+            <app-button variant="primary">Primary</app-button>
+          </div>
+          <p class="text-xs text-neutral-500 mt-2">Main CTA</p>
+        </div>
+        <div class="text-center">
+          <div class="bg-neutral-50 rounded-lg p-4 flex items-center justify-center h-16">
+            <app-button variant="primary-light">Light</app-button>
+          </div>
+          <p class="text-xs text-neutral-500 mt-2">Secondary</p>
+        </div>
+        <div class="text-center">
+          <div class="bg-neutral-50 rounded-lg p-4 flex items-center justify-center h-16">
+            <app-button variant="secondary">Secondary</app-button>
+          </div>
+          <p class="text-xs text-neutral-500 mt-2">Neutral</p>
+        </div>
+        <div class="text-center">
+          <div class="bg-neutral-50 rounded-lg p-4 flex items-center justify-center h-16">
+            <app-button variant="danger">Danger</app-button>
+          </div>
+          <p class="text-xs text-neutral-500 mt-2">Destructive</p>
+        </div>
+        <div class="text-center">
+          <div class="bg-neutral-50 rounded-lg p-4 flex items-center justify-center h-16">
+            <app-button variant="ghost">Ghost</app-button>
+          </div>
+          <p class="text-xs text-neutral-500 mt-2">Subtle</p>
+        </div>
+      </div>
+
+      <!-- Code example -->
+      <pre
+        class="bg-neutral-900 text-neutral-100 p-4 rounded-lg text-sm overflow-x-auto"
+      ><code>&lt;app-button variant="primary"&gt;Primary&lt;/app-button&gt;
+&lt;app-button variant="primary-light"&gt;Light&lt;/app-button&gt;
+&lt;app-button variant="secondary"&gt;Secondary&lt;/app-button&gt;
+&lt;app-button variant="danger"&gt;Danger&lt;/app-button&gt;
+&lt;app-button variant="ghost"&gt;Ghost&lt;/app-button&gt;</code></pre>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!-- SIZES                                                  -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <section class="bg-white rounded-lg border border-neutral-200 p-6 mb-6">
+      <h2 class="text-lg font-semibold text-neutral-800 mb-4">Sizes</h2>
+
+      <!-- Demo row -->
+      <div class="grid grid-cols-3 gap-4 mb-4">
+        <div class="text-center">
+          <div class="bg-neutral-50 rounded-lg p-4 flex items-center justify-center h-16">
+            <app-button size="sm">Small</app-button>
+          </div>
+          <p class="text-xs text-neutral-500 mt-2">Compact</p>
+        </div>
+        <div class="text-center">
+          <div class="bg-neutral-50 rounded-lg p-4 flex items-center justify-center h-16">
+            <app-button size="md">Medium</app-button>
+          </div>
+          <p class="text-xs text-neutral-500 mt-2">Default</p>
+        </div>
+        <div class="text-center">
+          <div class="bg-neutral-50 rounded-lg p-4 flex items-center justify-center h-16">
+            <app-button size="lg">Large</app-button>
+          </div>
+          <p class="text-xs text-neutral-500 mt-2">Hero</p>
+        </div>
+      </div>
+
+      <!-- Code example -->
+      <pre
+        class="bg-neutral-900 text-neutral-100 p-4 rounded-lg text-sm overflow-x-auto"
+      ><code>&lt;app-button size="sm"&gt;Small&lt;/app-button&gt;
+&lt;app-button size="md"&gt;Medium&lt;/app-button&gt;
+&lt;app-button size="lg"&gt;Large&lt;/app-button&gt;</code></pre>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!-- SHAPES                                                 -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <section class="bg-white rounded-lg border border-neutral-200 p-6 mb-6">
+      <h2 class="text-lg font-semibold text-neutral-800 mb-4">Shapes</h2>
+
+      <!-- Demo row -->
+      <div class="grid grid-cols-3 gap-4 mb-4">
+        <div class="text-center">
+          <div class="bg-neutral-50 rounded-lg p-4 flex items-center justify-center h-16">
+            <app-button shape="default">Default</app-button>
+          </div>
+          <p class="text-xs text-neutral-500 mt-2">Rounded corners</p>
+        </div>
+        <div class="text-center">
+          <div class="bg-neutral-50 rounded-lg p-4 flex items-center justify-center h-16">
+            <app-button shape="circle">Circle</app-button>
+          </div>
+          <p class="text-xs text-neutral-500 mt-2">Pill shape</p>
+        </div>
+        <div class="text-center">
+          <div class="bg-neutral-50 rounded-lg p-4">
+            <app-button shape="full">Full Width</app-button>
+          </div>
+          <p class="text-xs text-neutral-500 mt-2">Block button</p>
+        </div>
+      </div>
+
+      <!-- Code example -->
+      <pre
+        class="bg-neutral-900 text-neutral-100 p-4 rounded-lg text-sm overflow-x-auto"
+      ><code>&lt;app-button shape="default"&gt;Default&lt;/app-button&gt;
+&lt;app-button shape="circle"&gt;Circle&lt;/app-button&gt;
+&lt;app-button shape="full"&gt;Full Width&lt;/app-button&gt;</code></pre>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!-- ICONS                                                  -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <section class="bg-white rounded-lg border border-neutral-200 p-6 mb-6">
+      <h2 class="text-lg font-semibold text-neutral-800 mb-4">Icons</h2>
+
+      <!-- Demo row -->
+      <div class="grid grid-cols-3 gap-4 mb-4">
+        <div class="text-center">
+          <div class="bg-neutral-50 rounded-lg p-4 flex items-center justify-center h-16">
+            <app-button variant="primary">
+              <svg iconLeft class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 4v16m8-8H4"
+                />
+              </svg>
+              Add
+            </app-button>
+          </div>
+          <p class="text-xs text-neutral-500 mt-2">Left icon</p>
+        </div>
+        <div class="text-center">
+          <div class="bg-neutral-50 rounded-lg p-4 flex items-center justify-center h-16">
+            <app-button variant="secondary">
+              Download
+              <svg iconRight class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                />
+              </svg>
+            </app-button>
+          </div>
+          <p class="text-xs text-neutral-500 mt-2">Right icon</p>
+        </div>
+        <div class="text-center">
+          <div class="bg-neutral-50 rounded-lg p-4 flex items-center justify-center h-16">
+            <app-button variant="primary">
+              <svg iconLeft class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                />
+              </svg>
+              Export
+              <svg iconRight class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                />
+              </svg>
+            </app-button>
+          </div>
+          <p class="text-xs text-neutral-500 mt-2">Both icons</p>
+        </div>
+      </div>
+
+      <!-- Code examples -->
+      <pre
+        class="bg-neutral-900 text-neutral-100 p-4 rounded-lg text-sm overflow-x-auto"
+      ><code>&lt;!-- Left icon --&gt;
+&lt;app-button variant="primary"&gt;
+  &lt;svg iconLeft class="w-4 h-4"&gt;...&lt;/svg&gt;
+  Add
+&lt;/app-button&gt;
+
+&lt;!-- Right icon --&gt;
+&lt;app-button variant="secondary"&gt;
+  Download
+  &lt;svg iconRight class="w-4 h-4"&gt;...&lt;/svg&gt;
+&lt;/app-button&gt;
+
+&lt;!-- Both icons --&gt;
+&lt;app-button variant="primary"&gt;
+  &lt;svg iconLeft class="w-4 h-4"&gt;...&lt;/svg&gt;
+  Export
+  &lt;svg iconRight class="w-4 h-4"&gt;...&lt;/svg&gt;
+&lt;/app-button&gt;</code></pre>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!-- STATES                                                 -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <section class="bg-white rounded-lg border border-neutral-200 p-6 mb-6">
+      <h2 class="text-lg font-semibold text-neutral-800 mb-4">States</h2>
+
+      <!-- Demo row -->
+      <div class="grid grid-cols-3 gap-4 mb-4">
+        <div class="text-center">
+          <div class="bg-neutral-50 rounded-lg p-4 flex items-center justify-center h-16">
+            <app-button variant="primary">Normal</app-button>
+          </div>
+          <p class="text-xs text-neutral-500 mt-2">Default</p>
+        </div>
+        <div class="text-center">
+          <div class="bg-neutral-50 rounded-lg p-4 flex items-center justify-center h-16">
+            <app-button variant="primary" [disabled]="true">Disabled</app-button>
+          </div>
+          <p class="text-xs text-neutral-500 mt-2">No interaction</p>
+        </div>
+        <div class="text-center">
+          <div class="bg-neutral-50 rounded-lg p-4 flex items-center justify-center h-16">
+            <app-button variant="primary" [loading]="true">Saving...</app-button>
+          </div>
+          <p class="text-xs text-neutral-500 mt-2">Processing</p>
+        </div>
+      </div>
+
+      <!-- Code examples -->
+      <pre
+        class="bg-neutral-900 text-neutral-100 p-4 rounded-lg text-sm overflow-x-auto"
+      ><code>&lt;!-- Normal --&gt;
+&lt;app-button&gt;Normal&lt;/app-button&gt;
+
+&lt;!-- Disabled --&gt;
+&lt;app-button [disabled]="true"&gt;Disabled&lt;/app-button&gt;
+
+&lt;!-- Loading --&gt;
+&lt;app-button [loading]="true"&gt;Saving...&lt;/app-button&gt;</code></pre>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!-- VARIANT × SIZE MATRIX                                  -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <section class="bg-white rounded-lg border border-neutral-200 p-6 mb-6">
+      <h2 class="text-lg font-semibold text-neutral-800 mb-4">Variant × Size Matrix</h2>
+
+      <div class="overflow-x-auto mb-4">
+        <table class="w-full">
+          <thead>
+            <tr>
+              <th class="text-left text-xs text-neutral-500 pb-3 pr-4">Variant</th>
+              <th class="text-center text-xs text-neutral-500 pb-3">SM</th>
+              <th class="text-center text-xs text-neutral-500 pb-3">MD</th>
+              <th class="text-center text-xs text-neutral-500 pb-3">LG</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="py-2 pr-4 text-sm text-neutral-600">Primary</td>
+              <td class="py-2 text-center">
+                <app-button variant="primary" size="sm">Btn</app-button>
+              </td>
+              <td class="py-2 text-center">
+                <app-button variant="primary" size="md">Btn</app-button>
+              </td>
+              <td class="py-2 text-center">
+                <app-button variant="primary" size="lg">Btn</app-button>
+              </td>
+            </tr>
+            <tr>
+              <td class="py-2 pr-4 text-sm text-neutral-600">Primary Light</td>
+              <td class="py-2 text-center">
+                <app-button variant="primary-light" size="sm">Btn</app-button>
+              </td>
+              <td class="py-2 text-center">
+                <app-button variant="primary-light" size="md">Btn</app-button>
+              </td>
+              <td class="py-2 text-center">
+                <app-button variant="primary-light" size="lg">Btn</app-button>
+              </td>
+            </tr>
+            <tr>
+              <td class="py-2 pr-4 text-sm text-neutral-600">Secondary</td>
+              <td class="py-2 text-center">
+                <app-button variant="secondary" size="sm">Btn</app-button>
+              </td>
+              <td class="py-2 text-center">
+                <app-button variant="secondary" size="md">Btn</app-button>
+              </td>
+              <td class="py-2 text-center">
+                <app-button variant="secondary" size="lg">Btn</app-button>
+              </td>
+            </tr>
+            <tr>
+              <td class="py-2 pr-4 text-sm text-neutral-600">Danger</td>
+              <td class="py-2 text-center">
+                <app-button variant="danger" size="sm">Btn</app-button>
+              </td>
+              <td class="py-2 text-center">
+                <app-button variant="danger" size="md">Btn</app-button>
+              </td>
+              <td class="py-2 text-center">
+                <app-button variant="danger" size="lg">Btn</app-button>
+              </td>
+            </tr>
+            <tr>
+              <td class="py-2 pr-4 text-sm text-neutral-600">Ghost</td>
+              <td class="py-2 text-center">
+                <app-button variant="ghost" size="sm">Btn</app-button>
+              </td>
+              <td class="py-2 text-center">
+                <app-button variant="ghost" size="md">Btn</app-button>
+              </td>
+              <td class="py-2 text-center">
+                <app-button variant="ghost" size="lg">Btn</app-button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <pre
+        class="bg-neutral-900 text-neutral-100 p-4 rounded-lg text-sm overflow-x-auto"
+      ><code>&lt;app-button variant="primary" size="sm"&gt;Btn&lt;/app-button&gt;
+&lt;app-button variant="primary" size="md"&gt;Btn&lt;/app-button&gt;
+&lt;app-button variant="primary" size="lg"&gt;Btn&lt;/app-button&gt;
+
+&lt;app-button variant="danger" size="sm"&gt;Btn&lt;/app-button&gt;
+&lt;app-button variant="danger" size="lg"&gt;Btn&lt;/app-button&gt;</code></pre>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!-- SHAPE COMBOS                                           -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <section class="bg-white rounded-lg border border-neutral-200 p-6 mb-6">
+      <h2 class="text-lg font-semibold text-neutral-800 mb-4">Shape Combos</h2>
+
+      <!-- Demo row -->
+      <div class="grid grid-cols-4 gap-4 mb-4">
+        <div class="text-center">
+          <div class="bg-neutral-50 rounded-lg p-4 flex items-center justify-center h-16">
+            <app-button variant="primary" shape="default">Default</app-button>
+          </div>
+          <p class="text-xs text-neutral-500 mt-2">Rounded</p>
+        </div>
+        <div class="text-center">
+          <div class="bg-neutral-50 rounded-lg p-4 flex items-center justify-center h-16">
+            <app-button variant="primary" shape="circle">Circle</app-button>
+          </div>
+          <p class="text-xs text-neutral-500 mt-2">Pill</p>
+        </div>
+        <div class="text-center">
+          <div class="bg-neutral-50 rounded-lg p-4 flex items-center justify-center h-16">
+            <app-button variant="primary" shape="circle" size="sm">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 4v16m8-8H4"
+                />
+              </svg>
+            </app-button>
+          </div>
+          <p class="text-xs text-neutral-500 mt-2">Icon only</p>
+        </div>
+        <div class="text-center">
+          <div class="bg-neutral-50 rounded-lg p-4 flex items-center justify-center h-16">
+            <app-button variant="danger" shape="circle">✕</app-button>
+          </div>
+          <p class="text-xs text-neutral-500 mt-2">Close button</p>
+        </div>
+      </div>
+
+      <!-- Full width demo -->
+      <div class="bg-neutral-50 rounded-lg p-4 mb-4">
+        <app-button variant="primary" shape="full">Full Width Primary Button</app-button>
+      </div>
+
+      <!-- Code examples -->
+      <pre
+        class="bg-neutral-900 text-neutral-100 p-4 rounded-lg text-sm overflow-x-auto"
+      ><code>&lt;!-- Circle pill --&gt;
+&lt;app-button shape="circle"&gt;Circle&lt;/app-button&gt;
+
+&lt;!-- Icon-only circle --&gt;
+&lt;app-button variant="primary" shape="circle" size="sm"&gt;
+  &lt;svg class="w-4 h-4"&gt;...&lt;/svg&gt;
+&lt;/app-button&gt;
+
+&lt;!-- Close button --&gt;
+&lt;app-button variant="danger" shape="circle"&gt;✕&lt;/app-button&gt;
+
+&lt;!-- Full width --&gt;
+&lt;app-button shape="full"&gt;Full Width&lt;/app-button&gt;</code></pre>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!-- EVENT HANDLING                                         -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <section class="bg-white rounded-lg border border-neutral-200 p-6 mb-6">
+      <h2 class="text-lg font-semibold text-neutral-800 mb-4">Event Handling</h2>
+
+      <div class="bg-neutral-50 rounded-lg p-4 mb-4 flex items-center gap-3">
+        <app-button variant="primary" (clicked)="onButtonClick()">Click Me</app-button>
+        <span class="text-sm text-neutral-600">Click count: {{ clickCount }}</span>
+      </div>
+
+      <pre
+        class="bg-neutral-900 text-neutral-100 p-4 rounded-lg text-sm overflow-x-auto"
+      ><code>&lt;!-- Template --&gt;
+&lt;app-button (clicked)="onSave()"&gt;Save&lt;/app-button&gt;
+
+&lt;!-- Component --&gt;
+export class MyComponent &lbrace;
+  onSave() &lbrace;
+    console.log('Button clicked');
+  &rbrace;
+&rbrace;</code></pre>
+    </section>
+  </div>
+</div>

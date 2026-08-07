@@ -1,4 +1,5 @@
 import type { Routes } from '@angular/router';
+import { devGuard } from './core/guards/dev.guard';
 // import { LayoutComponent } from './layout/layout.component';
 // import { authGuard } from './core/guards/auth.guard';
 
@@ -21,6 +22,14 @@ import type { Routes } from '@angular/router';
  *     └── /settings/*          User Profile & Company Config
  */
 export const routes: Routes = [
+  // ──────────────────────────────────────────────────────────────────────────
+  // DOCUMENTATION — Dev only (blocked in production)
+  // ──────────────────────────────────────────────────────────────────────────
+  {
+    path: 'docs',
+    canActivate: [devGuard],
+    loadChildren: () => import('./features/docs/docs.routes').then((m) => m.DOCS_ROUTES),
+  },
 
   // // ──────────────────────────────────────────────────────────────────────────
   // // PUBLIC ROUTES — No layout shell, no auth required
