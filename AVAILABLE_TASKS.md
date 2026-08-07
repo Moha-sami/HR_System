@@ -59,42 +59,6 @@ To ensure automatic tracking between GitHub and Jira, follow these simple naming
 
 Focus on core domain models, enums, and base entities. No database dependencies or framework logic.
 
-### Task 2: Create Role Entity
-- **Difficulty**: Very Easy
-- **Labels**: `good first issue`, `layer:domain`, `entity`
-- **Location**: `Buy2.Domain/Entities/Role.cs`
-- **Instructions**: Create a public class `Role` inheriting from `BaseEntity`. Add `RoleName` (`string`) and `PermissionsJson` (`string`).
-
-### Task 3: Create JobRole Entity
-- **Difficulty**: Very Easy
-- **Labels**: `good first issue`, `layer:domain`, `entity`
-- **Location**: `Buy2.Domain/Entities/JobRole.cs`
-- **Instructions**: Create class `JobRole` inheriting from `BaseEntity`. Add `Title` (`string`), `DepartmentId` (`int`), and `RequiredQualificationsJson` (`string`).
-
-### Task 4: Create Employee Entity
-- **Difficulty**: Easy
-- **Labels**: `good first issue`, `layer:domain`, `entity`
-- **Location**: `Buy2.Domain/Entities/Employee.cs`
-- **Instructions**: Create class `Employee` inheriting from `BaseEntity`. Add `FirstName`, `LastName`, `Email`, `PhoneNumber`, `JobRoleId` (`int`), `RoleId` (`int`), and `SiteId` (`int`).
-
-### Task 5: Create Site Entity
-- **Difficulty**: Very Easy
-- **Labels**: `good first issue`, `layer:domain`, `entity`
-- **Location**: `Buy2.Domain/Entities/Site.cs`
-- **Instructions**: Create class `Site` inheriting from `BaseEntity`. Add `SiteName`, `Latitude` (`double`), `Longitude` (`double`), and `MacAddressWhitelistJson` (`string`).
-
-### Task 6: Create AttendanceProfile Entity
-- **Difficulty**: Easy
-- **Labels**: `good first issue`, `layer:domain`, `entity`
-- **Location**: `Buy2.Domain/Entities/AttendanceProfile.cs`
-- **Instructions**: Create class `AttendanceProfile` inheriting from `BaseEntity`. Add `ProfileName`, `ExpectedClockIn` (`TimeSpan`), `ExpectedClockOut` (`TimeSpan`), and `RequiredWorkHours` (`double`).
-
-### Task 7: Create Shift Entity
-- **Difficulty**: Easy
-- **Labels**: `good first issue`, `layer:domain`, `entity`
-- **Location**: `Buy2.Domain/Entities/Shift.cs`
-- **Instructions**: Create class `Shift` inheriting from `BaseEntity`. Add `EmployeeId` (`int`), `SiteId` (`int`), `JobRoleId` (`int`), `StartTime` (`DateTimeOffset`), `EndTime` (`DateTimeOffset`), and `IsPublished` (`bool`).
-
 ### Task 8: Create ShiftClaim Entity
 - **Difficulty**: Easy
 - **Labels**: `good first issue`, `layer:domain`, `entity`
@@ -113,19 +77,6 @@ Focus on core domain models, enums, and base entities. No database dependencies 
 - **Location**: `Buy2.Domain/Entities/RewardItem.cs`
 - **Instructions**: Create class `RewardItem` inheriting from `BaseEntity`. Add `RewardName`, `CostInPoints` (`int`), and `AvailableStock` (`int`).
 
-### Task 11: Create Gender and SalaryType Enums
-- **Difficulty**: Very Easy
-- **Labels**: `good first issue`, `layer:domain`, `enum`
-- **Location**: `Buy2.Domain/Enums/DomainEnums.cs`
-- **Instructions**: Create public enums `Gender` (`Male = 1, Female = 2`) and `SalaryType` (`Fixed = 1, Hourly = 2`).
-
-### Task 12: Create ShiftStatus and ClaimStatus Enums
-- **Difficulty**: Very Easy
-- **Labels**: `good first issue`, `layer:domain`, `enum`
-- **Location**: `Buy2.Domain/Enums/ShiftEnums.cs`
-- **Instructions**: Create public enums `ShiftStatus` (`Draft = 0, Published = 1, Cancelled = 2`) and `ClaimStatus` (`Pending = 0, Approved = 1, Rejected = 2`).
-
----
 
 ## Phase 2: Application Layer (Tasks 13-25)
 
