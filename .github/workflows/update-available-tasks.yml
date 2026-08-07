@@ -9,6 +9,8 @@ jobs:
   update-tasks-file:
     if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
     - name: Checkout Repository
@@ -21,34 +23,54 @@ jobs:
       with:
         python-version: '3.x'
 
-    - name: Parse PR Title and Update AVAILABLE_TASKS.md
+    - name: Parse PR Title / Branch and Update AVAILABLE_TASKS.md
       run: |
         python -c "
-        import re, os
+        import os, re, sys
 
-        pr_title = '''${{ github.event.pull_request.title }}'''
-        pr_branch = '''${{ github.event.pull_request.head.ref }}'''
+        title = '''${{ github.event.pull_request.title }}'''
+        branch = '''${{ github.event.pull_request.head.ref }}'''
 
-        match = re.search(r'Task\s*(\d+)', pr_title, re.IGNORECASE) or re.search(r'Task\s*(\d+)', pr_branch, re.IGNORECASE)
-        
-        if not match:
+        print(f'PR Title: {title}')
+        print(f'PR Branch: {branch}')
+
+        task_num = None
+
+        # Check explicit 'Task X' pattern first
+        m_task = re.search(r'Task\s*[-_]?\s*(\d+)', title, re.IGNORECASE) or re.search(r'Task\s*[-_]?\s*(\d+)', branch, re.IGNORECASE)
+        if m_task:
+            task_num = int(m_task.group(1))
+
+        # If not found, check Jira key 'SCRUM-X' pattern (SCRUM-6 = Task 1)
+        if not task_num:
+            m_scrum = re.search(r'SCRUM[-_]?(\d+)', title, re.IGNORECASE) or re.search(r'SCRUM[-_]?(\d+)', branch, re.IGNORECASE)
+            if m_scrum:
+                scrum_num = int(m_scrum.group(1))
+                task_num = scrum_num - 5
+
+        if not task_num or task_num < 1:
             print('No Task number found. Skipping.')
             exit(0)
 
-        task_num = match.group(1)
-        print(f'Found Task Number: Task {task_num}')
+        print(f'Targeting Task Number: Task {task_num}')
 
         file_path = 'AVAILABLE_TASKS.md'
+        if not os.path.exists(file_path):
+            print('AVAILABLE_TASKS.md not found!')
+            exit(0)
+
         with open(file_path, 'r', encoding='utf-8') as f:
             content = f.read()
 
         pattern = rf'### Task {task_num}:.*?(?=(### Task|\n## |\Z))'
-        
+
         if re.search(pattern, content, re.DOTALL):
             new_content = re.sub(pattern, '', content, flags=re.DOTALL)
             with open(file_path, 'w', encoding='utf-8') as f:
                 f.write(new_content)
-            print(f'Successfully removed Task {task_num}')
+            print(f'Successfully removed Task {task_num} from AVAILABLE_TASKS.md!')
+        else:
+            print(f'Task {task_num} not found in AVAILABLE_TASKS.md')
         "
 
     - name: Commit and Push Updated AVAILABLE_TASKS.md
