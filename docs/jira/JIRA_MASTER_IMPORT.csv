@@ -1,25 +1,4 @@
 Issue Type,Summary,Description,Labels
-Task,[Application] Create LogDisciplinaryViolationDto Record,"**Task 32**: Create LogDisciplinaryViolationDto Record
-
-**Target File Location**: `src/Buy2.Application/DTOs/Employees/ViolationDtos.cs`
-
-**Instructions**:
-1. Create `ViolationDtos.cs` file under `Buy2.Application.DTOs.Employees`.
-2. Define record DTO for logging violations with positional parameters: `int EmployeeId`, `string Severity`, `string Description`.","layer:application,dto,good first issue"
-Task,[Application] Create PointsTransactionDto Record,"**Task 33**: Create PointsTransactionDto Record
-
-**Target File Location**: `src/Buy2.Application/DTOs/Points/PointsTransactionDtos.cs`
-
-**Instructions**:
-1. Create `PointsTransactionDtos.cs` file under `Buy2.Application.DTOs.Points`.
-2. Define record DTO for points transactions with positional parameters: `int EmployeeId`, `int? PointsRuleId`, `int Amount`, `string TransactionType`.","layer:application,dto,good first issue"
-Task,[Application] Create RedeemRewardDto Record,"**Task 34**: Create RedeemRewardDto Record
-
-**Target File Location**: `src/Buy2.Application/DTOs/Rewards/RedemptionDtos.cs`
-
-**Instructions**:
-1. Create `RedemptionDtos.cs` file under `Buy2.Application.DTOs.Rewards`.
-2. Define record DTO for reward redemption with positional parameters: `int RewardItemId`, `int EmployeeId`.","layer:application,dto,good first issue"
 Task,[Infrastructure] Create Buy2DbContext Class,"**Task 35**: Create Buy2DbContext Class
 
 **Target File Location**: `src/Buy2.Infrastructure/Persistence/Buy2DbContext.cs`

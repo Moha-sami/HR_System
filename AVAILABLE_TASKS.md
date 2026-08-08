@@ -49,7 +49,7 @@ To ensure automatic tracking between GitHub and Jira, follow these simple naming
 
 ---
 
-## Completed Tasks (Domain Layer & Core Contracts) ✅
+## Completed Tasks (Domain Layer & Application Layer 100% DONE) ✅
 
 - **Task 1** (`SCRUM-6`): BaseEntity.cs ✅ **[DONE - PR #1]**
 - **Task 2** (`SCRUM-7`): Role.cs ✅ **[DONE - PR #10]**
@@ -80,31 +80,15 @@ To ensure automatic tracking between GitHub and Jira, follow these simple naming
 - **Task 28** (`SCRUM-103`): PointsTransaction Entity ✅ **[DONE - PR #48]**
 - **Task 29** (`SCRUM-104`): RewardRedemption Entity ✅ **[DONE - PR #49]**
 - **Task 30** (`SCRUM-19`): IUnitOfWork Interface ✅ **[DONE - PR #44]**
-- **Task 31** (`SCRUM-106`): UploadEmployeeDocumentDto Record ✅ **[DONE]**
+- **Task 31** (`SCRUM-106`): UploadEmployeeDocumentDto Record ✅ **[DONE - PR #49]**
+- **Task 32** (`SCRUM-107`): LogDisciplinaryViolationDto Record ✅ **[DONE - PR #50]**
+- **Task 33** (`SCRUM-108`): PointsTransactionDto Record ✅ **[DONE - PR #51]**
+- **Task 34** (`SCRUM-109`): RedeemRewardDto Record ✅ **[DONE - PR #53]**
 - **Task 43** (`SCRUM-56`/`57`): TypeScript Data Models ✅ **[DONE - PR #3]**
 
 ---
 
-## Active Backend Roadmap (Tasks 32-78)
-
----
-
-### Phase 2: Application Layer (Remaining DTOs)
-
-#### Task 32: `[Application] Create LogDisciplinaryViolationDto Record`
-- **Difficulty**: Very Easy
-- **Location**: `Buy2.Application/DTOs/Employees/ViolationDtos.cs`
-- **Instructions**: Define record DTO for logging violations with positional parameters: `int EmployeeId`, `string Severity`, `string Description`.
-
-#### Task 33: `[Application] Create PointsTransactionDto Record`
-- **Difficulty**: Very Easy
-- **Location**: `Buy2.Application/DTOs/Points/PointsTransactionDtos.cs`
-- **Instructions**: Define record DTO for points transactions with positional parameters: `int EmployeeId`, `int? PointsRuleId`, `int Amount`, `string TransactionType`.
-
-#### Task 34: `[Application] Create RedeemRewardDto Record`
-- **Difficulty**: Very Easy
-- **Location**: `Buy2.Application/DTOs/Rewards/RedemptionDtos.cs`
-- **Instructions**: Define record DTO for reward redemption with positional parameters: `int RewardItemId`, `int EmployeeId`.
+## Active Backend Roadmap (Tasks 35-78)
 
 ---
 
