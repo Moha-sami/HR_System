@@ -59,73 +59,73 @@ To ensure automatic tracking between GitHub and Jira, follow these simple naming
 
 Focus on core domain models, enums, and base entities. No database dependencies or framework logic.
 
-### Task 1: Create BaseEntity Class ✅ **[DONE]**
+### Task 1: Create BaseEntity Class ✅ **[DONE - PR #1]**
 - **Difficulty**: Very Easy
 - **Labels**: `good first issue`, `layer:domain`, `entity`
 - **Location**: `Buy2.Domain/Entities/BaseEntity.cs`
 - **Instructions**: Create an abstract class named `BaseEntity`. Add an integer `Id` property and a `CreatedAt` (`DateTimeOffset`) property.
 
-### Task 2: Create Role Entity ✅ **[DONE]**
+### Task 2: Create Role Entity ✅ **[DONE - PR #10]**
 - **Difficulty**: Very Easy
 - **Labels**: `good first issue`, `layer:domain`, `entity`
 - **Location**: `Buy2.Domain/Entities/Role.cs`
 - **Instructions**: Create a public class `Role` inheriting from `BaseEntity`. Add `RoleName` (`string`) and `PermissionsJson` (`string`).
 
-### Task 3: Create JobRole Entity ✅ **[DONE]**
+### Task 3: Create JobRole Entity ✅ **[DONE - PR #9]**
 - **Difficulty**: Very Easy
 - **Labels**: `good first issue`, `layer:domain`, `entity`
 - **Location**: `Buy2.Domain/Entities/JobRole.cs`
 - **Instructions**: Create class `JobRole` inheriting from `BaseEntity`. Add `Title` (`string`), `DepartmentId` (`int`), and `RequiredQualificationsJson` (`string`).
 
-### Task 4: Create Employee Entity ✅ **[DONE]**
+### Task 4: Create Employee Entity ✅ **[DONE - PR #11]**
 - **Difficulty**: Easy
 - **Labels**: `good first issue`, `layer:domain`, `entity`
 - **Location**: `Buy2.Domain/Entities/Employee.cs`
 - **Instructions**: Create class `Employee` inheriting from `BaseEntity`. Add `FirstName`, `LastName`, `Email`, `PhoneNumber`, `JobRoleId` (`int`), `RoleId` (`int`), and `SiteId` (`int`).
 
-### Task 5: Create Site Entity ✅ **[DONE]**
+### Task 5: Create Site Entity ✅ **[DONE - PR #12]**
 - **Difficulty**: Very Easy
 - **Labels**: `good first issue`, `layer:domain`, `entity`
 - **Location**: `Buy2.Domain/Entities/Site.cs`
 - **Instructions**: Create class `Site` inheriting from `BaseEntity`. Add `SiteName`, `Latitude` (`double`), `Longitude` (`double`), and `MacAddressWhitelistJson` (`string`).
 
-### Task 6: Create AttendanceProfile Entity ✅ **[DONE]**
+### Task 6: Create AttendanceProfile Entity ✅ **[DONE - PR #16]**
 - **Difficulty**: Easy
 - **Labels**: `good first issue`, `layer:domain`, `entity`
 - **Location**: `Buy2.Domain/Entities/AttendanceProfile.cs`
 - **Instructions**: Create class `AttendanceProfile` inheriting from `BaseEntity`. Add `ProfileName`, `ExpectedClockIn` (`TimeSpan`), `ExpectedClockOut` (`TimeSpan`), and `RequiredWorkHours` (`double`).
 
-### Task 7: Create Shift Entity ✅ **[DONE]**
+### Task 7: Create Shift Entity ✅ **[DONE - PR #17]**
 - **Difficulty**: Easy
 - **Labels**: `good first issue`, `layer:domain`, `entity`
 - **Location**: `Buy2.Domain/Entities/Shift.cs`
 - **Instructions**: Create class `Shift` inheriting from `BaseEntity`. Add `EmployeeId` (`int`), `SiteId` (`int`), `JobRoleId` (`int`), `StartTime` (`DateTimeOffset`), `EndTime` (`DateTimeOffset`), and `IsPublished` (`bool`).
 
-### Task 8: Create ShiftClaim Entity
+### Task 8: Create ShiftClaim Entity ✅ **[DONE - PR #26]**
 - **Difficulty**: Easy
 - **Labels**: `good first issue`, `layer:domain`, `entity`
 - **Location**: `Buy2.Domain/Entities/ShiftClaim.cs`
 - **Instructions**: Create class `ShiftClaim` inheriting from `BaseEntity`. Add `ShiftId` (`int`), `EmployeeId` (`int`), `Status` (`string`), and `OvertimeJustification` (`string`).
 
-### Task 9: Create PointsRule Entity
+### Task 9: Create PointsRule Entity ✅ **[DONE - PR #23]**
 - **Difficulty**: Very Easy
 - **Labels**: `good first issue`, `layer:domain`, `entity`
 - **Location**: `Buy2.Domain/Entities/PointsRule.cs`
 - **Instructions**: Create class `PointsRule` inheriting from `BaseEntity`. Add `RuleKey`, `EventType`, `ConditionExpression`, `ActionType`, and `PointValue` (`int`).
 
-### Task 10: Create RewardItem Entity
+### Task 10: Create RewardItem Entity ✅ **[DONE - PR #24]**
 - **Difficulty**: Very Easy
 - **Labels**: `good first issue`, `layer:domain`, `entity`
 - **Location**: `Buy2.Domain/Entities/RewardItem.cs`
 - **Instructions**: Create class `RewardItem` inheriting from `BaseEntity`. Add `RewardName`, `CostInPoints` (`int`), and `AvailableStock` (`int`).
 
-### Task 11: Create Gender and SalaryType Enums ✅ **[DONE]**
+### Task 11: Create Gender and SalaryType Enums ✅ **[DONE - PR #18]**
 - **Difficulty**: Very Easy
 - **Labels**: `good first issue`, `layer:domain`, `enum`
 - **Location**: `Buy2.Domain/Enums/DomainEnums.cs`
 - **Instructions**: Create public enums `Gender` (`Male = 1, Female = 2`) and `SalaryType` (`Fixed = 1, Hourly = 2`).
 
-### Task 12: Create ShiftStatus and ClaimStatus Enums ✅ **[DONE]**
+### Task 12: Create ShiftStatus and ClaimStatus Enums ✅ **[DONE - PR #19]**
 - **Difficulty**: Very Easy
 - **Labels**: `good first issue`, `layer:domain`, `enum`
 - **Location**: `Buy2.Domain/Enums/ShiftEnums.cs`
@@ -161,7 +161,7 @@ Focus on core domain models, enums, and base entities. No database dependencies 
 
 Application interfaces, DTO records, and CQRS contracts.
 
-### Task 13: Create IRepository Generic Interface
+### Task 13: Create IRepository Generic Interface ✅ **[DONE - PR #41]**
 - **Difficulty**: Medium
 - **Labels**: `good first issue`, `layer:application`, `interface`
 - **Location**: `Buy2.Application/Common/Interfaces/IRepository.cs`
@@ -173,67 +173,67 @@ Application interfaces, DTO records, and CQRS contracts.
 - **Location**: `Buy2.Application/Common/Interfaces/IUnitOfWork.cs`
 - **Instructions**: Create interface `IUnitOfWork` with `SaveChangesAsync(CancellationToken cancellationToken = default)` signature.
 
-### Task 15: Create IJwtTokenGenerator Interface
+### Task 15: Create IJwtTokenGenerator Interface ✅ **[DONE - PR #29]**
 - **Difficulty**: Very Easy
 - **Labels**: `good first issue`, `layer:application`, `interface`
 - **Location**: `Buy2.Application/Common/Interfaces/IJwtTokenGenerator.cs`
 - **Instructions**: Create interface `IJwtTokenGenerator` with method signature `string GenerateToken(int userId, string email, string role)`.
 
-### Task 16: Create Login DTO Records
+### Task 16: Create Login DTO Records ✅ **[DONE - PR #30]**
 - **Difficulty**: Very Easy
 - **Labels**: `good first issue`, `layer:application`, `dto`
 - **Location**: `Buy2.Application/Auth/DTOs/AuthDtos.cs`
 - **Instructions**: Create record DTOs `LoginRequestDto(string Email, string Password)` and `LoginResponseDto(string Token, int ExpiresIn, string Role)`.
 
-### Task 17: Create Role DTO Records
+### Task 17: Create Role DTO Records ✅ **[DONE - PR #31]**
 - **Difficulty**: Very Easy
 - **Labels**: `good first issue`, `layer:application`, `dto`
 - **Location**: `Buy2.Application/Roles/DTOs/RoleDtos.cs`
 - **Instructions**: Create record DTO `CreateRoleDto(string RoleName, Dictionary<string, List<string>> Permissions)`.
 
-### Task 18: Create Employee DTO Records
+### Task 18: Create Employee DTO Records ✅ **[DONE - PR #32]**
 - **Difficulty**: Easy
 - **Labels**: `good first issue`, `layer:application`, `dto`
 - **Location**: `Buy2.Application/Employees/DTOs/EmployeeDtos.cs`
 - **Instructions**: Create record DTO `OnboardEmployeeDto(string FirstName, string LastName, string Email, string PhoneNumber, int JobRoleId, int RoleId, int SiteId)`.
 
-### Task 19: Create Site DTO Records
+### Task 19: Create Site DTO Records ✅ **[DONE - PR #34]**
 - **Difficulty**: Very Easy
 - **Labels**: `good first issue`, `layer:application`, `dto`
 - **Location**: `Buy2.Application/Sites/DTOs/SiteDtos.cs`
 - **Instructions**: Create record DTO `CreateSiteDto(string SiteName, double Latitude, double Longitude, List<string> MacWhitelist)`.
 
-### Task 20: Create DraftShiftDto Record
+### Task 20: Create DraftShiftDto Record ✅ **[DONE - PR #35]**
 - **Difficulty**: Very Easy
 - **Labels**: `good first issue`, `layer:application`, `dto`
 - **Location**: `Buy2.Application/Schedules/DTOs/ScheduleDtos.cs`
 - **Instructions**: Create record DTO `DraftShiftDto(int EmployeeId, int JobRoleId, int SiteId, DateTimeOffset StartTime, DateTimeOffset EndTime)`.
 
-### Task 21: Create PreFlightValidationResultDto Record
+### Task 21: Create PreFlightValidationResultDto Record ✅ **[DONE - PR #36]**
 - **Difficulty**: Easy
 - **Labels**: `good first issue`, `layer:application`, `dto`
 - **Location**: `Buy2.Application/Schedules/DTOs/ValidationResultDto.cs`
 - **Instructions**: Create record `PreFlightValidationResultDto(bool IsValid, List<string> Warnings, List<string> Errors)`.
 
-### Task 22: Create ClaimShiftDto Record
+### Task 22: Create ClaimShiftDto Record ✅ **[DONE - PR #37]**
 - **Difficulty**: Very Easy
 - **Labels**: `good first issue`, `layer:application`, `dto`
 - **Location**: `Buy2.Application/ShiftMarket/DTOs/ShiftMarketDtos.cs`
 - **Instructions**: Create record `ClaimShiftDto(int ShiftId, int EmployeeId, string OvertimeJustification)`.
 
-### Task 23: Create CreatePointsRuleDto Record
+### Task 23: Create CreatePointsRuleDto Record ✅ **[DONE - PR #38]**
 - **Difficulty**: Very Easy
 - **Labels**: `good first issue`, `layer:application`, `dto`
 - **Location**: `Buy2.Application/Points/DTOs/PointsDtos.cs`
 - **Instructions**: Create record `CreatePointsRuleDto(string RuleKey, string EventType, string ConditionExpression, string ActionType, int PointValue)`.
 
-### Task 24: Create RewardItemDto Record
+### Task 24: Create RewardItemDto Record ✅ **[DONE - PR #39]**
 - **Difficulty**: Very Easy
 - **Labels**: `good first issue`, `layer:application`, `dto`
 - **Location**: `Buy2.Application/Rewards/DTOs/RewardDtos.cs`
 - **Instructions**: Create record `RewardItemDto(int Id, string RewardName, int CostInPoints, int AvailableStock)`.
 
-### Task 25: Create IScheduleValidationEngine Interface
+### Task 25: Create IScheduleValidationEngine Interface ✅ **[DONE - PR #40]**
 - **Difficulty**: Easy
 - **Labels**: `good first issue`, `layer:application`, `interface`
 - **Location**: `Buy2.Application/Schedules/Interfaces/IScheduleValidationEngine.cs`
@@ -480,7 +480,7 @@ EF Core persistence, DbContext configurations, and external services.
 > **Figma Design Reference**: [https://www.figma.com/design/JQ67DCkObzVjER8Safb5sw/BUY2-Junk-File?node-id=882-3040&p=f&t=GxfjGebSZZA9X7B0-0](https://www.figma.com/design/JQ67DCkObzVjER8Safb5sw/BUY2-Junk-File?node-id=882-3040&p=f&t=GxfjGebSZZA9X7B0-0)
 > All UI components must implement layouts, colors, and responsive specs from the official Figma design link above.
 
-### Task 43: Create TypeScript Data Models ✅ **[DONE]**
+### Task 43: Create TypeScript Data Models ✅ **[DONE - PR #3]**
 - **Difficulty**: Very Easy
 - **Labels**: `good first issue`, `layer:frontend`, `models`
 - **Location**: `Buy2.Frontend/src/app/core/models/hrms.models.ts`
