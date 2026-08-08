@@ -54,6 +54,13 @@ export class DocsHomeComponent {
       description: 'Reusable button with variants, sizes, shapes, icons, and loading state.',
       tags: ['primary', 'secondary', 'danger', 'ghost', 'icons'],
     },
+    {
+      name: 'Table',
+      route: 'table',
+      description:
+        'Data table with variants, sizes, sorting, alignment, and custom cell templates.',
+      tags: ['data', 'sorting', 'templates', 'grid'],
+    },
     // Add more components here as they are documented
     // {
     //   name: 'Input',

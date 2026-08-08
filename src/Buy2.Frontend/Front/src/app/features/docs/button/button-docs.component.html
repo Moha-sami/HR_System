@@ -447,5 +447,121 @@ export class MyComponent &lbrace;
   &rbrace;
 &rbrace;</code></pre>
     </section>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!-- API REFERENCE                                          -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <section class="bg-white rounded-lg border border-neutral-200 p-6 mb-6">
+      <h2 class="text-lg font-semibold text-neutral-800 mb-4">API Reference</h2>
+
+      <!-- Inputs -->
+      <h3 class="text-sm font-semibold text-neutral-700 mb-2">Inputs</h3>
+      <div class="overflow-x-auto mb-6">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="border-b border-neutral-200">
+              <th class="text-left py-2 pr-4 text-neutral-500">Input</th>
+              <th class="text-left py-2 pr-4 text-neutral-500">Type</th>
+              <th class="text-left py-2 pr-4 text-neutral-500">Default</th>
+              <th class="text-left py-2 text-neutral-500">Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="border-b border-neutral-100">
+              <td class="py-2 pr-4 font-mono text-primary-600">variant</td>
+              <td class="py-2 pr-4 text-neutral-600">
+                'primary' | 'primary-light' | 'secondary' | 'danger' | 'ghost'
+              </td>
+              <td class="py-2 pr-4 text-neutral-400">'primary'</td>
+              <td class="py-2 text-neutral-600">Button style variant</td>
+            </tr>
+            <tr class="border-b border-neutral-100">
+              <td class="py-2 pr-4 font-mono text-primary-600">size</td>
+              <td class="py-2 pr-4 text-neutral-600">'sm' | 'md' | 'lg'</td>
+              <td class="py-2 pr-4 text-neutral-400">'md'</td>
+              <td class="py-2 text-neutral-600">Button size</td>
+            </tr>
+            <tr class="border-b border-neutral-100">
+              <td class="py-2 pr-4 font-mono text-primary-600">shape</td>
+              <td class="py-2 pr-4 text-neutral-600">'default' | 'full' | 'circle'</td>
+              <td class="py-2 pr-4 text-neutral-400">'default'</td>
+              <td class="py-2 text-neutral-600">Button shape (rounded, pill, full-width)</td>
+            </tr>
+            <tr class="border-b border-neutral-100">
+              <td class="py-2 pr-4 font-mono text-primary-600">disabled</td>
+              <td class="py-2 pr-4 text-neutral-600">boolean</td>
+              <td class="py-2 pr-4 text-neutral-400">false</td>
+              <td class="py-2 text-neutral-600">Disable button interaction</td>
+            </tr>
+            <tr class="border-b border-neutral-100">
+              <td class="py-2 pr-4 font-mono text-primary-600">loading</td>
+              <td class="py-2 pr-4 text-neutral-600">boolean</td>
+              <td class="py-2 pr-4 text-neutral-400">false</td>
+              <td class="py-2 text-neutral-600">Show loading spinner, disable interaction</td>
+            </tr>
+            <tr>
+              <td class="py-2 pr-4 font-mono text-primary-600">type</td>
+              <td class="py-2 pr-4 text-neutral-600">'button' | 'submit' | 'reset'</td>
+              <td class="py-2 pr-4 text-neutral-400">'button'</td>
+              <td class="py-2 text-neutral-600">HTML button type attribute</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Outputs -->
+      <h3 class="text-sm font-semibold text-neutral-700 mb-2">Outputs</h3>
+      <div class="overflow-x-auto mb-6">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="border-b border-neutral-200">
+              <th class="text-left py-2 pr-4 text-neutral-500">Output</th>
+              <th class="text-left py-2 pr-4 text-neutral-500">Type</th>
+              <th class="text-left py-2 text-neutral-500">Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="py-2 pr-4 font-mono text-primary-600">clicked</td>
+              <td class="py-2 pr-4 text-neutral-600">void</td>
+              <td class="py-2 text-neutral-600">
+                Emits when button is clicked (not emitted when disabled/loading)
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Content Projection -->
+      <h3 class="text-sm font-semibold text-neutral-700 mb-2">Content Projection</h3>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="border-b border-neutral-200">
+              <th class="text-left py-2 pr-4 text-neutral-500">Slot</th>
+              <th class="text-left py-2 text-neutral-500">Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="border-b border-neutral-100">
+              <td class="py-2 pr-4 font-mono text-primary-600">default</td>
+              <td class="py-2 text-neutral-600">Button text content</td>
+            </tr>
+            <tr>
+              <td class="py-2 pr-4 font-mono text-primary-600">iconLeft</td>
+              <td class="py-2 text-neutral-600">
+                Icon element before text (add <code>iconLeft</code> attribute)
+              </td>
+            </tr>
+            <tr>
+              <td class="py-2 pr-4 font-mono text-primary-600">iconRight</td>
+              <td class="py-2 text-neutral-600">
+                Icon element after text (add <code>iconRight</code> attribute)
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
   </div>
 </div>

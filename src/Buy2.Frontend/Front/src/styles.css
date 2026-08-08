@@ -93,6 +93,22 @@
   --color-neutral-900: #111827;
 
   /* ──────────────────────────────────────────────────────
+     Table
+     ────────────────────────────────────────────────────── */
+  --color-table-bg: #f8f8f8;
+  --color-table-border: #e9eaf3;
+  --color-table-header-text: #234199;
+  --color-table-label: #555f7e;
+  --color-table-value: #1f2937;
+  --color-table-row-hover: #f9fafb;
+  --color-table-stripe: #f3f4f6;
+
+  --spacing-table-x: 1rem;
+  --spacing-table-y: 0.75rem;
+
+  --radius-table: 0.5rem;
+
+  /* ──────────────────────────────────────────────────────
      Utility
      ────────────────────────────────────────────────────── */
   --color-white: #ffffff;
