@@ -1,4 +1,4 @@
-# Buy2 HR Management System (HRMS)
+# HR Management System (HRMS)
 
 [![CI/CD Build Status](https://github.com/Moha-sami/HR_system/actions/workflows/ci.yml/badge.svg)](https://github.com/Moha-sami/HR_system/actions)
 [![Architecture](https://img.shields.io/badge/Architecture-Clean%20Architecture-blue.svg)](https://github.com/Moha-sami/HR_system)
