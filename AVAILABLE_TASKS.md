@@ -10,22 +10,22 @@ This file breaks down the entire project into atomic, step-by-step tasks suitabl
 
 To ensure automatic tracking between GitHub and Jira, follow these simple naming rules:
 
-1. **Git Branch Name**: Include the Jira Issue Key (e.g., `SCRUM-101`):
-   - Example: `SCRUM-101-create-employee-document-entity` or `feature/SCRUM-101-employee-document`
+1. **Git Branch Name**: Include the Jira Issue Key (e.g., `SCRUM-105`):
+   - Example: `SCRUM-105-create-log-disciplinary-violation-dto` or `feature/SCRUM-105-log-disciplinary-violation-dto`
    - *Tip: Click "Create branch" inside your Jira task card to copy the exact branch name automatically.*
 
 2. **Commit Message Format**:
-   - Example: `SCRUM-101: [Domain] Create EmployeeDocument Entity`
+   - Example: `SCRUM-105: [Application] Create LogDisciplinaryViolationDto Record`
 
 3. **Pull Request (PR) Title**:
-   - Example: `SCRUM-101: [Domain] Create EmployeeDocument Entity`
+   - Example: `SCRUM-105: [Application] Create LogDisciplinaryViolationDto Record`
 
 ---
 
 ## Instructions for Team Members & Contributors
 
 1. Pick an unassigned task from your **Jira Sprint Board**.
-2. Create your working git branch including the Jira key (e.g., `SCRUM-101-employee-document`).
+2. Create your working git branch including the Jira key (e.g., `SCRUM-105-log-disciplinary-violation-dto`).
 3. Each task requires creating an **empty structure only**: a class, record DTO, enum, interface, DbContext configuration, or API controller.
 4. Methods should only have signatures throwing `NotImplementedException` or returning default values. No complex business logic is needed in initial stubs!
 5. Submit your **Pull Request directly targeting `main`**. Once merged by the lead, Jira automatically updates your task to **Done**!
@@ -53,7 +53,7 @@ To ensure automatic tracking between GitHub and Jira, follow these simple naming
 
 ---
 
-## Completed Tasks (Phase 1 & Initial Services) ✅
+## Completed Tasks (Domain Layer & Application Contracts) ✅
 
 - **Task 1** (`SCRUM-6`): BaseEntity.cs ✅ **[DONE - PR #1]**
 - **Task 2** (`SCRUM-7`): Role.cs ✅ **[DONE - PR #10]**
@@ -79,55 +79,21 @@ To ensure automatic tracking between GitHub and Jira, follow these simple naming
 - **Task 23** (`SCRUM-28`): CreatePointsRuleDto Record ✅ **[DONE - PR #38]**
 - **Task 24** (`SCRUM-29`): RewardItemDto Record ✅ **[DONE - PR #39]**
 - **Task 25** (`SCRUM-30`): IScheduleValidationEngine Interface ✅ **[DONE - PR #40]**
+- **Task 26** (`SCRUM-101`): EmployeeDocument Entity ✅ **[DONE - PR #45]**
+- **Task 27** (`SCRUM-102`): DisciplinaryViolation Entity ✅ **[DONE - PR #47]**
+- **Task 28** (`SCRUM-103`): PointsTransaction Entity ✅ **[DONE - PR #48]**
+- **Task 29** (`SCRUM-104`): RewardRedemption Entity ✅ **[DONE - PR #49]**
+- **Task 30** (`SCRUM-19`): IUnitOfWork Interface ✅ **[DONE - PR #44]**
+- **Task 31** (`SCRUM-106`): UploadEmployeeDocumentDto Record ✅ **[DONE]**
 - **Task 43** (`SCRUM-56`/`57`): TypeScript Data Models ✅ **[DONE - PR #3]**
 
 ---
 
-## Active Backend Roadmap (Tasks 26-68)
+## Active Backend Roadmap (Tasks 32-68)
 
 ---
 
-### Phase 1: Domain Layer (Remaining Entities)
-
-#### Task 26: `[Domain] Create EmployeeDocument Entity`
-- **Difficulty**: Very Easy
-- **Labels**: `good first issue`, `layer:domain`, `entity`
-- **Location**: `Buy2.Domain/Entities/EmployeeDocument.cs`
-- **Instructions**: Create class `EmployeeDocument` inheriting from `BaseEntity`. Add primitive properties (`EmployeeId`, `Category`, `StorageUrl`) and virtual navigation property `Employee`.
-
-#### Task 27: `[Domain] Create DisciplinaryViolation Entity`
-- **Difficulty**: Very Easy
-- **Labels**: `good first issue`, `layer:domain`, `entity`
-- **Location**: `Buy2.Domain/Entities/DisciplinaryViolation.cs`
-- **Instructions**: Create class `DisciplinaryViolation` inheriting from `BaseEntity`. Add primitive properties (`EmployeeId`, `Severity`, `Description`) and virtual navigation property `Employee`.
-
-#### Task 28: `[Domain] Create PointsTransaction Entity`
-- **Difficulty**: Easy
-- **Labels**: `good first issue`, `layer:domain`, `entity`
-- **Location**: `Buy2.Domain/Entities/PointsTransaction.cs`
-- **Instructions**: Create class `PointsTransaction` inheriting from `BaseEntity`. Add primitive properties (`EmployeeId`, `PointsRuleId`, `Amount`, `TransactionType`) and virtual navigation properties for `Employee` and optional `PointsRule`.
-
-#### Task 29: `[Domain] Create RewardRedemption Entity`
-- **Difficulty**: Easy
-- **Labels**: `good first issue`, `layer:domain`, `entity`
-- **Location**: `Buy2.Domain/Entities/RewardRedemption.cs`
-- **Instructions**: Create class `RewardRedemption` inheriting from `BaseEntity`. Add primitive properties (`RewardItemId`, `EmployeeId`, `VoucherCode`, `RedeemedAt`) and virtual navigation properties for `Employee` and `RewardItem`.
-
----
-
-### Phase 2: Application Layer (Contracts & DTOs)
-
-#### Task 30: `[Application] Create IUnitOfWork Interface`
-- **Difficulty**: Easy
-- **Labels**: `good first issue`, `layer:application`, `interface`
-- **Location**: `Buy2.Application/Common/Interfaces/IUnitOfWork.cs`
-- **Instructions**: Create interface `IUnitOfWork` with method signature `Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)`.
-
-#### Task 31: `[Application] Create UploadEmployeeDocumentDto Record`
-- **Difficulty**: Very Easy
-- **Labels**: `good first issue`, `layer:application`, `dto`
-- **Location**: `Buy2.Application/Employees/DTOs/DocumentDtos.cs`
-- **Instructions**: Create record DTO for uploading employee documents with positional parameters `EmployeeId`, `Category`, and `StorageUrl`.
+### Phase 2: Application Layer (Remaining DTOs)
 
 #### Task 32: `[Application] Create LogDisciplinaryViolationDto Record`
 - **Difficulty**: Very Easy
