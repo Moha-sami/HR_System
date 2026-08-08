@@ -1,0 +1,105 @@
+<div
+  class="overflow-hidden rounded-lg border bg-table-bg border-table-border"
+  [class]="getVariantClass()"
+>
+  <!-- Header Row -->
+  <div
+    class="grid items-center"
+    [style.grid-template-columns]="getGridTemplate()"
+    [style.border-bottom]="'1px solid var(--color-table-border)'"
+    [class]="getSizeClass('header')"
+  >
+    @for (col of columns(); track col.key) {
+      <div
+        class="px-table-x py-table-y"
+        [class]="getAlignClass(col.align)"
+        [class.cursor-pointer]="col.sortable"
+        [class.select-none]="col.sortable"
+        (click)="onSort(col)"
+      >
+        <span
+          class="font-semibold text-table-header-text"
+          [class.text-xs]="size() === 'sm'"
+          [class.text-sm]="size() === 'md'"
+          [class.text-base]="size() === 'lg'"
+        >
+          {{ col.label }}
+        </span>
+        @if (col.sortable) {
+          <span class="inline-flex items-center">
+            @if (sortColumn() === col.key && sortDirection() === 'asc') {
+              <svg
+                width="8"
+                height="5"
+                viewBox="0 0 8 5"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path d="M4 0L8 5H0L4 0Z" fill="var(--color-table-header-text)" />
+              </svg>
+            } @else if (sortColumn() === col.key && sortDirection() === 'desc') {
+              <svg
+                width="8"
+                height="5"
+                viewBox="0 0 8 5"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path d="M4 5L0 0H8L4 5Z" fill="var(--color-table-header-text)" />
+              </svg>
+            } @else {
+              <svg
+                width="8"
+                height="5"
+                viewBox="0 0 8 5"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path d="M4 0L8 5H0L4 0Z" fill="var(--color-neutral-300)" />
+              </svg>
+            }
+          </span>
+        }
+      </div>
+    }
+  </div>
+
+  <!-- Body -->
+  <div class="flex flex-col">
+    @if (sortedRows().length === 0) {
+      <div class="p-8 text-center text-sm text-neutral-400">
+        {{ emptyMessage() }}
+      </div>
+    } @else {
+      @for (row of sortedRows(); track $index) {
+        <div
+          class="grid items-center cursor-pointer transition-colors bg-white hover:bg-neutral-50"
+          [style.grid-template-columns]="getGridTemplate()"
+          [class]="getSizeClass('row')"
+          [style.border-bottom]="$last ? 'none' : '1px solid var(--color-table-border)'"
+          (click)="onRowClick(row)"
+        >
+          @for (col of columns(); track col.key) {
+            <div class="px-table-x py-table-y" [class]="getAlignClass(col.align)">
+              @if (getTemplate(col)) {
+                <ng-container
+                  *ngTemplateOutlet="getTemplate(col)!; context: getCellContext(row, col, $index)"
+                ></ng-container>
+              } @else {
+                <span
+                  class="text-sm"
+                  [style.color]="'var(--color-table-label)'"
+                  [class.text-xs]="size() === 'sm'"
+                  [class.text-sm]="size() === 'md'"
+                  [class.text-base]="size() === 'lg'"
+                >
+                  {{ row[col.key] }}
+                </span>
+              }
+            </div>
+          }
+        </div>
+      }
+    }
+  </div>
+</div>
