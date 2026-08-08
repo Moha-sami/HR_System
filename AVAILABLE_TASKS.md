@@ -91,57 +91,79 @@ To ensure automatic tracking between GitHub and Jira, follow these simple naming
 #### Task 35: `[Infrastructure] Create Buy2DbContext Class`
 - **Difficulty**: Medium
 - **Location**: `Buy2.Infrastructure/Persistence/Buy2DbContext.cs`
-- **Instructions**: Inherit from `DbContext`. Add `DbSet<T>` for all domain entities. Override `OnModelCreating` to apply configurations from assembly.
+- **Instructions**: Inherit from `DbContext`. Add `DbSet<T>` for all 13 domain entities. Override `OnModelCreating` to execute `modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly())`.
 
 #### Task 36: `[Infrastructure] Create EmployeeConfiguration Class`
 - **Difficulty**: Medium
 - **Location**: `Buy2.Infrastructure/Persistence/Configurations/EmployeeConfiguration.cs`
-- **Instructions**: Implement `IEntityTypeConfiguration<Employee>`. Configure `FirstName` (`nvarchar(50)`), `LastName` (`nvarchar(50)`), `Email` (`varchar(150)`, unique index), `PhoneNumber` (`varchar(20)`). Configure relationships with `DeleteBehavior.Restrict`.
+- **Instructions**: Implement `IEntityTypeConfiguration<Employee>`. Configure `FirstName` (`nvarchar(50)`), `LastName` (`nvarchar(50)`), `Email` (`varchar(150)`, unique index), `PhoneNumber` (`varchar(20)`).
+- **Explicit Navigation Property Configurations**:
+  - `JobRole`: `HasOne(e => e.JobRole).WithMany(jr => jr.Employees).HasForeignKey(e => e.JobRoleId).OnDelete(DeleteBehavior.Restrict)`
+  - `Role`: `HasOne(e => e.Role).WithMany(r => r.Employees).HasForeignKey(e => e.RoleId).OnDelete(DeleteBehavior.Restrict)`
+  - `Site`: `HasOne(e => e.Site).WithMany(s => s.Employees).HasForeignKey(e => e.SiteId).OnDelete(DeleteBehavior.Restrict)`
+  - `AttendanceProfile`: `HasOne(e => e.AttendanceProfile).WithMany(ap => ap.Employees).HasForeignKey(e => e.AttendanceProfileId).OnDelete(DeleteBehavior.Restrict)`
 
 #### Task 37: `[Infrastructure] Create RoleConfiguration Class`
 - **Difficulty**: Medium
 - **Location**: `Buy2.Infrastructure/Persistence/Configurations/RoleConfiguration.cs`
 - **Instructions**: Implement `IEntityTypeConfiguration<Role>`. Configure `RoleName` (`nvarchar(50)`, unique index), `PermissionsJson` (`nvarchar(max)`).
+- **Explicit Navigation Property Configuration**: `HasMany(r => r.Employees).WithOne(e => e.Role).HasForeignKey(e => e.RoleId).OnDelete(DeleteBehavior.Restrict)`.
 
 #### Task 38: `[Infrastructure] Create SiteConfiguration Class`
 - **Difficulty**: Medium
 - **Location**: `Buy2.Infrastructure/Persistence/Configurations/SiteConfiguration.cs`
 - **Instructions**: Implement `IEntityTypeConfiguration<Site>`. Configure `SiteName` (`nvarchar(100)`), `Latitude` & `Longitude` (decimal 9,6), `MacAddressWhitelistJson` (`nvarchar(max)`).
+- **Explicit Navigation Property Configurations**: `HasMany(s => s.Employees).WithOne(e => e.Site).HasForeignKey(e => e.SiteId).OnDelete(DeleteBehavior.Restrict)` and `HasMany(s => s.Shifts).WithOne(sh => sh.Site).HasForeignKey(sh => sh.SiteId).OnDelete(DeleteBehavior.Restrict)`.
 
 #### Task 39: `[Infrastructure] Create ShiftConfiguration Class`
 - **Difficulty**: Medium
 - **Location**: `Buy2.Infrastructure/Persistence/Configurations/ShiftConfiguration.cs`
-- **Instructions**: Implement `IEntityTypeConfiguration<Shift>`. Configure `StartTime` & `EndTime` (`datetimeoffset`), `IsPublished` (bool). Configure relationships with `DeleteBehavior.Restrict`.
+- **Instructions**: Implement `IEntityTypeConfiguration<Shift>`. Configure `StartTime` & `EndTime` (`datetimeoffset`), `IsPublished` (bool).
+- **Explicit Navigation Property Configurations**:
+  - `Employee`: `HasOne(s => s.Employee).WithMany(e => e.Shifts).HasForeignKey(s => s.EmployeeId).OnDelete(DeleteBehavior.Restrict)`
+  - `Site`: `HasOne(s => s.Site).WithMany(st => st.Shifts).HasForeignKey(s => s.SiteId).OnDelete(DeleteBehavior.Restrict)`
+  - `JobRole`: `HasOne(s => s.JobRole).WithMany(jr => jr.Shifts).HasForeignKey(s => s.JobRoleId).OnDelete(DeleteBehavior.Restrict)`
 
 #### Task 40: `[Infrastructure] Create ShiftClaimConfiguration Class`
 - **Difficulty**: Medium
 - **Location**: `Buy2.Infrastructure/Persistence/Configurations/ShiftClaimConfiguration.cs`
-- **Instructions**: Implement `IEntityTypeConfiguration<ShiftClaim>`. Configure `Status` (`varchar(20)`), `OvertimeJustification` (`nvarchar(500)`). Configure relationships for `Shift` (`Cascade`) and `Employee` (`Restrict`).
+- **Instructions**: Implement `IEntityTypeConfiguration<ShiftClaim>`. Configure `Status` (`varchar(20)`), `OvertimeJustification` (`nvarchar(500)`).
+- **Explicit Navigation Property Configurations**:
+  - `Shift`: `HasOne(sc => sc.Shift).WithMany(s => s.ShiftClaims).HasForeignKey(sc => sc.ShiftId).OnDelete(DeleteBehavior.Cascade)`
+  - `Employee`: `HasOne(sc => sc.Employee).WithMany(e => e.ShiftClaims).HasForeignKey(sc => sc.EmployeeId).OnDelete(DeleteBehavior.Restrict)`
 
 #### Task 41: `[Infrastructure] Create EmployeeDocumentConfiguration Class`
 - **Difficulty**: Medium
 - **Location**: `Buy2.Infrastructure/Persistence/Configurations/EmployeeDocumentConfiguration.cs`
-- **Instructions**: Implement `IEntityTypeConfiguration<EmployeeDocument>`. Configure `Category` (`nvarchar(50)`), `StorageUrl` (`varchar(500)`). Configure relationship to `Employee` (`DeleteBehavior.Cascade`).
+- **Instructions**: Implement `IEntityTypeConfiguration<EmployeeDocument>`. Configure `Category` (`nvarchar(50)`), `StorageUrl` (`varchar(500)`).
+- **Explicit Navigation Property Configuration**: `HasOne(ed => ed.Employee).WithMany(e => e.Documents).HasForeignKey(ed => ed.EmployeeId).OnDelete(DeleteBehavior.Cascade)`.
 
 #### Task 42: `[Infrastructure] Create DisciplinaryViolationConfiguration Class`
 - **Difficulty**: Medium
 - **Location**: `Buy2.Infrastructure/Persistence/Configurations/DisciplinaryViolationConfiguration.cs`
-- **Instructions**: Implement `IEntityTypeConfiguration<DisciplinaryViolation>`. Configure `Severity` (`varchar(20)`), `Description` (`nvarchar(1000)`). Configure relationship to `Employee` (`DeleteBehavior.Cascade`).
+- **Instructions**: Implement `IEntityTypeConfiguration<DisciplinaryViolation>`. Configure `Severity` (`varchar(20)`), `Description` (`nvarchar(1000)`).
+- **Explicit Navigation Property Configuration**: `HasOne(dv => dv.Employee).WithMany(e => e.Violations).HasForeignKey(dv => dv.EmployeeId).OnDelete(DeleteBehavior.Cascade)`.
 
 #### Task 43: `[Infrastructure] Create PointsTransactionConfiguration Class`
 - **Difficulty**: Medium
 - **Location**: `Buy2.Infrastructure/Persistence/Configurations/PointsTransactionConfiguration.cs`
-- **Instructions**: Implement `IEntityTypeConfiguration<PointsTransaction>`. Configure `Amount` (int), `TransactionType` (`varchar(30)`). Configure relationships for `Employee` (`Restrict`) and optional `PointsRule` (`SetNull`).
+- **Instructions**: Implement `IEntityTypeConfiguration<PointsTransaction>`. Configure `Amount` (int), `TransactionType` (`varchar(30)`).
+- **Explicit Navigation Property Configurations**:
+  - `Employee`: `HasOne(pt => pt.Employee).WithMany(e => e.PointsTransactions).HasForeignKey(pt => pt.EmployeeId).OnDelete(DeleteBehavior.Restrict)`
+  - `PointsRule`: `HasOne(pt => pt.PointsRule).WithMany(pr => pr.Transactions).HasForeignKey(pt => pt.PointsRuleId).OnDelete(DeleteBehavior.SetNull)`
 
 #### Task 44: `[Infrastructure] Create RewardRedemptionConfiguration Class`
 - **Difficulty**: Medium
 - **Location**: `Buy2.Infrastructure/Persistence/Configurations/RewardRedemptionConfiguration.cs`
-- **Instructions**: Implement `IEntityTypeConfiguration<RewardRedemption>`. Configure `VoucherCode` (`varchar(100)`, unique index), `RedeemedAt` (`datetimeoffset`). Configure relationships with `DeleteBehavior.Restrict`.
+- **Instructions**: Implement `IEntityTypeConfiguration<RewardRedemption>`. Configure `VoucherCode` (`varchar(100)`, unique index), `RedeemedAt` (`datetimeoffset`).
+- **Explicit Navigation Property Configurations**:
+  - `Employee`: `HasOne(rr => rr.Employee).WithMany(e => e.Redemptions).HasForeignKey(rr => rr.EmployeeId).OnDelete(DeleteBehavior.Restrict)`
+  - `RewardItem`: `HasOne(rr => rr.RewardItem).WithMany(ri => ri.Redemptions).HasForeignKey(rr => rr.RewardItemId).OnDelete(DeleteBehavior.Restrict)`
 
 #### Task 45: `[Infrastructure] Create GenericRepository Implementation`
 - **Difficulty**: Medium
 - **Location**: `Buy2.Infrastructure/Persistence/Repositories/GenericRepository.cs`
-- **Instructions**: Implement `IRepository<T>` using `Buy2DbContext`. Provide basic EF Core CRUD calls.
+- **Instructions**: Implement `IRepository<T>` using `Buy2DbContext`. Provide basic EF Core CRUD calls (`GetByIdAsync`, `ListAllAsync`, `AddAsync`, `UpdateAsync`, `DeleteAsync`).
 
 #### Task 46: `[Infrastructure] Create UnitOfWork Implementation`
 - **Difficulty**: Easy
@@ -151,7 +173,7 @@ To ensure automatic tracking between GitHub and Jira, follow these simple naming
 #### Task 47: `[Infrastructure] Create JwtTokenGenerator Implementation`
 - **Difficulty**: Medium
 - **Location**: `Buy2.Infrastructure/Authentication/JwtTokenGenerator.cs`
-- **Instructions**: Implement `IJwtTokenGenerator` using `System.IdentityModel.Tokens.Jwt`.
+- **Instructions**: Implement `IJwtTokenGenerator` using `System.IdentityModel.Tokens.Jwt`. Generate JWT claims containing user id, email, and roles.
 
 #### Task 48: `[Infrastructure] Create ScheduleValidationEngine Stub`
 - **Difficulty**: Easy
@@ -176,124 +198,197 @@ To ensure automatic tracking between GitHub and Jira, follow these simple naming
 - **Locations**:
   - `src/Buy2.Application/Features/Authentication/Login/LoginCommand.cs`
   - `src/Buy2.Api/Controllers/AuthLoginController.cs`
-- **Handler Business Logic**:
-  1. Define `LoginCommand(string Email, string Password) : IRequest<LoginResponseDto>`.
-  2. In `LoginCommandHandler`: Validate email exists via `IRepository<Employee>`, verify password hash, generate JWT token using `IJwtTokenGenerator`, return `LoginResponseDto(token, employee)`.
-  3. In `AuthLoginController`: Inject `ISender mediator`. Add `POST api/v1/auth/login` endpoint calling `await _mediator.Send(command)`.
+- **Thought Process & Business Logic Rationale**:
+  - *Why*: Authentication is the entry gateway. Before accessing HR features, users must prove identity and obtain a signed JWT token.
+  - *Steps*:
+    1. Define `LoginCommand(string Email, string Password) : IRequest<LoginResponseDto>`.
+    2. In `LoginCommandHandler`:
+       - Query employee by email using `IRepository<Employee>`. *Rationale: Ensures account exists.*
+       - Verify password hash against stored hash. *Rationale: Security enforcement.*
+       - Generate JWT bearer token via `IJwtTokenGenerator`. *Rationale: Provides stateless authentication token.*
+       - Return `LoginResponseDto(token, employee)`.
+    3. In `AuthLoginController`: Inject `ISender mediator`. Add `POST api/v1/auth/login` endpoint executing `await _mediator.Send(command)`.
 
 #### Task 52: `[Feature Slice] Create Password Reset Endpoint (Command, Handler & Controller)`
 - **Locations**:
   - `src/Buy2.Application/Features/Authentication/ResetPassword/ResetPasswordCommand.cs`
   - `src/Buy2.Api/Controllers/AuthPasswordResetController.cs`
-- **Handler Business Logic**:
-  1. Define `ResetPasswordCommand(string Email, string NewPassword) : IRequest<bool>`.
-  2. In `ResetPasswordCommandHandler`: Query employee by email, hash new password, update employee record via `IUnitOfWork`, return true.
-  3. In `AuthPasswordResetController`: Inject `ISender mediator`. Add `POST api/v1/auth/password/reset` calling `await _mediator.Send(command)`.
+- **Thought Process & Business Logic Rationale**:
+  - *Why*: Enables self-service security recovery when a user forgets credentials or requires a password refresh.
+  - *Steps*:
+    1. Define `ResetPasswordCommand(string Email, string NewPassword) : IRequest<bool>`.
+    2. In `ResetPasswordCommandHandler`:
+       - Query employee by email. *Rationale: Locate target user account.*
+       - Hash new password securely. *Rationale: Passwords must never be stored in plain text.*
+       - Update employee record and commit via `IUnitOfWork`. *Rationale: Atomically persist security update.*
+       - Return true on success.
+    3. In `AuthPasswordResetController`: Inject `ISender mediator`. Add `POST api/v1/auth/password/reset` executing `await _mediator.Send(command)`.
 
 #### Task 53: `[Feature Slice] Create Role Creation Endpoint (Command, Handler & Controller)`
 - **Locations**:
   - `src/Buy2.Application/Features/Roles/CreateRole/CreateRoleCommand.cs`
   - `src/Buy2.Api/Controllers/CreateRoleController.cs`
-- **Handler Business Logic**:
-  1. Define `CreateRoleCommand(string RoleName, List<string> Permissions) : IRequest<int>`.
-  2. In `CreateRoleCommandHandler`: Check role name uniqueness, map permissions to JSON string, add `Role` entity via `IRepository<Role>`, save via `IUnitOfWork`, return `role.Id`.
-  3. In `CreateRoleController`: Inject `ISender mediator`. Add `POST api/v1/roles` calling `await _mediator.Send(command)`.
+- **Thought Process & Business Logic Rationale**:
+  - *Why*: Role-based access control (RBAC) requires dynamically defining administrative and operational roles with specific permission scopes.
+  - *Steps*:
+    1. Define `CreateRoleCommand(string RoleName, List<string> Permissions) : IRequest<int>`.
+    2. In `CreateRoleCommandHandler`:
+       - Check if `RoleName` already exists. *Rationale: Prevents duplicate role definitions.*
+       - Serialize permissions array into JSON string. *Rationale: Flexible string storage in database.*
+       - Add `Role` entity via `IRepository<Role>` and commit via `IUnitOfWork`. *Rationale: Persist new role.*
+       - Return `role.Id`.
+    3. In `CreateRoleController`: Inject `ISender mediator`. Add `POST api/v1/roles` executing `await _mediator.Send(command)`.
 
 #### Task 54: `[Feature Slice] Create Soft Delete Role Endpoint (Command, Handler & Controller)`
 - **Locations**:
   - `src/Buy2.Application/Features/Roles/DeleteRole/DeleteRoleCommand.cs`
   - `src/Buy2.Api/Controllers/DeleteRoleController.cs`
-- **Handler Business Logic**:
-  1. Define `DeleteRoleCommand(int RoleId) : IRequest<bool>`.
-  2. In `DeleteRoleCommandHandler`: Retrieve role by id, ensure no active employees assigned, soft delete / set inactive via `IUnitOfWork`, return true.
-  3. In `DeleteRoleController`: Inject `ISender mediator`. Add `DELETE api/v1/roles/{id}` calling `await _mediator.Send(command)`.
+- **Thought Process & Business Logic Rationale**:
+  - *Why*: Deleting roles must preserve historical audit logs and prevent breaking existing employee references.
+  - *Steps*:
+    1. Define `DeleteRoleCommand(int RoleId) : IRequest<bool>`.
+    2. In `DeleteRoleCommandHandler`:
+       - Retrieve role by id. *Rationale: Verify role existence.*
+       - Check if any active employee is assigned to this role. *Rationale: Prevents orphan employee references.*
+       - Mark role as inactive / soft-deleted and save via `IUnitOfWork`. *Rationale: Safe preservation of audit logs.*
+       - Return true.
+    3. In `DeleteRoleController`: Inject `ISender mediator`. Add `DELETE api/v1/roles/{id}` executing `await _mediator.Send(command)`.
 
 #### Task 55: `[Feature Slice] Create Employee Onboarding Endpoint (Command, Handler & Controller)`
 - **Locations**:
   - `src/Buy2.Application/Features/Employees/OnboardEmployee/OnboardEmployeeCommand.cs`
   - `src/Buy2.Api/Controllers/EmployeeOnboardingController.cs`
-- **Handler Business Logic**:
-  1. Define `OnboardEmployeeCommand(string FirstName, string LastName, string Email, int JobRoleId, int SiteId) : IRequest<int>`.
-  2. In `OnboardEmployeeCommandHandler`: Check email uniqueness, verify JobRole and Site exist, instantiate `Employee` entity, save via `IUnitOfWork`, return `employee.Id`.
-  3. In `EmployeeOnboardingController`: Inject `ISender mediator`. Add `POST api/v1/employees/onboard` calling `await _mediator.Send(command)`.
+- **Thought Process & Business Logic Rationale**:
+  - *Why*: Onboarding registers new staff into HR system with assigned job roles, default work site, and initial attendance profiles.
+  - *Steps*:
+    1. Define `OnboardEmployeeCommand(string FirstName, string LastName, string Email, int JobRoleId, int SiteId) : IRequest<int>`.
+    2. In `OnboardEmployeeCommandHandler`:
+       - Check email uniqueness. *Rationale: Email is the unique user identifier.*
+       - Verify assigned `JobRoleId` and `SiteId` exist. *Rationale: Enforces valid foreign key references.*
+       - Instantiate `Employee` entity and commit via `IUnitOfWork`. *Rationale: Creates core workforce record.*
+       - Return `employee.Id`.
+    3. In `EmployeeOnboardingController`: Inject `ISender mediator`. Add `POST api/v1/employees/onboard` executing `await _mediator.Send(command)`.
 
 #### Task 56: `[Feature Slice] Create Upload Employee Document Endpoint (Command, Handler & Controller)`
 - **Locations**:
   - `src/Buy2.Application/Features/Employees/UploadDocument/UploadEmployeeDocumentCommand.cs`
   - `src/Buy2.Api/Controllers/EmployeeDocumentsController.cs`
-- **Handler Business Logic**:
-  1. Define `UploadEmployeeDocumentCommand(int EmployeeId, string Category, string StorageUrl) : IRequest<int>`.
-  2. In `UploadEmployeeDocumentCommandHandler`: Verify employee exists, instantiate `EmployeeDocument` entity, save via `IUnitOfWork`, return `document.Id`.
-  3. In `EmployeeDocumentsController`: Inject `ISender mediator`. Add `POST api/v1/employees/{id}/documents` calling `await _mediator.Send(command)`.
+- **Thought Process & Business Logic Rationale**:
+  - *Why*: Employee compliance requires tracking identity documents, work permits, and contracts stored securely in blob storage.
+  - *Steps*:
+    1. Define `UploadEmployeeDocumentCommand(int EmployeeId, string Category, string StorageUrl) : IRequest<int>`.
+    2. In `UploadEmployeeDocumentCommandHandler`:
+       - Verify target employee exists. *Rationale: Prevent orphan document attachments.*
+       - Instantiate `EmployeeDocument` entity with category and storage URL. *Rationale: Records cloud file metadata.*
+       - Save via `IUnitOfWork` and return `document.Id`.
+    3. In `EmployeeDocumentsController`: Inject `ISender mediator`. Add `POST api/v1/employees/{id}/documents` executing `await _mediator.Send(command)`.
 
 #### Task 57: `[Feature Slice] Create Log Disciplinary Violation Endpoint (Command, Handler & Controller)`
 - **Locations**:
   - `src/Buy2.Application/Features/Employees/LogViolation/LogDisciplinaryViolationCommand.cs`
   - `src/Buy2.Api/Controllers/DisciplinaryViolationsController.cs`
-- **Handler Business Logic**:
-  1. Define `LogDisciplinaryViolationCommand(int EmployeeId, string Severity, string Description) : IRequest<int>`.
-  2. In `LogDisciplinaryViolationCommandHandler`: Verify employee exists, instantiate `DisciplinaryViolation` entity, save via `IUnitOfWork`, return `violation.Id`.
-  3. In `DisciplinaryViolationsController`: Inject `ISender mediator`. Add `POST api/v1/employees/{id}/violations` calling `await _mediator.Send(command)`.
+- **Thought Process & Business Logic Rationale**:
+  - *Why*: Tracks workplace violations and compliance warnings for HR performance reviews and penalty point deductions.
+  - *Steps*:
+    1. Define `LogDisciplinaryViolationCommand(int EmployeeId, string Severity, string Description) : IRequest<int>`.
+    2. In `LogDisciplinaryViolationCommandHandler`:
+       - Verify employee exists. *Rationale: Ensures valid target staff.*
+       - Instantiate `DisciplinaryViolation` record with severity level. *Rationale: Audit record creation.*
+       - Save via `IUnitOfWork` and return `violation.Id`.
+    3. In `DisciplinaryViolationsController`: Inject `ISender mediator`. Add `POST api/v1/employees/{id}/violations` executing `await _mediator.Send(command)`.
 
 #### Task 58: `[Feature Slice] Create Site Creation Endpoint (Command, Handler & Controller)`
 - **Locations**:
   - `src/Buy2.Application/Features/Sites/CreateSite/CreateSiteCommand.cs`
   - `src/Buy2.Api/Controllers/CreateSiteController.cs`
-- **Handler Business Logic**:
-  1. Define `CreateSiteCommand(string SiteName, decimal Latitude, decimal Longitude, List<string> MacWhitelist) : IRequest<int>`.
-  2. In `CreateSiteCommandHandler`: Instantiate `Site` entity, serialize MAC whitelist to JSON string, save via `IUnitOfWork`, return `site.Id`.
-  3. In `CreateSiteController`: Inject `ISender mediator`. Add `POST api/v1/sites` calling `await _mediator.Send(command)`.
+- **Thought Process & Business Logic Rationale**:
+  - *Why*: Sites define physical branch locations with geofence coordinates and MAC address whitelists for mobile clock-in validation.
+  - *Steps*:
+    1. Define `CreateSiteCommand(string SiteName, decimal Latitude, decimal Longitude, List<string> MacWhitelist) : IRequest<int>`.
+    2. In `CreateSiteCommandHandler`:
+       - Instantiate `Site` entity with latitude/longitude bounds. *Rationale: Enables GPS geofence checks.*
+       - Serialize MAC whitelist array to JSON string. *Rationale: Enables Wi-Fi clock-in validation.*
+       - Save via `IUnitOfWork` and return `site.Id`.
+    3. In `CreateSiteController`: Inject `ISender mediator`. Add `POST api/v1/sites` executing `await _mediator.Send(command)`.
 
 #### Task 59: `[Feature Slice] Create Get Sites Endpoint (Query, Handler & Controller)`
 - **Locations**:
   - `src/Buy2.Application/Features/Sites/GetSites/GetSitesQuery.cs`
   - `src/Buy2.Api/Controllers/GetSitesController.cs`
-- **Handler Business Logic**:
-  1. Define `GetSitesQuery() : IRequest<List<SiteDto>>`.
-  2. In `GetSitesQueryHandler`: Query all active sites via `IRepository<Site>`, map entities to `SiteDto` list, return list.
-  3. In `GetSitesController`: Inject `ISender mediator`. Add `GET api/v1/sites` calling `await _mediator.Send(query)`.
+- **Thought Process & Business Logic Rationale**:
+  - *Why*: Provides branch site listings for shift scheduling, employee site selection, and manager dropdowns.
+  - *Steps*:
+    1. Define `GetSitesQuery() : IRequest<List<SiteDto>>`.
+    2. In `GetSitesQueryHandler`:
+       - Query all active sites via `IRepository<Site>`. *Rationale: Retrieve active work locations.*
+       - Map site entities to lightweight `SiteDto` list. *Rationale: Decouple domain entity from API response.*
+       - Return list.
+    3. In `GetSitesController`: Inject `ISender mediator`. Add `GET api/v1/sites` executing `await _mediator.Send(query)`.
 
 #### Task 60: `[Feature Slice] Create Validate Draft Schedule Endpoint (Command, Handler & Controller)`
 - **Locations**:
   - `src/Buy2.Application/Features/Schedules/ValidateDraft/ValidateScheduleDraftCommand.cs`
   - `src/Buy2.Api/Controllers/ScheduleValidationController.cs`
-- **Handler Business Logic**:
-  1. Define `ValidateScheduleDraftCommand(List<DraftShiftDto> Shifts) : IRequest<PreFlightValidationResultDto>`.
-  2. In `ValidateScheduleDraftCommandHandler`: Pass shift list to `IScheduleValidationEngine.Validate()`, return `PreFlightValidationResultDto`.
-  3. In `ScheduleValidationController`: Inject `ISender mediator`. Add `POST api/v1/schedules/validate-draft` calling `await _mediator.Send(command)`.
+- **Thought Process & Business Logic Rationale**:
+  - *Why*: Pre-flight schedule engine validates shift overlap, rest periods, and overtime rules BEFORE managers publish schedules.
+  - *Steps*:
+    1. Define `ValidateScheduleDraftCommand(List<DraftShiftDto> Shifts) : IRequest<PreFlightValidationResultDto>`.
+    2. In `ValidateScheduleDraftCommandHandler`:
+       - Pass draft shift list to `IScheduleValidationEngine.Validate()`. *Rationale: Evaluates compliance rules.*
+       - Return `PreFlightValidationResultDto` containing warnings and error flags. *Rationale: Highlights scheduling conflicts to manager.*
+    3. In `ScheduleValidationController`: Inject `ISender mediator`. Add `POST api/v1/schedules/validate-draft` executing `await _mediator.Send(command)`.
 
 #### Task 61: `[Feature Slice] Create Get Open Shifts Market Endpoint (Query, Handler & Controller)`
 - **Locations**:
   - `src/Buy2.Application/Features/ShiftMarket/GetOpenShifts/GetOpenShiftsQuery.cs`
   - `src/Buy2.Api/Controllers/OpenShiftsController.cs`
-- **Handler Business Logic**:
-  1. Define `GetOpenShiftsQuery() : IRequest<List<ShiftDto>>`.
-  2. In `GetOpenShiftsQueryHandler`: Query published shifts without assigned employee, map to `ShiftDto` list, return list.
-  3. In `OpenShiftsController`: Inject `ISender mediator`. Add `GET api/v1/shift-market/open-shifts` calling `await _mediator.Send(query)`.
+- **Thought Process & Business Logic Rationale**:
+  - *Why*: Shift Market enables eligible employees to view and claim unassigned open shifts for extra work hours.
+  - *Steps*:
+    1. Define `GetOpenShiftsQuery() : IRequest<List<ShiftDto>>`.
+    2. In `GetOpenShiftsQueryHandler`:
+       - Query published shifts where `EmployeeId == null` and `StartTime > DateTimeOffset.UtcNow`. *Rationale: Retrieves active open opportunities.*
+       - Map to `ShiftDto` list and return. *Rationale: Formats data for UI market board.*
+    3. In `OpenShiftsController`: Inject `ISender mediator`. Add `GET api/v1/shift-market/open-shifts` calling `await _mediator.Send(query)`.
 
 #### Task 62: `[Feature Slice] Create Claim Shift Endpoint (Command, Handler & Controller)`
 - **Locations**:
   - `src/Buy2.Application/Features/ShiftMarket/ClaimShift/ClaimShiftCommand.cs`
   - `src/Buy2.Api/Controllers/ShiftClaimsController.cs`
-- **Handler Business Logic**:
-  1. Define `ClaimShiftCommand(int ShiftId, int EmployeeId, string OvertimeJustification) : IRequest<bool>`.
-  2. In `ClaimShiftCommandHandler`: Verify shift is open, instantiate `ShiftClaim` with status `Pending`, save via `IUnitOfWork`, return true.
-  3. In `ShiftClaimsController`: Inject `ISender mediator`. Add `POST api/v1/shift-market/claims/{id}` calling `await _mediator.Send(command)`.
+- **Thought Process & Business Logic Rationale**:
+  - *Why*: Handles employee shift claims, logging overtime justifications for manager approval.
+  - *Steps*:
+    1. Define `ClaimShiftCommand(int ShiftId, int EmployeeId, string OvertimeJustification) : IRequest<bool>`.
+    2. In `ClaimShiftCommandHandler`:
+       - Verify target shift is open and unassigned. *Rationale: Prevents double claiming.*
+       - Create `ShiftClaim` record with status `Pending`. *Rationale: Creates claim audit record for manager review.*
+       - Save via `IUnitOfWork` and return true.
+    3. In `ShiftClaimsController`: Inject `ISender mediator`. Add `POST api/v1/shift-market/claims/{id}` calling `await _mediator.Send(command)`.
 
 #### Task 63: `[Feature Slice] Create Points Rule Creation Endpoint (Command, Handler & Controller)`
 - **Locations**:
   - `src/Buy2.Application/Features/Points/CreateRule/CreatePointsRuleCommand.cs`
   - `src/Buy2.Api/Controllers/PointsRulesController.cs`
-- **Handler Business Logic**:
-  1. Define `CreatePointsRuleCommand(string RuleName, int PointsValue, string TriggerType) : IRequest<int>`.
-  2. In `CreatePointsRuleCommandHandler`: Instantiate `PointsRule` entity, save via `IUnitOfWork`, return `rule.Id`.
-  3. In `PointsRulesController`: Inject `ISender mediator`. Add `POST api/v1/points/rules` calling `await _mediator.Send(command)`.
+- **Thought Process & Business Logic Rationale**:
+  - *Why*: Gamification system rewards punctual attendance and extra shifts with points redeemable in the reward store.
+  - *Steps*:
+    1. Define `CreatePointsRuleCommand(string RuleName, int PointsValue, string TriggerType) : IRequest<int>`.
+    2. In `CreatePointsRuleCommandHandler`:
+       - Instantiate `PointsRule` entity with trigger criteria (e.g. `OnTimeClockIn`, `ClaimOpenShift`). *Rationale: Configures automation engine rule.*
+       - Save via `IUnitOfWork` and return `rule.Id`.
+    3. In `PointsRulesController`: Inject `ISender mediator`. Add `POST api/v1/points/rules` calling `await _mediator.Send(command)`.
 
 #### Task 64: `[Feature Slice] Create Redeem Reward Endpoint (Command, Handler & Controller)`
 - **Locations**:
   - `src/Buy2.Application/Features/Rewards/RedeemReward/RedeemRewardCommand.cs`
   - `src/Buy2.Api/Controllers/RewardRedemptionController.cs`
-- **Handler Business Logic**:
-  1. Define `RedeemRewardCommand(int RewardItemId, int EmployeeId) : IRequest<string>`.
-  2. In `RedeemRewardCommandHandler`: Check employee points balance, deduct points, reserve voucher code from inventory, create `RewardRedemption` record via `IUnitOfWork`, return voucher code string.
-  3. In `RewardRedemptionController`: Inject `ISender mediator`. Add `POST api/v1/rewards/{id}/redeem` calling `await _mediator.Send(command)`.
+- **Thought Process & Business Logic Rationale**:
+  - *Why*: Converts accumulated employee gamification points into digital voucher codes.
+  - *Steps*:
+    1. Define `RedeemRewardCommand(int RewardItemId, int EmployeeId) : IRequest<string>`.
+    2. In `RedeemRewardCommandHandler`:
+       - Check employee total points balance against reward cost. *Rationale: Ensures sufficient points balance.*
+       - Reserve available voucher code from inventory. *Rationale: Prevents duplicate voucher distribution.*
+       - Create `RewardRedemption` record and deduct points via `IUnitOfWork`. *Rationale: Atomically records transaction.*
+       - Return voucher code string to employee.
+    3. In `RewardRedemptionController`: Inject `ISender mediator`. Add `POST api/v1/rewards/{id}/redeem` calling `await _mediator.Send(command)`.
