@@ -371,7 +371,7 @@ EF Core persistence, DbContext configurations, Fluent API rules, and external se
 - **Location**: `Buy2.Api/Controllers/AuthLoginController.cs`
 - **Instructions**: Create `[ApiController]` at `[route("api/v1/auth")]`. Add `POST login` endpoint stub accepting `LoginRequestDto`.
 
-### Task 64 (`SCRUM-76`): Create AuthPasswordResetController
+### Task 64 (`SCRUM-90`): Create AuthPasswordResetController
 - **Difficulty**: Easy
 - **Labels**: `good first issue`, `layer:api`, `controller`
 - **Location**: `Buy2.Api/Controllers/AuthPasswordResetController.cs`
@@ -383,7 +383,7 @@ EF Core persistence, DbContext configurations, Fluent API rules, and external se
 - **Location**: `Buy2.Api/Controllers/CreateRoleController.cs`
 - **Instructions**: Create `[ApiController]` at `[route("api/v1/roles")]`. Add `POST` create role endpoint stub accepting `CreateRoleDto`.
 
-### Task 65 (`SCRUM-77`): Create DeleteRoleController
+### Task 65 (`SCRUM-91`): Create DeleteRoleController
 - **Difficulty**: Easy
 - **Labels**: `good first issue`, `layer:api`, `controller`
 - **Location**: `Buy2.Api/Controllers/DeleteRoleController.cs`
@@ -395,19 +395,19 @@ EF Core persistence, DbContext configurations, Fluent API rules, and external se
 - **Location**: `Buy2.Api/Controllers/EmployeeOnboardingController.cs`
 - **Instructions**: Create `[ApiController]` at `[route("api/v1/employees")]`. Add `POST onboard` endpoint stub accepting `OnboardEmployeeDto`.
 
-### Task 66 (`SCRUM-78`): Create EmployeeAttendanceConfigController
+### Task 66 (`SCRUM-92`): Create EmployeeAttendanceConfigController
 - **Difficulty**: Easy
 - **Labels**: `good first issue`, `layer:api`, `controller`
 - **Location**: `Buy2.Api/Controllers/EmployeeAttendanceConfigController.cs`
 - **Instructions**: Create `[ApiController]` at `[route("api/v1/employees")]`. Add `PUT {id}/attendance-config` endpoint stub.
 
-### Task 67 (`SCRUM-79`): Create EmployeeDocumentsController
+### Task 67 (`SCRUM-93`): Create EmployeeDocumentsController
 - **Difficulty**: Easy
 - **Labels**: `good first issue`, `layer:api`, `controller`
 - **Location**: `Buy2.Api/Controllers/EmployeeDocumentsController.cs`
 - **Instructions**: Create `[ApiController]` at `[route("api/v1/employees")]`. Add `POST {id}/documents` endpoint stub accepting `UploadEmployeeDocumentDto`.
 
-### Task 68 (`SCRUM-80`): Create DisciplinaryViolationsController
+### Task 68 (`SCRUM-94`): Create DisciplinaryViolationsController
 - **Difficulty**: Easy
 - **Labels**: `good first issue`, `layer:api`, `controller`
 - **Location**: `Buy2.Api/Controllers/DisciplinaryViolationsController.cs`
@@ -419,37 +419,37 @@ EF Core persistence, DbContext configurations, Fluent API rules, and external se
 - **Location**: `Buy2.Api/Controllers/CreateSiteController.cs`
 - **Instructions**: Create `[ApiController]` at `[route("api/v1/sites")]`. Add `POST` create site endpoint stub accepting `CreateSiteDto`.
 
-### Task 69 (`SCRUM-81`): Create GetSitesController
+### Task 69 (`SCRUM-95`): Create GetSitesController
 - **Difficulty**: Easy
 - **Labels**: `good first issue`, `layer:api`, `controller`
 - **Location**: `Buy2.Api/Controllers/GetSitesController.cs`
 - **Instructions**: Create `[ApiController]` at `[route("api/v1/sites")]`. Add `GET` all sites endpoint stub.
 
-### Task 70 (`SCRUM-82`): Create SchedulePublishController
+### Task 70 (`SCRUM-96`): Create SchedulePublishController
 - **Difficulty**: Easy
 - **Labels**: `good first issue`, `layer:api`, `controller`
 - **Location**: `Buy2.Api/Controllers/SchedulePublishController.cs`
 - **Instructions**: Create `[ApiController]` at `[route("api/v1/schedules")]`. Add `POST publish` endpoint stub.
 
-### Task 71 (`SCRUM-83`): Create ShiftClaimsController
+### Task 71 (`SCRUM-97`): Create ShiftClaimsController
 - **Difficulty**: Easy
 - **Labels**: `good first issue`, `layer:api`, `controller`
 - **Location**: `Buy2.Api/Controllers/ShiftClaimsController.cs`
 - **Instructions**: Create `[ApiController]` at `[route("api/v1/shift-market")]`. Add `POST claims/{id}` endpoint stub accepting `ClaimShiftDto`.
 
-### Task 72 (`SCRUM-84`): Create RewardInventoryController
+### Task 72 (`SCRUM-98`): Create RewardInventoryController
 - **Difficulty**: Easy
 - **Labels**: `good first issue`, `layer:api`, `controller`
 - **Location**: `Buy2.Api/Controllers/RewardInventoryController.cs`
 - **Instructions**: Create `[ApiController]` at `[route("api/v1/rewards")]`. Add `POST {id}/inventory/upload` endpoint stub for bulk voucher Excel file.
 
-### Task 73 (`SCRUM-85`): Create PointsRulesController
+### Task 73 (`SCRUM-99`): Create PointsRulesController
 - **Difficulty**: Easy
 - **Labels**: `good first issue`, `layer:api`, `controller`
 - **Location**: `Buy2.Api/Controllers/PointsRulesController.cs`
 - **Instructions**: Create `[ApiController]` at `[route("api/v1/points")]`. Add `POST rules` endpoint stub accepting `CreatePointsRuleDto`.
 
-### Task 74 (`SCRUM-86`): Create RewardRedemptionController
+### Task 74 (`SCRUM-100`): Create RewardRedemptionController
 - **Difficulty**: Easy
 - **Labels**: `good first issue`, `layer:api`, `controller`
 - **Location**: `Buy2.Api/Controllers/RewardRedemptionController.cs`
