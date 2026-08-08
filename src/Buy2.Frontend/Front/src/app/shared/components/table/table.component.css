@@ -1,0 +1,21 @@
+/* ──────────────────────────────────────────────────────
+   Variant: Striped
+   ────────────────────────────────────────────────────── */
+.table-striped .flex.flex-col > div:nth-child(even) {
+  background-color: var(--color-table-stripe);
+}
+
+.table-striped .flex.flex-col > div:hover {
+  background-color: var(--color-table-row-hover);
+}
+
+/* ──────────────────────────────────────────────────────
+   Variant: Bordered
+   ────────────────────────────────────────────────────── */
+.table-bordered {
+  border-width: 2px !important;
+}
+
+.table-bordered > div > div:not(:last-child) {
+  border-right: 1px solid var(--color-table-border);
+}
