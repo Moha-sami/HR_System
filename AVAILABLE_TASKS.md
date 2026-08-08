@@ -26,7 +26,7 @@ To ensure automatic tracking between GitHub and Jira, follow these simple naming
 
 1. Pick an unassigned task from your **Jira Sprint Board**.
 2. Create your working git branch including the Jira key (e.g., `SCRUM-105-login-command`).
-3. Each task requires creating a **clean structure only**: a class, record DTO, MediatR command/handler, DbContext configuration, API controller, or Angular component.
+3. Each task requires creating a **clean structure only**: a class, record DTO, MediatR command/handler, DbContext configuration, or API controller.
 4. Methods should only have signatures throwing `NotImplementedException` or returning default values. No complex business logic is needed in initial stubs!
 5. Submit your **Pull Request directly targeting `main`**. Once merged by the lead, Jira automatically updates your task to **Done**!
 
@@ -40,14 +40,12 @@ To ensure automatic tracking between GitHub and Jira, follow these simple naming
 - `layer:application`: Code belongs in `Buy2.Application`.
 - `layer:infrastructure`: Code belongs in `Buy2.Infrastructure`.
 - `layer:api`: Code belongs in `Buy2.Api`.
-- `layer:frontend`: Code belongs in `Buy2.Frontend` (Angular).
 - `entity`: Entity model class.
 - `enum`: Named options enumeration.
 - `dto`: Data transfer object record.
 - `interface`: Contract definition.
 - `mediatr`: MediatR Command or Query + Handler.
 - `controller`: API HTTP controller.
-- `component`: Angular component.
 
 ---
 
@@ -87,7 +85,7 @@ To ensure automatic tracking between GitHub and Jira, follow these simple naming
 
 ---
 
-## Active Roadmap (Tasks 32-87)
+## Active Backend Roadmap (Tasks 32-78)
 
 ---
 
@@ -307,54 +305,3 @@ To ensure automatic tracking between GitHub and Jira, follow these simple naming
 #### Task 78: `[API] Create RewardRedemptionController (MediatR Injected)`
 - **Location**: `Buy2.Api/Controllers/RewardRedemptionController.cs`
 - **Instructions**: Create `RewardRedemptionController` at `api/v1/rewards`. Inject `ISender mediator`. Add HTTP POST `{id}/redeem` endpoint executing `_mediator.Send(command)`.
-
----
-
-### Phase 5: Angular Frontend Layer (Services & Components)
-
-> **Figma Design Reference**: [https://www.figma.com/design/JQ67DCkObzVjER8Safb5sw/BUY2-Junk-File?node-id=882-3040&p=f&t=GxfjGebSZZA9X7B0-0](https://www.figma.com/design/JQ67DCkObzVjER8Safb5sw/BUY2-Junk-File?node-id=882-3040&p=f&t=GxfjGebSZZA9X7B0-0)
-
-#### Task 79: `[Frontend] Create AuthService Angular Service`
-- **Difficulty**: Easy
-- **Location**: `Buy2.Frontend/src/app/core/services/auth.service.ts`
-- **Instructions**: Create injectable Angular service `AuthService` with `login(req: LoginRequest)` method calling HttpClient.
-
-#### Task 80: `[Frontend] Create ScheduleService Angular Service`
-- **Difficulty**: Easy
-- **Location**: `Buy2.Frontend/src/app/core/services/schedule.service.ts`
-- **Instructions**: Create injectable Angular service `ScheduleService` with `validateDraft(shifts: Shift[])` method calling HttpClient.
-
-#### Task 81: `[Frontend] Create LoginComponent Component`
-- **Difficulty**: Easy
-- **Location**: `Buy2.Frontend/src/app/features/auth/login.component.ts`
-- **Instructions**: Create standalone Angular component `LoginComponent` with email/password reactive form per Figma.
-
-#### Task 82: `[Frontend] Create EmployeeDirectoryComponent`
-- **Difficulty**: Medium
-- **Location**: `Buy2.Frontend/src/app/features/employees/employee-directory.component.ts`
-- **Instructions**: Create standalone Angular component `EmployeeDirectoryComponent` with table listing employees and search filter input per Figma.
-
-#### Task 83: `[Frontend] Create ScheduleBoardComponent`
-- **Difficulty**: Medium
-- **Location**: `Buy2.Frontend/src/app/features/schedules/schedule-board.component.ts`
-- **Instructions**: Create standalone Angular component `ScheduleBoardComponent` displaying weekly shift grid and validation warning badges per Figma.
-
-#### Task 84: `[Frontend] Create ShiftMarketComponent`
-- **Difficulty**: Medium
-- **Location**: `Buy2.Frontend/src/app/features/shift-market/shift-market.component.ts`
-- **Instructions**: Create standalone Angular component `ShiftMarketComponent` listing available open shifts with 'Claim Shift' button per Figma.
-
-#### Task 85: `[Frontend] Create RewardsStoreComponent`
-- **Difficulty**: Medium
-- **Location**: `Buy2.Frontend/src/app/features/rewards/rewards-store.component.ts`
-- **Instructions**: Create standalone Angular component `RewardsStoreComponent` with points balance display, rewards card grid, and Excel upload button per Figma.
-
-#### Task 86: `[Frontend] Create EmployeeDocumentsComponent`
-- **Difficulty**: Medium
-- **Location**: `Buy2.Frontend/src/app/features/employees/employee-documents.component.ts`
-- **Instructions**: Create standalone Angular component `EmployeeDocumentsComponent` displaying document uploads and list of employee compliance files per Figma.
-
-#### Task 87: `[Frontend] Create PointsRulesAdminComponent`
-- **Difficulty**: Medium
-- **Location**: `Buy2.Frontend/src/app/features/points/points-rules-admin.component.ts`
-- **Instructions**: Create standalone Angular component `PointsRulesAdminComponent` for managing point automation triggers and penalty/reward values per Figma.
