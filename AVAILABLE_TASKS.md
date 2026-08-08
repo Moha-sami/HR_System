@@ -55,14 +55,14 @@ To ensure automatic tracking between GitHub and Jira, follow these simple naming
 
 ---
 
-## Phase 1: Domain Layer (Tasks 1-12)
+## Phase 1: Domain Layer (Tasks 1-12, 51-54)
 
 Focus on core domain models, enums, and base entities. No database dependencies or framework logic.
 
 ### Task 1: Create BaseEntity Class ✅ **[DONE]**
 - **Difficulty**: Very Easy
 - **Labels**: `good first issue`, `layer:domain`, `entity`
-- **Location**: `Buy2.Domain/Common/BaseEntity.cs`
+- **Location**: `Buy2.Domain/Entities/BaseEntity.cs`
 - **Instructions**: Create an abstract class named `BaseEntity`. Add an integer `Id` property and a `CreatedAt` (`DateTimeOffset`) property.
 
 ### Task 2: Create Role Entity ✅ **[DONE]**
@@ -131,9 +131,33 @@ Focus on core domain models, enums, and base entities. No database dependencies 
 - **Location**: `Buy2.Domain/Enums/ShiftEnums.cs`
 - **Instructions**: Create public enums `ShiftStatus` (`Draft = 0, Published = 1, Cancelled = 2`) and `ClaimStatus` (`Pending = 0, Approved = 1, Rejected = 2`).
 
+### Task 51: Create EmployeeDocument Entity
+- **Difficulty**: Very Easy
+- **Labels**: `good first issue`, `layer:domain`, `entity`
+- **Location**: `Buy2.Domain/Entities/EmployeeDocument.cs`
+- **Instructions**: Create class `EmployeeDocument` inheriting from `BaseEntity`. Add `EmployeeId` (`int`), `Category` (`string`), and `StorageUrl` (`string`).
+
+### Task 52: Create DisciplinaryViolation Entity
+- **Difficulty**: Very Easy
+- **Labels**: `good first issue`, `layer:domain`, `entity`
+- **Location**: `Buy2.Domain/Entities/DisciplinaryViolation.cs`
+- **Instructions**: Create class `DisciplinaryViolation` inheriting from `BaseEntity`. Add `EmployeeId` (`int`), `Severity` (`string`), and `Description` (`string`).
+
+### Task 53: Create PointsTransaction Entity
+- **Difficulty**: Easy
+- **Labels**: `good first issue`, `layer:domain`, `entity`
+- **Location**: `Buy2.Domain/Entities/PointsTransaction.cs`
+- **Instructions**: Create class `PointsTransaction` inheriting from `BaseEntity`. Add `EmployeeId` (`int`), `PointsRuleId` (`int?`), `Amount` (`int`), and `TransactionType` (`string`).
+
+### Task 54: Create RewardRedemption Entity
+- **Difficulty**: Easy
+- **Labels**: `good first issue`, `layer:domain`, `entity`
+- **Location**: `Buy2.Domain/Entities/RewardRedemption.cs`
+- **Instructions**: Create class `RewardRedemption` inheriting from `BaseEntity`. Add `RewardItemId` (`int`), `EmployeeId` (`int`), `VoucherCode` (`string`), and `RedeemedAt` (`DateTimeOffset`).
+
 ---
 
-## Phase 2: Application Layer (Tasks 13-25)
+## Phase 2: Application Layer (Tasks 13-25, 55-58)
 
 Application interfaces, DTO records, and CQRS contracts.
 
@@ -215,9 +239,33 @@ Application interfaces, DTO records, and CQRS contracts.
 - **Location**: `Buy2.Application/Schedules/Interfaces/IScheduleValidationEngine.cs`
 - **Instructions**: Create interface `IScheduleValidationEngine` with method signature `Task<PreFlightValidationResultDto> ValidateDraftAsync(List<DraftShiftDto> shifts)`.
 
+### Task 55: Create UploadEmployeeDocumentDto Record
+- **Difficulty**: Very Easy
+- **Labels**: `good first issue`, `layer:application`, `dto`
+- **Location**: `Buy2.Application/Employees/DTOs/DocumentDtos.cs`
+- **Instructions**: Create record `UploadEmployeeDocumentDto(int EmployeeId, string Category, string StorageUrl)`.
+
+### Task 56: Create LogDisciplinaryViolationDto Record
+- **Difficulty**: Very Easy
+- **Labels**: `good first issue`, `layer:application`, `dto`
+- **Location**: `Buy2.Application/Employees/DTOs/ViolationDtos.cs`
+- **Instructions**: Create record `LogDisciplinaryViolationDto(int EmployeeId, string Severity, string Description)`.
+
+### Task 57: Create PointsTransactionDto Record
+- **Difficulty**: Very Easy
+- **Labels**: `good first issue`, `layer:application`, `dto`
+- **Location**: `Buy2.Application/Points/DTOs/PointsTransactionDtos.cs`
+- **Instructions**: Create record `PointsTransactionDto(int EmployeeId, int? PointsRuleId, int Amount, string TransactionType)`.
+
+### Task 58: Create RedeemRewardDto Record
+- **Difficulty**: Very Easy
+- **Labels**: `good first issue`, `layer:application`, `dto`
+- **Location**: `Buy2.Application/Rewards/DTOs/RedemptionDtos.cs`
+- **Instructions**: Create record `RedeemRewardDto(int RewardItemId, int EmployeeId)`.
+
 ---
 
-## Phase 3: Infrastructure Layer (Tasks 26-35)
+## Phase 3: Infrastructure Layer (Tasks 26-35, 59-63)
 
 EF Core persistence, DbContext configurations, and external services.
 
@@ -225,7 +273,7 @@ EF Core persistence, DbContext configurations, and external services.
 - **Difficulty**: Medium
 - **Labels**: `layer:infrastructure`, `database`
 - **Location**: `Buy2.Infrastructure/Persistence/Buy2DbContext.cs`
-- **Instructions**: Create class `Buy2DbContext` inheriting from `DbContext`. Add `DbSet<Employee>`, `DbSet<Role>`, `DbSet<Site>`, `DbSet<Shift>`, `DbSet<RewardItem>`.
+- **Instructions**: Create class `Buy2DbContext` inheriting from `DbContext`. Add `DbSet<Employee>`, `DbSet<Role>`, `DbSet<Site>`, `DbSet<Shift>`, `DbSet<RewardItem>`, `DbSet<EmployeeDocument>`, `DbSet<DisciplinaryViolation>`, `DbSet<PointsTransaction>`, `DbSet<RewardRedemption>`.
 
 ### Task 27: Create EmployeeConfiguration Class
 - **Difficulty**: Medium
@@ -281,57 +329,153 @@ EF Core persistence, DbContext configurations, and external services.
 - **Location**: `Buy2.Infrastructure/Services/ExcelVoucherParser.cs`
 - **Instructions**: Create class `ExcelVoucherParser` with method `List<string> ParseExcelCodes(Stream stream)` throwing `NotImplementedException`.
 
----
+### Task 59: Create EmployeeDocumentConfiguration Class
+- **Difficulty**: Medium
+- **Labels**: `layer:infrastructure`, `database`
+- **Location**: `Buy2.Infrastructure/Persistence/Configurations/EmployeeDocumentConfiguration.cs`
+- **Instructions**: Create class `EmployeeDocumentConfiguration` implementing `IEntityTypeConfiguration<EmployeeDocument>`.
 
-## Phase 4: API Layer Controllers (Tasks 36-42)
+### Task 60: Create DisciplinaryViolationConfiguration Class
+- **Difficulty**: Medium
+- **Labels**: `layer:infrastructure`, `database`
+- **Location**: `Buy2.Infrastructure/Persistence/Configurations/DisciplinaryViolationConfiguration.cs`
+- **Instructions**: Create class `DisciplinaryViolationConfiguration` implementing `IEntityTypeConfiguration<DisciplinaryViolation>`.
 
-RESTful API Controller stubs returning ActionResult responses.
+### Task 61: Create PointsTransactionConfiguration Class
+- **Difficulty**: Medium
+- **Labels**: `layer:infrastructure`, `database`
+- **Location**: `Buy2.Infrastructure/Persistence/Configurations/PointsTransactionConfiguration.cs`
+- **Instructions**: Create class `PointsTransactionConfiguration` implementing `IEntityTypeConfiguration<PointsTransaction>`.
 
-### Task 36: Create AuthController
+### Task 62: Create RewardRedemptionConfiguration Class
+- **Difficulty**: Medium
+- **Labels**: `layer:infrastructure`, `database`
+- **Location**: `Buy2.Infrastructure/Persistence/Configurations/RewardRedemptionConfiguration.cs`
+- **Instructions**: Create class `RewardRedemptionConfiguration` implementing `IEntityTypeConfiguration<RewardRedemption>`.
+
+### Task 63: Create Infrastructure DependencyInjection Setup
 - **Difficulty**: Easy
-- **Labels**: `good first issue`, `layer:api`, `controller`
-- **Location**: `Buy2.Api/Controllers/AuthController.cs`
-- **Instructions**: Create `[ApiController]` at `[route("api/v1/auth")]`. Add `POST login` and `POST password/reset` endpoint stubs.
-
-### Task 37: Create RolesController
-- **Difficulty**: Easy
-- **Labels**: `good first issue`, `layer:api`, `controller`
-- **Location**: `Buy2.Api/Controllers/RolesController.cs`
-- **Instructions**: Create `[ApiController]` at `[route("api/v1/roles")]`. Add `POST` create role and `DELETE {id}` soft delete endpoints.
-
-### Task 38: Create EmployeesController
-- **Difficulty**: Easy
-- **Labels**: `good first issue`, `layer:api`, `controller`
-- **Location**: `Buy2.Api/Controllers/EmployeesController.cs`
-- **Instructions**: Create `[ApiController]` at `[route("api/v1/employees")]`. Add `POST` onboard and `PUT {id}/attendance-config` endpoints.
-
-### Task 39: Create SitesController
-- **Difficulty**: Easy
-- **Labels**: `good first issue`, `layer:api`, `controller`
-- **Location**: `Buy2.Api/Controllers/SitesController.cs`
-- **Instructions**: Create `[ApiController]` at `[route("api/v1/sites")]`. Add `POST` create site and `GET` all sites endpoints.
-
-### Task 40: Create SchedulesController
-- **Difficulty**: Easy
-- **Labels**: `good first issue`, `layer:api`, `controller`
-- **Location**: `Buy2.Api/Controllers/SchedulesController.cs`
-- **Instructions**: Create `[ApiController]` at `[route("api/v1/schedules")]`. Add `POST validate-draft` and `POST publish` endpoints.
-
-### Task 41: Create ShiftMarketController
-- **Difficulty**: Easy
-- **Labels**: `good first issue`, `layer:api`, `controller`
-- **Location**: `Buy2.Api/Controllers/ShiftMarketController.cs`
-- **Instructions**: Create `[ApiController]` at `[route("api/v1/shift-market")]`. Add `GET open-shifts` and `POST claims/{id}` endpoints.
-
-### Task 42: Create RewardsController
-- **Difficulty**: Easy
-- **Labels**: `good first issue`, `layer:api`, `controller`
-- **Location**: `Buy2.Api/Controllers/RewardsController.cs`
-- **Instructions**: Create `[ApiController]` at `[route("api/v1/rewards")]`. Add `POST` reward creation and `POST {id}/inventory/upload` endpoints.
+- **Labels**: `layer:infrastructure`, `service`
+- **Location**: `Buy2.Infrastructure/DependencyInjection.cs`
+- **Instructions**: Create extension method `AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)` registering repositories and DbContext.
 
 ---
 
-## Phase 5: Angular Frontend Layer (Tasks 43-50)
+## Phase 4: API Layer Split Controllers (Tasks 36-42, 64-74)
+
+*Note: Controllers are split into single-endpoint/single-responsibility classes so multiple backend developers can work in parallel without merge conflicts.*
+
+### Task 36: Create AuthLoginController
+- **Difficulty**: Easy
+- **Labels**: `good first issue`, `layer:api`, `controller`
+- **Location**: `Buy2.Api/Controllers/AuthLoginController.cs`
+- **Instructions**: Create `[ApiController]` at `[route("api/v1/auth")]`. Add `POST login` endpoint stub accepting `LoginRequestDto`.
+
+### Task 64: Create AuthPasswordResetController
+- **Difficulty**: Easy
+- **Labels**: `good first issue`, `layer:api`, `controller`
+- **Location**: `Buy2.Api/Controllers/AuthPasswordResetController.cs`
+- **Instructions**: Create `[ApiController]` at `[route("api/v1/auth")]`. Add `POST password/reset` endpoint stub.
+
+### Task 37: Create CreateRoleController
+- **Difficulty**: Easy
+- **Labels**: `good first issue`, `layer:api`, `controller`
+- **Location**: `Buy2.Api/Controllers/CreateRoleController.cs`
+- **Instructions**: Create `[ApiController]` at `[route("api/v1/roles")]`. Add `POST` create role endpoint stub accepting `CreateRoleDto`.
+
+### Task 65: Create DeleteRoleController
+- **Difficulty**: Easy
+- **Labels**: `good first issue`, `layer:api`, `controller`
+- **Location**: `Buy2.Api/Controllers/DeleteRoleController.cs`
+- **Instructions**: Create `[ApiController]` at `[route("api/v1/roles")]`. Add `DELETE {id}` soft delete endpoint stub.
+
+### Task 38: Create EmployeeOnboardingController
+- **Difficulty**: Easy
+- **Labels**: `good first issue`, `layer:api`, `controller`
+- **Location**: `Buy2.Api/Controllers/EmployeeOnboardingController.cs`
+- **Instructions**: Create `[ApiController]` at `[route("api/v1/employees")]`. Add `POST onboard` endpoint stub accepting `OnboardEmployeeDto`.
+
+### Task 66: Create EmployeeAttendanceConfigController
+- **Difficulty**: Easy
+- **Labels**: `good first issue`, `layer:api`, `controller`
+- **Location**: `Buy2.Api/Controllers/EmployeeAttendanceConfigController.cs`
+- **Instructions**: Create `[ApiController]` at `[route("api/v1/employees")]`. Add `PUT {id}/attendance-config` endpoint stub.
+
+### Task 67: Create EmployeeDocumentsController
+- **Difficulty**: Easy
+- **Labels**: `good first issue`, `layer:api`, `controller`
+- **Location**: `Buy2.Api/Controllers/EmployeeDocumentsController.cs`
+- **Instructions**: Create `[ApiController]` at `[route("api/v1/employees")]`. Add `POST {id}/documents` endpoint stub accepting `UploadEmployeeDocumentDto`.
+
+### Task 68: Create DisciplinaryViolationsController
+- **Difficulty**: Easy
+- **Labels**: `good first issue`, `layer:api`, `controller`
+- **Location**: `Buy2.Api/Controllers/DisciplinaryViolationsController.cs`
+- **Instructions**: Create `[ApiController]` at `[route("api/v1/employees")]`. Add `POST {id}/violations` endpoint stub accepting `LogDisciplinaryViolationDto`.
+
+### Task 39: Create CreateSiteController
+- **Difficulty**: Easy
+- **Labels**: `good first issue`, `layer:api`, `controller`
+- **Location**: `Buy2.Api/Controllers/CreateSiteController.cs`
+- **Instructions**: Create `[ApiController]` at `[route("api/v1/sites")]`. Add `POST` create site endpoint stub accepting `CreateSiteDto`.
+
+### Task 69: Create GetSitesController
+- **Difficulty**: Easy
+- **Labels**: `good first issue`, `layer:api`, `controller`
+- **Location**: `Buy2.Api/Controllers/GetSitesController.cs`
+- **Instructions**: Create `[ApiController]` at `[route("api/v1/sites")]`. Add `GET` all sites endpoint stub.
+
+### Task 40: Create ScheduleValidationController
+- **Difficulty**: Easy
+- **Labels**: `good first issue`, `layer:api`, `controller`
+- **Location**: `Buy2.Api/Controllers/ScheduleValidationController.cs`
+- **Instructions**: Create `[ApiController]` at `[route("api/v1/schedules")]`. Add `POST validate-draft` endpoint stub.
+
+### Task 70: Create SchedulePublishController
+- **Difficulty**: Easy
+- **Labels**: `good first issue`, `layer:api`, `controller`
+- **Location**: `Buy2.Api/Controllers/SchedulePublishController.cs`
+- **Instructions**: Create `[ApiController]` at `[route("api/v1/schedules")]`. Add `POST publish` endpoint stub.
+
+### Task 41: Create OpenShiftsController
+- **Difficulty**: Easy
+- **Labels**: `good first issue`, `layer:api`, `controller`
+- **Location**: `Buy2.Api/Controllers/OpenShiftsController.cs`
+- **Instructions**: Create `[ApiController]` at `[route("api/v1/shift-market")]`. Add `GET open-shifts` endpoint stub.
+
+### Task 71: Create ShiftClaimsController
+- **Difficulty**: Easy
+- **Labels**: `good first issue`, `layer:api`, `controller`
+- **Location**: `Buy2.Api/Controllers/ShiftClaimsController.cs`
+- **Instructions**: Create `[ApiController]` at `[route("api/v1/shift-market")]`. Add `POST claims/{id}` endpoint stub accepting `ClaimShiftDto`.
+
+### Task 42: Create CreateRewardController
+- **Difficulty**: Easy
+- **Labels**: `good first issue`, `layer:api`, `controller`
+- **Location**: `Buy2.Api/Controllers/CreateRewardController.cs`
+- **Instructions**: Create `[ApiController]` at `[route("api/v1/rewards")]`. Add `POST` reward creation endpoint stub accepting `RewardItemDto`.
+
+### Task 72: Create RewardInventoryController
+- **Difficulty**: Easy
+- **Labels**: `good first issue`, `layer:api`, `controller`
+- **Location**: `Buy2.Api/Controllers/RewardInventoryController.cs`
+- **Instructions**: Create `[ApiController]` at `[route("api/v1/rewards")]`. Add `POST {id}/inventory/upload` endpoint stub for bulk voucher Excel file.
+
+### Task 73: Create PointsRulesController
+- **Difficulty**: Easy
+- **Labels**: `good first issue`, `layer:api`, `controller`
+- **Location**: `Buy2.Api/Controllers/PointsRulesController.cs`
+- **Instructions**: Create `[ApiController]` at `[route("api/v1/points")]`. Add `POST rules` endpoint stub accepting `CreatePointsRuleDto`.
+
+### Task 74: Create RewardRedemptionController
+- **Difficulty**: Easy
+- **Labels**: `good first issue`, `layer:api`, `controller`
+- **Location**: `Buy2.Api/Controllers/RewardRedemptionController.cs`
+- **Instructions**: Create `[ApiController]` at `[route("api/v1/rewards")]`. Add `POST {id}/redeem` endpoint stub accepting `RedeemRewardDto`.
+
+---
+
+## Phase 5: Angular Frontend Layer (Tasks 43-50, 75-76)
 
 > **Figma Design Reference**: [https://www.figma.com/design/JQ67DCkObzVjER8Safb5sw/BUY2-Junk-File?node-id=882-3040&p=f&t=GxfjGebSZZA9X7B0-0](https://www.figma.com/design/JQ67DCkObzVjER8Safb5sw/BUY2-Junk-File?node-id=882-3040&p=f&t=GxfjGebSZZA9X7B0-0)
 > All UI components must implement layouts, colors, and responsive specs from the official Figma design link above.
@@ -383,3 +527,15 @@ RESTful API Controller stubs returning ActionResult responses.
 - **Labels**: `good first issue`, `layer:frontend`, `component`
 - **Location**: `Buy2.Frontend/src/app/features/rewards/rewards-store.component.ts`
 - **Instructions**: Create component `RewardsStoreComponent` with points balance display, rewards card grid, and Excel upload button.
+
+### Task 75: Create EmployeeDocumentsComponent
+- **Difficulty**: Medium
+- **Labels**: `good first issue`, `layer:frontend`, `component`
+- **Location**: `Buy2.Frontend/src/app/features/employees/employee-documents.component.ts`
+- **Instructions**: Create component `EmployeeDocumentsComponent` displaying document uploads and list of employee compliance files.
+
+### Task 76: Create PointsRulesAdminComponent
+- **Difficulty**: Medium
+- **Labels**: `layer:frontend`, `component`
+- **Location**: `Buy2.Frontend/src/app/features/points/points-rules-admin.component.ts`
+- **Instructions**: Create component `PointsRulesAdminComponent` for managing point automation triggers and penalty/reward values.
