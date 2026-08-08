@@ -15,4 +15,8 @@ export const DOCS_ROUTES: Routes = [
     loadComponent: () =>
       import('./button/button-docs.component').then((m) => m.ButtonDocsComponent),
   },
+  {
+    path: 'table',
+    loadComponent: () => import('./table/table-docs.component').then((m) => m.TableDocsComponent),
+  },
 ];

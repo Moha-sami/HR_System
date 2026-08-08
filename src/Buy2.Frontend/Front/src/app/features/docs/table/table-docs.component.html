@@ -1,0 +1,455 @@
+<div class="min-h-screen bg-neutral-50">
+  <div class="max-w-6xl mx-auto px-8 py-12">
+    <!-- Header -->
+    <a routerLink="/docs" class="text-primary-600 hover:text-primary-700 text-sm mb-4 inline-block"
+      >← Back to Docs</a
+    >
+    <h1 class="text-3xl font-bold text-neutral-900 mb-2">Table Component</h1>
+    <p class="text-neutral-500 mb-8">
+      Reusable data table with variants, sizes, sorting, alignment, and custom cell templates.
+    </p>
+
+    <!-- Selector -->
+    <div class="bg-white rounded-lg border border-neutral-200 p-4 mb-6">
+      <p class="text-xs text-neutral-500 mb-1">Selector</p>
+      <code class="text-sm text-neutral-600"
+        >&lt;app-table [columns]="columns" [rows]="rows" /&gt;</code
+      >
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!-- BASIC USAGE                                            -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <section class="bg-white rounded-lg border border-neutral-200 p-6 mb-6">
+      <h2 class="text-lg font-semibold text-neutral-800 mb-4">Basic Usage</h2>
+
+      <div class="mb-4">
+        <app-table [columns]="salaryColumns" [rows]="salaryRows" />
+      </div>
+
+      <pre
+        class="bg-neutral-900 text-neutral-100 p-4 rounded-lg text-sm overflow-x-auto"
+      ><code>&lt;!-- Component --&gt;
+columns: ColumnDef[] = [
+  {{ '{' }} key: 'label', label: 'Detail', align: 'left' {{ '}' }},
+  {{ '{' }} key: 'value', label: 'Amount', align: 'right' {{ '}' }},
+];
+
+rows = [
+  {{ '{' }} label: 'Basic Salary', value: '5,000.00' {{ '}' }},
+  {{ '{' }} label: 'Housing Allowance', value: '1,500.00' {{ '}' }},
+];
+
+&lt;!-- Template --&gt;
+&lt;app-table [columns]="columns" [rows]="rows" /&gt;</code></pre>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!-- VARIANTS                                               -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <section class="bg-white rounded-lg border border-neutral-200 p-6 mb-6">
+      <h2 class="text-lg font-semibold text-neutral-800 mb-4">Variants</h2>
+
+      <div class="space-y-6">
+        <!-- Default -->
+        <div>
+          <p class="text-xs text-neutral-500 mb-2">Default</p>
+          <app-table [columns]="employeeColumns" [rows]="employeeRows" variant="default" />
+        </div>
+
+        <!-- Striped -->
+        <div>
+          <p class="text-xs text-neutral-500 mb-2">Striped</p>
+          <app-table [columns]="employeeColumns" [rows]="employeeRows" variant="striped" />
+        </div>
+
+        <!-- Bordered -->
+        <div>
+          <p class="text-xs text-neutral-500 mb-2">Bordered</p>
+          <app-table [columns]="employeeColumns" [rows]="employeeRows" variant="bordered" />
+        </div>
+      </div>
+
+      <pre
+        class="bg-neutral-900 text-neutral-100 p-4 rounded-lg text-sm overflow-x-auto mt-4"
+      ><code>&lt;app-table variant="default" ... /&gt;
+&lt;app-table variant="striped" ... /&gt;
+&lt;app-table variant="bordered" ... /&gt;</code></pre>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!-- SIZES                                                  -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <section class="bg-white rounded-lg border border-neutral-200 p-6 mb-6">
+      <h2 class="text-lg font-semibold text-neutral-800 mb-4">Sizes</h2>
+
+      <div class="space-y-6">
+        <!-- Small -->
+        <div>
+          <p class="text-xs text-neutral-500 mb-2">Small</p>
+          <app-table [columns]="employeeColumns" [rows]="employeeRows" size="sm" />
+        </div>
+
+        <!-- Medium (default) -->
+        <div>
+          <p class="text-xs text-neutral-500 mb-2">Medium (default)</p>
+          <app-table [columns]="employeeColumns" [rows]="employeeRows" size="md" />
+        </div>
+
+        <!-- Large -->
+        <div>
+          <p class="text-xs text-neutral-500 mb-2">Large</p>
+          <app-table [columns]="employeeColumns" [rows]="employeeRows" size="lg" />
+        </div>
+      </div>
+
+      <pre
+        class="bg-neutral-900 text-neutral-100 p-4 rounded-lg text-sm overflow-x-auto mt-4"
+      ><code>&lt;app-table size="sm" ... /&gt;
+&lt;app-table size="md" ... /&gt;
+&lt;app-table size="lg" ... /&gt;</code></pre>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!-- COLUMN ALIGNMENT                                       -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <section class="bg-white rounded-lg border border-neutral-200 p-6 mb-6">
+      <h2 class="text-lg font-semibold text-neutral-800 mb-4">Column Alignment</h2>
+
+      <div class="mb-4">
+        <app-table [columns]="salaryColumns" [rows]="salaryRows" />
+      </div>
+
+      <pre
+        class="bg-neutral-900 text-neutral-100 p-4 rounded-lg text-sm overflow-x-auto"
+      ><code>columns: ColumnDef[] = [
+  {{ '{' }} key: 'label', label: 'Detail', align: 'left' {{ '}' }},
+  {{ '{' }} key: 'value', label: 'Amount', align: 'right' {{ '}' }},
+];
+
+// Supported: 'left' | 'center' | 'right'</code></pre>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!-- CUSTOM WIDTHS                                          -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <section class="bg-white rounded-lg border border-neutral-200 p-6 mb-6">
+      <h2 class="text-lg font-semibold text-neutral-800 mb-4">Custom Column Widths</h2>
+
+      <div class="mb-4">
+        <app-table [columns]="widthColumns" [rows]="productRows" />
+      </div>
+
+      <pre
+        class="bg-neutral-900 text-neutral-100 p-4 rounded-lg text-sm overflow-x-auto"
+      ><code>columns: ColumnDef[] = [
+  {{ '{' }} key: 'code', label: 'Code', width: '100px' {{ '}' }},
+  {{ '{' }} key: 'name', label: 'Product', width: '40%' {{ '}' }},
+  {{ '{' }} key: 'price', label: 'Price', width: '100px' {{ '}' }},
+];
+
+// Width accepts CSS values: '100px', '40%', '1fr', etc.
+// Columns without width share remaining space equally (1fr)</code></pre>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!-- SORTING                                                -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <section class="bg-white rounded-lg border border-neutral-200 p-6 mb-6">
+      <h2 class="text-lg font-semibold text-neutral-800 mb-4">Sorting</h2>
+
+      <div class="mb-4">
+        <app-table
+          [columns]="sortableColumns"
+          [rows]="employeeRows"
+          (sortChange)="onSortChange($event)"
+        />
+      </div>
+
+      @if (lastSortChange) {
+        <div class="bg-primary-50 rounded-lg p-3 mb-4 text-sm text-primary-700">
+          Sorted by <strong>{{ lastSortChange.column }}</strong>
+          {{ lastSortChange.direction === 'asc' ? '↑ ascending' : '↓ descending' }}
+        </div>
+      }
+
+      <pre
+        class="bg-neutral-900 text-neutral-100 p-4 rounded-lg text-sm overflow-x-auto"
+      ><code>columns: ColumnDef[] = [
+  {{ '{' }} key: 'name', label: 'Name', sortable: true {{ '}' }},
+  {{ '{' }} key: 'department', label: 'Dept', sortable: false {{ '}' }},
+];
+
+// sortable: true  → shows sort icon, click to sort
+// sortable: false → no sort icon, click does nothing
+// undefined       → same as false
+
+&lt;app-table
+  [columns]="columns"
+  [rows]="rows"
+  (sortChange)="onSort($event)"
+/&gt;
+
+// Event: {{ '{' }} column: string; direction: 'asc' | 'desc' {{ '}' }}</code></pre>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!-- EMPTY STATE                                            -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <section class="bg-white rounded-lg border border-neutral-200 p-6 mb-6">
+      <h2 class="text-lg font-semibold text-neutral-800 mb-4">Empty State</h2>
+
+      <div class="mb-4">
+        <app-table [columns]="salaryColumns" [rows]="[]" emptyMessage="No salary records found" />
+      </div>
+
+      <pre
+        class="bg-neutral-900 text-neutral-100 p-4 rounded-lg text-sm overflow-x-auto"
+      ><code>&lt;app-table
+  [columns]="columns"
+  [rows]="[]"
+  emptyMessage="No data available"
+/&gt;</code></pre>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!-- ROW CLICK EVENT                                        -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <section class="bg-white rounded-lg border border-neutral-200 p-6 mb-6">
+      <h2 class="text-lg font-semibold text-neutral-800 mb-4">Row Click Event</h2>
+
+      <div class="mb-4">
+        <app-table
+          [columns]="employeeColumns"
+          [rows]="employeeRows"
+          (rowClick)="onRowClick($event)"
+        />
+      </div>
+
+      @if (lastClickedRow) {
+        <div class="bg-primary-50 rounded-lg p-3 mb-4 text-sm text-primary-700">
+          Clicked: <strong>{{ lastClickedRow.name }}</strong> — {{ lastClickedRow.position }}
+        </div>
+      }
+
+      <pre
+        class="bg-neutral-900 text-neutral-100 p-4 rounded-lg text-sm overflow-x-auto"
+      ><code>&lt;app-table
+  [columns]="columns"
+  [rows]="rows"
+  (rowClick)="onRowClick($event)"
+/&gt;
+
+// Component
+onRowClick(row: any) {{ '{' }}
+  console.log('Clicked:', row);
+{{ '}' }}</code></pre>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!-- CUSTOM CELL TEMPLATES                                  -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <section class="bg-white rounded-lg border border-neutral-200 p-6 mb-6">
+      <h2 class="text-lg font-semibold text-neutral-800 mb-4">Custom Cell Templates</h2>
+      <p class="text-neutral-500 text-sm mb-4">
+        Render images, badges, buttons, or any custom content in cells using
+        <code>ng-template</code>.
+      </p>
+
+      <!-- Hidden templates -->
+      <ng-template #avatarTemplate let-row>
+        <div class="flex items-center gap-2">
+          <img [src]="row.avatar" class="w-8 h-8 rounded-full" alt="avatar" />
+          <span>{{ row.name }}</span>
+        </div>
+      </ng-template>
+
+      <ng-template #statusTemplate let-row>
+        <span
+          class="px-2 py-1 text-xs rounded-full"
+          [class.bg-green-100]="row.status === 'Active'"
+          [class.text-green-700]="row.status === 'Active'"
+          [class.bg-red-100]="row.status === 'Inactive'"
+          [class.text-red-700]="row.status === 'Inactive'"
+          [class.bg-yellow-100]="row.status === 'Pending'"
+          [class.text-yellow-700]="row.status === 'Pending'"
+        >
+          {{ row.status }}
+        </span>
+      </ng-template>
+
+      <ng-template #actionsTemplate let-row>
+        <div class="flex items-center gap-1">
+          <button
+            class="px-2 py-1 text-xs text-primary-600 hover:bg-primary-50 rounded transition-colors"
+            (click)="onEdit(row); $event.stopPropagation()"
+          >
+            Edit
+          </button>
+          <button
+            class="px-2 py-1 text-xs text-red-600 hover:bg-red-50 rounded transition-colors"
+            (click)="onDelete(row); $event.stopPropagation()"
+          >
+            Delete
+          </button>
+        </div>
+      </ng-template>
+
+      <div class="mb-4">
+        <app-table
+          [columns]="customColumns"
+          [rows]="customRows"
+          [cellTemplates]="customTemplates()"
+        />
+      </div>
+
+      <pre
+        class="bg-neutral-900 text-neutral-100 p-4 rounded-lg text-sm overflow-x-auto"
+      ><code>&lt;!-- 1. Define templates --&gt;
+&lt;ng-template #avatarTemplate let-row&gt;
+  &lt;div class="flex items-center gap-2"&gt;
+    &lt;img [src]="row.avatar" class="w-8 h-8 rounded-full" /&gt;
+    &lt;span&gt;{{ '{{' }} row.name {{ '}}' }}&lt;/span&gt;
+  &lt;/div&gt;
+&lt;/ng-template&gt;
+
+&lt;ng-template #statusTemplate let-row&gt;
+  &lt;span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-700"&gt;
+    {{ '{{' }} row.status {{ '}}' }}
+  &lt;/span&gt;
+&lt;/ng-template&gt;
+
+&lt;ng-template #actionsTemplate let-row&gt;
+  &lt;button (click)="edit(row)"&gt;Edit&lt;/button&gt;
+  &lt;button (click)="delete(row)"&gt;Delete&lt;/button&gt;
+&lt;/ng-template&gt;
+
+&lt;!-- 2. Collect templates in component --&gt;
+@ViewChild('avatarTemplate') avatarTemplate!: TemplateRef&lt;CellContext&gt;;
+customTemplates = signal&lt;Map&lt;string, TemplateRef&lt;CellContext&gt;&gt;&gt;(new Map());
+
+ngAfterViewInit(): void {{ '{' }}
+  const map = new Map();
+  map.set('avatarTemplate', this.avatarTemplate);
+  map.set('statusTemplate', this.statusTemplate);
+  map.set('actionsTemplate', this.actionsTemplate);
+  this.customTemplates.set(map);
+{{ '}' }}
+
+&lt;!-- 3. Reference in column def --&gt;
+columns: ColumnDef[] = [
+  {{ '{' }} key: 'name', label: 'User', template: 'avatarTemplate' {{ '}' }},
+  {{ '{' }} key: 'status', label: 'Status', template: 'statusTemplate' {{ '}' }},
+  {{ '{' }} key: 'actions', label: 'Actions', template: 'actionsTemplate' {{ '}' }},
+];
+
+&lt;!-- 4. Pass to table --&gt;
+&lt;app-table
+  [columns]="columns"
+  [rows]="rows"
+  [cellTemplates]="customTemplates()"
+/&gt;</code></pre>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!-- API REFERENCE                                          -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <section class="bg-white rounded-lg border border-neutral-200 p-6 mb-6">
+      <h2 class="text-lg font-semibold text-neutral-800 mb-4">API Reference</h2>
+
+      <!-- Inputs -->
+      <h3 class="text-sm font-semibold text-neutral-700 mb-2">Inputs</h3>
+      <div class="overflow-x-auto mb-6">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="border-b border-neutral-200">
+              <th class="text-left py-2 pr-4 text-neutral-500">Input</th>
+              <th class="text-left py-2 pr-4 text-neutral-500">Type</th>
+              <th class="text-left py-2 pr-4 text-neutral-500">Default</th>
+              <th class="text-left py-2 text-neutral-500">Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="border-b border-neutral-100">
+              <td class="py-2 pr-4 font-mono text-primary-600">columns</td>
+              <td class="py-2 pr-4 text-neutral-600">ColumnDef[]</td>
+              <td class="py-2 pr-4 text-neutral-400">[]</td>
+              <td class="py-2 text-neutral-600">Column definitions</td>
+            </tr>
+            <tr class="border-b border-neutral-100">
+              <td class="py-2 pr-4 font-mono text-primary-600">rows</td>
+              <td class="py-2 pr-4 text-neutral-600">any[]</td>
+              <td class="py-2 pr-4 text-neutral-400">[]</td>
+              <td class="py-2 text-neutral-600">Row data</td>
+            </tr>
+            <tr class="border-b border-neutral-100">
+              <td class="py-2 pr-4 font-mono text-primary-600">variant</td>
+              <td class="py-2 pr-4 text-neutral-600">'default' | 'striped' | 'bordered'</td>
+              <td class="py-2 pr-4 text-neutral-400">'default'</td>
+              <td class="py-2 text-neutral-600">Visual style</td>
+            </tr>
+            <tr class="border-b border-neutral-100">
+              <td class="py-2 pr-4 font-mono text-primary-600">size</td>
+              <td class="py-2 pr-4 text-neutral-600">'sm' | 'md' | 'lg'</td>
+              <td class="py-2 pr-4 text-neutral-400">'md'</td>
+              <td class="py-2 text-neutral-600">Row height and padding</td>
+            </tr>
+            <tr class="border-b border-neutral-100">
+              <td class="py-2 pr-4 font-mono text-primary-600">emptyMessage</td>
+              <td class="py-2 pr-4 text-neutral-600">string</td>
+              <td class="py-2 pr-4 text-neutral-400">'No data available'</td>
+              <td class="py-2 text-neutral-600">Message when rows is empty</td>
+            </tr>
+            <tr>
+              <td class="py-2 pr-4 font-mono text-primary-600">cellTemplates</td>
+              <td class="py-2 pr-4 text-neutral-600">Map&lt;string, TemplateRef&gt;</td>
+              <td class="py-2 pr-4 text-neutral-400">new Map()</td>
+              <td class="py-2 text-neutral-600">Custom cell templates</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Outputs -->
+      <h3 class="text-sm font-semibold text-neutral-700 mb-2">Outputs</h3>
+      <div class="overflow-x-auto mb-6">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="border-b border-neutral-200">
+              <th class="text-left py-2 pr-4 text-neutral-500">Output</th>
+              <th class="text-left py-2 pr-4 text-neutral-500">Type</th>
+              <th class="text-left py-2 text-neutral-500">Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="border-b border-neutral-100">
+              <td class="py-2 pr-4 font-mono text-primary-600">rowClick</td>
+              <td class="py-2 pr-4 text-neutral-600">any</td>
+              <td class="py-2 text-neutral-600">Emits clicked row object</td>
+            </tr>
+            <tr>
+              <td class="py-2 pr-4 font-mono text-primary-600">sortChange</td>
+              <td class="py-2 pr-4 text-neutral-600">
+                {{ '{' }} column: string; direction: 'asc' | 'desc' {{ '}' }}
+              </td>
+              <td class="py-2 text-neutral-600">Emits sort state changes</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ColumnDef -->
+      <h3 class="text-sm font-semibold text-neutral-700 mb-2">ColumnDef Interface</h3>
+      <pre
+        class="bg-neutral-900 text-neutral-100 p-4 rounded-lg text-sm overflow-x-auto"
+      ><code>interface ColumnDef {{ '{' }}
+  key: string;              // Property name in row object
+  label: string;            // Header text
+  align?: 'left' | 'center' | 'right';
+  width?: string;           // CSS width ('100px', '40%', etc.)
+  sortable?: boolean;       // Enable sorting on this column
+  template?: string;        // Template reference name for custom cells
+{{ '}' }}</code></pre>
+    </section>
+  </div>
+</div>
