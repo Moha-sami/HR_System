@@ -8,8 +8,8 @@ Task,SCRUM-56,Create EmployeeDocument Entity,"**Task 51 (`SCRUM-56`)**: Create E
 **Instructions**:
 1. Create `EmployeeDocument.cs` class in `Buy2.Domain.Entities`.
 2. Inherit from `BaseEntity`.
-3. Add properties: `EmployeeId` (int), `Category` (string), and `StorageUrl` (string).
-4. No complex logic required; provide property accessors only.","layer:domain,entity,good first issue"
+3. Add properties: `EmployeeId` (int), `Category` (string), `StorageUrl` (string).
+4. Add virtual navigation property for `Employee`.","layer:domain,entity,good first issue"
 Task,SCRUM-57,Create DisciplinaryViolation Entity,"**Task 52 (`SCRUM-57`)**: Create DisciplinaryViolation Entity
 
 **Target File Location**: `src/Buy2.Domain/Entities/DisciplinaryViolation.cs`
@@ -19,8 +19,8 @@ Task,SCRUM-57,Create DisciplinaryViolation Entity,"**Task 52 (`SCRUM-57`)**: Cre
 **Instructions**:
 1. Create `DisciplinaryViolation.cs` class in `Buy2.Domain.Entities`.
 2. Inherit from `BaseEntity`.
-3. Add properties: `EmployeeId` (int), `Severity` (string), and `Description` (string).
-4. Provide property accessors only.","layer:domain,entity,good first issue"
+3. Add properties: `EmployeeId` (int), `Severity` (string), `Description` (string).
+4. Add virtual navigation property for `Employee`.","layer:domain,entity,good first issue"
 Task,SCRUM-58,Create PointsTransaction Entity,"**Task 53 (`SCRUM-58`)**: Create PointsTransaction Entity
 
 **Target File Location**: `src/Buy2.Domain/Entities/PointsTransaction.cs`
@@ -30,8 +30,8 @@ Task,SCRUM-58,Create PointsTransaction Entity,"**Task 53 (`SCRUM-58`)**: Create 
 **Instructions**:
 1. Create `PointsTransaction.cs` class in `Buy2.Domain.Entities`.
 2. Inherit from `BaseEntity`.
-3. Add properties: `EmployeeId` (int), `PointsRuleId` (int?), `Amount` (int), and `TransactionType` (string).
-4. Provide property accessors only.","layer:domain,entity,good first issue"
+3. Add properties: `EmployeeId` (int), `PointsRuleId` (int?), `Amount` (int), `TransactionType` (string).
+4. Add virtual navigation properties for `Employee` and optional `PointsRule`.","layer:domain,entity,good first issue"
 Task,SCRUM-59,Create RewardRedemption Entity,"**Task 54 (`SCRUM-59`)**: Create RewardRedemption Entity
 
 **Target File Location**: `src/Buy2.Domain/Entities/RewardRedemption.cs`
@@ -41,8 +41,8 @@ Task,SCRUM-59,Create RewardRedemption Entity,"**Task 54 (`SCRUM-59`)**: Create R
 **Instructions**:
 1. Create `RewardRedemption.cs` class in `Buy2.Domain.Entities`.
 2. Inherit from `BaseEntity`.
-3. Add properties: `RewardItemId` (int), `EmployeeId` (int), `VoucherCode` (string), and `RedeemedAt` (DateTimeOffset).
-4. Provide property accessors only.","layer:domain,entity,good first issue"
+3. Add properties: `RewardItemId` (int), `EmployeeId` (int), `VoucherCode` (string), `RedeemedAt` (DateTimeOffset).
+4. Add virtual navigation properties for `Employee` and `RewardItem`.","layer:domain,entity,good first issue"
 Task,SCRUM-60,Create UploadEmployeeDocumentDto Record,"**Task 55 (`SCRUM-60`)**: Create UploadEmployeeDocumentDto Record
 
 **Target File Location**: `src/Buy2.Application/Employees/DTOs/DocumentDtos.cs`
@@ -51,7 +51,7 @@ Task,SCRUM-60,Create UploadEmployeeDocumentDto Record,"**Task 55 (`SCRUM-60`)**:
 
 **Instructions**:
 1. Create file `DocumentDtos.cs` under `Buy2.Application.Employees.DTOs`.
-2. Define record DTO: `public record UploadEmployeeDocumentDto(int EmployeeId, string Category, string StorageUrl);`.","layer:application,dto,good first issue"
+2. Define record DTO for uploading employee documents with `EmployeeId`, `Category`, and `StorageUrl`.","layer:application,dto,good first issue"
 Task,SCRUM-61,Create LogDisciplinaryViolationDto Record,"**Task 56 (`SCRUM-61`)**: Create LogDisciplinaryViolationDto Record
 
 **Target File Location**: `src/Buy2.Application/Employees/DTOs/ViolationDtos.cs`
@@ -60,7 +60,7 @@ Task,SCRUM-61,Create LogDisciplinaryViolationDto Record,"**Task 56 (`SCRUM-61`)*
 
 **Instructions**:
 1. Create file `ViolationDtos.cs` under `Buy2.Application.Employees.DTOs`.
-2. Define record DTO: `public record LogDisciplinaryViolationDto(int EmployeeId, string Severity, string Description);`.","layer:application,dto,good first issue"
+2. Define record DTO for logging violations with `EmployeeId`, `Severity`, and `Description`.","layer:application,dto,good first issue"
 Task,SCRUM-62,Create PointsTransactionDto Record,"**Task 57 (`SCRUM-62`)**: Create PointsTransactionDto Record
 
 **Target File Location**: `src/Buy2.Application/Points/DTOs/PointsTransactionDtos.cs`
@@ -69,7 +69,7 @@ Task,SCRUM-62,Create PointsTransactionDto Record,"**Task 57 (`SCRUM-62`)**: Crea
 
 **Instructions**:
 1. Create file `PointsTransactionDtos.cs` under `Buy2.Application.Points.DTOs`.
-2. Define record DTO: `public record PointsTransactionDto(int EmployeeId, int? PointsRuleId, int Amount, string TransactionType);`.","layer:application,dto,good first issue"
+2. Define record DTO for points transactions with `EmployeeId`, nullable `PointsRuleId`, `Amount`, and `TransactionType`.","layer:application,dto,good first issue"
 Task,SCRUM-63,Create RedeemRewardDto Record,"**Task 58 (`SCRUM-63`)**: Create RedeemRewardDto Record
 
 **Target File Location**: `src/Buy2.Application/Rewards/DTOs/RedemptionDtos.cs`
@@ -78,7 +78,7 @@ Task,SCRUM-63,Create RedeemRewardDto Record,"**Task 58 (`SCRUM-63`)**: Create Re
 
 **Instructions**:
 1. Create file `RedemptionDtos.cs` under `Buy2.Application.Rewards.DTOs`.
-2. Define record DTO: `public record RedeemRewardDto(int RewardItemId, int EmployeeId);`.","layer:application,dto,good first issue"
+2. Define record DTO for reward redemption with `RewardItemId` and `EmployeeId`.","layer:application,dto,good first issue"
 Task,SCRUM-64,Create EmployeeDocumentConfiguration Class,"**Task 59 (`SCRUM-64`)**: Create EmployeeDocumentConfiguration Class
 
 **Target File Location**: `src/Buy2.Infrastructure/Persistence/Configurations/EmployeeDocumentConfiguration.cs`
@@ -86,8 +86,9 @@ Task,SCRUM-64,Create EmployeeDocumentConfiguration Class,"**Task 59 (`SCRUM-64`)
 **PR Title**: `SCRUM-64: Create EmployeeDocumentConfiguration Class`
 
 **Instructions**:
-1. Create class `EmployeeDocumentConfiguration` implementing `IEntityTypeConfiguration<EmployeeDocument>`.
-2. Configure required properties for `Category` and `StorageUrl`.","layer:infrastructure,database"
+1. Implement `IEntityTypeConfiguration<EmployeeDocument>`.
+2. Configure column rules: `Category` (required nvarchar 50), `StorageUrl` (required varchar 500).
+3. Configure relationship to `Employee` with `DeleteBehavior.Cascade`.","layer:infrastructure,database"
 Task,SCRUM-65,Create DisciplinaryViolationConfiguration Class,"**Task 60 (`SCRUM-65`)**: Create DisciplinaryViolationConfiguration Class
 
 **Target File Location**: `src/Buy2.Infrastructure/Persistence/Configurations/DisciplinaryViolationConfiguration.cs`
@@ -95,8 +96,9 @@ Task,SCRUM-65,Create DisciplinaryViolationConfiguration Class,"**Task 60 (`SCRUM
 **PR Title**: `SCRUM-65: Create DisciplinaryViolationConfiguration Class`
 
 **Instructions**:
-1. Create class `DisciplinaryViolationConfiguration` implementing `IEntityTypeConfiguration<DisciplinaryViolation>`.
-2. Configure required properties for `Severity` and `Description`.","layer:infrastructure,database"
+1. Implement `IEntityTypeConfiguration<DisciplinaryViolation>`.
+2. Configure column rules: `Severity` (required varchar 20), `Description` (required nvarchar 1000).
+3. Configure relationship to `Employee` with `DeleteBehavior.Cascade`.","layer:infrastructure,database"
 Task,SCRUM-66,Create PointsTransactionConfiguration Class,"**Task 61 (`SCRUM-66`)**: Create PointsTransactionConfiguration Class
 
 **Target File Location**: `src/Buy2.Infrastructure/Persistence/Configurations/PointsTransactionConfiguration.cs`
@@ -104,8 +106,9 @@ Task,SCRUM-66,Create PointsTransactionConfiguration Class,"**Task 61 (`SCRUM-66`
 **PR Title**: `SCRUM-66: Create PointsTransactionConfiguration Class`
 
 **Instructions**:
-1. Create class `PointsTransactionConfiguration` implementing `IEntityTypeConfiguration<PointsTransaction>`.
-2. Configure property mappings and relationships.","layer:infrastructure,database"
+1. Implement `IEntityTypeConfiguration<PointsTransaction>`.
+2. Configure column rules: `Amount` (required int), `TransactionType` (required varchar 30).
+3. Configure relationships: `Employee` with `DeleteBehavior.Restrict` and optional `PointsRule` with `DeleteBehavior.SetNull`.","layer:infrastructure,database"
 Task,SCRUM-67,Create RewardRedemptionConfiguration Class,"**Task 62 (`SCRUM-67`)**: Create RewardRedemptionConfiguration Class
 
 **Target File Location**: `src/Buy2.Infrastructure/Persistence/Configurations/RewardRedemptionConfiguration.cs`
@@ -113,8 +116,9 @@ Task,SCRUM-67,Create RewardRedemptionConfiguration Class,"**Task 62 (`SCRUM-67`)
 **PR Title**: `SCRUM-67: Create RewardRedemptionConfiguration Class`
 
 **Instructions**:
-1. Create class `RewardRedemptionConfiguration` implementing `IEntityTypeConfiguration<RewardRedemption>`.
-2. Configure required property `VoucherCode`.","layer:infrastructure,database"
+1. Implement `IEntityTypeConfiguration<RewardRedemption>`.
+2. Configure column rules: `VoucherCode` (required varchar 100, unique index), `RedeemedAt` (required datetimeoffset).
+3. Configure relationships: `Employee` and `RewardItem` with `DeleteBehavior.Restrict`.","layer:infrastructure,database"
 Task,SCRUM-68,Create Infrastructure DependencyInjection Setup,"**Task 63 (`SCRUM-68`)**: Create Infrastructure DependencyInjection Setup
 
 **Target File Location**: `src/Buy2.Infrastructure/DependencyInjection.cs`
@@ -123,8 +127,8 @@ Task,SCRUM-68,Create Infrastructure DependencyInjection Setup,"**Task 63 (`SCRUM
 
 **Instructions**:
 1. Create static class `DependencyInjection` in `Buy2.Infrastructure`.
-2. Add extension method `public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)`.
-3. Provide return stub `return services;`.","layer:infrastructure,service"
+2. Add extension method `AddInfrastructureServices` for `IServiceCollection` accepting `IConfiguration`.
+3. Register DbContext and repositories into DI container.","layer:infrastructure,service"
 Task,SCRUM-69,Create AuthPasswordResetController,"**Task 64 (`SCRUM-69`)**: Create AuthPasswordResetController
 
 **Target File Location**: `src/Buy2.Api/Controllers/AuthPasswordResetController.cs`
@@ -132,8 +136,8 @@ Task,SCRUM-69,Create AuthPasswordResetController,"**Task 64 (`SCRUM-69`)**: Crea
 **PR Title**: `SCRUM-69: Create AuthPasswordResetController`
 
 **Instructions**:
-1. Create `[ApiController]` class `AuthPasswordResetController` at route `[Route(""api/v1/auth"")]`.
-2. Add `[HttpPost(""password/reset"")]` endpoint stub returning `IActionResult` (e.g. `Ok()`).","layer:api,controller,good first issue"
+1. Create ApiController `AuthPasswordResetController` at route `api/v1/auth`.
+2. Add HTTP POST endpoint stub `password/reset`.","layer:api,controller,good first issue"
 Task,SCRUM-70,Create DeleteRoleController,"**Task 65 (`SCRUM-70`)**: Create DeleteRoleController
 
 **Target File Location**: `src/Buy2.Api/Controllers/DeleteRoleController.cs`
@@ -141,8 +145,8 @@ Task,SCRUM-70,Create DeleteRoleController,"**Task 65 (`SCRUM-70`)**: Create Dele
 **PR Title**: `SCRUM-70: Create DeleteRoleController`
 
 **Instructions**:
-1. Create `[ApiController]` class `DeleteRoleController` at route `[Route(""api/v1/roles"")]`.
-2. Add `[HttpDelete(""{id}"")]` endpoint stub for soft deleting a role.","layer:api,controller,good first issue"
+1. Create ApiController `DeleteRoleController` at route `api/v1/roles`.
+2. Add HTTP DELETE endpoint stub for soft deleting a role by id.","layer:api,controller,good first issue"
 Task,SCRUM-71,Create EmployeeAttendanceConfigController,"**Task 66 (`SCRUM-71`)**: Create EmployeeAttendanceConfigController
 
 **Target File Location**: `src/Buy2.Api/Controllers/EmployeeAttendanceConfigController.cs`
@@ -150,8 +154,8 @@ Task,SCRUM-71,Create EmployeeAttendanceConfigController,"**Task 66 (`SCRUM-71`)*
 **PR Title**: `SCRUM-71: Create EmployeeAttendanceConfigController`
 
 **Instructions**:
-1. Create `[ApiController]` class `EmployeeAttendanceConfigController` at route `[Route(""api/v1/employees"")]`.
-2. Add `[HttpPut(""{id}/attendance-config"")]` endpoint stub.","layer:api,controller,good first issue"
+1. Create ApiController `EmployeeAttendanceConfigController` at route `api/v1/employees`.
+2. Add HTTP PUT endpoint stub for updating attendance profile config.","layer:api,controller,good first issue"
 Task,SCRUM-72,Create EmployeeDocumentsController,"**Task 67 (`SCRUM-72`)**: Create EmployeeDocumentsController
 
 **Target File Location**: `src/Buy2.Api/Controllers/EmployeeDocumentsController.cs`
@@ -159,8 +163,8 @@ Task,SCRUM-72,Create EmployeeDocumentsController,"**Task 67 (`SCRUM-72`)**: Crea
 **PR Title**: `SCRUM-72: Create EmployeeDocumentsController`
 
 **Instructions**:
-1. Create `[ApiController]` class `EmployeeDocumentsController` at route `[Route(""api/v1/employees"")]`.
-2. Add `[HttpPost(""{id}/documents"")]` endpoint stub accepting `UploadEmployeeDocumentDto`.","layer:api,controller,good first issue"
+1. Create ApiController `EmployeeDocumentsController` at route `api/v1/employees`.
+2. Add HTTP POST endpoint stub for uploading employee document DTO.","layer:api,controller,good first issue"
 Task,SCRUM-73,Create DisciplinaryViolationsController,"**Task 68 (`SCRUM-73`)**: Create DisciplinaryViolationsController
 
 **Target File Location**: `src/Buy2.Api/Controllers/DisciplinaryViolationsController.cs`
@@ -168,8 +172,8 @@ Task,SCRUM-73,Create DisciplinaryViolationsController,"**Task 68 (`SCRUM-73`)**:
 **PR Title**: `SCRUM-73: Create DisciplinaryViolationsController`
 
 **Instructions**:
-1. Create `[ApiController]` class `DisciplinaryViolationsController` at route `[Route(""api/v1/employees"")]`.
-2. Add `[HttpPost(""{id}/violations"")]` endpoint stub accepting `LogDisciplinaryViolationDto`.","layer:api,controller,good first issue"
+1. Create ApiController `DisciplinaryViolationsController` at route `api/v1/employees`.
+2. Add HTTP POST endpoint stub for logging disciplinary violation DTO.","layer:api,controller,good first issue"
 Task,SCRUM-74,Create GetSitesController,"**Task 69 (`SCRUM-74`)**: Create GetSitesController
 
 **Target File Location**: `src/Buy2.Api/Controllers/GetSitesController.cs`
@@ -177,8 +181,8 @@ Task,SCRUM-74,Create GetSitesController,"**Task 69 (`SCRUM-74`)**: Create GetSit
 **PR Title**: `SCRUM-74: Create GetSitesController`
 
 **Instructions**:
-1. Create `[ApiController]` class `GetSitesController` at route `[Route(""api/v1/sites"")]`.
-2. Add `[HttpGet]` endpoint stub returning list of sites.","layer:api,controller,good first issue"
+1. Create ApiController `GetSitesController` at route `api/v1/sites`.
+2. Add HTTP GET endpoint stub returning site collection.","layer:api,controller,good first issue"
 Task,SCRUM-75,Create SchedulePublishController,"**Task 70 (`SCRUM-75`)**: Create SchedulePublishController
 
 **Target File Location**: `src/Buy2.Api/Controllers/SchedulePublishController.cs`
@@ -186,8 +190,8 @@ Task,SCRUM-75,Create SchedulePublishController,"**Task 70 (`SCRUM-75`)**: Create
 **PR Title**: `SCRUM-75: Create SchedulePublishController`
 
 **Instructions**:
-1. Create `[ApiController]` class `SchedulePublishController` at route `[Route(""api/v1/schedules"")]`.
-2. Add `[HttpPost(""publish"")]` endpoint stub.","layer:api,controller,good first issue"
+1. Create ApiController `SchedulePublishController` at route `api/v1/schedules`.
+2. Add HTTP POST endpoint stub for publishing schedules.","layer:api,controller,good first issue"
 Task,SCRUM-76,Create ShiftClaimsController,"**Task 71 (`SCRUM-76`)**: Create ShiftClaimsController
 
 **Target File Location**: `src/Buy2.Api/Controllers/ShiftClaimsController.cs`
@@ -195,8 +199,8 @@ Task,SCRUM-76,Create ShiftClaimsController,"**Task 71 (`SCRUM-76`)**: Create Shi
 **PR Title**: `SCRUM-76: Create ShiftClaimsController`
 
 **Instructions**:
-1. Create `[ApiController]` class `ShiftClaimsController` at route `[Route(""api/v1/shift-market"")]`.
-2. Add `[HttpPost(""claims/{id}"")]` endpoint stub accepting `ClaimShiftDto`.","layer:api,controller,good first issue"
+1. Create ApiController `ShiftClaimsController` at route `api/v1/shift-market`.
+2. Add HTTP POST endpoint stub for submitting shift claim DTO.","layer:api,controller,good first issue"
 Task,SCRUM-77,Create RewardInventoryController,"**Task 72 (`SCRUM-77`)**: Create RewardInventoryController
 
 **Target File Location**: `src/Buy2.Api/Controllers/RewardInventoryController.cs`
@@ -204,8 +208,8 @@ Task,SCRUM-77,Create RewardInventoryController,"**Task 72 (`SCRUM-77`)**: Create
 **PR Title**: `SCRUM-77: Create RewardInventoryController`
 
 **Instructions**:
-1. Create `[ApiController]` class `RewardInventoryController` at route `[Route(""api/v1/rewards"")]`.
-2. Add `[HttpPost(""{id}/inventory/upload"")]` endpoint stub accepting Excel file parameter.","layer:api,controller,good first issue"
+1. Create ApiController `RewardInventoryController` at route `api/v1/rewards`.
+2. Add HTTP POST endpoint stub for uploading voucher Excel file.","layer:api,controller,good first issue"
 Task,SCRUM-78,Create PointsRulesController,"**Task 73 (`SCRUM-78`)**: Create PointsRulesController
 
 **Target File Location**: `src/Buy2.Api/Controllers/PointsRulesController.cs`
@@ -213,8 +217,8 @@ Task,SCRUM-78,Create PointsRulesController,"**Task 73 (`SCRUM-78`)**: Create Poi
 **PR Title**: `SCRUM-78: Create PointsRulesController`
 
 **Instructions**:
-1. Create `[ApiController]` class `PointsRulesController` at route `[Route(""api/v1/points"")]`.
-2. Add `[HttpPost(""rules"")]` endpoint stub accepting `CreatePointsRuleDto`.","layer:api,controller,good first issue"
+1. Create ApiController `PointsRulesController` at route `api/v1/points`.
+2. Add HTTP POST endpoint stub for creating points rule DTO.","layer:api,controller,good first issue"
 Task,SCRUM-79,Create RewardRedemptionController,"**Task 74 (`SCRUM-79`)**: Create RewardRedemptionController
 
 **Target File Location**: `src/Buy2.Api/Controllers/RewardRedemptionController.cs`
@@ -222,8 +226,8 @@ Task,SCRUM-79,Create RewardRedemptionController,"**Task 74 (`SCRUM-79`)**: Creat
 **PR Title**: `SCRUM-79: Create RewardRedemptionController`
 
 **Instructions**:
-1. Create `[ApiController]` class `RewardRedemptionController` at route `[Route(""api/v1/rewards"")]`.
-2. Add `[HttpPost(""{id}/redeem"")]` endpoint stub accepting `RedeemRewardDto`.","layer:api,controller,good first issue"
+1. Create ApiController `RewardRedemptionController` at route `api/v1/rewards`.
+2. Add HTTP POST endpoint stub for redeeming reward DTO.","layer:api,controller,good first issue"
 Task,SCRUM-80,Create EmployeeDocumentsComponent,"**Task 75 (`SCRUM-80`)**: Create EmployeeDocumentsComponent
 
 **Target File Location**: `src/Buy2.Frontend/src/app/features/employees/employee-documents.component.ts`
@@ -232,7 +236,7 @@ Task,SCRUM-80,Create EmployeeDocumentsComponent,"**Task 75 (`SCRUM-80`)**: Creat
 
 **Instructions**:
 1. Create standalone Angular component `EmployeeDocumentsComponent`.
-2. Add file upload template and list of employee compliance documents per Figma design.","layer:frontend,component,good first issue"
+2. Implement template for uploading and listing employee compliance files according to Figma specs.","layer:frontend,component,good first issue"
 Task,SCRUM-81,Create PointsRulesAdminComponent,"**Task 76 (`SCRUM-81`)**: Create PointsRulesAdminComponent
 
 **Target File Location**: `src/Buy2.Frontend/src/app/features/points/points-rules-admin.component.ts`
@@ -241,4 +245,4 @@ Task,SCRUM-81,Create PointsRulesAdminComponent,"**Task 76 (`SCRUM-81`)**: Create
 
 **Instructions**:
 1. Create standalone Angular component `PointsRulesAdminComponent`.
-2. Add form for configuring points rules and penalty/reward values per Figma design.","layer:frontend,component"
+2. Implement template for creating and managing point rules according to Figma specs.","layer:frontend,component"

@@ -57,7 +57,7 @@ To ensure automatic tracking between GitHub and Jira, follow these simple naming
 
 ## Phase 1: Domain Layer (Tasks 1-12, 51-54)
 
-Focus on core domain models, enums, and base entities. No database dependencies or framework logic.
+Focus on core domain models, enums, navigation properties, and base entities. No database dependencies or framework logic.
 
 ### Task 1: Create BaseEntity Class ✅ **[DONE - PR #1]**
 - **Difficulty**: Very Easy
@@ -69,55 +69,55 @@ Focus on core domain models, enums, and base entities. No database dependencies 
 - **Difficulty**: Very Easy
 - **Labels**: `good first issue`, `layer:domain`, `entity`
 - **Location**: `Buy2.Domain/Entities/Role.cs`
-- **Instructions**: Create a public class `Role` inheriting from `BaseEntity`. Add `RoleName` (`string`) and `PermissionsJson` (`string`).
+- **Instructions**: Create a public class `Role` inheriting from `BaseEntity`. Add `RoleName` (`string`), `PermissionsJson` (`string`), and virtual navigation collection property `Employees`.
 
 ### Task 3: Create JobRole Entity ✅ **[DONE - PR #9]**
 - **Difficulty**: Very Easy
 - **Labels**: `good first issue`, `layer:domain`, `entity`
 - **Location**: `Buy2.Domain/Entities/JobRole.cs`
-- **Instructions**: Create class `JobRole` inheriting from `BaseEntity`. Add `Title` (`string`), `DepartmentId` (`int`), and `RequiredQualificationsJson` (`string`).
+- **Instructions**: Create class `JobRole` inheriting from `BaseEntity`. Add `Title` (`string`), `DepartmentId` (`int`), `RequiredQualificationsJson` (`string`), and virtual navigation collection properties for `Employees` and `Shifts`.
 
 ### Task 4: Create Employee Entity ✅ **[DONE - PR #11]**
 - **Difficulty**: Easy
 - **Labels**: `good first issue`, `layer:domain`, `entity`
 - **Location**: `Buy2.Domain/Entities/Employee.cs`
-- **Instructions**: Create class `Employee` inheriting from `BaseEntity`. Add `FirstName`, `LastName`, `Email`, `PhoneNumber`, `JobRoleId` (`int`), `RoleId` (`int`), and `SiteId` (`int`).
+- **Instructions**: Create class `Employee` inheriting from `BaseEntity`. Add primitive properties (`FirstName`, `LastName`, `Email`, `PhoneNumber`, `JobRoleId`, `RoleId`, `SiteId`, `AttendanceProfileId`) and virtual navigation properties for `JobRole`, `Role`, `Site`, `AttendanceProfile`, and collections for `Shifts`, `ShiftClaims`, `Documents`, `DisciplinaryViolations`, `PointsTransactions`, and `RewardRedemptions`.
 
 ### Task 5: Create Site Entity ✅ **[DONE - PR #12]**
 - **Difficulty**: Very Easy
 - **Labels**: `good first issue`, `layer:domain`, `entity`
 - **Location**: `Buy2.Domain/Entities/Site.cs`
-- **Instructions**: Create class `Site` inheriting from `BaseEntity`. Add `SiteName`, `Latitude` (`double`), `Longitude` (`double`), and `MacAddressWhitelistJson` (`string`).
+- **Instructions**: Create class `Site` inheriting from `BaseEntity`. Add `SiteName`, `Latitude` (`double`), `Longitude` (`double`), `MacAddressWhitelistJson` (`string`), and virtual navigation collection properties for `Employees` and `Shifts`.
 
 ### Task 6: Create AttendanceProfile Entity ✅ **[DONE - PR #16]**
 - **Difficulty**: Easy
 - **Labels**: `good first issue`, `layer:domain`, `entity`
 - **Location**: `Buy2.Domain/Entities/AttendanceProfile.cs`
-- **Instructions**: Create class `AttendanceProfile` inheriting from `BaseEntity`. Add `ProfileName`, `ExpectedClockIn` (`TimeSpan`), `ExpectedClockOut` (`TimeSpan`), and `RequiredWorkHours` (`double`).
+- **Instructions**: Create class `AttendanceProfile` inheriting from `BaseEntity`. Add `ProfileName`, `ExpectedClockIn` (`TimeSpan`), `ExpectedClockOut` (`TimeSpan`), `RequiredWorkHours` (`double`), and virtual navigation collection property `Employees`.
 
 ### Task 7: Create Shift Entity ✅ **[DONE - PR #17]**
 - **Difficulty**: Easy
 - **Labels**: `good first issue`, `layer:domain`, `entity`
 - **Location**: `Buy2.Domain/Entities/Shift.cs`
-- **Instructions**: Create class `Shift` inheriting from `BaseEntity`. Add `EmployeeId` (`int`), `SiteId` (`int`), `JobRoleId` (`int`), `StartTime` (`DateTimeOffset`), `EndTime` (`DateTimeOffset`), and `IsPublished` (`bool`).
+- **Instructions**: Create class `Shift` inheriting from `BaseEntity`. Add primitive FK properties (`EmployeeId`, `SiteId`, `JobRoleId`), schedule properties (`StartTime`, `EndTime`, `IsPublished`), virtual navigation properties (`Employee`, `Site`, `JobRole`), and collection property `ShiftClaims`.
 
 ### Task 8: Create ShiftClaim Entity ✅ **[DONE - PR #26]**
 - **Difficulty**: Easy
 - **Labels**: `good first issue`, `layer:domain`, `entity`
 - **Location**: `Buy2.Domain/Entities/ShiftClaim.cs`
-- **Instructions**: Create class `ShiftClaim` inheriting from `BaseEntity`. Add `ShiftId` (`int`), `EmployeeId` (`int`), `Status` (`string`), and `OvertimeJustification` (`string`).
+- **Instructions**: Create class `ShiftClaim` inheriting from `BaseEntity`. Add `ShiftId` (`int`), `EmployeeId` (`int`), `Status` (`string`), `OvertimeJustification` (`string`), and virtual navigation properties for `Shift` and `Employee`.
 
 ### Task 9: Create PointsRule Entity ✅ **[DONE - PR #23]**
 - **Difficulty**: Very Easy
 - **Labels**: `good first issue`, `layer:domain`, `entity`
 - **Location**: `Buy2.Domain/Entities/PointsRule.cs`
-- **Instructions**: Create class `PointsRule` inheriting from `BaseEntity`. Add `RuleKey`, `EventType`, `ConditionExpression`, `ActionType`, and `PointValue` (`int`).
+- **Instructions**: Create class `PointsRule` inheriting from `BaseEntity`. Add `RuleKey`, `EventType`, `ConditionExpression`, `ActionType`, `PointValue` (`int`), and virtual navigation collection property `PointsTransactions`.
 
 ### Task 10: Create RewardItem Entity ✅ **[DONE - PR #24]**
 - **Difficulty**: Very Easy
 - **Labels**: `good first issue`, `layer:domain`, `entity`
 - **Location**: `Buy2.Domain/Entities/RewardItem.cs`
-- **Instructions**: Create class `RewardItem` inheriting from `BaseEntity`. Add `RewardName`, `CostInPoints` (`int`), and `AvailableStock` (`int`).
+- **Instructions**: Create class `RewardItem` inheriting from `BaseEntity`. Add `RewardName`, `CostInPoints` (`int`), `AvailableStock` (`int`), and virtual navigation collection property `RewardRedemptions`.
 
 ### Task 11: Create Gender and SalaryType Enums ✅ **[DONE - PR #18]**
 - **Difficulty**: Very Easy
@@ -135,25 +135,25 @@ Focus on core domain models, enums, and base entities. No database dependencies 
 - **Difficulty**: Very Easy
 - **Labels**: `good first issue`, `layer:domain`, `entity`
 - **Location**: `Buy2.Domain/Entities/EmployeeDocument.cs`
-- **Instructions**: Create class `EmployeeDocument` inheriting from `BaseEntity`. Add `EmployeeId` (`int`), `Category` (`string`), and `StorageUrl` (`string`).
+- **Instructions**: Create class `EmployeeDocument` inheriting from `BaseEntity`. Add `EmployeeId` (`int`), `Category` (`string`), `StorageUrl` (`string`), and virtual navigation property `Employee`.
 
 ### Task 52: Create DisciplinaryViolation Entity
 - **Difficulty**: Very Easy
 - **Labels**: `good first issue`, `layer:domain`, `entity`
 - **Location**: `Buy2.Domain/Entities/DisciplinaryViolation.cs`
-- **Instructions**: Create class `DisciplinaryViolation` inheriting from `BaseEntity`. Add `EmployeeId` (`int`), `Severity` (`string`), and `Description` (`string`).
+- **Instructions**: Create class `DisciplinaryViolation` inheriting from `BaseEntity`. Add `EmployeeId` (`int`), `Severity` (`string`), `Description` (`string`), and virtual navigation property `Employee`.
 
 ### Task 53: Create PointsTransaction Entity
 - **Difficulty**: Easy
 - **Labels**: `good first issue`, `layer:domain`, `entity`
 - **Location**: `Buy2.Domain/Entities/PointsTransaction.cs`
-- **Instructions**: Create class `PointsTransaction` inheriting from `BaseEntity`. Add `EmployeeId` (`int`), `PointsRuleId` (`int?`), `Amount` (`int`), and `TransactionType` (`string`).
+- **Instructions**: Create class `PointsTransaction` inheriting from `BaseEntity`. Add `EmployeeId` (`int`), `PointsRuleId` (`int?`), `Amount` (`int`), `TransactionType` (`string`), and virtual navigation properties for `Employee` and optional `PointsRule`.
 
 ### Task 54: Create RewardRedemption Entity
 - **Difficulty**: Easy
 - **Labels**: `good first issue`, `layer:domain`, `entity`
 - **Location**: `Buy2.Domain/Entities/RewardRedemption.cs`
-- **Instructions**: Create class `RewardRedemption` inheriting from `BaseEntity`. Add `RewardItemId` (`int`), `EmployeeId` (`int`), `VoucherCode` (`string`), and `RedeemedAt` (`DateTimeOffset`).
+- **Instructions**: Create class `RewardRedemption` inheriting from `BaseEntity`. Add `RewardItemId` (`int`), `EmployeeId` (`int`), `VoucherCode` (`string`), `RedeemedAt` (`DateTimeOffset`), and virtual navigation properties for `Employee` and `RewardItem`.
 
 ---
 
@@ -265,39 +265,39 @@ Application interfaces, DTO records, and CQRS contracts.
 
 ---
 
-## Phase 3: Infrastructure Layer (Tasks 26-35, 59-63)
+## Phase 3: Infrastructure Layer (Tasks 26-35, 59-63, 77)
 
-EF Core persistence, DbContext configurations, and external services.
+EF Core persistence, DbContext configurations, Fluent API rules, and external services.
 
 ### Task 26: Create Buy2DbContext Class
 - **Difficulty**: Medium
 - **Labels**: `layer:infrastructure`, `database`
 - **Location**: `Buy2.Infrastructure/Persistence/Buy2DbContext.cs`
-- **Instructions**: Create class `Buy2DbContext` inheriting from `DbContext`. Add `DbSet<Employee>`, `DbSet<Role>`, `DbSet<Site>`, `DbSet<Shift>`, `DbSet<RewardItem>`, `DbSet<EmployeeDocument>`, `DbSet<DisciplinaryViolation>`, `DbSet<PointsTransaction>`, `DbSet<RewardRedemption>`.
+- **Instructions**: Create class `Buy2DbContext` inheriting from `DbContext`. Configure `DbSet<T>` for all domain entities (`Employee`, `Role`, `JobRole`, `Site`, `AttendanceProfile`, `Shift`, `ShiftClaim`, `PointsRule`, `RewardItem`, `EmployeeDocument`, `DisciplinaryViolation`, `PointsTransaction`, `RewardRedemption`). Apply entity configurations from assembly in `OnModelCreating`.
 
 ### Task 27: Create EmployeeConfiguration Class
 - **Difficulty**: Medium
 - **Labels**: `layer:infrastructure`, `database`
 - **Location**: `Buy2.Infrastructure/Persistence/Configurations/EmployeeConfiguration.cs`
-- **Instructions**: Create class `EmployeeConfiguration` implementing `IEntityTypeConfiguration<Employee>`. Configure required fields for Email and Names.
+- **Instructions**: Implement `IEntityTypeConfiguration<Employee>`. Configure column specs: `FirstName` (required `nvarchar(50)`), `LastName` (required `nvarchar(50)`), `Email` (required `varchar(150)`, unique index), `PhoneNumber` (optional `varchar(20)`). Configure one-to-many relationships for `JobRole`, `Role`, `Site`, and `AttendanceProfile` with `DeleteBehavior.Restrict`.
 
 ### Task 28: Create RoleConfiguration Class
 - **Difficulty**: Medium
 - **Labels**: `layer:infrastructure`, `database`
 - **Location**: `Buy2.Infrastructure/Persistence/Configurations/RoleConfiguration.cs`
-- **Instructions**: Create class `RoleConfiguration` implementing `IEntityTypeConfiguration<Role>`.
+- **Instructions**: Implement `IEntityTypeConfiguration<Role>`. Configure column specs: `RoleName` (required `nvarchar(50)`, unique index), `PermissionsJson` (required `nvarchar(max)`).
 
 ### Task 29: Create SiteConfiguration Class
 - **Difficulty**: Medium
 - **Labels**: `layer:infrastructure`, `database`
 - **Location**: `Buy2.Infrastructure/Persistence/Configurations/SiteConfiguration.cs`
-- **Instructions**: Create class `SiteConfiguration` implementing `IEntityTypeConfiguration<Site>`.
+- **Instructions**: Implement `IEntityTypeConfiguration<Site>`. Configure column specs: `SiteName` (required `nvarchar(100)`), `Latitude` & `Longitude` (required decimal with precision 9,6), `MacAddressWhitelistJson` (optional `nvarchar(max)`).
 
 ### Task 30: Create ShiftConfiguration Class
 - **Difficulty**: Medium
 - **Labels**: `layer:infrastructure`, `database`
 - **Location**: `Buy2.Infrastructure/Persistence/Configurations/ShiftConfiguration.cs`
-- **Instructions**: Create class `ShiftConfiguration` implementing `IEntityTypeConfiguration<Shift>`.
+- **Instructions**: Implement `IEntityTypeConfiguration<Shift>`. Configure column specs: `StartTime` & `EndTime` (required `datetimeoffset`), `IsPublished` (required boolean with default value `false`). Configure relationships for `Employee`, `Site`, and `JobRole` with `DeleteBehavior.Restrict`.
 
 ### Task 31: Create GenericRepository Class Implementation
 - **Difficulty**: Medium
@@ -333,31 +333,37 @@ EF Core persistence, DbContext configurations, and external services.
 - **Difficulty**: Medium
 - **Labels**: `layer:infrastructure`, `database`
 - **Location**: `Buy2.Infrastructure/Persistence/Configurations/EmployeeDocumentConfiguration.cs`
-- **Instructions**: Create class `EmployeeDocumentConfiguration` implementing `IEntityTypeConfiguration<EmployeeDocument>`.
+- **Instructions**: Implement `IEntityTypeConfiguration<EmployeeDocument>`. Configure column specs: `Category` (required `nvarchar(50)`), `StorageUrl` (required `varchar(500)`). Configure relationship to `Employee` with `DeleteBehavior.Cascade`.
 
 ### Task 60: Create DisciplinaryViolationConfiguration Class
 - **Difficulty**: Medium
 - **Labels**: `layer:infrastructure`, `database`
 - **Location**: `Buy2.Infrastructure/Persistence/Configurations/DisciplinaryViolationConfiguration.cs`
-- **Instructions**: Create class `DisciplinaryViolationConfiguration` implementing `IEntityTypeConfiguration<DisciplinaryViolation>`.
+- **Instructions**: Implement `IEntityTypeConfiguration<DisciplinaryViolation>`. Configure column specs: `Severity` (required `varchar(20)`), `Description` (required `nvarchar(1000)`). Configure relationship to `Employee` with `DeleteBehavior.Cascade`.
 
 ### Task 61: Create PointsTransactionConfiguration Class
 - **Difficulty**: Medium
 - **Labels**: `layer:infrastructure`, `database`
 - **Location**: `Buy2.Infrastructure/Persistence/Configurations/PointsTransactionConfiguration.cs`
-- **Instructions**: Create class `PointsTransactionConfiguration` implementing `IEntityTypeConfiguration<PointsTransaction>`.
+- **Instructions**: Implement `IEntityTypeConfiguration<PointsTransaction>`. Configure column specs: `Amount` (required int), `TransactionType` (required `varchar(30)`). Configure relationships: `Employee` with `DeleteBehavior.Restrict` and optional `PointsRule` with `DeleteBehavior.SetNull`.
 
 ### Task 62: Create RewardRedemptionConfiguration Class
 - **Difficulty**: Medium
 - **Labels**: `layer:infrastructure`, `database`
 - **Location**: `Buy2.Infrastructure/Persistence/Configurations/RewardRedemptionConfiguration.cs`
-- **Instructions**: Create class `RewardRedemptionConfiguration` implementing `IEntityTypeConfiguration<RewardRedemption>`.
+- **Instructions**: Implement `IEntityTypeConfiguration<RewardRedemption>`. Configure column specs: `VoucherCode` (required `varchar(100)`, unique index), `RedeemedAt` (required `datetimeoffset`). Configure relationships for `Employee` and `RewardItem` with `DeleteBehavior.Restrict`.
 
 ### Task 63: Create Infrastructure DependencyInjection Setup
 - **Difficulty**: Easy
 - **Labels**: `layer:infrastructure`, `service`
 - **Location**: `Buy2.Infrastructure/DependencyInjection.cs`
 - **Instructions**: Create extension method `AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)` registering repositories and DbContext.
+
+### Task 77: Create ShiftClaimConfiguration Class
+- **Difficulty**: Medium
+- **Labels**: `layer:infrastructure`, `database`
+- **Location**: `Buy2.Infrastructure/Persistence/Configurations/ShiftClaimConfiguration.cs`
+- **Instructions**: Implement `IEntityTypeConfiguration<ShiftClaim>`. Configure column specs: `Status` (required `varchar(20)`), `OvertimeJustification` (optional `nvarchar(500)`). Configure relationships: `Shift` with `DeleteBehavior.Cascade` and `Employee` with `DeleteBehavior.Restrict`.
 
 ---
 
