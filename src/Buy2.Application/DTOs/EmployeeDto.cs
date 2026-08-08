@@ -1,6 +1,6 @@
 namespace Buy2.Application.DTOs;
 
-public record EmployeeDto(
+public record OnboardEmployeeDto(
     string FirstName,
     string LastName,
     string Email,
