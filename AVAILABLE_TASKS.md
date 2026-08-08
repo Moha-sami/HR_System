@@ -26,7 +26,7 @@ To ensure automatic tracking between GitHub and Jira, follow these simple naming
 
 1. Pick an unassigned task from your **Jira Sprint Board**.
 2. Create your working git branch including the Jira key (e.g., `SCRUM-101-employee-document`).
-3. Each task requires creating an **empty structure only**: a class, record DTO, enum, interface, DbContext configuration, or Angular component.
+3. Each task requires creating an **empty structure only**: a class, record DTO, enum, interface, DbContext configuration, or API controller.
 4. Methods should only have signatures throwing `NotImplementedException` or returning default values. No complex business logic is needed in initial stubs!
 5. Submit your **Pull Request directly targeting `main`**. Once merged by the lead, Jira automatically updates your task to **Done**!
 
@@ -40,18 +40,16 @@ To ensure automatic tracking between GitHub and Jira, follow these simple naming
 - `layer:application`: Code belongs in `Buy2.Application`.
 - `layer:infrastructure`: Code belongs in `Buy2.Infrastructure`.
 - `layer:api`: Code belongs in `Buy2.Api`.
-- `layer:frontend`: Code belongs in `Buy2.Frontend` (Angular).
 - `entity`: Entity model class.
 - `enum`: Named options enumeration.
 - `dto`: Data transfer object record.
 - `interface`: Contract definition.
 - `controller`: API HTTP controller.
-- `component`: Angular component.
 
 ### Difficulty Levels
 - **Very Easy**: Simple class/enum/interface with properties or empty signatures only.
 - **Easy**: Small file with basic inheritance or simple dependency injection.
-- **Medium**: EF Core configuration, repository pattern, or complex Angular service/component.
+- **Medium**: EF Core configuration, repository pattern, or complex service/controller.
 
 ---
 
@@ -85,7 +83,7 @@ To ensure automatic tracking between GitHub and Jira, follow these simple naming
 
 ---
 
-## Active Tasks Roadmap (Tasks 26-77)
+## Active Backend Roadmap (Tasks 26-68)
 
 ---
 
@@ -360,64 +358,3 @@ To ensure automatic tracking between GitHub and Jira, follow these simple naming
 - **Labels**: `good first issue`, `layer:api`, `controller`
 - **Location**: `Buy2.Api/Controllers/RewardRedemptionController.cs`
 - **Instructions**: Create `[ApiController]` at `[route("api/v1/rewards")]`. Add `POST {id}/redeem` endpoint stub accepting `RedeemRewardDto`.
-
----
-
-### Phase 5: Angular Frontend Layer (Services & Components)
-
-> **Figma Design Reference**: [https://www.figma.com/design/JQ67DCkObzVjER8Safb5sw/BUY2-Junk-File?node-id=882-3040&p=f&t=GxfjGebSZZA9X7B0-0](https://www.figma.com/design/JQ67DCkObzVjER8Safb5sw/BUY2-Junk-File?node-id=882-3040&p=f&t=GxfjGebSZZA9X7B0-0)
-> All UI components must implement layouts, colors, and responsive specs from the official Figma design link above.
-
-#### Task 69: `[Frontend] Create AuthService Angular Service`
-- **Difficulty**: Easy
-- **Labels**: `good first issue`, `layer:frontend`, `service`
-- **Location**: `Buy2.Frontend/src/app/core/services/auth.service.ts`
-- **Instructions**: Create injectable Angular service `AuthService` with `login(req: LoginRequest)` method calling HttpClient.
-
-#### Task 70: `[Frontend] Create ScheduleService Angular Service`
-- **Difficulty**: Easy
-- **Labels**: `good first issue`, `layer:frontend`, `service`
-- **Location**: `Buy2.Frontend/src/app/core/services/schedule.service.ts`
-- **Instructions**: Create injectable Angular service `ScheduleService` with `validateDraft(shifts: Shift[])` method.
-
-#### Task 71: `[Frontend] Create LoginComponent Component`
-- **Difficulty**: Easy
-- **Labels**: `good first issue`, `layer:frontend`, `component`
-- **Location**: `Buy2.Frontend/src/app/features/auth/login.component.ts`
-- **Instructions**: Create standalone Angular component `LoginComponent` with email/password reactive form per Figma.
-
-#### Task 72: `[Frontend] Create EmployeeDirectoryComponent`
-- **Difficulty**: Medium
-- **Labels**: `good first issue`, `layer:frontend`, `component`
-- **Location**: `Buy2.Frontend/src/app/features/employees/employee-directory.component.ts`
-- **Instructions**: Create component `EmployeeDirectoryComponent` with table listing employees and search filter input per Figma.
-
-#### Task 73: `[Frontend] Create ScheduleBoardComponent`
-- **Difficulty**: Medium
-- **Labels**: `layer:frontend`, `component`
-- **Location**: `Buy2.Frontend/src/app/features/schedules/schedule-board.component.ts`
-- **Instructions**: Create component `ScheduleBoardComponent` displaying weekly shift grid and validation warning badges per Figma.
-
-#### Task 74: `[Frontend] Create ShiftMarketComponent`
-- **Difficulty**: Medium
-- **Labels**: `good first issue`, `layer:frontend`, `component`
-- **Location**: `Buy2.Frontend/src/app/features/shift-market/shift-market.component.ts`
-- **Instructions**: Create component `ShiftMarketComponent` listing available open shifts with 'Claim Shift' button per Figma.
-
-#### Task 75: `[Frontend] Create RewardsStoreComponent`
-- **Difficulty**: Medium
-- **Labels**: `good first issue`, `layer:frontend`, `component`
-- **Location**: `Buy2.Frontend/src/app/features/rewards/rewards-store.component.ts`
-- **Instructions**: Create component `RewardsStoreComponent` with points balance display, rewards card grid, and Excel upload button per Figma.
-
-#### Task 76: `[Frontend] Create EmployeeDocumentsComponent`
-- **Difficulty**: Medium
-- **Labels**: `good first issue`, `layer:frontend`, `component`
-- **Location**: `Buy2.Frontend/src/app/features/employees/employee-documents.component.ts`
-- **Instructions**: Create component `EmployeeDocumentsComponent` displaying document uploads and list of employee compliance files per Figma.
-
-#### Task 77: `[Frontend] Create PointsRulesAdminComponent`
-- **Difficulty**: Medium
-- **Labels**: `layer:frontend`, `component`
-- **Location**: `Buy2.Frontend/src/app/features/points/points-rules-admin.component.ts`
-- **Instructions**: Create component `PointsRulesAdminComponent` for managing point automation triggers and penalty/reward values per Figma.

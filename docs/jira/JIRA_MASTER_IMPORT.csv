@@ -299,7 +299,7 @@ Task,[API] Create RewardInventoryController,"**Task 66**: Create RewardInventory
 
 **Instructions**:
 1. Create ApiController `RewardInventoryController` at route `api/v1/rewards`.
-2. Add HTTP POST `{id}/inventory/upload` endpoint stub for Excel file upload.","layer:api,controller,good first issue"
+2. Add HTTP POST `{id}/inventory/upload` endpoint stub for bulk voucher Excel file.","layer:api,controller,good first issue"
 Task,[API] Create PointsRulesController,"**Task 67**: Create PointsRulesController
 
 **Target File Location**: `src/Buy2.Api/Controllers/PointsRulesController.cs`
@@ -314,66 +314,3 @@ Task,[API] Create RewardRedemptionController,"**Task 68**: Create RewardRedempti
 **Instructions**:
 1. Create ApiController `RewardRedemptionController` at route `api/v1/rewards`.
 2. Add HTTP POST `{id}/redeem` endpoint stub accepting `RedeemRewardDto`.","layer:api,controller,good first issue"
-Task,[Frontend] Create AuthService Angular Service,"**Task 69**: Create AuthService Angular Service
-
-**Target File Location**: `src/Buy2.Frontend/src/app/core/services/auth.service.ts`
-
-**Instructions**:
-1. Create injectable Angular service `AuthService`.
-2. Implement `login(req: LoginRequest)` method calling HttpClient.","layer:frontend,service,good first issue"
-Task,[Frontend] Create ScheduleService Angular Service,"**Task 70**: Create ScheduleService Angular Service
-
-**Target File Location**: `src/Buy2.Frontend/src/app/core/services/schedule.service.ts`
-
-**Instructions**:
-1. Create injectable Angular service `ScheduleService`.
-2. Implement `validateDraft(shifts: Shift[])` method calling HttpClient.","layer:frontend,service,good first issue"
-Task,[Frontend] Create LoginComponent Component,"**Task 71**: Create LoginComponent Component
-
-**Target File Location**: `src/Buy2.Frontend/src/app/features/auth/login.component.ts`
-
-**Instructions**:
-1. Create standalone Angular component `LoginComponent`.
-2. Build email and password reactive form per Figma.","layer:frontend,component,good first issue"
-Task,[Frontend] Create EmployeeDirectoryComponent,"**Task 72**: Create EmployeeDirectoryComponent
-
-**Target File Location**: `src/Buy2.Frontend/src/app/features/employees/employee-directory.component.ts`
-
-**Instructions**:
-1. Create standalone Angular component `EmployeeDirectoryComponent`.
-2. Build employee table grid with search filter per Figma.","layer:frontend,component,good first issue"
-Task,[Frontend] Create ScheduleBoardComponent,"**Task 73**: Create ScheduleBoardComponent
-
-**Target File Location**: `src/Buy2.Frontend/src/app/features/schedules/schedule-board.component.ts`
-
-**Instructions**:
-1. Create standalone Angular component `ScheduleBoardComponent`.
-2. Build weekly schedule canvas grid and validation warning badges per Figma.","layer:frontend,component"
-Task,[Frontend] Create ShiftMarketComponent,"**Task 74**: Create ShiftMarketComponent
-
-**Target File Location**: `src/Buy2.Frontend/src/app/features/shift-market/shift-market.component.ts`
-
-**Instructions**:
-1. Create standalone Angular component `ShiftMarketComponent`.
-2. Build open shifts list with Claim button per Figma.","layer:frontend,component,good first issue"
-Task,[Frontend] Create RewardsStoreComponent,"**Task 75**: Create RewardsStoreComponent
-
-**Target File Location**: `src/Buy2.Frontend/src/app/features/rewards/rewards-store.component.ts`
-
-**Instructions**:
-1. Create standalone Angular component `RewardsStoreComponent`.
-2. Build points wallet balance header, rewards card grid, and Excel upload button per Figma.","layer:frontend,component,good first issue"
-Task,[Frontend] Create EmployeeDocumentsComponent,"**Task 76**: Create EmployeeDocumentsComponent
-
-**Target File Location**: `src/Buy2.Frontend/src/app/features/employees/employee-documents.component.ts`
-
-**Instructions**:
-1. Create standalone Angular component `EmployeeDocumentsComponent`.
-2. Implement file upload template and document table per Figma.","layer:frontend,component,good first issue"
-Task,[Frontend] Create PointsRulesAdminComponent,"**Task 77**: Create PointsRulesAdminComponent
-
-**Target File Location**: `src/Buy2.Frontend/src/app/features/points/points-rules-admin.component.ts`
-
-**Instructions**:
-1. Create standalone Angular component `PointsRulesAdminComponent`.
-2. Build point rule creation form and penalty/reward list per Figma.","layer:frontend,component"
