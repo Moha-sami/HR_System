@@ -1,6 +1,9 @@
 import type { Routes } from '@angular/router';
 import { devGuard } from './core/guards/dev.guard';
-// import { LayoutComponent } from './layout/layout.component';
+
+
+import { Layout } from './layout/layout/layout';
+import { AddUserComponent } from './features/users/add-user/add-user.component';
 // import { authGuard } from './core/guards/auth.guard';
 
 /**
@@ -154,4 +157,122 @@ export const routes: Routes = [
   // // WILDCARD — Unknown paths redirect to dashboard
   // // ──────────────────────────────────────────────────────────────────────────
   // { path: '**', redirectTo: '' }
+
+
+
+ {
+    path: '',
+    component: Layout,
+    // canActivate: [authGuard],
+    children: [
+      // Default redirect → dashboard
+      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+
+      // ──────────────────────────────────────────────────────────────────────
+      // 8 — Analytics & Executive Insights
+      // ──────────────────────────────────────────────────────────────────────
+      // {
+      //   path: 'dashboard',
+      //   loadChildren: () => import('./features/dashboard/dashboard.routes').then(m => m.DASHBOARD_ROUTES)
+      // },
+
+      // ──────────────────────────────────────────────────────────────────────
+      //2.2 — Comprehensive Employee Profiles
+      // ──────────────────────────────────────────────────────────────────────
+      // {
+      //   path: 'employees',
+      //   loadChildren: () => import('./features/employees/employees.routes').then(m => m.EMPLOYEES_ROUTES)
+      // },
+
+      // ─────────────────────────────────────────────────────────────────────
+      //2.1 — Job Management & Role Engineering
+      // ──────────────────────────────────────────────────────────────────────
+      // {
+      //   path: 'jobs',
+      //   loadChildren: () => import('./features/jobs/jobs.routes').then(m => m.JOBS_ROUTES)
+      // },
+
+      // ──────────────────────────────────────────────────────────────────────
+      // 3.1 — Site & Location Management
+      // ──────────────────────────────────────────────────────────────────────
+      // {
+      //   path: 'sites',
+      //   loadChildren: () => import('./features/sites/sites.routes').then(m => m.SITES_ROUTES)
+      // },
+
+      // ──────────────────────────────────────────────────────────────────────
+      // 3.2 — Attendance Profiles & Tracking
+      // ──────────────────────────────────────────────────────────────────────
+      // {
+      //   path: 'attendance',
+      //   loadChildren: () => import('./features/attendance/attendance.routes').then(m => m.ATTENDANCE_ROUTES)
+      // },
+
+      // ──────────────────────────────────────────────────────────────────────
+      // 4 — Advanced Scheduling Engine
+      // ──────────────────────────────────────────────────────────────────────
+      // {
+      //   path: 'scheduling',
+      //   loadChildren: () => import('./features/scheduling/scheduling.routes').then(m => m.SCHEDULING_ROUTES)
+      // },
+
+      // ──────────────────────────────────────────────────────────────────────
+      // 5 — Internal Shift Market (Claims)
+      // ──────────────────────────────────────────────────────────────────────
+      // {
+      //   path: 'shift-market',
+      //   loadChildren: () => import('./features/shift-market/shift-market.routes').then(m => m.SHIFT_MARKET_ROUTES)
+      // },
+
+      // ──────────────────────────────────────────────────────────────────────
+      // 6 — Performance & Points Automation
+      // ──────────────────────────────────────────────────────────────────────
+      // {
+      //   path: 'gamification',
+      //   loadChildren: () => import('./features/gamification/gamification.routes').then(m => m.GAMIFICATION_ROUTES)
+      // },
+
+      // ──────────────────────────────────────────────────────────────────────
+      // 7 — Rewards & Inventory Management
+      // ──────────────────────────────────────────────────────────────────────
+      // {
+      //   path: 'rewards',
+      //   loadChildren: () => import('./features/rewards/rewards.routes').then(m => m.REWARDS_ROUTES)
+      // },
+
+      // ──────────────────────────────────────────────────────────────────────
+      // Org Structure — Department Management
+      // ──────────────────────────────────────────────────────────────────────
+      // {
+      //   path: 'departments',
+      //   loadChildren: () => import('./features/departments/departments.routes').then(m => m.DEPARTMENTS_ROUTES)
+      // },
+
+      // ──────────────────────────────────────────────────────────────────────
+      // User Profile & Company Config
+      // ──────────────────────────────────────────────────────────────────────
+      // {
+      //   path: 'settings',
+      //   loadChildren: () => import('./features/settings/settings.routes').then(m => m.SETTINGS_ROUTES)
+      // },
+
+      // ──────────────────────────────────────────────────────────────────────
+      // User Management — Add New User
+      // ──────────────────────────────────────────────────────────────────────
+      {
+        path: 'users',
+        children: [
+          { path: 'add', component: AddUserComponent },
+          { path: '', redirectTo: 'add', pathMatch: 'full' }
+        ]
+      },
+    ]
+  },
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // WILDCARD — Unknown paths redirect to dashboard
+  // ──────────────────────────────────────────────────────────────────────────
+  { path: '**', redirectTo: 'dashboard' }
 ];
+
+

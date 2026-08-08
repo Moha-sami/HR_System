@@ -1,0 +1,133 @@
+<div class="add-user-wrapper">
+  <!-- Page Header Breadcrumb -->
+  <div class="page-header">
+    <span class="breadcrumb-parent">User Management</span>
+    <span class="breadcrumb-sep">›</span>
+    <span class="breadcrumb-current">Add new user</span>
+  </div>
+
+  <div class="form-divider-top"></div>
+
+  <!-- Form Body -->
+  <div class="form-body">
+
+    <!-- Name -->
+    <div class="form-row">
+      <label class="form-label">Name</label>
+      <div class="form-inputs-group">
+        <input
+          type="text"
+          class="form-input"
+          placeholder="First name"
+          [(ngModel)]="user.firstName"
+          id="firstName"
+          name="firstName"
+        />
+        <input
+          type="text"
+          class="form-input"
+          placeholder="Last name"
+          [(ngModel)]="user.lastName"
+          id="lastName"
+          name="lastName"
+        />
+      </div>
+    </div>
+
+    <!-- Age / Date of Birth -->
+    <div class="form-row">
+      <label class="form-label">Age</label>
+      <div class="form-inputs-group full-width">
+        <input
+          type="text"
+          class="form-input date-input"
+          placeholder="DD/ MM/YY"
+          [(ngModel)]="user.birthDate"
+          id="birthDate"
+          name="birthDate"
+          onfocus="this.type='date'"
+          onblur="if(!this.value) this.type='text'"
+        />
+      </div>
+    </div>
+
+    <!-- Email -->
+    <div class="form-row">
+      <label class="form-label">Email</label>
+      <div class="form-inputs-group full-width">
+        <input
+          type="email"
+          class="form-input"
+          placeholder="Info&#64;gmail.com"
+          [(ngModel)]="user.email"
+          id="email"
+          name="email"
+        />
+      </div>
+    </div>
+
+    <!-- Roles -->
+    <div class="form-row">
+      <label class="form-label">Roles</label>
+      <div class="form-inputs-group full-width">
+        <div class="custom-select-wrapper">
+          <select
+            class="form-select"
+            [(ngModel)]="user.role"
+            id="role"
+            name="role"
+          >
+            <option value="" disabled selected>Choose roles</option>
+            <option *ngFor="let r of roles" [value]="r">{{ r }}</option>
+          </select>
+          <span class="select-arrow">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Gender -->
+    <div class="form-row">
+      <label class="form-label">Gender</label>
+      <div class="form-inputs-group radio-group">
+        <label class="radio-label" [class.active]="user.gender === 'male'">
+          <input
+            type="radio"
+            name="gender"
+            value="male"
+            [(ngModel)]="user.gender"
+            id="genderMale"
+          />
+          <span class="radio-circle">
+            <span class="radio-dot" *ngIf="user.gender === 'male'"></span>
+          </span>
+          Male
+        </label>
+
+        <label class="radio-label" [class.active]="user.gender === 'female'">
+          <input
+            type="radio"
+            name="gender"
+            value="female"
+            [(ngModel)]="user.gender"
+            id="genderFemale"
+          />
+          <span class="radio-circle">
+            <span class="radio-dot" *ngIf="user.gender === 'female'"></span>
+          </span>
+          Female
+        </label>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Divider + Actions -->
+  <div class="form-divider-bottom"></div>
+
+  <div class="form-actions">
+    <button class="btn-discard" (click)="onDiscard()" id="discardBtn">Discard</button>
+    <button class="btn-save" (click)="onSave()" id="saveBtn">Save</button>
+  </div>
+</div>
