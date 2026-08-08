@@ -1,0 +1,379 @@
+Issue Type,Summary,Description,Labels
+Task,[Domain] Create EmployeeDocument Entity,"**Task 26**: Create EmployeeDocument Entity
+
+**Target File Location**: `src/Buy2.Domain/Entities/EmployeeDocument.cs`
+
+**Instructions**:
+1. Create `EmployeeDocument.cs` class in `Buy2.Domain.Entities`.
+2. Inherit from `BaseEntity`.
+3. Add properties: `EmployeeId` (int), `Category` (string), `StorageUrl` (string).
+4. Add virtual navigation property for `Employee`.","layer:domain,entity,good first issue"
+Task,[Domain] Create DisciplinaryViolation Entity,"**Task 27**: Create DisciplinaryViolation Entity
+
+**Target File Location**: `src/Buy2.Domain/Entities/DisciplinaryViolation.cs`
+
+**Instructions**:
+1. Create `DisciplinaryViolation.cs` class in `Buy2.Domain.Entities`.
+2. Inherit from `BaseEntity`.
+3. Add properties: `EmployeeId` (int), `Severity` (string), `Description` (string).
+4. Add virtual navigation property for `Employee`.","layer:domain,entity,good first issue"
+Task,[Domain] Create PointsTransaction Entity,"**Task 28**: Create PointsTransaction Entity
+
+**Target File Location**: `src/Buy2.Domain/Entities/PointsTransaction.cs`
+
+**Instructions**:
+1. Create `PointsTransaction.cs` class in `Buy2.Domain.Entities`.
+2. Inherit from `BaseEntity`.
+3. Add properties: `EmployeeId` (int), `PointsRuleId` (int?), `Amount` (int), `TransactionType` (string).
+4. Add virtual navigation properties for `Employee` and optional `PointsRule`.","layer:domain,entity,good first issue"
+Task,[Domain] Create RewardRedemption Entity,"**Task 29**: Create RewardRedemption Entity
+
+**Target File Location**: `src/Buy2.Domain/Entities/RewardRedemption.cs`
+
+**Instructions**:
+1. Create `RewardRedemption.cs` class in `Buy2.Domain.Entities`.
+2. Inherit from `BaseEntity`.
+3. Add properties: `RewardItemId` (int), `EmployeeId` (int), `VoucherCode` (string), `RedeemedAt` (DateTimeOffset).
+4. Add virtual navigation properties for `Employee` and `RewardItem`.","layer:domain,entity,good first issue"
+Task,[Application] Create IUnitOfWork Interface,"**Task 30**: Create IUnitOfWork Interface
+
+**Target File Location**: `src/Buy2.Application/Common/Interfaces/IUnitOfWork.cs`
+
+**Instructions**:
+1. Create interface `IUnitOfWork` under `Buy2.Application.Common.Interfaces`.
+2. Add method signature `Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)`.","layer:application,interface,good first issue"
+Task,[Application] Create UploadEmployeeDocumentDto Record,"**Task 31**: Create UploadEmployeeDocumentDto Record
+
+**Target File Location**: `src/Buy2.Application/Employees/DTOs/DocumentDtos.cs`
+
+**Instructions**:
+1. Create file `DocumentDtos.cs` under `Buy2.Application.Employees.DTOs`.
+2. Define record DTO for uploading employee documents with positional parameters `EmployeeId`, `Category`, and `StorageUrl`.","layer:application,dto,good first issue"
+Task,[Application] Create LogDisciplinaryViolationDto Record,"**Task 32**: Create LogDisciplinaryViolationDto Record
+
+**Target File Location**: `src/Buy2.Application/Employees/DTOs/ViolationDtos.cs`
+
+**Instructions**:
+1. Create file `ViolationDtos.cs` under `Buy2.Application.Employees.DTOs`.
+2. Define record DTO for logging violations with positional parameters `EmployeeId`, `Severity`, and `Description`.","layer:application,dto,good first issue"
+Task,[Application] Create PointsTransactionDto Record,"**Task 33**: Create PointsTransactionDto Record
+
+**Target File Location**: `src/Buy2.Application/Points/DTOs/PointsTransactionDtos.cs`
+
+**Instructions**:
+1. Create file `PointsTransactionDtos.cs` under `Buy2.Application.Points.DTOs`.
+2. Define record DTO for points transactions with positional parameters `EmployeeId`, nullable `PointsRuleId`, `Amount`, and `TransactionType`.","layer:application,dto,good first issue"
+Task,[Application] Create RedeemRewardDto Record,"**Task 34**: Create RedeemRewardDto Record
+
+**Target File Location**: `src/Buy2.Application/Rewards/DTOs/RedemptionDtos.cs`
+
+**Instructions**:
+1. Create file `RedemptionDtos.cs` under `Buy2.Application.Rewards.DTOs`.
+2. Define record DTO for reward redemption with positional parameters `RewardItemId` and `EmployeeId`.","layer:application,dto,good first issue"
+Task,[Infrastructure] Create Buy2DbContext Class,"**Task 35**: Create Buy2DbContext Class
+
+**Target File Location**: `src/Buy2.Infrastructure/Persistence/Buy2DbContext.cs`
+
+**Instructions**:
+1. Inherit from `DbContext`.
+2. Add `DbSet<T>` properties for all domain entities.
+3. Override `OnModelCreating` to apply configurations from assembly.","layer:infrastructure,database"
+Task,[Infrastructure] Create EmployeeConfiguration Class,"**Task 36**: Create EmployeeConfiguration Class
+
+**Target File Location**: `src/Buy2.Infrastructure/Persistence/Configurations/EmployeeConfiguration.cs`
+
+**Instructions**:
+1. Implement `IEntityTypeConfiguration<Employee>`.
+2. Configure column rules: `FirstName` (required nvarchar 50), `LastName` (required nvarchar 50), `Email` (required varchar 150, unique index), `PhoneNumber` (optional varchar 20).
+3. Configure relationships for `JobRole`, `Role`, `Site`, and `AttendanceProfile` with `DeleteBehavior.Restrict`.","layer:infrastructure,database"
+Task,[Infrastructure] Create RoleConfiguration Class,"**Task 37**: Create RoleConfiguration Class
+
+**Target File Location**: `src/Buy2.Infrastructure/Persistence/Configurations/RoleConfiguration.cs`
+
+**Instructions**:
+1. Implement `IEntityTypeConfiguration<Role>`.
+2. Configure column rules: `RoleName` (required nvarchar 50, unique index), `PermissionsJson` (required nvarchar max).","layer:infrastructure,database"
+Task,[Infrastructure] Create SiteConfiguration Class,"**Task 38**: Create SiteConfiguration Class
+
+**Target File Location**: `src/Buy2.Infrastructure/Persistence/Configurations/SiteConfiguration.cs`
+
+**Instructions**:
+1. Implement `IEntityTypeConfiguration<Site>`.
+2. Configure column rules: `SiteName` (required nvarchar 100), `Latitude` & `Longitude` (required decimal 9,6), `MacAddressWhitelistJson` (optional nvarchar max).","layer:infrastructure,database"
+Task,[Infrastructure] Create ShiftConfiguration Class,"**Task 39**: Create ShiftConfiguration Class
+
+**Target File Location**: `src/Buy2.Infrastructure/Persistence/Configurations/ShiftConfiguration.cs`
+
+**Instructions**:
+1. Implement `IEntityTypeConfiguration<Shift>`.
+2. Configure column rules: `StartTime` & `EndTime` (required datetimeoffset), `IsPublished` (required bool, default false).
+3. Configure relationships for `Employee`, `Site`, and `JobRole` with `DeleteBehavior.Restrict`.","layer:infrastructure,database"
+Task,[Infrastructure] Create ShiftClaimConfiguration Class,"**Task 40**: Create ShiftClaimConfiguration Class
+
+**Target File Location**: `src/Buy2.Infrastructure/Persistence/Configurations/ShiftClaimConfiguration.cs`
+
+**Instructions**:
+1. Implement `IEntityTypeConfiguration<ShiftClaim>`.
+2. Configure column rules: `Status` (required varchar 20), `OvertimeJustification` (optional nvarchar 500).
+3. Configure relationships: `Shift` (`DeleteBehavior.Cascade`) and `Employee` (`DeleteBehavior.Restrict`).","layer:infrastructure,database"
+Task,[Infrastructure] Create EmployeeDocumentConfiguration Class,"**Task 41**: Create EmployeeDocumentConfiguration Class
+
+**Target File Location**: `src/Buy2.Infrastructure/Persistence/Configurations/EmployeeDocumentConfiguration.cs`
+
+**Instructions**:
+1. Implement `IEntityTypeConfiguration<EmployeeDocument>`.
+2. Configure column rules: `Category` (required nvarchar 50), `StorageUrl` (required varchar 500).
+3. Configure relationship to `Employee` with `DeleteBehavior.Cascade`.","layer:infrastructure,database"
+Task,[Infrastructure] Create DisciplinaryViolationConfiguration Class,"**Task 42**: Create DisciplinaryViolationConfiguration Class
+
+**Target File Location**: `src/Buy2.Infrastructure/Persistence/Configurations/DisciplinaryViolationConfiguration.cs`
+
+**Instructions**:
+1. Implement `IEntityTypeConfiguration<DisciplinaryViolation>`.
+2. Configure column rules: `Severity` (required varchar 20), `Description` (required nvarchar 1000).
+3. Configure relationship to `Employee` with `DeleteBehavior.Cascade`.","layer:infrastructure,database"
+Task,[Infrastructure] Create PointsTransactionConfiguration Class,"**Task 43**: Create PointsTransactionConfiguration Class
+
+**Target File Location**: `src/Buy2.Infrastructure/Persistence/Configurations/PointsTransactionConfiguration.cs`
+
+**Instructions**:
+1. Implement `IEntityTypeConfiguration<PointsTransaction>`.
+2. Configure column rules: `Amount` (required int), `TransactionType` (required varchar 30).
+3. Configure relationships: `Employee` (`DeleteBehavior.Restrict`) and optional `PointsRule` (`DeleteBehavior.SetNull`).","layer:infrastructure,database"
+Task,[Infrastructure] Create RewardRedemptionConfiguration Class,"**Task 44**: Create RewardRedemptionConfiguration Class
+
+**Target File Location**: `src/Buy2.Infrastructure/Persistence/Configurations/RewardRedemptionConfiguration.cs`
+
+**Instructions**:
+1. Implement `IEntityTypeConfiguration<RewardRedemption>`.
+2. Configure column rules: `VoucherCode` (required varchar 100, unique index), `RedeemedAt` (required datetimeoffset).
+3. Configure relationships for `Employee` and `RewardItem` with `DeleteBehavior.Restrict`.","layer:infrastructure,database"
+Task,[Infrastructure] Create GenericRepository Implementation,"**Task 45**: Create GenericRepository Implementation
+
+**Target File Location**: `src/Buy2.Infrastructure/Persistence/Repositories/GenericRepository.cs`
+
+**Instructions**:
+1. Implement `IRepository<T>` using `Buy2DbContext`.
+2. Provide EF Core CRUD method implementations.","layer:infrastructure,repository"
+Task,[Infrastructure] Create UnitOfWork Implementation,"**Task 46**: Create UnitOfWork Implementation
+
+**Target File Location**: `src/Buy2.Infrastructure/Persistence/Repositories/UnitOfWork.cs`
+
+**Instructions**:
+1. Implement `IUnitOfWork` wrapping `Buy2DbContext.SaveChangesAsync()`.","layer:infrastructure,repository"
+Task,[Infrastructure] Create JwtTokenGenerator Implementation,"**Task 47**: Create JwtTokenGenerator Implementation
+
+**Target File Location**: `src/Buy2.Infrastructure/Authentication/JwtTokenGenerator.cs`
+
+**Instructions**:
+1. Implement `IJwtTokenGenerator` using `System.IdentityModel.Tokens.Jwt`.","layer:infrastructure,authentication"
+Task,[Infrastructure] Create ScheduleValidationEngine Stub,"**Task 48**: Create ScheduleValidationEngine Stub
+
+**Target File Location**: `src/Buy2.Infrastructure/Services/ScheduleValidationEngine.cs`
+
+**Instructions**:
+1. Implement `IScheduleValidationEngine`.
+2. Return mock `PreFlightValidationResultDto(true, new(), new())`.","layer:infrastructure,service"
+Task,[Infrastructure] Create ExcelVoucherParser Stub,"**Task 49**: Create ExcelVoucherParser Stub
+
+**Target File Location**: `src/Buy2.Infrastructure/Services/ExcelVoucherParser.cs`
+
+**Instructions**:
+1. Create class `ExcelVoucherParser` with method `List<string> ParseExcelCodes(Stream stream)` throwing `NotImplementedException`.","layer:infrastructure,service"
+Task,[Infrastructure] Create Infrastructure DependencyInjection Setup,"**Task 50**: Create Infrastructure DependencyInjection Setup
+
+**Target File Location**: `src/Buy2.Infrastructure/DependencyInjection.cs`
+
+**Instructions**:
+1. Create static class `DependencyInjection` in `Buy2.Infrastructure`.
+2. Add extension method `AddInfrastructureServices` for `IServiceCollection` accepting `IConfiguration`.
+3. Register DbContext and repositories into DI container.","layer:infrastructure,service"
+Task,[API] Create AuthLoginController,"**Task 51**: Create AuthLoginController
+
+**Target File Location**: `src/Buy2.Api/Controllers/AuthLoginController.cs`
+
+**Instructions**:
+1. Create ApiController `AuthLoginController` at route `api/v1/auth`.
+2. Add HTTP POST endpoint stub `login` accepting `LoginRequestDto`.","layer:api,controller,good first issue"
+Task,[API] Create AuthPasswordResetController,"**Task 52**: Create AuthPasswordResetController
+
+**Target File Location**: `src/Buy2.Api/Controllers/AuthPasswordResetController.cs`
+
+**Instructions**:
+1. Create ApiController `AuthPasswordResetController` at route `api/v1/auth`.
+2. Add HTTP POST endpoint stub `password/reset`.","layer:api,controller,good first issue"
+Task,[API] Create CreateRoleController,"**Task 53**: Create CreateRoleController
+
+**Target File Location**: `src/Buy2.Api/Controllers/CreateRoleController.cs`
+
+**Instructions**:
+1. Create ApiController `CreateRoleController` at route `api/v1/roles`.
+2. Add HTTP POST create role endpoint stub accepting `CreateRoleDto`.","layer:api,controller,good first issue"
+Task,[API] Create DeleteRoleController,"**Task 54**: Create DeleteRoleController
+
+**Target File Location**: `src/Buy2.Api/Controllers/DeleteRoleController.cs`
+
+**Instructions**:
+1. Create ApiController `DeleteRoleController` at route `api/v1/roles`.
+2. Add HTTP DELETE endpoint stub `{id}` for soft deleting a role.","layer:api,controller,good first issue"
+Task,[API] Create EmployeeOnboardingController,"**Task 55**: Create EmployeeOnboardingController
+
+**Target File Location**: `src/Buy2.Api/Controllers/EmployeeOnboardingController.cs`
+
+**Instructions**:
+1. Create ApiController `EmployeeOnboardingController` at route `api/v1/employees`.
+2. Add HTTP POST `onboard` endpoint stub accepting `OnboardEmployeeDto`.","layer:api,controller,good first issue"
+Task,[API] Create EmployeeAttendanceConfigController,"**Task 56**: Create EmployeeAttendanceConfigController
+
+**Target File Location**: `src/Buy2.Api/Controllers/EmployeeAttendanceConfigController.cs`
+
+**Instructions**:
+1. Create ApiController `EmployeeAttendanceConfigController` at route `api/v1/employees`.
+2. Add HTTP PUT `{id}/attendance-config` endpoint stub.","layer:api,controller,good first issue"
+Task,[API] Create EmployeeDocumentsController,"**Task 57**: Create EmployeeDocumentsController
+
+**Target File Location**: `src/Buy2.Api/Controllers/EmployeeDocumentsController.cs`
+
+**Instructions**:
+1. Create ApiController `EmployeeDocumentsController` at route `api/v1/employees`.
+2. Add HTTP POST `{id}/documents` endpoint stub accepting `UploadEmployeeDocumentDto`.","layer:api,controller,good first issue"
+Task,[API] Create DisciplinaryViolationsController,"**Task 58**: Create DisciplinaryViolationsController
+
+**Target File Location**: `src/Buy2.Api/Controllers/DisciplinaryViolationsController.cs`
+
+**Instructions**:
+1. Create ApiController `DisciplinaryViolationsController` at route `api/v1/employees`.
+2. Add HTTP POST `{id}/violations` endpoint stub accepting `LogDisciplinaryViolationDto`.","layer:api,controller,good first issue"
+Task,[API] Create CreateSiteController,"**Task 59**: Create CreateSiteController
+
+**Target File Location**: `src/Buy2.Api/Controllers/CreateSiteController.cs`
+
+**Instructions**:
+1. Create ApiController `CreateSiteController` at route `api/v1/sites`.
+2. Add HTTP POST create site endpoint stub accepting `CreateSiteDto`.","layer:api,controller,good first issue"
+Task,[API] Create GetSitesController,"**Task 60**: Create GetSitesController
+
+**Target File Location**: `src/Buy2.Api/Controllers/GetSitesController.cs`
+
+**Instructions**:
+1. Create ApiController `GetSitesController` at route `api/v1/sites`.
+2. Add HTTP GET endpoint stub returning site collection.","layer:api,controller,good first issue"
+Task,[API] Create ScheduleValidationController,"**Task 61**: Create ScheduleValidationController
+
+**Target File Location**: `src/Buy2.Api/Controllers/ScheduleValidationController.cs`
+
+**Instructions**:
+1. Create ApiController `ScheduleValidationController` at route `api/v1/schedules`.
+2. Add HTTP POST `validate-draft` endpoint stub.","layer:api,controller,good first issue"
+Task,[API] Create SchedulePublishController,"**Task 62**: Create SchedulePublishController
+
+**Target File Location**: `src/Buy2.Api/Controllers/SchedulePublishController.cs`
+
+**Instructions**:
+1. Create ApiController `SchedulePublishController` at route `api/v1/schedules`.
+2. Add HTTP POST `publish` endpoint stub.","layer:api,controller,good first issue"
+Task,[API] Create OpenShiftsController,"**Task 63**: Create OpenShiftsController
+
+**Target File Location**: `src/Buy2.Api/Controllers/OpenShiftsController.cs`
+
+**Instructions**:
+1. Create ApiController `OpenShiftsController` at route `api/v1/shift-market`.
+2. Add HTTP GET `open-shifts` endpoint stub.","layer:api,controller,good first issue"
+Task,[API] Create ShiftClaimsController,"**Task 64**: Create ShiftClaimsController
+
+**Target File Location**: `src/Buy2.Api/Controllers/ShiftClaimsController.cs`
+
+**Instructions**:
+1. Create ApiController `ShiftClaimsController` at route `api/v1/shift-market`.
+2. Add HTTP POST `claims/{id}` endpoint stub accepting `ClaimShiftDto`.","layer:api,controller,good first issue"
+Task,[API] Create CreateRewardController,"**Task 65**: Create CreateRewardController
+
+**Target File Location**: `src/Buy2.Api/Controllers/CreateRewardController.cs`
+
+**Instructions**:
+1. Create ApiController `CreateRewardController` at route `api/v1/rewards`.
+2. Add HTTP POST reward creation endpoint stub accepting `RewardItemDto`.","layer:api,controller,good first issue"
+Task,[API] Create RewardInventoryController,"**Task 66**: Create RewardInventoryController
+
+**Target File Location**: `src/Buy2.Api/Controllers/RewardInventoryController.cs`
+
+**Instructions**:
+1. Create ApiController `RewardInventoryController` at route `api/v1/rewards`.
+2. Add HTTP POST `{id}/inventory/upload` endpoint stub for Excel file upload.","layer:api,controller,good first issue"
+Task,[API] Create PointsRulesController,"**Task 67**: Create PointsRulesController
+
+**Target File Location**: `src/Buy2.Api/Controllers/PointsRulesController.cs`
+
+**Instructions**:
+1. Create ApiController `PointsRulesController` at route `api/v1/points`.
+2. Add HTTP POST `rules` endpoint stub accepting `CreatePointsRuleDto`.","layer:api,controller,good first issue"
+Task,[API] Create RewardRedemptionController,"**Task 68**: Create RewardRedemptionController
+
+**Target File Location**: `src/Buy2.Api/Controllers/RewardRedemptionController.cs`
+
+**Instructions**:
+1. Create ApiController `RewardRedemptionController` at route `api/v1/rewards`.
+2. Add HTTP POST `{id}/redeem` endpoint stub accepting `RedeemRewardDto`.","layer:api,controller,good first issue"
+Task,[Frontend] Create AuthService Angular Service,"**Task 69**: Create AuthService Angular Service
+
+**Target File Location**: `src/Buy2.Frontend/src/app/core/services/auth.service.ts`
+
+**Instructions**:
+1. Create injectable Angular service `AuthService`.
+2. Implement `login(req: LoginRequest)` method calling HttpClient.","layer:frontend,service,good first issue"
+Task,[Frontend] Create ScheduleService Angular Service,"**Task 70**: Create ScheduleService Angular Service
+
+**Target File Location**: `src/Buy2.Frontend/src/app/core/services/schedule.service.ts`
+
+**Instructions**:
+1. Create injectable Angular service `ScheduleService`.
+2. Implement `validateDraft(shifts: Shift[])` method calling HttpClient.","layer:frontend,service,good first issue"
+Task,[Frontend] Create LoginComponent Component,"**Task 71**: Create LoginComponent Component
+
+**Target File Location**: `src/Buy2.Frontend/src/app/features/auth/login.component.ts`
+
+**Instructions**:
+1. Create standalone Angular component `LoginComponent`.
+2. Build email and password reactive form per Figma.","layer:frontend,component,good first issue"
+Task,[Frontend] Create EmployeeDirectoryComponent,"**Task 72**: Create EmployeeDirectoryComponent
+
+**Target File Location**: `src/Buy2.Frontend/src/app/features/employees/employee-directory.component.ts`
+
+**Instructions**:
+1. Create standalone Angular component `EmployeeDirectoryComponent`.
+2. Build employee table grid with search filter per Figma.","layer:frontend,component,good first issue"
+Task,[Frontend] Create ScheduleBoardComponent,"**Task 73**: Create ScheduleBoardComponent
+
+**Target File Location**: `src/Buy2.Frontend/src/app/features/schedules/schedule-board.component.ts`
+
+**Instructions**:
+1. Create standalone Angular component `ScheduleBoardComponent`.
+2. Build weekly schedule canvas grid and validation warning badges per Figma.","layer:frontend,component"
+Task,[Frontend] Create ShiftMarketComponent,"**Task 74**: Create ShiftMarketComponent
+
+**Target File Location**: `src/Buy2.Frontend/src/app/features/shift-market/shift-market.component.ts`
+
+**Instructions**:
+1. Create standalone Angular component `ShiftMarketComponent`.
+2. Build open shifts list with Claim button per Figma.","layer:frontend,component,good first issue"
+Task,[Frontend] Create RewardsStoreComponent,"**Task 75**: Create RewardsStoreComponent
+
+**Target File Location**: `src/Buy2.Frontend/src/app/features/rewards/rewards-store.component.ts`
+
+**Instructions**:
+1. Create standalone Angular component `RewardsStoreComponent`.
+2. Build points wallet balance header, rewards card grid, and Excel upload button per Figma.","layer:frontend,component,good first issue"
+Task,[Frontend] Create EmployeeDocumentsComponent,"**Task 76**: Create EmployeeDocumentsComponent
+
+**Target File Location**: `src/Buy2.Frontend/src/app/features/employees/employee-documents.component.ts`
+
+**Instructions**:
+1. Create standalone Angular component `EmployeeDocumentsComponent`.
+2. Implement file upload template and document table per Figma.","layer:frontend,component,good first issue"
+Task,[Frontend] Create PointsRulesAdminComponent,"**Task 77**: Create PointsRulesAdminComponent
+
+**Target File Location**: `src/Buy2.Frontend/src/app/features/points/points-rules-admin.component.ts`
+
+**Instructions**:
+1. Create standalone Angular component `PointsRulesAdminComponent`.
+2. Build point rule creation form and penalty/reward list per Figma.","layer:frontend,component"
