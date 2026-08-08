@@ -1,4 +1,4 @@
-namespace Buy2.Application.DTOs;
+namespace Buy2.Application.DTOs.Employees;
 
 public record OnboardEmployeeDto(
     string FirstName,
