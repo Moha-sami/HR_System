@@ -11,24 +11,23 @@ This file breaks down the entire project into atomic, step-by-step tasks suitabl
 To ensure automatic tracking between GitHub and Jira, follow these simple naming rules:
 
 1. **Git Branch Name**: Include the Jira Issue Key (e.g., `SCRUM-105`):
-   - Example: `SCRUM-105-create-login-command-and-handler` or `feature/SCRUM-105-login-command`
+   - Example: `SCRUM-105-create-login-endpoint-vertical-slice` or `feature/SCRUM-105-login-endpoint`
    - *Tip: Click "Create branch" inside your Jira task card to copy the exact branch name automatically.*
 
 2. **Commit Message Format**:
-   - Example: `SCRUM-105: [Application] Create LoginCommand and Handler`
+   - Example: `SCRUM-105: [Feature Slice] Create Login Endpoint (Command, Handler & Controller)`
 
 3. **Pull Request (PR) Title**:
-   - Example: `SCRUM-105: [Application] Create LoginCommand and Handler`
+   - Example: `SCRUM-105: [Feature Slice] Create Login Endpoint (Command, Handler & Controller)`
 
 ---
 
 ## Instructions for Team Members & Contributors
 
 1. Pick an unassigned task from your **Jira Sprint Board**.
-2. Create your working git branch including the Jira key (e.g., `SCRUM-105-login-command`).
-3. Each task requires creating a **clean structure only**: a class, record DTO, MediatR command/handler, DbContext configuration, or API controller.
-4. Methods should only have signatures throwing `NotImplementedException` or returning default values. No complex business logic is needed in initial stubs!
-5. Submit your **Pull Request directly targeting `main`**. Once merged by the lead, Jira automatically updates your task to **Done**!
+2. Create your working git branch including the Jira key (e.g., `SCRUM-105-login-endpoint`).
+3. Each task represents a **Vertical Slice**: implement the MediatR Command/Query, the Handler with business logic in `Buy2.Application`, and the API Controller in `Buy2.Api` in a single PR!
+4. Submit your **Pull Request directly targeting `main`**. Once merged by the lead, Jira automatically updates your task to **Done**!
 
 ---
 
@@ -36,16 +35,11 @@ To ensure automatic tracking between GitHub and Jira, follow these simple naming
 
 ### Suggested GitHub Labels
 - `good first issue`: Ideal for beginners. Very small and safe.
-- `layer:domain`: Code belongs in `Buy2.Domain`.
-- `layer:application`: Code belongs in `Buy2.Application`.
 - `layer:infrastructure`: Code belongs in `Buy2.Infrastructure`.
-- `layer:api`: Code belongs in `Buy2.Api`.
+- `feature:slice`: Complete end-to-end feature (MediatR Command + Handler + Controller).
 - `entity`: Entity model class.
-- `enum`: Named options enumeration.
-- `dto`: Data transfer object record.
-- `interface`: Contract definition.
-- `mediatr`: MediatR Command or Query + Handler.
-- `controller`: API HTTP controller.
+- `database`: EF Core configuration / DbContext.
+- `repository`: Repository pattern implementation.
 
 ---
 
@@ -88,7 +82,7 @@ To ensure automatic tracking between GitHub and Jira, follow these simple naming
 
 ---
 
-## Active Backend Roadmap (Tasks 35-78)
+## Active Backend Roadmap (Tasks 35-64)
 
 ---
 
@@ -176,116 +170,130 @@ To ensure automatic tracking between GitHub and Jira, follow these simple naming
 
 ---
 
-### Phase 4: MediatR Commands/Queries & Injected API Controllers (Feature Slices)
+### Phase 4: Vertical Slice Endpoints (Command, Handler & Injected Controller in One PR)
 
-#### Task 51: `[Application] Create LoginCommand and Handler`
-- **Location**: `Buy2.Application/Features/Authentication/Login/LoginCommand.cs`
-- **Instructions**: Define `LoginCommand` record implementing `IRequest<LoginResponseDto>`. Implement `LoginCommandHandler` consuming `IUnitOfWork` and `IJwtTokenGenerator`.
+#### Task 51: `[Feature Slice] Create Login Endpoint (Command, Handler & Controller)`
+- **Locations**:
+  - `src/Buy2.Application/Features/Authentication/Login/LoginCommand.cs`
+  - `src/Buy2.Api/Controllers/AuthLoginController.cs`
+- **Handler Business Logic**:
+  1. Define `LoginCommand(string Email, string Password) : IRequest<LoginResponseDto>`.
+  2. In `LoginCommandHandler`: Validate email exists via `IRepository<Employee>`, verify password hash, generate JWT token using `IJwtTokenGenerator`, return `LoginResponseDto(token, employee)`.
+  3. In `AuthLoginController`: Inject `ISender mediator`. Add `POST api/v1/auth/login` endpoint calling `await _mediator.Send(command)`.
 
-#### Task 52: `[API] Create AuthLoginController (MediatR Injected)`
-- **Location**: `Buy2.Api/Controllers/AuthLoginController.cs`
-- **Instructions**: Create `AuthLoginController` at `api/v1/auth`. Inject `ISender mediator`. Add HTTP POST `login` endpoint executing `_mediator.Send(command)`.
+#### Task 52: `[Feature Slice] Create Password Reset Endpoint (Command, Handler & Controller)`
+- **Locations**:
+  - `src/Buy2.Application/Features/Authentication/ResetPassword/ResetPasswordCommand.cs`
+  - `src/Buy2.Api/Controllers/AuthPasswordResetController.cs`
+- **Handler Business Logic**:
+  1. Define `ResetPasswordCommand(string Email, string NewPassword) : IRequest<bool>`.
+  2. In `ResetPasswordCommandHandler`: Query employee by email, hash new password, update employee record via `IUnitOfWork`, return true.
+  3. In `AuthPasswordResetController`: Inject `ISender mediator`. Add `POST api/v1/auth/password/reset` calling `await _mediator.Send(command)`.
 
-#### Task 53: `[Application] Create ResetPasswordCommand and Handler`
-- **Location**: `Buy2.Application/Features/Authentication/ResetPassword/ResetPasswordCommand.cs`
-- **Instructions**: Define `ResetPasswordCommand` record implementing `IRequest<bool>`. Implement `ResetPasswordCommandHandler`.
+#### Task 53: `[Feature Slice] Create Role Creation Endpoint (Command, Handler & Controller)`
+- **Locations**:
+  - `src/Buy2.Application/Features/Roles/CreateRole/CreateRoleCommand.cs`
+  - `src/Buy2.Api/Controllers/CreateRoleController.cs`
+- **Handler Business Logic**:
+  1. Define `CreateRoleCommand(string RoleName, List<string> Permissions) : IRequest<int>`.
+  2. In `CreateRoleCommandHandler`: Check role name uniqueness, map permissions to JSON string, add `Role` entity via `IRepository<Role>`, save via `IUnitOfWork`, return `role.Id`.
+  3. In `CreateRoleController`: Inject `ISender mediator`. Add `POST api/v1/roles` calling `await _mediator.Send(command)`.
 
-#### Task 54: `[API] Create AuthPasswordResetController (MediatR Injected)`
-- **Location**: `Buy2.Api/Controllers/AuthPasswordResetController.cs`
-- **Instructions**: Create `AuthPasswordResetController` at `api/v1/auth`. Inject `ISender mediator`. Add HTTP POST `password/reset` endpoint executing `_mediator.Send(command)`.
+#### Task 54: `[Feature Slice] Create Soft Delete Role Endpoint (Command, Handler & Controller)`
+- **Locations**:
+  - `src/Buy2.Application/Features/Roles/DeleteRole/DeleteRoleCommand.cs`
+  - `src/Buy2.Api/Controllers/DeleteRoleController.cs`
+- **Handler Business Logic**:
+  1. Define `DeleteRoleCommand(int RoleId) : IRequest<bool>`.
+  2. In `DeleteRoleCommandHandler`: Retrieve role by id, ensure no active employees assigned, soft delete / set inactive via `IUnitOfWork`, return true.
+  3. In `DeleteRoleController`: Inject `ISender mediator`. Add `DELETE api/v1/roles/{id}` calling `await _mediator.Send(command)`.
 
-#### Task 55: `[Application] Create CreateRoleCommand and Handler`
-- **Location**: `Buy2.Application/Features/Roles/CreateRole/CreateRoleCommand.cs`
-- **Instructions**: Define `CreateRoleCommand` record implementing `IRequest<int>`. Implement `CreateRoleCommandHandler` consuming `IUnitOfWork`.
+#### Task 55: `[Feature Slice] Create Employee Onboarding Endpoint (Command, Handler & Controller)`
+- **Locations**:
+  - `src/Buy2.Application/Features/Employees/OnboardEmployee/OnboardEmployeeCommand.cs`
+  - `src/Buy2.Api/Controllers/EmployeeOnboardingController.cs`
+- **Handler Business Logic**:
+  1. Define `OnboardEmployeeCommand(string FirstName, string LastName, string Email, int JobRoleId, int SiteId) : IRequest<int>`.
+  2. In `OnboardEmployeeCommandHandler`: Check email uniqueness, verify JobRole and Site exist, instantiate `Employee` entity, save via `IUnitOfWork`, return `employee.Id`.
+  3. In `EmployeeOnboardingController`: Inject `ISender mediator`. Add `POST api/v1/employees/onboard` calling `await _mediator.Send(command)`.
 
-#### Task 56: `[API] Create CreateRoleController (MediatR Injected)`
-- **Location**: `Buy2.Api/Controllers/CreateRoleController.cs`
-- **Instructions**: Create `CreateRoleController` at `api/v1/roles`. Inject `ISender mediator`. Add HTTP POST endpoint executing `_mediator.Send(command)`.
+#### Task 56: `[Feature Slice] Create Upload Employee Document Endpoint (Command, Handler & Controller)`
+- **Locations**:
+  - `src/Buy2.Application/Features/Employees/UploadDocument/UploadEmployeeDocumentCommand.cs`
+  - `src/Buy2.Api/Controllers/EmployeeDocumentsController.cs`
+- **Handler Business Logic**:
+  1. Define `UploadEmployeeDocumentCommand(int EmployeeId, string Category, string StorageUrl) : IRequest<int>`.
+  2. In `UploadEmployeeDocumentCommandHandler`: Verify employee exists, instantiate `EmployeeDocument` entity, save via `IUnitOfWork`, return `document.Id`.
+  3. In `EmployeeDocumentsController`: Inject `ISender mediator`. Add `POST api/v1/employees/{id}/documents` calling `await _mediator.Send(command)`.
 
-#### Task 57: `[Application] Create DeleteRoleCommand and Handler`
-- **Location**: `Buy2.Application/Features/Roles/DeleteRole/DeleteRoleCommand.cs`
-- **Instructions**: Define `DeleteRoleCommand(int RoleId)` record implementing `IRequest<bool>`. Implement `DeleteRoleCommandHandler`.
+#### Task 57: `[Feature Slice] Create Log Disciplinary Violation Endpoint (Command, Handler & Controller)`
+- **Locations**:
+  - `src/Buy2.Application/Features/Employees/LogViolation/LogDisciplinaryViolationCommand.cs`
+  - `src/Buy2.Api/Controllers/DisciplinaryViolationsController.cs`
+- **Handler Business Logic**:
+  1. Define `LogDisciplinaryViolationCommand(int EmployeeId, string Severity, string Description) : IRequest<int>`.
+  2. In `LogDisciplinaryViolationCommandHandler`: Verify employee exists, instantiate `DisciplinaryViolation` entity, save via `IUnitOfWork`, return `violation.Id`.
+  3. In `DisciplinaryViolationsController`: Inject `ISender mediator`. Add `POST api/v1/employees/{id}/violations` calling `await _mediator.Send(command)`.
 
-#### Task 58: `[API] Create DeleteRoleController (MediatR Injected)`
-- **Location**: `Buy2.Api/Controllers/DeleteRoleController.cs`
-- **Instructions**: Create `DeleteRoleController` at `api/v1/roles`. Inject `ISender mediator`. Add HTTP DELETE `{id}` endpoint executing `_mediator.Send(command)`.
+#### Task 58: `[Feature Slice] Create Site Creation Endpoint (Command, Handler & Controller)`
+- **Locations**:
+  - `src/Buy2.Application/Features/Sites/CreateSite/CreateSiteCommand.cs`
+  - `src/Buy2.Api/Controllers/CreateSiteController.cs`
+- **Handler Business Logic**:
+  1. Define `CreateSiteCommand(string SiteName, decimal Latitude, decimal Longitude, List<string> MacWhitelist) : IRequest<int>`.
+  2. In `CreateSiteCommandHandler`: Instantiate `Site` entity, serialize MAC whitelist to JSON string, save via `IUnitOfWork`, return `site.Id`.
+  3. In `CreateSiteController`: Inject `ISender mediator`. Add `POST api/v1/sites` calling `await _mediator.Send(command)`.
 
-#### Task 59: `[Application] Create OnboardEmployeeCommand and Handler`
-- **Location**: `Buy2.Application/Features/Employees/OnboardEmployee/OnboardEmployeeCommand.cs`
-- **Instructions**: Define `OnboardEmployeeCommand` record implementing `IRequest<int>`. Implement `OnboardEmployeeCommandHandler`.
+#### Task 59: `[Feature Slice] Create Get Sites Endpoint (Query, Handler & Controller)`
+- **Locations**:
+  - `src/Buy2.Application/Features/Sites/GetSites/GetSitesQuery.cs`
+  - `src/Buy2.Api/Controllers/GetSitesController.cs`
+- **Handler Business Logic**:
+  1. Define `GetSitesQuery() : IRequest<List<SiteDto>>`.
+  2. In `GetSitesQueryHandler`: Query all active sites via `IRepository<Site>`, map entities to `SiteDto` list, return list.
+  3. In `GetSitesController`: Inject `ISender mediator`. Add `GET api/v1/sites` calling `await _mediator.Send(query)`.
 
-#### Task 60: `[API] Create EmployeeOnboardingController (MediatR Injected)`
-- **Location**: `Buy2.Api/Controllers/EmployeeOnboardingController.cs`
-- **Instructions**: Create `EmployeeOnboardingController` at `api/v1/employees`. Inject `ISender mediator`. Add HTTP POST `onboard` endpoint executing `_mediator.Send(command)`.
+#### Task 60: `[Feature Slice] Create Validate Draft Schedule Endpoint (Command, Handler & Controller)`
+- **Locations**:
+  - `src/Buy2.Application/Features/Schedules/ValidateDraft/ValidateScheduleDraftCommand.cs`
+  - `src/Buy2.Api/Controllers/ScheduleValidationController.cs`
+- **Handler Business Logic**:
+  1. Define `ValidateScheduleDraftCommand(List<DraftShiftDto> Shifts) : IRequest<PreFlightValidationResultDto>`.
+  2. In `ValidateScheduleDraftCommandHandler`: Pass shift list to `IScheduleValidationEngine.Validate()`, return `PreFlightValidationResultDto`.
+  3. In `ScheduleValidationController`: Inject `ISender mediator`. Add `POST api/v1/schedules/validate-draft` calling `await _mediator.Send(command)`.
 
-#### Task 61: `[Application] Create UploadEmployeeDocumentCommand and Handler`
-- **Location**: `Buy2.Application/Features/Employees/UploadDocument/UploadEmployeeDocumentCommand.cs`
-- **Instructions**: Define `UploadEmployeeDocumentCommand` record implementing `IRequest<int>`. Implement `UploadEmployeeDocumentCommandHandler`.
+#### Task 61: `[Feature Slice] Create Get Open Shifts Market Endpoint (Query, Handler & Controller)`
+- **Locations**:
+  - `src/Buy2.Application/Features/ShiftMarket/GetOpenShifts/GetOpenShiftsQuery.cs`
+  - `src/Buy2.Api/Controllers/OpenShiftsController.cs`
+- **Handler Business Logic**:
+  1. Define `GetOpenShiftsQuery() : IRequest<List<ShiftDto>>`.
+  2. In `GetOpenShiftsQueryHandler`: Query published shifts without assigned employee, map to `ShiftDto` list, return list.
+  3. In `OpenShiftsController`: Inject `ISender mediator`. Add `GET api/v1/shift-market/open-shifts` calling `await _mediator.Send(query)`.
 
-#### Task 62: `[API] Create EmployeeDocumentsController (MediatR Injected)`
-- **Location**: `Buy2.Api/Controllers/EmployeeDocumentsController.cs`
-- **Instructions**: Create `EmployeeDocumentsController` at `api/v1/employees`. Inject `ISender mediator`. Add HTTP POST `{id}/documents` endpoint executing `_mediator.Send(command)`.
+#### Task 62: `[Feature Slice] Create Claim Shift Endpoint (Command, Handler & Controller)`
+- **Locations**:
+  - `src/Buy2.Application/Features/ShiftMarket/ClaimShift/ClaimShiftCommand.cs`
+  - `src/Buy2.Api/Controllers/ShiftClaimsController.cs`
+- **Handler Business Logic**:
+  1. Define `ClaimShiftCommand(int ShiftId, int EmployeeId, string OvertimeJustification) : IRequest<bool>`.
+  2. In `ClaimShiftCommandHandler`: Verify shift is open, instantiate `ShiftClaim` with status `Pending`, save via `IUnitOfWork`, return true.
+  3. In `ShiftClaimsController`: Inject `ISender mediator`. Add `POST api/v1/shift-market/claims/{id}` calling `await _mediator.Send(command)`.
 
-#### Task 63: `[Application] Create LogDisciplinaryViolationCommand and Handler`
-- **Location**: `Buy2.Application/Features/Employees/LogViolation/LogDisciplinaryViolationCommand.cs`
-- **Instructions**: Define `LogDisciplinaryViolationCommand` record implementing `IRequest<int>`. Implement `LogDisciplinaryViolationCommandHandler`.
+#### Task 63: `[Feature Slice] Create Points Rule Creation Endpoint (Command, Handler & Controller)`
+- **Locations**:
+  - `src/Buy2.Application/Features/Points/CreateRule/CreatePointsRuleCommand.cs`
+  - `src/Buy2.Api/Controllers/PointsRulesController.cs`
+- **Handler Business Logic**:
+  1. Define `CreatePointsRuleCommand(string RuleName, int PointsValue, string TriggerType) : IRequest<int>`.
+  2. In `CreatePointsRuleCommandHandler`: Instantiate `PointsRule` entity, save via `IUnitOfWork`, return `rule.Id`.
+  3. In `PointsRulesController`: Inject `ISender mediator`. Add `POST api/v1/points/rules` calling `await _mediator.Send(command)`.
 
-#### Task 64: `[API] Create DisciplinaryViolationsController (MediatR Injected)`
-- **Location**: `Buy2.Api/Controllers/DisciplinaryViolationsController.cs`
-- **Instructions**: Create `DisciplinaryViolationsController` at `api/v1/employees`. Inject `ISender mediator`. Add HTTP POST `{id}/violations` endpoint executing `_mediator.Send(command)`.
-
-#### Task 65: `[Application] Create CreateSiteCommand and Handler`
-- **Location**: `Buy2.Application/Features/Sites/CreateSite/CreateSiteCommand.cs`
-- **Instructions**: Define `CreateSiteCommand` record implementing `IRequest<int>`. Implement `CreateSiteCommandHandler`.
-
-#### Task 66: `[API] Create CreateSiteController (MediatR Injected)`
-- **Location**: `Buy2.Api/Controllers/CreateSiteController.cs`
-- **Instructions**: Create `CreateSiteController` at `api/v1/sites`. Inject `ISender mediator`. Add HTTP POST endpoint executing `_mediator.Send(command)`.
-
-#### Task 67: `[Application] Create GetSitesQuery and Handler`
-- **Location**: `Buy2.Application/Features/Sites/GetSites/GetSitesQuery.cs`
-- **Instructions**: Define `GetSitesQuery` record implementing `IRequest<List<SiteDto>>`. Implement `GetSitesQueryHandler`.
-
-#### Task 68: `[API] Create GetSitesController (MediatR Injected)`
-- **Location**: `Buy2.Api/Controllers/GetSitesController.cs`
-- **Instructions**: Create `GetSitesController` at `api/v1/sites`. Inject `ISender mediator`. Add HTTP GET endpoint executing `_mediator.Send(query)`.
-
-#### Task 69: `[Application] Create ValidateScheduleDraftCommand and Handler`
-- **Location**: `Buy2.Application/Features/Schedules/ValidateDraft/ValidateScheduleDraftCommand.cs`
-- **Instructions**: Define `ValidateScheduleDraftCommand` record implementing `IRequest<PreFlightValidationResultDto>`. Implement Handler consuming `IScheduleValidationEngine`.
-
-#### Task 70: `[API] Create ScheduleValidationController (MediatR Injected)`
-- **Location**: `Buy2.Api/Controllers/ScheduleValidationController.cs`
-- **Instructions**: Create `ScheduleValidationController` at `api/v1/schedules`. Inject `ISender mediator`. Add HTTP POST `validate-draft` endpoint executing `_mediator.Send(command)`.
-
-#### Task 71: `[Application] Create GetOpenShiftsQuery and Handler`
-- **Location**: `Buy2.Application/Features/ShiftMarket/GetOpenShifts/GetOpenShiftsQuery.cs`
-- **Instructions**: Define `GetOpenShiftsQuery` record implementing `IRequest<List<ShiftDto>>`. Implement `GetOpenShiftsQueryHandler`.
-
-#### Task 72: `[API] Create OpenShiftsController (MediatR Injected)`
-- **Location**: `Buy2.Api/Controllers/OpenShiftsController.cs`
-- **Instructions**: Create `OpenShiftsController` at `api/v1/shift-market`. Inject `ISender mediator`. Add HTTP GET `open-shifts` endpoint executing `_mediator.Send(query)`.
-
-#### Task 73: `[Application] Create ClaimShiftCommand and Handler`
-- **Location**: `Buy2.Application/Features/ShiftMarket/ClaimShift/ClaimShiftCommand.cs`
-- **Instructions**: Define `ClaimShiftCommand(int ShiftId, int EmployeeId, string Justification)` record implementing `IRequest<bool>`. Implement `ClaimShiftCommandHandler`.
-
-#### Task 74: `[API] Create ShiftClaimsController (MediatR Injected)`
-- **Location**: `Buy2.Api/Controllers/ShiftClaimsController.cs`
-- **Instructions**: Create `ShiftClaimsController` at `api/v1/shift-market`. Inject `ISender mediator`. Add HTTP POST `claims/{id}` endpoint executing `_mediator.Send(command)`.
-
-#### Task 75: `[Application] Create CreatePointsRuleCommand and Handler`
-- **Location**: `Buy2.Application/Features/Points/CreateRule/CreatePointsRuleCommand.cs`
-- **Instructions**: Define `CreatePointsRuleCommand` record implementing `IRequest<int>`. Implement `CreatePointsRuleCommandHandler`.
-
-#### Task 76: `[API] Create PointsRulesController (MediatR Injected)`
-- **Location**: `Buy2.Api/Controllers/PointsRulesController.cs`
-- **Instructions**: Create `PointsRulesController` at `api/v1/points`. Inject `ISender mediator`. Add HTTP POST `rules` endpoint executing `_mediator.Send(command)`.
-
-#### Task 77: `[Application] Create RedeemRewardCommand and Handler`
-- **Location**: `Buy2.Application/Features/Rewards/RedeemReward/RedeemRewardCommand.cs`
-- **Instructions**: Define `RedeemRewardCommand(int RewardItemId, int EmployeeId)` record implementing `IRequest<string>`. Implement `RedeemRewardCommandHandler`.
-
-#### Task 78: `[API] Create RewardRedemptionController (MediatR Injected)`
-- **Location**: `Buy2.Api/Controllers/RewardRedemptionController.cs`
-- **Instructions**: Create `RewardRedemptionController` at `api/v1/rewards`. Inject `ISender mediator`. Add HTTP POST `{id}/redeem` endpoint executing `_mediator.Send(command)`.
+#### Task 64: `[Feature Slice] Create Redeem Reward Endpoint (Command, Handler & Controller)`
+- **Locations**:
+  - `src/Buy2.Application/Features/Rewards/RedeemReward/RedeemRewardCommand.cs`
+  - `src/Buy2.Api/Controllers/RewardRedemptionController.cs`
+- **Handler Business Logic**:
+  1. Define `RedeemRewardCommand(int RewardItemId, int EmployeeId) : IRequest<string>`.
+  2. In `RedeemRewardCommandHandler`: Check employee points balance, deduct points, reserve voucher code from inventory, create `RewardRedemption` record via `IUnitOfWork`, return voucher code string.
+  3. In `RewardRedemptionController`: Inject `ISender mediator`. Add `POST api/v1/rewards/{id}/redeem` calling `await _mediator.Send(command)`.
