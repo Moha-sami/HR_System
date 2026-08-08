@@ -11,22 +11,22 @@ This file breaks down the entire project into atomic, step-by-step tasks suitabl
 To ensure automatic tracking between GitHub and Jira, follow these simple naming rules:
 
 1. **Git Branch Name**: Include the Jira Issue Key (e.g., `SCRUM-105`):
-   - Example: `SCRUM-105-create-log-disciplinary-violation-dto` or `feature/SCRUM-105-log-disciplinary-violation-dto`
+   - Example: `SCRUM-105-create-login-command-and-handler` or `feature/SCRUM-105-login-command`
    - *Tip: Click "Create branch" inside your Jira task card to copy the exact branch name automatically.*
 
 2. **Commit Message Format**:
-   - Example: `SCRUM-105: [Application] Create LogDisciplinaryViolationDto Record`
+   - Example: `SCRUM-105: [Application] Create LoginCommand and Handler`
 
 3. **Pull Request (PR) Title**:
-   - Example: `SCRUM-105: [Application] Create LogDisciplinaryViolationDto Record`
+   - Example: `SCRUM-105: [Application] Create LoginCommand and Handler`
 
 ---
 
 ## Instructions for Team Members & Contributors
 
 1. Pick an unassigned task from your **Jira Sprint Board**.
-2. Create your working git branch including the Jira key (e.g., `SCRUM-105-log-disciplinary-violation-dto`).
-3. Each task requires creating an **empty structure only**: a class, record DTO, enum, interface, DbContext configuration, or API controller.
+2. Create your working git branch including the Jira key (e.g., `SCRUM-105-login-command`).
+3. Each task requires creating a **clean structure only**: a class, record DTO, MediatR command/handler, DbContext configuration, or API controller.
 4. Methods should only have signatures throwing `NotImplementedException` or returning default values. No complex business logic is needed in initial stubs!
 5. Submit your **Pull Request directly targeting `main`**. Once merged by the lead, Jira automatically updates your task to **Done**!
 
@@ -44,16 +44,12 @@ To ensure automatic tracking between GitHub and Jira, follow these simple naming
 - `enum`: Named options enumeration.
 - `dto`: Data transfer object record.
 - `interface`: Contract definition.
+- `mediatr`: MediatR Command or Query + Handler.
 - `controller`: API HTTP controller.
-
-### Difficulty Levels
-- **Very Easy**: Simple class/enum/interface with properties or empty signatures only.
-- **Easy**: Small file with basic inheritance or simple dependency injection.
-- **Medium**: EF Core configuration, repository pattern, or complex service/controller.
 
 ---
 
-## Completed Tasks (Domain Layer & Application Contracts) ✅
+## Completed Tasks (Domain Layer & Core Contracts) ✅
 
 - **Task 1** (`SCRUM-6`): BaseEntity.cs ✅ **[DONE - PR #1]**
 - **Task 2** (`SCRUM-7`): Role.cs ✅ **[DONE - PR #10]**
@@ -89,7 +85,7 @@ To ensure automatic tracking between GitHub and Jira, follow these simple naming
 
 ---
 
-## Active Backend Roadmap (Tasks 32-68)
+## Active Backend Roadmap (Tasks 32-78)
 
 ---
 
@@ -97,21 +93,18 @@ To ensure automatic tracking between GitHub and Jira, follow these simple naming
 
 #### Task 32: `[Application] Create LogDisciplinaryViolationDto Record`
 - **Difficulty**: Very Easy
-- **Labels**: `good first issue`, `layer:application`, `dto`
-- **Location**: `Buy2.Application/Employees/DTOs/ViolationDtos.cs`
-- **Instructions**: Create record DTO for logging violations with positional parameters `EmployeeId`, `Severity`, and `Description`.
+- **Location**: `Buy2.Application/DTOs/Employees/ViolationDtos.cs`
+- **Instructions**: Define record DTO for logging violations with positional parameters: `int EmployeeId`, `string Severity`, `string Description`.
 
 #### Task 33: `[Application] Create PointsTransactionDto Record`
 - **Difficulty**: Very Easy
-- **Labels**: `good first issue`, `layer:application`, `dto`
-- **Location**: `Buy2.Application/Points/DTOs/PointsTransactionDtos.cs`
-- **Instructions**: Create record DTO for points transactions with positional parameters `EmployeeId`, nullable `PointsRuleId`, `Amount`, and `TransactionType`.
+- **Location**: `Buy2.Application/DTOs/Points/PointsTransactionDtos.cs`
+- **Instructions**: Define record DTO for points transactions with positional parameters: `int EmployeeId`, `int? PointsRuleId`, `int Amount`, `string TransactionType`.
 
 #### Task 34: `[Application] Create RedeemRewardDto Record`
 - **Difficulty**: Very Easy
-- **Labels**: `good first issue`, `layer:application`, `dto`
-- **Location**: `Buy2.Application/Rewards/DTOs/RedemptionDtos.cs`
-- **Instructions**: Create record DTO for reward redemption with positional parameters `RewardItemId` and `EmployeeId`.
+- **Location**: `Buy2.Application/DTOs/Rewards/RedemptionDtos.cs`
+- **Instructions**: Define record DTO for reward redemption with positional parameters: `int RewardItemId`, `int EmployeeId`.
 
 ---
 
@@ -119,208 +112,196 @@ To ensure automatic tracking between GitHub and Jira, follow these simple naming
 
 #### Task 35: `[Infrastructure] Create Buy2DbContext Class`
 - **Difficulty**: Medium
-- **Labels**: `layer:infrastructure`, `database`
 - **Location**: `Buy2.Infrastructure/Persistence/Buy2DbContext.cs`
-- **Instructions**: Inherit from `DbContext`. Configure `DbSet<T>` for all domain entities. Override `OnModelCreating` to apply configurations from assembly.
+- **Instructions**: Inherit from `DbContext`. Add `DbSet<T>` for all domain entities. Override `OnModelCreating` to apply configurations from assembly.
 
 #### Task 36: `[Infrastructure] Create EmployeeConfiguration Class`
 - **Difficulty**: Medium
-- **Labels**: `layer:infrastructure`, `database`
 - **Location**: `Buy2.Infrastructure/Persistence/Configurations/EmployeeConfiguration.cs`
-- **Instructions**: Implement `IEntityTypeConfiguration<Employee>`. Configure column specs: `FirstName` (required `nvarchar(50)`), `LastName` (required `nvarchar(50)`), `Email` (required `varchar(150)`, unique index), `PhoneNumber` (optional `varchar(20)`). Configure one-to-many relationships for `JobRole`, `Role`, `Site`, and `AttendanceProfile` with `DeleteBehavior.Restrict`.
+- **Instructions**: Implement `IEntityTypeConfiguration<Employee>`. Configure `FirstName` (`nvarchar(50)`), `LastName` (`nvarchar(50)`), `Email` (`varchar(150)`, unique index), `PhoneNumber` (`varchar(20)`). Configure relationships with `DeleteBehavior.Restrict`.
 
 #### Task 37: `[Infrastructure] Create RoleConfiguration Class`
 - **Difficulty**: Medium
-- **Labels**: `layer:infrastructure`, `database`
 - **Location**: `Buy2.Infrastructure/Persistence/Configurations/RoleConfiguration.cs`
-- **Instructions**: Implement `IEntityTypeConfiguration<Role>`. Configure column specs: `RoleName` (required `nvarchar(50)`, unique index), `PermissionsJson` (required `nvarchar(max)`).
+- **Instructions**: Implement `IEntityTypeConfiguration<Role>`. Configure `RoleName` (`nvarchar(50)`, unique index), `PermissionsJson` (`nvarchar(max)`).
 
 #### Task 38: `[Infrastructure] Create SiteConfiguration Class`
 - **Difficulty**: Medium
-- **Labels**: `layer:infrastructure`, `database`
 - **Location**: `Buy2.Infrastructure/Persistence/Configurations/SiteConfiguration.cs`
-- **Instructions**: Implement `IEntityTypeConfiguration<Site>`. Configure column specs: `SiteName` (required `nvarchar(100)`), `Latitude` & `Longitude` (required decimal 9,6), `MacAddressWhitelistJson` (optional `nvarchar(max)`).
+- **Instructions**: Implement `IEntityTypeConfiguration<Site>`. Configure `SiteName` (`nvarchar(100)`), `Latitude` & `Longitude` (decimal 9,6), `MacAddressWhitelistJson` (`nvarchar(max)`).
 
 #### Task 39: `[Infrastructure] Create ShiftConfiguration Class`
 - **Difficulty**: Medium
-- **Labels**: `layer:infrastructure`, `database`
 - **Location**: `Buy2.Infrastructure/Persistence/Configurations/ShiftConfiguration.cs`
-- **Instructions**: Implement `IEntityTypeConfiguration<Shift>`. Configure column specs: `StartTime` & `EndTime` (required `datetimeoffset`), `IsPublished` (required bool, default false). Configure relationships for `Employee`, `Site`, and `JobRole` with `DeleteBehavior.Restrict`.
+- **Instructions**: Implement `IEntityTypeConfiguration<Shift>`. Configure `StartTime` & `EndTime` (`datetimeoffset`), `IsPublished` (bool). Configure relationships with `DeleteBehavior.Restrict`.
 
 #### Task 40: `[Infrastructure] Create ShiftClaimConfiguration Class`
 - **Difficulty**: Medium
-- **Labels**: `layer:infrastructure`, `database`
 - **Location**: `Buy2.Infrastructure/Persistence/Configurations/ShiftClaimConfiguration.cs`
-- **Instructions**: Implement `IEntityTypeConfiguration<ShiftClaim>`. Configure column specs: `Status` (required `varchar(20)`), `OvertimeJustification` (optional `nvarchar(500)`). Configure relationships: `Shift` (`DeleteBehavior.Cascade`) and `Employee` (`DeleteBehavior.Restrict`).
+- **Instructions**: Implement `IEntityTypeConfiguration<ShiftClaim>`. Configure `Status` (`varchar(20)`), `OvertimeJustification` (`nvarchar(500)`). Configure relationships for `Shift` (`Cascade`) and `Employee` (`Restrict`).
 
 #### Task 41: `[Infrastructure] Create EmployeeDocumentConfiguration Class`
 - **Difficulty**: Medium
-- **Labels**: `layer:infrastructure`, `database`
 - **Location**: `Buy2.Infrastructure/Persistence/Configurations/EmployeeDocumentConfiguration.cs`
-- **Instructions**: Implement `IEntityTypeConfiguration<EmployeeDocument>`. Configure column specs: `Category` (required `nvarchar(50)`), `StorageUrl` (required `varchar(500)`). Configure relationship to `Employee` with `DeleteBehavior.Cascade`.
+- **Instructions**: Implement `IEntityTypeConfiguration<EmployeeDocument>`. Configure `Category` (`nvarchar(50)`), `StorageUrl` (`varchar(500)`). Configure relationship to `Employee` (`DeleteBehavior.Cascade`).
 
 #### Task 42: `[Infrastructure] Create DisciplinaryViolationConfiguration Class`
 - **Difficulty**: Medium
-- **Labels**: `layer:infrastructure`, `database`
 - **Location**: `Buy2.Infrastructure/Persistence/Configurations/DisciplinaryViolationConfiguration.cs`
-- **Instructions**: Implement `IEntityTypeConfiguration<DisciplinaryViolation>`. Configure column specs: `Severity` (required `varchar(20)`), `Description` (required `nvarchar(1000)`). Configure relationship to `Employee` with `DeleteBehavior.Cascade`.
+- **Instructions**: Implement `IEntityTypeConfiguration<DisciplinaryViolation>`. Configure `Severity` (`varchar(20)`), `Description` (`nvarchar(1000)`). Configure relationship to `Employee` (`DeleteBehavior.Cascade`).
 
 #### Task 43: `[Infrastructure] Create PointsTransactionConfiguration Class`
 - **Difficulty**: Medium
-- **Labels**: `layer:infrastructure`, `database`
 - **Location**: `Buy2.Infrastructure/Persistence/Configurations/PointsTransactionConfiguration.cs`
-- **Instructions**: Implement `IEntityTypeConfiguration<PointsTransaction>`. Configure column specs: `Amount` (required int), `TransactionType` (required `varchar(30)`). Configure relationships: `Employee` (`DeleteBehavior.Restrict`) and optional `PointsRule` (`DeleteBehavior.SetNull`).
+- **Instructions**: Implement `IEntityTypeConfiguration<PointsTransaction>`. Configure `Amount` (int), `TransactionType` (`varchar(30)`). Configure relationships for `Employee` (`Restrict`) and optional `PointsRule` (`SetNull`).
 
 #### Task 44: `[Infrastructure] Create RewardRedemptionConfiguration Class`
 - **Difficulty**: Medium
-- **Labels**: `layer:infrastructure`, `database`
 - **Location**: `Buy2.Infrastructure/Persistence/Configurations/RewardRedemptionConfiguration.cs`
-- **Instructions**: Implement `IEntityTypeConfiguration<RewardRedemption>`. Configure column specs: `VoucherCode` (required `varchar(100)`, unique index), `RedeemedAt` (required `datetimeoffset`). Configure relationships for `Employee` and `RewardItem` with `DeleteBehavior.Restrict`.
+- **Instructions**: Implement `IEntityTypeConfiguration<RewardRedemption>`. Configure `VoucherCode` (`varchar(100)`, unique index), `RedeemedAt` (`datetimeoffset`). Configure relationships with `DeleteBehavior.Restrict`.
 
 #### Task 45: `[Infrastructure] Create GenericRepository Implementation`
 - **Difficulty**: Medium
-- **Labels**: `layer:infrastructure`, `repository`
 - **Location**: `Buy2.Infrastructure/Persistence/Repositories/GenericRepository.cs`
 - **Instructions**: Implement `IRepository<T>` using `Buy2DbContext`. Provide basic EF Core CRUD calls.
 
 #### Task 46: `[Infrastructure] Create UnitOfWork Implementation`
 - **Difficulty**: Easy
-- **Labels**: `layer:infrastructure`, `repository`
 - **Location**: `Buy2.Infrastructure/Persistence/Repositories/UnitOfWork.cs`
 - **Instructions**: Implement `IUnitOfWork` wrapping `Buy2DbContext.SaveChangesAsync()`.
 
 #### Task 47: `[Infrastructure] Create JwtTokenGenerator Implementation`
 - **Difficulty**: Medium
-- **Labels**: `layer:infrastructure`, `authentication`
 - **Location**: `Buy2.Infrastructure/Authentication/JwtTokenGenerator.cs`
 - **Instructions**: Implement `IJwtTokenGenerator` using `System.IdentityModel.Tokens.Jwt`.
 
 #### Task 48: `[Infrastructure] Create ScheduleValidationEngine Stub`
 - **Difficulty**: Easy
-- **Labels**: `layer:infrastructure`, `service`
 - **Location**: `Buy2.Infrastructure/Services/ScheduleValidationEngine.cs`
-- **Instructions**: Implement `IScheduleValidationEngine`. Return mock `PreFlightValidationResultDto(true, new(), new())`.
+- **Instructions**: Implement `IScheduleValidationEngine` returning mock `PreFlightValidationResultDto(true, new(), new())`.
 
 #### Task 49: `[Infrastructure] Create ExcelVoucherParser Stub`
 - **Difficulty**: Medium
-- **Labels**: `layer:infrastructure`, `service`
 - **Location**: `Buy2.Infrastructure/Services/ExcelVoucherParser.cs`
 - **Instructions**: Create class `ExcelVoucherParser` with method `List<string> ParseExcelCodes(Stream stream)` throwing `NotImplementedException`.
 
 #### Task 50: `[Infrastructure] Create Infrastructure DependencyInjection Setup`
 - **Difficulty**: Easy
-- **Labels**: `layer:infrastructure`, `service`
 - **Location**: `Buy2.Infrastructure/DependencyInjection.cs`
-- **Instructions**: Create extension method `AddInfrastructureServices` for `IServiceCollection` accepting `IConfiguration`. Register DbContext and repositories into DI container.
+- **Instructions**: Create extension method `AddInfrastructureServices` registering DbContext and repositories into DI container.
 
 ---
 
-### Phase 4: API Layer Controllers (Single Endpoint per Controller)
+### Phase 4: MediatR Commands/Queries & Injected API Controllers (Feature Slices)
 
-#### Task 51: `[API] Create AuthLoginController`
-- **Difficulty**: Easy
-- **Labels**: `good first issue`, `layer:api`, `controller`
+#### Task 51: `[Application] Create LoginCommand and Handler`
+- **Location**: `Buy2.Application/Features/Authentication/Login/LoginCommand.cs`
+- **Instructions**: Define `LoginCommand` record implementing `IRequest<LoginResponseDto>`. Implement `LoginCommandHandler` consuming `IUnitOfWork` and `IJwtTokenGenerator`.
+
+#### Task 52: `[API] Create AuthLoginController (MediatR Injected)`
 - **Location**: `Buy2.Api/Controllers/AuthLoginController.cs`
-- **Instructions**: Create `[ApiController]` at `[route("api/v1/auth")]`. Add `POST login` endpoint stub accepting `LoginRequestDto`.
+- **Instructions**: Create `AuthLoginController` at `api/v1/auth`. Inject `ISender mediator`. Add HTTP POST `login` endpoint executing `_mediator.Send(command)`.
 
-#### Task 52: `[API] Create AuthPasswordResetController`
-- **Difficulty**: Easy
-- **Labels**: `good first issue`, `layer:api`, `controller`
+#### Task 53: `[Application] Create ResetPasswordCommand and Handler`
+- **Location**: `Buy2.Application/Features/Authentication/ResetPassword/ResetPasswordCommand.cs`
+- **Instructions**: Define `ResetPasswordCommand` record implementing `IRequest<bool>`. Implement `ResetPasswordCommandHandler`.
+
+#### Task 54: `[API] Create AuthPasswordResetController (MediatR Injected)`
 - **Location**: `Buy2.Api/Controllers/AuthPasswordResetController.cs`
-- **Instructions**: Create `[ApiController]` at `[route("api/v1/auth")]`. Add `POST password/reset` endpoint stub.
+- **Instructions**: Create `AuthPasswordResetController` at `api/v1/auth`. Inject `ISender mediator`. Add HTTP POST `password/reset` endpoint executing `_mediator.Send(command)`.
 
-#### Task 53: `[API] Create CreateRoleController`
-- **Difficulty**: Easy
-- **Labels**: `good first issue`, `layer:api`, `controller`
+#### Task 55: `[Application] Create CreateRoleCommand and Handler`
+- **Location**: `Buy2.Application/Features/Roles/CreateRole/CreateRoleCommand.cs`
+- **Instructions**: Define `CreateRoleCommand` record implementing `IRequest<int>`. Implement `CreateRoleCommandHandler` consuming `IUnitOfWork`.
+
+#### Task 56: `[API] Create CreateRoleController (MediatR Injected)`
 - **Location**: `Buy2.Api/Controllers/CreateRoleController.cs`
-- **Instructions**: Create `[ApiController]` at `[route("api/v1/roles")]`. Add `POST` create role endpoint stub accepting `CreateRoleDto`.
+- **Instructions**: Create `CreateRoleController` at `api/v1/roles`. Inject `ISender mediator`. Add HTTP POST endpoint executing `_mediator.Send(command)`.
 
-#### Task 54: `[API] Create DeleteRoleController`
-- **Difficulty**: Easy
-- **Labels**: `good first issue`, `layer:api`, `controller`
+#### Task 57: `[Application] Create DeleteRoleCommand and Handler`
+- **Location**: `Buy2.Application/Features/Roles/DeleteRole/DeleteRoleCommand.cs`
+- **Instructions**: Define `DeleteRoleCommand(int RoleId)` record implementing `IRequest<bool>`. Implement `DeleteRoleCommandHandler`.
+
+#### Task 58: `[API] Create DeleteRoleController (MediatR Injected)`
 - **Location**: `Buy2.Api/Controllers/DeleteRoleController.cs`
-- **Instructions**: Create `[ApiController]` at `[route("api/v1/roles")]`. Add `DELETE {id}` soft delete endpoint stub.
+- **Instructions**: Create `DeleteRoleController` at `api/v1/roles`. Inject `ISender mediator`. Add HTTP DELETE `{id}` endpoint executing `_mediator.Send(command)`.
 
-#### Task 55: `[API] Create EmployeeOnboardingController`
-- **Difficulty**: Easy
-- **Labels**: `good first issue`, `layer:api`, `controller`
+#### Task 59: `[Application] Create OnboardEmployeeCommand and Handler`
+- **Location**: `Buy2.Application/Features/Employees/OnboardEmployee/OnboardEmployeeCommand.cs`
+- **Instructions**: Define `OnboardEmployeeCommand` record implementing `IRequest<int>`. Implement `OnboardEmployeeCommandHandler`.
+
+#### Task 60: `[API] Create EmployeeOnboardingController (MediatR Injected)`
 - **Location**: `Buy2.Api/Controllers/EmployeeOnboardingController.cs`
-- **Instructions**: Create `[ApiController]` at `[route("api/v1/employees")]`. Add `POST onboard` endpoint stub accepting `OnboardEmployeeDto`.
+- **Instructions**: Create `EmployeeOnboardingController` at `api/v1/employees`. Inject `ISender mediator`. Add HTTP POST `onboard` endpoint executing `_mediator.Send(command)`.
 
-#### Task 56: `[API] Create EmployeeAttendanceConfigController`
-- **Difficulty**: Easy
-- **Labels**: `good first issue`, `layer:api`, `controller`
-- **Location**: `Buy2.Api/Controllers/EmployeeAttendanceConfigController.cs`
-- **Instructions**: Create `[ApiController]` at `[route("api/v1/employees")]`. Add `PUT {id}/attendance-config` endpoint stub.
+#### Task 61: `[Application] Create UploadEmployeeDocumentCommand and Handler`
+- **Location**: `Buy2.Application/Features/Employees/UploadDocument/UploadEmployeeDocumentCommand.cs`
+- **Instructions**: Define `UploadEmployeeDocumentCommand` record implementing `IRequest<int>`. Implement `UploadEmployeeDocumentCommandHandler`.
 
-#### Task 57: `[API] Create EmployeeDocumentsController`
-- **Difficulty**: Easy
-- **Labels**: `good first issue`, `layer:api`, `controller`
+#### Task 62: `[API] Create EmployeeDocumentsController (MediatR Injected)`
 - **Location**: `Buy2.Api/Controllers/EmployeeDocumentsController.cs`
-- **Instructions**: Create `[ApiController]` at `[route("api/v1/employees")]`. Add `POST {id}/documents` endpoint stub accepting `UploadEmployeeDocumentDto`.
+- **Instructions**: Create `EmployeeDocumentsController` at `api/v1/employees`. Inject `ISender mediator`. Add HTTP POST `{id}/documents` endpoint executing `_mediator.Send(command)`.
 
-#### Task 58: `[API] Create DisciplinaryViolationsController`
-- **Difficulty**: Easy
-- **Labels**: `good first issue`, `layer:api`, `controller`
+#### Task 63: `[Application] Create LogDisciplinaryViolationCommand and Handler`
+- **Location**: `Buy2.Application/Features/Employees/LogViolation/LogDisciplinaryViolationCommand.cs`
+- **Instructions**: Define `LogDisciplinaryViolationCommand` record implementing `IRequest<int>`. Implement `LogDisciplinaryViolationCommandHandler`.
+
+#### Task 64: `[API] Create DisciplinaryViolationsController (MediatR Injected)`
 - **Location**: `Buy2.Api/Controllers/DisciplinaryViolationsController.cs`
-- **Instructions**: Create `[ApiController]` at `[route("api/v1/employees")]`. Add `POST {id}/violations` endpoint stub accepting `LogDisciplinaryViolationDto`.
+- **Instructions**: Create `DisciplinaryViolationsController` at `api/v1/employees`. Inject `ISender mediator`. Add HTTP POST `{id}/violations` endpoint executing `_mediator.Send(command)`.
 
-#### Task 59: `[API] Create CreateSiteController`
-- **Difficulty**: Easy
-- **Labels**: `good first issue`, `layer:api`, `controller`
+#### Task 65: `[Application] Create CreateSiteCommand and Handler`
+- **Location**: `Buy2.Application/Features/Sites/CreateSite/CreateSiteCommand.cs`
+- **Instructions**: Define `CreateSiteCommand` record implementing `IRequest<int>`. Implement `CreateSiteCommandHandler`.
+
+#### Task 66: `[API] Create CreateSiteController (MediatR Injected)`
 - **Location**: `Buy2.Api/Controllers/CreateSiteController.cs`
-- **Instructions**: Create `[ApiController]` at `[route("api/v1/sites")]`. Add `POST` create site endpoint stub accepting `CreateSiteDto`.
+- **Instructions**: Create `CreateSiteController` at `api/v1/sites`. Inject `ISender mediator`. Add HTTP POST endpoint executing `_mediator.Send(command)`.
 
-#### Task 60: `[API] Create GetSitesController`
-- **Difficulty**: Easy
-- **Labels**: `good first issue`, `layer:api`, `controller`
+#### Task 67: `[Application] Create GetSitesQuery and Handler`
+- **Location**: `Buy2.Application/Features/Sites/GetSites/GetSitesQuery.cs`
+- **Instructions**: Define `GetSitesQuery` record implementing `IRequest<List<SiteDto>>`. Implement `GetSitesQueryHandler`.
+
+#### Task 68: `[API] Create GetSitesController (MediatR Injected)`
 - **Location**: `Buy2.Api/Controllers/GetSitesController.cs`
-- **Instructions**: Create `[ApiController]` at `[route("api/v1/sites")]`. Add `GET` all sites endpoint stub.
+- **Instructions**: Create `GetSitesController` at `api/v1/sites`. Inject `ISender mediator`. Add HTTP GET endpoint executing `_mediator.Send(query)`.
 
-#### Task 61: `[API] Create ScheduleValidationController`
-- **Difficulty**: Easy
-- **Labels**: `good first issue`, `layer:api`, `controller`
+#### Task 69: `[Application] Create ValidateScheduleDraftCommand and Handler`
+- **Location**: `Buy2.Application/Features/Schedules/ValidateDraft/ValidateScheduleDraftCommand.cs`
+- **Instructions**: Define `ValidateScheduleDraftCommand` record implementing `IRequest<PreFlightValidationResultDto>`. Implement Handler consuming `IScheduleValidationEngine`.
+
+#### Task 70: `[API] Create ScheduleValidationController (MediatR Injected)`
 - **Location**: `Buy2.Api/Controllers/ScheduleValidationController.cs`
-- **Instructions**: Create `[ApiController]` at `[route("api/v1/schedules")]`. Add `POST validate-draft` endpoint stub.
+- **Instructions**: Create `ScheduleValidationController` at `api/v1/schedules`. Inject `ISender mediator`. Add HTTP POST `validate-draft` endpoint executing `_mediator.Send(command)`.
 
-#### Task 62: `[API] Create SchedulePublishController`
-- **Difficulty**: Easy
-- **Labels**: `good first issue`, `layer:api`, `controller`
-- **Location**: `Buy2.Api/Controllers/SchedulePublishController.cs`
-- **Instructions**: Create `[ApiController]` at `[route("api/v1/schedules")]`. Add `POST publish` endpoint stub.
+#### Task 71: `[Application] Create GetOpenShiftsQuery and Handler`
+- **Location**: `Buy2.Application/Features/ShiftMarket/GetOpenShifts/GetOpenShiftsQuery.cs`
+- **Instructions**: Define `GetOpenShiftsQuery` record implementing `IRequest<List<ShiftDto>>`. Implement `GetOpenShiftsQueryHandler`.
 
-#### Task 63: `[API] Create OpenShiftsController`
-- **Difficulty**: Easy
-- **Labels**: `good first issue`, `layer:api`, `controller`
+#### Task 72: `[API] Create OpenShiftsController (MediatR Injected)`
 - **Location**: `Buy2.Api/Controllers/OpenShiftsController.cs`
-- **Instructions**: Create `[ApiController]` at `[route("api/v1/shift-market")]`. Add `GET open-shifts` endpoint stub.
+- **Instructions**: Create `OpenShiftsController` at `api/v1/shift-market`. Inject `ISender mediator`. Add HTTP GET `open-shifts` endpoint executing `_mediator.Send(query)`.
 
-#### Task 64: `[API] Create ShiftClaimsController`
-- **Difficulty**: Easy
-- **Labels**: `good first issue`, `layer:api`, `controller`
+#### Task 73: `[Application] Create ClaimShiftCommand and Handler`
+- **Location**: `Buy2.Application/Features/ShiftMarket/ClaimShift/ClaimShiftCommand.cs`
+- **Instructions**: Define `ClaimShiftCommand(int ShiftId, int EmployeeId, string Justification)` record implementing `IRequest<bool>`. Implement `ClaimShiftCommandHandler`.
+
+#### Task 74: `[API] Create ShiftClaimsController (MediatR Injected)`
 - **Location**: `Buy2.Api/Controllers/ShiftClaimsController.cs`
-- **Instructions**: Create `[ApiController]` at `[route("api/v1/shift-market")]`. Add `POST claims/{id}` endpoint stub accepting `ClaimShiftDto`.
+- **Instructions**: Create `ShiftClaimsController` at `api/v1/shift-market`. Inject `ISender mediator`. Add HTTP POST `claims/{id}` endpoint executing `_mediator.Send(command)`.
 
-#### Task 65: `[API] Create CreateRewardController`
-- **Difficulty**: Easy
-- **Labels**: `good first issue`, `layer:api`, `controller`
-- **Location**: `Buy2.Api/Controllers/CreateRewardController.cs`
-- **Instructions**: Create `[ApiController]` at `[route("api/v1/rewards")]`. Add `POST` reward creation endpoint stub accepting `RewardItemDto`.
+#### Task 75: `[Application] Create CreatePointsRuleCommand and Handler`
+- **Location**: `Buy2.Application/Features/Points/CreateRule/CreatePointsRuleCommand.cs`
+- **Instructions**: Define `CreatePointsRuleCommand` record implementing `IRequest<int>`. Implement `CreatePointsRuleCommandHandler`.
 
-#### Task 66: `[API] Create RewardInventoryController`
-- **Difficulty**: Easy
-- **Labels**: `good first issue`, `layer:api`, `controller`
-- **Location**: `Buy2.Api/Controllers/RewardInventoryController.cs`
-- **Instructions**: Create `[ApiController]` at `[route("api/v1/rewards")]`. Add `POST {id}/inventory/upload` endpoint stub for bulk voucher Excel file.
-
-#### Task 67: `[API] Create PointsRulesController`
-- **Difficulty**: Easy
-- **Labels**: `good first issue`, `layer:api`, `controller`
+#### Task 76: `[API] Create PointsRulesController (MediatR Injected)`
 - **Location**: `Buy2.Api/Controllers/PointsRulesController.cs`
-- **Instructions**: Create `[ApiController]` at `[route("api/v1/points")]`. Add `POST rules` endpoint stub accepting `CreatePointsRuleDto`.
+- **Instructions**: Create `PointsRulesController` at `api/v1/points`. Inject `ISender mediator`. Add HTTP POST `rules` endpoint executing `_mediator.Send(command)`.
 
-#### Task 68: `[API] Create RewardRedemptionController`
-- **Difficulty**: Easy
-- **Labels**: `good first issue`, `layer:api`, `controller`
+#### Task 77: `[Application] Create RedeemRewardCommand and Handler`
+- **Location**: `Buy2.Application/Features/Rewards/RedeemReward/RedeemRewardCommand.cs`
+- **Instructions**: Define `RedeemRewardCommand(int RewardItemId, int EmployeeId)` record implementing `IRequest<string>`. Implement `RedeemRewardCommandHandler`.
+
+#### Task 78: `[API] Create RewardRedemptionController (MediatR Injected)`
 - **Location**: `Buy2.Api/Controllers/RewardRedemptionController.cs`
-- **Instructions**: Create `[ApiController]` at `[route("api/v1/rewards")]`. Add `POST {id}/redeem` endpoint stub accepting `RedeemRewardDto`.
+- **Instructions**: Create `RewardRedemptionController` at `api/v1/rewards`. Inject `ISender mediator`. Add HTTP POST `{id}/redeem` endpoint executing `_mediator.Send(command)`.

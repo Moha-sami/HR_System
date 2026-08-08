@@ -1,75 +1,25 @@
 Issue Type,Summary,Description,Labels
-Task,[Domain] Create EmployeeDocument Entity,"**Task 26**: Create EmployeeDocument Entity
-
-**Target File Location**: `src/Buy2.Domain/Entities/EmployeeDocument.cs`
-
-**Instructions**:
-1. Create `EmployeeDocument.cs` class in `Buy2.Domain.Entities`.
-2. Inherit from `BaseEntity`.
-3. Add properties: `EmployeeId` (int), `Category` (string), `StorageUrl` (string).
-4. Add virtual navigation property for `Employee`.","layer:domain,entity,good first issue"
-Task,[Domain] Create DisciplinaryViolation Entity,"**Task 27**: Create DisciplinaryViolation Entity
-
-**Target File Location**: `src/Buy2.Domain/Entities/DisciplinaryViolation.cs`
-
-**Instructions**:
-1. Create `DisciplinaryViolation.cs` class in `Buy2.Domain.Entities`.
-2. Inherit from `BaseEntity`.
-3. Add properties: `EmployeeId` (int), `Severity` (string), `Description` (string).
-4. Add virtual navigation property for `Employee`.","layer:domain,entity,good first issue"
-Task,[Domain] Create PointsTransaction Entity,"**Task 28**: Create PointsTransaction Entity
-
-**Target File Location**: `src/Buy2.Domain/Entities/PointsTransaction.cs`
-
-**Instructions**:
-1. Create `PointsTransaction.cs` class in `Buy2.Domain.Entities`.
-2. Inherit from `BaseEntity`.
-3. Add properties: `EmployeeId` (int), `PointsRuleId` (int?), `Amount` (int), `TransactionType` (string).
-4. Add virtual navigation properties for `Employee` and optional `PointsRule`.","layer:domain,entity,good first issue"
-Task,[Domain] Create RewardRedemption Entity,"**Task 29**: Create RewardRedemption Entity
-
-**Target File Location**: `src/Buy2.Domain/Entities/RewardRedemption.cs`
-
-**Instructions**:
-1. Create `RewardRedemption.cs` class in `Buy2.Domain.Entities`.
-2. Inherit from `BaseEntity`.
-3. Add properties: `RewardItemId` (int), `EmployeeId` (int), `VoucherCode` (string), `RedeemedAt` (DateTimeOffset).
-4. Add virtual navigation properties for `Employee` and `RewardItem`.","layer:domain,entity,good first issue"
-Task,[Application] Create IUnitOfWork Interface,"**Task 30**: Create IUnitOfWork Interface
-
-**Target File Location**: `src/Buy2.Application/Common/Interfaces/IUnitOfWork.cs`
-
-**Instructions**:
-1. Create interface `IUnitOfWork` under `Buy2.Application.Common.Interfaces`.
-2. Add method signature `Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)`.","layer:application,interface,good first issue"
-Task,[Application] Create UploadEmployeeDocumentDto Record,"**Task 31**: Create UploadEmployeeDocumentDto Record
-
-**Target File Location**: `src/Buy2.Application/Employees/DTOs/DocumentDtos.cs`
-
-**Instructions**:
-1. Create file `DocumentDtos.cs` under `Buy2.Application.Employees.DTOs`.
-2. Define record DTO for uploading employee documents with positional parameters `EmployeeId`, `Category`, and `StorageUrl`.","layer:application,dto,good first issue"
 Task,[Application] Create LogDisciplinaryViolationDto Record,"**Task 32**: Create LogDisciplinaryViolationDto Record
 
-**Target File Location**: `src/Buy2.Application/Employees/DTOs/ViolationDtos.cs`
+**Target File Location**: `src/Buy2.Application/DTOs/Employees/ViolationDtos.cs`
 
 **Instructions**:
-1. Create file `ViolationDtos.cs` under `Buy2.Application.Employees.DTOs`.
-2. Define record DTO for logging violations with positional parameters `EmployeeId`, `Severity`, and `Description`.","layer:application,dto,good first issue"
+1. Create `ViolationDtos.cs` file under `Buy2.Application.DTOs.Employees`.
+2. Define record DTO for logging violations with positional parameters: `int EmployeeId`, `string Severity`, `string Description`.","layer:application,dto,good first issue"
 Task,[Application] Create PointsTransactionDto Record,"**Task 33**: Create PointsTransactionDto Record
 
-**Target File Location**: `src/Buy2.Application/Points/DTOs/PointsTransactionDtos.cs`
+**Target File Location**: `src/Buy2.Application/DTOs/Points/PointsTransactionDtos.cs`
 
 **Instructions**:
-1. Create file `PointsTransactionDtos.cs` under `Buy2.Application.Points.DTOs`.
-2. Define record DTO for points transactions with positional parameters `EmployeeId`, nullable `PointsRuleId`, `Amount`, and `TransactionType`.","layer:application,dto,good first issue"
+1. Create `PointsTransactionDtos.cs` file under `Buy2.Application.DTOs.Points`.
+2. Define record DTO for points transactions with positional parameters: `int EmployeeId`, `int? PointsRuleId`, `int Amount`, `string TransactionType`.","layer:application,dto,good first issue"
 Task,[Application] Create RedeemRewardDto Record,"**Task 34**: Create RedeemRewardDto Record
 
-**Target File Location**: `src/Buy2.Application/Rewards/DTOs/RedemptionDtos.cs`
+**Target File Location**: `src/Buy2.Application/DTOs/Rewards/RedemptionDtos.cs`
 
 **Instructions**:
-1. Create file `RedemptionDtos.cs` under `Buy2.Application.Rewards.DTOs`.
-2. Define record DTO for reward redemption with positional parameters `RewardItemId` and `EmployeeId`.","layer:application,dto,good first issue"
+1. Create `RedemptionDtos.cs` file under `Buy2.Application.DTOs.Rewards`.
+2. Define record DTO for reward redemption with positional parameters: `int RewardItemId`, `int EmployeeId`.","layer:application,dto,good first issue"
 Task,[Infrastructure] Create Buy2DbContext Class,"**Task 35**: Create Buy2DbContext Class
 
 **Target File Location**: `src/Buy2.Infrastructure/Persistence/Buy2DbContext.cs`
@@ -188,129 +138,213 @@ Task,[Infrastructure] Create Infrastructure DependencyInjection Setup,"**Task 50
 1. Create static class `DependencyInjection` in `Buy2.Infrastructure`.
 2. Add extension method `AddInfrastructureServices` for `IServiceCollection` accepting `IConfiguration`.
 3. Register DbContext and repositories into DI container.","layer:infrastructure,service"
-Task,[API] Create AuthLoginController,"**Task 51**: Create AuthLoginController
+Task,[Application] Create LoginCommand and Handler,"**Task 51**: Create LoginCommand and Handler
+
+**Target File Location**: `src/Buy2.Application/Features/Authentication/Login/LoginCommand.cs`
+
+**Instructions**:
+1. Create `LoginCommand` record implementing `IRequest<LoginResponseDto>`.
+2. Implement `LoginCommandHandler` class consuming `IUnitOfWork` and `IJwtTokenGenerator`.","layer:application,mediatr,auth"
+Task,[API] Create AuthLoginController (MediatR Injected),"**Task 52**: Create AuthLoginController (MediatR Injected)
 
 **Target File Location**: `src/Buy2.Api/Controllers/AuthLoginController.cs`
 
 **Instructions**:
-1. Create ApiController `AuthLoginController` at route `api/v1/auth`.
-2. Add HTTP POST endpoint stub `login` accepting `LoginRequestDto`.","layer:api,controller,good first issue"
-Task,[API] Create AuthPasswordResetController,"**Task 52**: Create AuthPasswordResetController
+1. Create `AuthLoginController` at route `api/v1/auth`.
+2. Inject `ISender mediator`.
+3. Add HTTP POST `login` endpoint executing `_mediator.Send(command)`.","layer:api,controller,auth"
+Task,[Application] Create ResetPasswordCommand and Handler,"**Task 53**: Create ResetPasswordCommand and Handler
+
+**Target File Location**: `src/Buy2.Application/Features/Authentication/ResetPassword/ResetPasswordCommand.cs`
+
+**Instructions**:
+1. Create `ResetPasswordCommand` record implementing `IRequest<bool>`.
+2. Implement `ResetPasswordCommandHandler` class.","layer:application,mediatr,auth"
+Task,[API] Create AuthPasswordResetController (MediatR Injected),"**Task 54**: Create AuthPasswordResetController (MediatR Injected)
 
 **Target File Location**: `src/Buy2.Api/Controllers/AuthPasswordResetController.cs`
 
 **Instructions**:
-1. Create ApiController `AuthPasswordResetController` at route `api/v1/auth`.
-2. Add HTTP POST endpoint stub `password/reset`.","layer:api,controller,good first issue"
-Task,[API] Create CreateRoleController,"**Task 53**: Create CreateRoleController
+1. Create `AuthPasswordResetController` at route `api/v1/auth`.
+2. Inject `ISender mediator`.
+3. Add HTTP POST `password/reset` endpoint executing `_mediator.Send(command)`.","layer:api,controller,auth"
+Task,[Application] Create CreateRoleCommand and Handler,"**Task 55**: Create CreateRoleCommand and Handler
+
+**Target File Location**: `src/Buy2.Application/Features/Roles/CreateRole/CreateRoleCommand.cs`
+
+**Instructions**:
+1. Create `CreateRoleCommand` record implementing `IRequest<int>`.
+2. Implement `CreateRoleCommandHandler` consuming `IUnitOfWork`.","layer:application,mediatr,roles"
+Task,[API] Create CreateRoleController (MediatR Injected),"**Task 56**: Create CreateRoleController (MediatR Injected)
 
 **Target File Location**: `src/Buy2.Api/Controllers/CreateRoleController.cs`
 
 **Instructions**:
-1. Create ApiController `CreateRoleController` at route `api/v1/roles`.
-2. Add HTTP POST create role endpoint stub accepting `CreateRoleDto`.","layer:api,controller,good first issue"
-Task,[API] Create DeleteRoleController,"**Task 54**: Create DeleteRoleController
+1. Create `CreateRoleController` at route `api/v1/roles`.
+2. Inject `ISender mediator`.
+3. Add HTTP POST endpoint executing `_mediator.Send(command)`.","layer:api,controller,roles"
+Task,[Application] Create DeleteRoleCommand and Handler,"**Task 57**: Create DeleteRoleCommand and Handler
+
+**Target File Location**: `src/Buy2.Application/Features/Roles/DeleteRole/DeleteRoleCommand.cs`
+
+**Instructions**:
+1. Create `DeleteRoleCommand(int RoleId)` record implementing `IRequest<bool>`.
+2. Implement `DeleteRoleCommandHandler` performing soft delete.","layer:application,mediatr,roles"
+Task,[API] Create DeleteRoleController (MediatR Injected),"**Task 58**: Create DeleteRoleController (MediatR Injected)
 
 **Target File Location**: `src/Buy2.Api/Controllers/DeleteRoleController.cs`
 
 **Instructions**:
-1. Create ApiController `DeleteRoleController` at route `api/v1/roles`.
-2. Add HTTP DELETE endpoint stub `{id}` for soft deleting a role.","layer:api,controller,good first issue"
-Task,[API] Create EmployeeOnboardingController,"**Task 55**: Create EmployeeOnboardingController
+1. Create `DeleteRoleController` at route `api/v1/roles`.
+2. Inject `ISender mediator`.
+3. Add HTTP DELETE `{id}` endpoint executing `_mediator.Send(command)`.","layer:api,controller,roles"
+Task,[Application] Create OnboardEmployeeCommand and Handler,"**Task 59**: Create OnboardEmployeeCommand and Handler
+
+**Target File Location**: `src/Buy2.Application/Features/Employees/OnboardEmployee/OnboardEmployeeCommand.cs`
+
+**Instructions**:
+1. Create `OnboardEmployeeCommand` record implementing `IRequest<int>`.
+2. Implement `OnboardEmployeeCommandHandler` consuming `IUnitOfWork`.","layer:application,mediatr,employees"
+Task,[API] Create EmployeeOnboardingController (MediatR Injected),"**Task 60**: Create EmployeeOnboardingController (MediatR Injected)
 
 **Target File Location**: `src/Buy2.Api/Controllers/EmployeeOnboardingController.cs`
 
 **Instructions**:
-1. Create ApiController `EmployeeOnboardingController` at route `api/v1/employees`.
-2. Add HTTP POST `onboard` endpoint stub accepting `OnboardEmployeeDto`.","layer:api,controller,good first issue"
-Task,[API] Create EmployeeAttendanceConfigController,"**Task 56**: Create EmployeeAttendanceConfigController
+1. Create `EmployeeOnboardingController` at route `api/v1/employees`.
+2. Inject `ISender mediator`.
+3. Add HTTP POST `onboard` endpoint executing `_mediator.Send(command)`.","layer:api,controller,employees"
+Task,[Application] Create UploadEmployeeDocumentCommand and Handler,"**Task 61**: Create UploadEmployeeDocumentCommand and Handler
 
-**Target File Location**: `src/Buy2.Api/Controllers/EmployeeAttendanceConfigController.cs`
+**Target File Location**: `src/Buy2.Application/Features/Employees/UploadDocument/UploadEmployeeDocumentCommand.cs`
 
 **Instructions**:
-1. Create ApiController `EmployeeAttendanceConfigController` at route `api/v1/employees`.
-2. Add HTTP PUT `{id}/attendance-config` endpoint stub.","layer:api,controller,good first issue"
-Task,[API] Create EmployeeDocumentsController,"**Task 57**: Create EmployeeDocumentsController
+1. Create `UploadEmployeeDocumentCommand` record implementing `IRequest<int>`.
+2. Implement `UploadEmployeeDocumentCommandHandler`.","layer:application,mediatr,employees"
+Task,[API] Create EmployeeDocumentsController (MediatR Injected),"**Task 62**: Create EmployeeDocumentsController (MediatR Injected)
 
 **Target File Location**: `src/Buy2.Api/Controllers/EmployeeDocumentsController.cs`
 
 **Instructions**:
-1. Create ApiController `EmployeeDocumentsController` at route `api/v1/employees`.
-2. Add HTTP POST `{id}/documents` endpoint stub accepting `UploadEmployeeDocumentDto`.","layer:api,controller,good first issue"
-Task,[API] Create DisciplinaryViolationsController,"**Task 58**: Create DisciplinaryViolationsController
+1. Create `EmployeeDocumentsController` at route `api/v1/employees`.
+2. Inject `ISender mediator`.
+3. Add HTTP POST `{id}/documents` endpoint executing `_mediator.Send(command)`.","layer:api,controller,employees"
+Task,[Application] Create LogDisciplinaryViolationCommand and Handler,"**Task 63**: Create LogDisciplinaryViolationCommand and Handler
+
+**Target File Location**: `src/Buy2.Application/Features/Employees/LogViolation/LogDisciplinaryViolationCommand.cs`
+
+**Instructions**:
+1. Create `LogDisciplinaryViolationCommand` record implementing `IRequest<int>`.
+2. Implement `LogDisciplinaryViolationCommandHandler`.","layer:application,mediatr,employees"
+Task,[API] Create DisciplinaryViolationsController (MediatR Injected),"**Task 64**: Create DisciplinaryViolationsController (MediatR Injected)
 
 **Target File Location**: `src/Buy2.Api/Controllers/DisciplinaryViolationsController.cs`
 
 **Instructions**:
-1. Create ApiController `DisciplinaryViolationsController` at route `api/v1/employees`.
-2. Add HTTP POST `{id}/violations` endpoint stub accepting `LogDisciplinaryViolationDto`.","layer:api,controller,good first issue"
-Task,[API] Create CreateSiteController,"**Task 59**: Create CreateSiteController
+1. Create `DisciplinaryViolationsController` at route `api/v1/employees`.
+2. Inject `ISender mediator`.
+3. Add HTTP POST `{id}/violations` endpoint executing `_mediator.Send(command)`.","layer:api,controller,employees"
+Task,[Application] Create CreateSiteCommand and Handler,"**Task 65**: Create CreateSiteCommand and Handler
+
+**Target File Location**: `src/Buy2.Application/Features/Sites/CreateSite/CreateSiteCommand.cs`
+
+**Instructions**:
+1. Create `CreateSiteCommand` record implementing `IRequest<int>`.
+2. Implement `CreateSiteCommandHandler`.","layer:application,mediatr,sites"
+Task,[API] Create CreateSiteController (MediatR Injected),"**Task 66**: Create CreateSiteController (MediatR Injected)
 
 **Target File Location**: `src/Buy2.Api/Controllers/CreateSiteController.cs`
 
 **Instructions**:
-1. Create ApiController `CreateSiteController` at route `api/v1/sites`.
-2. Add HTTP POST create site endpoint stub accepting `CreateSiteDto`.","layer:api,controller,good first issue"
-Task,[API] Create GetSitesController,"**Task 60**: Create GetSitesController
+1. Create `CreateSiteController` at route `api/v1/sites`.
+2. Inject `ISender mediator`.
+3. Add HTTP POST endpoint executing `_mediator.Send(command)`.","layer:api,controller,sites"
+Task,[Application] Create GetSitesQuery and Handler,"**Task 67**: Create GetSitesQuery and Handler
+
+**Target File Location**: `src/Buy2.Application/Features/Sites/GetSites/GetSitesQuery.cs`
+
+**Instructions**:
+1. Create `GetSitesQuery` record implementing `IRequest<List<SiteDto>>`.
+2. Implement `GetSitesQueryHandler`.","layer:application,mediatr,sites"
+Task,[API] Create GetSitesController (MediatR Injected),"**Task 68**: Create GetSitesController (MediatR Injected)
 
 **Target File Location**: `src/Buy2.Api/Controllers/GetSitesController.cs`
 
 **Instructions**:
-1. Create ApiController `GetSitesController` at route `api/v1/sites`.
-2. Add HTTP GET endpoint stub returning site collection.","layer:api,controller,good first issue"
-Task,[API] Create ScheduleValidationController,"**Task 61**: Create ScheduleValidationController
+1. Create `GetSitesController` at route `api/v1/sites`.
+2. Inject `ISender mediator`.
+3. Add HTTP GET endpoint executing `_mediator.Send(query)`.","layer:api,controller,sites"
+Task,[Application] Create ValidateScheduleDraftCommand and Handler,"**Task 69**: Create ValidateScheduleDraftCommand and Handler
+
+**Target File Location**: `src/Buy2.Application/Features/Schedules/ValidateDraft/ValidateScheduleDraftCommand.cs`
+
+**Instructions**:
+1. Create `ValidateScheduleDraftCommand` record implementing `IRequest<PreFlightValidationResultDto>`.
+2. Implement Handler consuming `IScheduleValidationEngine`.","layer:application,mediatr,schedules"
+Task,[API] Create ScheduleValidationController (MediatR Injected),"**Task 70**: Create ScheduleValidationController (MediatR Injected)
 
 **Target File Location**: `src/Buy2.Api/Controllers/ScheduleValidationController.cs`
 
 **Instructions**:
-1. Create ApiController `ScheduleValidationController` at route `api/v1/schedules`.
-2. Add HTTP POST `validate-draft` endpoint stub.","layer:api,controller,good first issue"
-Task,[API] Create SchedulePublishController,"**Task 62**: Create SchedulePublishController
+1. Create `ScheduleValidationController` at route `api/v1/schedules`.
+2. Inject `ISender mediator`.
+3. Add HTTP POST `validate-draft` endpoint executing `_mediator.Send(command)`.","layer:api,controller,schedules"
+Task,[Application] Create GetOpenShiftsQuery and Handler,"**Task 71**: Create GetOpenShiftsQuery and Handler
 
-**Target File Location**: `src/Buy2.Api/Controllers/SchedulePublishController.cs`
+**Target File Location**: `src/Buy2.Application/Features/ShiftMarket/GetOpenShifts/GetOpenShiftsQuery.cs`
 
 **Instructions**:
-1. Create ApiController `SchedulePublishController` at route `api/v1/schedules`.
-2. Add HTTP POST `publish` endpoint stub.","layer:api,controller,good first issue"
-Task,[API] Create OpenShiftsController,"**Task 63**: Create OpenShiftsController
+1. Create `GetOpenShiftsQuery` record implementing `IRequest<List<ShiftDto>>`.
+2. Implement `GetOpenShiftsQueryHandler`.","layer:application,mediatr,shift-market"
+Task,[API] Create OpenShiftsController (MediatR Injected),"**Task 72**: Create OpenShiftsController (MediatR Injected)
 
 **Target File Location**: `src/Buy2.Api/Controllers/OpenShiftsController.cs`
 
 **Instructions**:
-1. Create ApiController `OpenShiftsController` at route `api/v1/shift-market`.
-2. Add HTTP GET `open-shifts` endpoint stub.","layer:api,controller,good first issue"
-Task,[API] Create ShiftClaimsController,"**Task 64**: Create ShiftClaimsController
+1. Create `OpenShiftsController` at route `api/v1/shift-market`.
+2. Inject `ISender mediator`.
+3. Add HTTP GET `open-shifts` endpoint executing `_mediator.Send(query)`.","layer:api,controller,shift-market"
+Task,[Application] Create ClaimShiftCommand and Handler,"**Task 73**: Create ClaimShiftCommand and Handler
+
+**Target File Location**: `src/Buy2.Application/Features/ShiftMarket/ClaimShift/ClaimShiftCommand.cs`
+
+**Instructions**:
+1. Create `ClaimShiftCommand(int ShiftId, int EmployeeId, string Justification)` record implementing `IRequest<bool>`.
+2. Implement `ClaimShiftCommandHandler`.","layer:application,mediatr,shift-market"
+Task,[API] Create ShiftClaimsController (MediatR Injected),"**Task 74**: Create ShiftClaimsController (MediatR Injected)
 
 **Target File Location**: `src/Buy2.Api/Controllers/ShiftClaimsController.cs`
 
 **Instructions**:
-1. Create ApiController `ShiftClaimsController` at route `api/v1/shift-market`.
-2. Add HTTP POST `claims/{id}` endpoint stub accepting `ClaimShiftDto`.","layer:api,controller,good first issue"
-Task,[API] Create CreateRewardController,"**Task 65**: Create CreateRewardController
+1. Create `ShiftClaimsController` at route `api/v1/shift-market`.
+2. Inject `ISender mediator`.
+3. Add HTTP POST `claims/{id}` endpoint executing `_mediator.Send(command)`.","layer:api,controller,shift-market"
+Task,[Application] Create CreatePointsRuleCommand and Handler,"**Task 75**: Create CreatePointsRuleCommand and Handler
 
-**Target File Location**: `src/Buy2.Api/Controllers/CreateRewardController.cs`
-
-**Instructions**:
-1. Create ApiController `CreateRewardController` at route `api/v1/rewards`.
-2. Add HTTP POST reward creation endpoint stub accepting `RewardItemDto`.","layer:api,controller,good first issue"
-Task,[API] Create RewardInventoryController,"**Task 66**: Create RewardInventoryController
-
-**Target File Location**: `src/Buy2.Api/Controllers/RewardInventoryController.cs`
+**Target File Location**: `src/Buy2.Application/Features/Points/CreateRule/CreatePointsRuleCommand.cs`
 
 **Instructions**:
-1. Create ApiController `RewardInventoryController` at route `api/v1/rewards`.
-2. Add HTTP POST `{id}/inventory/upload` endpoint stub for bulk voucher Excel file.","layer:api,controller,good first issue"
-Task,[API] Create PointsRulesController,"**Task 67**: Create PointsRulesController
+1. Create `CreatePointsRuleCommand` record implementing `IRequest<int>`.
+2. Implement `CreatePointsRuleCommandHandler`.","layer:application,mediatr,points"
+Task,[API] Create PointsRulesController (MediatR Injected),"**Task 76**: Create PointsRulesController (MediatR Injected)
 
 **Target File Location**: `src/Buy2.Api/Controllers/PointsRulesController.cs`
 
 **Instructions**:
-1. Create ApiController `PointsRulesController` at route `api/v1/points`.
-2. Add HTTP POST `rules` endpoint stub accepting `CreatePointsRuleDto`.","layer:api,controller,good first issue"
-Task,[API] Create RewardRedemptionController,"**Task 68**: Create RewardRedemptionController
+1. Create `PointsRulesController` at route `api/v1/points`.
+2. Inject `ISender mediator`.
+3. Add HTTP POST `rules` endpoint executing `_mediator.Send(command)`.","layer:api,controller,points"
+Task,[Application] Create RedeemRewardCommand and Handler,"**Task 77**: Create RedeemRewardCommand and Handler
+
+**Target File Location**: `src/Buy2.Application/Features/Rewards/RedeemReward/RedeemRewardCommand.cs`
+
+**Instructions**:
+1. Create `RedeemRewardCommand(int RewardItemId, int EmployeeId)` record implementing `IRequest<string>`.
+2. Implement `RedeemRewardCommandHandler`.","layer:application,mediatr,rewards"
+Task,[API] Create RewardRedemptionController (MediatR Injected),"**Task 78**: Create RewardRedemptionController (MediatR Injected)
 
 **Target File Location**: `src/Buy2.Api/Controllers/RewardRedemptionController.cs`
 
 **Instructions**:
-1. Create ApiController `RewardRedemptionController` at route `api/v1/rewards`.
-2. Add HTTP POST `{id}/redeem` endpoint stub accepting `RedeemRewardDto`.","layer:api,controller,good first issue"
+1. Create `RewardRedemptionController` at route `api/v1/rewards`.
+2. Inject `ISender mediator`.
+3. Add HTTP POST `{id}/redeem` endpoint executing `_mediator.Send(command)`.","layer:api,controller,rewards"
