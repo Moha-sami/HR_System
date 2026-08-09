@@ -2,6 +2,7 @@ using Buy2.Application.Common.Interfaces;
 using Buy2.Infrastructure.Authentication;
 using Buy2.Infrastructure.Persistence;
 using Buy2.Infrastructure.Persistence.Repositories;
+using Buy2.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -21,6 +22,7 @@ public static class DependencyInjection
         services.AddScoped(typeof(IRepository<>), typeof(GenericRepository<>));
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
+        services.AddTransient<ExcelVoucherParser>();
 
         return services;
     }
