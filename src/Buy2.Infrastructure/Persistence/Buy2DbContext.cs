@@ -21,7 +21,7 @@ public class Buy2DbContext : DbContext
     public DbSet<RewardRedemption> RewardRedemptions => Set<RewardRedemption>();
     public DbSet<Role> Roles => Set<Role>();
     public DbSet<ShiftClaim> ShiftClaims => Set<ShiftClaim>();
-    public DbSet<Shift> ShiftEntities => Set<Shift>();
+    public DbSet<ShiftEntity> ShiftEntities => Set<ShiftEntity>();
     public DbSet<Site> Sites => Set<Site>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
