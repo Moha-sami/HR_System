@@ -1,4 +1,13 @@
-import { Component, input, output} from '@angular/core';
+import {
+  Component,
+  input,
+  output,
+  type ElementRef,
+  viewChild,
+  type AfterViewInit,
+  type OnInit,
+  type OnDestroy,
+} from '@angular/core';
 
 @Component({
   selector: 'app-modal',
@@ -6,8 +15,9 @@ import { Component, input, output} from '@angular/core';
   templateUrl: './modal.component.html',
   styleUrl: './modal.component.css',
 })
-export class ModalComponent {
-  constructor(){}
+export class ModalComponent implements OnInit, AfterViewInit, OnDestroy {
+  modalEl = viewChild<ElementRef>('modalEl');
+  private escapeHandler = (e: KeyboardEvent) => this.onEscape(e);
 
   size = input<'small' | 'medium' | 'large'>('medium');
   showHeader = input(true);
@@ -21,19 +31,30 @@ export class ModalComponent {
     this.closed.emit();
   }
 
+  ngOnInit(): void {
+    document.addEventListener('keydown', this.escapeHandler);
+  }
+
+  ngAfterViewInit(): void {
+    this.modalEl()?.nativeElement.focus();
+  }
+
+  ngOnDestroy(): void {
+    document.removeEventListener('keydown', this.escapeHandler);
+  }
+
   onBackdropClick(): void {
     if (this.closeOnBackdrop()) {
       this.close();
     }
   }
 
-  onEscape(): void {
-    if (this.closeOnEscape()) {
+  private onEscape(e: KeyboardEvent): void {
+    if (e.key === 'Escape' && this.closeOnEscape()) {
       this.close();
     }
   }
 }
-
 
 // to use it i have to add the following function in the .ts file of parent component:
 
@@ -63,11 +84,9 @@ export class ModalComponent {
 //       content of the header if needed
 //     </div>
 
-
 //     <div modal-body>
 //       content of the body required
 //     </div>
-
 
 //     <div modal-actions>
 //       content of the actions if needed
