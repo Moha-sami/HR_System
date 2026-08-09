@@ -19,4 +19,8 @@ export const DOCS_ROUTES: Routes = [
     path: 'table',
     loadComponent: () => import('./table/table-docs.component').then((m) => m.TableDocsComponent),
   },
+  {
+    path: 'modal',
+    loadComponent: () => import('./modal/modal-docs.component').then((m) => m.ModalDocsComponent),
+  },
 ];

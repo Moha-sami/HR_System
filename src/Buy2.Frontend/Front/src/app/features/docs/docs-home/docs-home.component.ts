@@ -61,6 +61,13 @@ export class DocsHomeComponent {
         'Data table with variants, sizes, sorting, alignment, and custom cell templates.',
       tags: ['data', 'sorting', 'templates', 'grid'],
     },
+    {
+      name: 'Modal',
+      route: 'modal',
+      description:
+        'Dialog overlay with header, body, and actions. Supports sizes, backdrop close, and escape key.',
+      tags: ['dialog', 'overlay', 'form', 'confirm'],
+    },
     // Add more components here as they are documented
     // {
     //   name: 'Input',

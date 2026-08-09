@@ -1,0 +1,467 @@
+<div class="min-h-screen bg-neutral-50">
+  <div class="max-w-6xl mx-auto px-8 py-12">
+    <!-- Header -->
+    <a routerLink="/docs" class="text-primary-600 hover:text-primary-700 text-sm mb-4 inline-block"
+      >← Back to Docs</a
+    >
+    <h1 class="text-3xl font-bold text-neutral-900 mb-2">Modal Component</h1>
+    <p class="text-neutral-500 mb-8">
+      Dialog overlay with header, body, and actions. Supports sizes, backdrop close, and escape key.
+    </p>
+
+    <!-- Selector -->
+    <div class="bg-white rounded-lg border border-neutral-200 p-4 mb-6">
+      <p class="text-xs text-neutral-500 mb-1">Selector</p>
+      <code class="text-sm text-neutral-600">&lt;app-modal&gt;...&lt;/app-modal&gt;</code>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!-- BASIC USAGE                                            -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <section class="bg-white rounded-lg border border-neutral-200 p-6 mb-6">
+      <h2 class="text-lg font-semibold text-neutral-800 mb-4">Basic Usage</h2>
+
+      <div class="mb-4">
+        <app-button variant="primary" (clicked)="openModal(basicModal)">Open Modal</app-button>
+      </div>
+
+      @if (basicModal()) {
+        <app-modal (closed)="closeModal(basicModal)">
+          <div modal-header>
+            <h3 class="text-lg font-semibold text-neutral-800">Basic Modal</h3>
+          </div>
+          <div modal-body>
+            <p class="text-neutral-600">This is a basic modal with header, body, and actions.</p>
+          </div>
+          <div modal-actions>
+            <app-button variant="primary" (clicked)="closeModal(basicModal)">Got it</app-button>
+          </div>
+        </app-modal>
+      }
+
+      <pre
+        class="bg-neutral-900 text-neutral-100 p-4 rounded-lg text-sm overflow-x-auto"
+      ><code>&lt;!-- Component: use signal to control visibility --&gt;
+showModal = signal&#40;false&#41;;
+openModal&#40;&#41; &#123; this.showModal.set&#40;true&#41; &#125;
+closeModal&#40;&#41; &#123; this.showModal.set&#40;false&#41; &#125;
+
+&lt;!-- Template: show modal conditionally --&gt;
+&lt;app-button &#40;clicked&#41;=&quot;openModal&#40;&#41;&quot;&gt;Open&lt;/app-button&gt;
+
+&#64;if &#40;showModal&#40;&#41;&#41; &#123;
+  &lt;app-modal &#40;closed&#41;=&quot;closeModal&#40;&#41;&quot;&gt;
+    &lt;div modal-header&gt;...&lt;/div&gt;
+    &lt;div modal-body&gt;...&lt;/div&gt;
+    &lt;div modal-actions&gt;...&lt;/div&gt;
+  &lt;/app-modal&gt;
+&#125;</code></pre>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!-- SIZES                                                  -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <section class="bg-white rounded-lg border border-neutral-200 p-6 mb-6">
+      <h2 class="text-lg font-semibold text-neutral-800 mb-4">Sizes</h2>
+
+      <div class="flex gap-3 mb-4">
+        <app-button variant="primary" size="sm" (clicked)="openModal(smallModal)"
+          >Small (360px)</app-button
+        >
+        <app-button variant="primary" (clicked)="openModal(basicModal)">Medium (500px)</app-button>
+        <app-button variant="primary" size="lg" (clicked)="openModal(largeModal)"
+          >Large (900px)</app-button
+        >
+      </div>
+
+      @if (smallModal()) {
+        <app-modal size="small" (closed)="closeModal(smallModal)">
+          <div modal-header>
+            <h3 class="text-lg font-semibold text-neutral-800">Small Modal</h3>
+          </div>
+          <div modal-body>
+            <p class="text-neutral-600">360px wide. Good for alerts and confirmations.</p>
+          </div>
+          <div modal-actions>
+            <app-button variant="primary" (clicked)="closeModal(smallModal)">OK</app-button>
+          </div>
+        </app-modal>
+      }
+
+      @if (largeModal()) {
+        <app-modal size="large" (closed)="closeModal(largeModal)">
+          <div modal-header>
+            <h3 class="text-lg font-semibold text-neutral-800">Large Modal</h3>
+          </div>
+          <div modal-body>
+            <p class="text-neutral-600">900px wide. Good for forms and complex content.</p>
+          </div>
+          <div modal-actions>
+            <app-button variant="primary" (clicked)="closeModal(largeModal)">Got it</app-button>
+          </div>
+        </app-modal>
+      }
+
+      <pre
+        class="bg-neutral-900 text-neutral-100 p-4 rounded-lg text-sm overflow-x-auto"
+      ><code>&lt;app-modal size="small" ...&gt;  &lt;!-- 360px --&gt;
+&lt;app-modal size="medium" ...&gt; &lt;!-- 500px (default) --&gt;
+&lt;app-modal size="large" ...&gt;  &lt;!-- 900px --&gt;</code></pre>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!-- SHOW/HIDE SECTIONS                                     -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <section class="bg-white rounded-lg border border-neutral-200 p-6 mb-6">
+      <h2 class="text-lg font-semibold text-neutral-800 mb-4">Show/Hide Sections</h2>
+
+      <div class="flex gap-3 mb-4">
+        <app-button variant="secondary" (clicked)="openModal(noHeaderModal)">No Header</app-button>
+        <app-button variant="secondary" (clicked)="openModal(noActionsModal)"
+          >No Actions</app-button
+        >
+      </div>
+
+      @if (noHeaderModal()) {
+        <app-modal [showHeader]="false" (closed)="closeModal(noHeaderModal)">
+          <div modal-body>
+            <p class="text-neutral-600">
+              This modal has no header section. The close button is also hidden.
+            </p>
+          </div>
+          <div modal-actions>
+            <app-button variant="primary" (clicked)="closeModal(noHeaderModal)">Close</app-button>
+          </div>
+        </app-modal>
+      }
+
+      @if (noActionsModal()) {
+        <app-modal [showActions]="false" (closed)="closeModal(noActionsModal)">
+          <div modal-header>
+            <h3 class="text-lg font-semibold text-neutral-800">No Actions</h3>
+          </div>
+          <div modal-body>
+            <p class="text-neutral-600">
+              This modal has no actions footer. Close by clicking backdrop or pressing Escape.
+            </p>
+          </div>
+        </app-modal>
+      }
+
+      <pre
+        class="bg-neutral-900 text-neutral-100 p-4 rounded-lg text-sm overflow-x-auto"
+      ><code>&lt;!-- Hide header --&gt;
+&lt;app-modal [showHeader]="false" ...&gt;
+
+&lt;!-- Hide actions --&gt;
+&lt;app-modal [showActions]="false" ...&gt;</code></pre>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!-- BACKDROP & ESCAPE                                      -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <section class="bg-white rounded-lg border border-neutral-200 p-6 mb-6">
+      <h2 class="text-lg font-semibold text-neutral-800 mb-4">Close Behavior</h2>
+
+      <div class="flex gap-3 mb-4">
+        <app-button variant="secondary" (clicked)="openModal(noBackdropModal)"
+          >No Backdrop Close</app-button
+        >
+      </div>
+
+      @if (noBackdropModal()) {
+        <app-modal [closeOnBackdrop]="false" (closed)="closeModal(noBackdropModal)">
+          <div modal-header>
+            <h3 class="text-lg font-semibold text-neutral-800">Backdrop Disabled</h3>
+          </div>
+          <div modal-body>
+            <p class="text-neutral-600">
+              Clicking outside does nothing. Press Escape or click the button to close.
+            </p>
+          </div>
+          <div modal-actions>
+            <app-button variant="primary" (clicked)="closeModal(noBackdropModal)">Close</app-button>
+          </div>
+        </app-modal>
+      }
+
+      <pre
+        class="bg-neutral-900 text-neutral-100 p-4 rounded-lg text-sm overflow-x-auto"
+      ><code>&lt;!-- Disable backdrop click --&gt;
+&lt;app-modal [closeOnBackdrop]="false" ...&gt;
+
+&lt;!-- Disable escape key --&gt;
+&lt;app-modal [closeOnEscape]="false" ...&gt;
+
+&lt;!-- Disable both --&gt;
+&lt;app-modal [closeOnBackdrop]="false" [closeOnEscape]="false" ...&gt;</code></pre>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!-- FORM MODAL                                             -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <section class="bg-white rounded-lg border border-neutral-200 p-6 mb-6">
+      <h2 class="text-lg font-semibold text-neutral-800 mb-4">Form Modal Example</h2>
+
+      <div class="mb-4">
+        <app-button variant="primary" (clicked)="openModal(formModal)">Add Employee</app-button>
+      </div>
+
+      @if (lastAction()) {
+        <div class="bg-green-50 rounded-lg p-3 mb-4 text-sm text-green-700">
+          {{ lastAction() }}
+        </div>
+      }
+
+      @if (formModal()) {
+        <app-modal size="large" (closed)="closeModal(formModal)">
+          <div modal-header>
+            <h3 class="text-lg font-semibold text-neutral-800">Add New Employee</h3>
+          </div>
+          <div modal-body>
+            <form class="space-y-4">
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-neutral-700 mb-1">First Name</label>
+                  <input
+                    type="text"
+                    class="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    placeholder="Ahmed"
+                  />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-neutral-700 mb-1">Last Name</label>
+                  <input
+                    type="text"
+                    class="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    placeholder="Mohamed"
+                  />
+                </div>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-neutral-700 mb-1">Email</label>
+                <input
+                  type="email"
+                  class="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  placeholder="ahmed@company.com"
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-neutral-700 mb-1">Department</label>
+                <select
+                  class="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                >
+                  <option>Engineering</option>
+                  <option>Design</option>
+                  <option>HR</option>
+                  <option>Management</option>
+                </select>
+              </div>
+            </form>
+          </div>
+          <div modal-actions>
+            <app-button variant="secondary" (clicked)="closeModal(formModal)">Cancel</app-button>
+            <app-button variant="primary" (clicked)="onSubmit()">Save Employee</app-button>
+          </div>
+        </app-modal>
+      }
+
+      <pre
+        class="bg-neutral-900 text-neutral-100 p-4 rounded-lg text-sm overflow-x-auto"
+      ><code>&lt;app-modal size="large" (closed)="closeModal()"&gt;
+  &lt;div modal-header&gt;
+    &lt;h3&gt;Add New Employee&lt;/h3&gt;
+  &lt;/div&gt;
+
+  &lt;div modal-body&gt;
+    &lt;form&gt;
+      &lt;div class="grid grid-cols-2 gap-4"&gt;
+        &lt;div&gt;
+          &lt;label&gt;First Name&lt;/label&gt;
+          &lt;input type="text" /&gt;
+        &lt;/div&gt;
+        &lt;div&gt;
+          &lt;label&gt;Last Name&lt;/label&gt;
+          &lt;input type="text" /&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/form&gt;
+  &lt;/div&gt;
+
+  &lt;div modal-actions&gt;
+    &lt;app-button variant="secondary" (clicked)="closeModal()"&gt;Cancel&lt;/app-button&gt;
+    &lt;app-button variant="primary" (clicked)="save()"&gt;Save&lt;/app-button&gt;
+  &lt;/div&gt;
+&lt;/app-modal&gt;</code></pre>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!-- CONFIRMATION MODAL                                     -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <section class="bg-white rounded-lg border border-neutral-200 p-6 mb-6">
+      <h2 class="text-lg font-semibold text-neutral-800 mb-4">Confirmation Modal</h2>
+
+      <div class="mb-4">
+        <app-button variant="danger" (clicked)="openModal(confirmModal)">Delete Item</app-button>
+      </div>
+
+      @if (confirmModal()) {
+        <app-modal size="small" [showHeader]="false" (closed)="closeModal(confirmModal)">
+          <div modal-body>
+            <div class="text-center">
+              <div
+                class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4"
+              >
+                <svg
+                  class="h-6 w-6 text-red-600"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                  />
+                </svg>
+              </div>
+              <h3 class="text-lg font-semibold text-neutral-800 mb-2">Delete Item?</h3>
+              <p class="text-neutral-500 text-sm">This action cannot be undone.</p>
+            </div>
+          </div>
+          <div modal-actions>
+            <app-button variant="secondary" (clicked)="onCancel()">Cancel</app-button>
+            <app-button variant="danger" (clicked)="onConfirm()">Delete</app-button>
+          </div>
+        </app-modal>
+      }
+
+      <pre
+        class="bg-neutral-900 text-neutral-100 p-4 rounded-lg text-sm overflow-x-auto"
+      ><code>&lt;app-modal size="small" [showHeader]="false" (closed)="closeModal()"&gt;
+  &lt;div modal-body&gt;
+    &lt;div class="text-center"&gt;
+      &lt;div class="icon-circle bg-red-100"&gt;
+        &lt;svg class="text-red-600"&gt;...&lt;/svg&gt;
+      &lt;/div&gt;
+      &lt;h3&gt;Delete Item?&lt;/h3&gt;
+      &lt;p&gt;This action cannot be undone.&lt;/p&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div modal-actions&gt;
+    &lt;app-button variant="secondary" (clicked)="cancel()"&gt;Cancel&lt;/app-button&gt;
+    &lt;app-button variant="danger" (clicked)="confirm()"&gt;Delete&lt;/app-button&gt;
+  &lt;/div&gt;
+&lt;/app-modal&gt;</code></pre>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!-- API REFERENCE                                          -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <section class="bg-white rounded-lg border border-neutral-200 p-6 mb-6">
+      <h2 class="text-lg font-semibold text-neutral-800 mb-4">API Reference</h2>
+
+      <!-- Inputs -->
+      <h3 class="text-sm font-semibold text-neutral-700 mb-2">Inputs</h3>
+      <div class="overflow-x-auto mb-6">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="border-b border-neutral-200">
+              <th class="text-left py-2 pr-4 text-neutral-500">Input</th>
+              <th class="text-left py-2 pr-4 text-neutral-500">Type</th>
+              <th class="text-left py-2 pr-4 text-neutral-500">Default</th>
+              <th class="text-left py-2 text-neutral-500">Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="border-b border-neutral-100">
+              <td class="py-2 pr-4 font-mono text-primary-600">size</td>
+              <td class="py-2 pr-4 text-neutral-600">'small' | 'medium' | 'large'</td>
+              <td class="py-2 pr-4 text-neutral-400">'medium'</td>
+              <td class="py-2 text-neutral-600">Modal width (360px / 500px / 900px)</td>
+            </tr>
+            <tr class="border-b border-neutral-100">
+              <td class="py-2 pr-4 font-mono text-primary-600">showHeader</td>
+              <td class="py-2 pr-4 text-neutral-600">boolean</td>
+              <td class="py-2 pr-4 text-neutral-400">true</td>
+              <td class="py-2 text-neutral-600">Show/hide header section</td>
+            </tr>
+            <tr class="border-b border-neutral-100">
+              <td class="py-2 pr-4 font-mono text-primary-600">showActions</td>
+              <td class="py-2 pr-4 text-neutral-600">boolean</td>
+              <td class="py-2 pr-4 text-neutral-400">true</td>
+              <td class="py-2 text-neutral-600">Show/hide actions footer</td>
+            </tr>
+            <tr class="border-b border-neutral-100">
+              <td class="py-2 pr-4 font-mono text-primary-600">closeOnBackdrop</td>
+              <td class="py-2 pr-4 text-neutral-600">boolean</td>
+              <td class="py-2 pr-4 text-neutral-400">true</td>
+              <td class="py-2 text-neutral-600">Close when clicking outside modal</td>
+            </tr>
+            <tr>
+              <td class="py-2 pr-4 font-mono text-primary-600">closeOnEscape</td>
+              <td class="py-2 pr-4 text-neutral-600">boolean</td>
+              <td class="py-2 pr-4 text-neutral-400">true</td>
+              <td class="py-2 text-neutral-600">Close when pressing Escape key</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Outputs -->
+      <h3 class="text-sm font-semibold text-neutral-700 mb-2">Outputs</h3>
+      <div class="overflow-x-auto mb-6">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="border-b border-neutral-200">
+              <th class="text-left py-2 pr-4 text-neutral-500">Output</th>
+              <th class="text-left py-2 pr-4 text-neutral-500">Type</th>
+              <th class="text-left py-2 text-neutral-500">Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="py-2 pr-4 font-mono text-primary-600">closed</td>
+              <td class="py-2 pr-4 text-neutral-600">void</td>
+              <td class="py-2 text-neutral-600">
+                Emits when modal is closed (backdrop, escape, or programmatic)
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Content Projection Slots -->
+      <h3 class="text-sm font-semibold text-neutral-700 mb-2">Content Projection Slots</h3>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="border-b border-neutral-200">
+              <th class="text-left py-2 pr-4 text-neutral-500">Slot</th>
+              <th class="text-left py-2 pr-4 text-neutral-500">Selector</th>
+              <th class="text-left py-2 text-neutral-500">Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="border-b border-neutral-100">
+              <td class="py-2 pr-4 font-mono text-primary-600">Header</td>
+              <td class="py-2 pr-4 text-neutral-600">[modal-header]</td>
+              <td class="py-2 text-neutral-600">Top section with title</td>
+            </tr>
+            <tr class="border-b border-neutral-100">
+              <td class="py-2 pr-4 font-mono text-primary-600">Body</td>
+              <td class="py-2 pr-4 text-neutral-600">[modal-body]</td>
+              <td class="py-2 text-neutral-600">Main content area (scrollable)</td>
+            </tr>
+            <tr>
+              <td class="py-2 pr-4 font-mono text-primary-600">Actions</td>
+              <td class="py-2 pr-4 text-neutral-600">[modal-actions]</td>
+              <td class="py-2 text-neutral-600">Bottom section with buttons</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+</div>
