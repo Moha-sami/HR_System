@@ -61,6 +61,7 @@ To ensure automatic tracking between GitHub and Jira, follow these simple naming
 - **Task 12** (`SCRUM-17`): ShiftStatus and ClaimStatus Enums ✅ **[DONE - PR #19]**
 - **Task 13** (`SCRUM-18`): IRepository Generic Interface ✅ **[DONE - PR #41]**
 - **Task 15** (`SCRUM-20`): IJwtTokenGenerator Interface ✅ **[DONE - PR #29]**
+- **Task 47**: JwtTokenGenerator Implementation ✅ **[DONE]**
 - **Task 16** (`SCRUM-21`): Login DTO Records ✅ **[DONE - PR #30]**
 - **Task 17** (`SCRUM-22`): Role DTO Records ✅ **[DONE - PR #31]**
 - **Task 18** (`SCRUM-23`): Employee DTO Records ✅ **[DONE - PR #32]**
@@ -172,7 +173,7 @@ To ensure automatic tracking between GitHub and Jira, follow these simple naming
 - **Location**: `Buy2.Infrastructure/Persistence/Repositories/UnitOfWork.cs`
 - **Instructions**: Implement `IUnitOfWork` wrapping `Buy2DbContext.SaveChangesAsync()`.
 
-#### Task 47: `[Infrastructure] Create JwtTokenGenerator Implementation`
+#### Task 47: `[Infrastructure] Create JwtTokenGenerator Implementation` ✅ **[DONE]**
 - **Difficulty**: Medium
 - **Location**: `Buy2.Infrastructure/Authentication/JwtTokenGenerator.cs`
 - **Instructions**: Implement `IJwtTokenGenerator` using JWT security token handler. Generate user claims for id, email, and roles.
