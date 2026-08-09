@@ -1,0 +1,27 @@
+<div class="modal-backdrop" (click)="onBackdropClick()">
+  <div
+    class="modal"
+    tabindex="0"
+    #modalEl
+    [class.modal--small]="size() === 'small'"
+    [class.modal--medium]="size() === 'medium'"
+    [class.modal--large]="size() === 'large'"
+    (click)="$event.stopPropagation()"
+  >
+    @if (showCloseButton()) {
+      <app-button
+        class="modal__close"
+        shape="circle"
+        size="sm"
+        (clicked)="close()"
+        aria-label="Close"
+      >
+        x
+      </app-button>
+    }
+
+    <ng-content select="app-modal-header" />
+    <ng-content select="app-modal-body" />
+    <ng-content select="app-modal-footer" />
+  </div>
+</div>
