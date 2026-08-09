@@ -1,0 +1,308 @@
+<div class="min-h-screen bg-neutral-50">
+  <div class="max-w-6xl mx-auto px-8 py-12">
+    <!-- Header -->
+    <a routerLink="/docs" class="text-primary-600 hover:text-primary-700 text-sm mb-4 inline-block"
+      >← Back to Docs</a
+    >
+    <h1 class="text-3xl font-bold text-neutral-900 mb-2">Design System</h1>
+    <p class="text-neutral-500 mb-8">
+      Visual language and design tokens for the HR Management System.
+    </p>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!-- OVERVIEW                                               -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <section class="bg-white rounded-lg border border-neutral-200 p-6 mb-6">
+      <h2 class="text-lg font-semibold text-neutral-800 mb-4">Overview</h2>
+
+      <div class="grid grid-cols-2 gap-6 mb-6">
+        <div>
+          <p class="text-xs text-neutral-500 mb-1">System Name</p>
+          <p class="text-sm text-neutral-800 font-medium">HRMS Design System</p>
+        </div>
+        <div>
+          <p class="text-xs text-neutral-500 mb-1">Version</p>
+          <p class="text-sm text-neutral-800 font-medium">1.0.0</p>
+        </div>
+        <div>
+          <p class="text-xs text-neutral-500 mb-1">Brand Color</p>
+          <div class="flex items-center gap-2">
+            <div
+              class="w-6 h-6 rounded border border-neutral-200"
+              style="background-color: #234199"
+            ></div>
+            <code class="text-sm text-neutral-600">#234199</code>
+          </div>
+        </div>
+        <div>
+          <p class="text-xs text-neutral-500 mb-1">Framework</p>
+          <p class="text-sm text-neutral-800 font-medium">Angular 21 + Tailwind CSS</p>
+        </div>
+      </div>
+
+      <p class="text-sm text-neutral-600 mb-4">
+        A centralized design token system for consistent UI across the HR Management System. All
+        colors, spacing, and typography are defined as CSS custom properties and exposed through
+        Tailwind CSS for rapid development.
+      </p>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!-- HOW TO USE                                             -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <section class="bg-white rounded-lg border border-neutral-200 p-6 mb-6">
+      <h2 class="text-lg font-semibold text-neutral-800 mb-4">How to Use Tokens</h2>
+
+      <!-- Tailwind -->
+      <h3 class="text-sm font-semibold text-neutral-700 mb-2">In Tailwind CSS (Recommended)</h3>
+      <pre
+        class="bg-neutral-900 text-neutral-100 p-4 rounded-lg text-sm overflow-x-auto mb-4"
+      ><code>&lt;!-- Background colors --&gt;
+&lt;div class="bg-primary-600"&gt;Primary background&lt;/div&gt;
+&lt;div class="bg-error-50"&gt;Error background&lt;/div&gt;
+
+&lt;!-- Text colors --&gt;
+&lt;p class="text-neutral-800"&gt;Dark text&lt;/p&gt;
+&lt;p class="text-primary-600"&gt;Brand text&lt;/p&gt;
+
+&lt;!-- Border colors --&gt;
+&lt;input class="border border-error-500" /&gt;  &lt;!-- Error state --&gt;
+&lt;div class="border border-neutral-200"&gt;&lt;/div&gt;
+
+&lt;!-- Hover states --&gt;
+&lt;button class="bg-primary-600 hover:bg-primary-700"&gt;Hover me&lt;/button&gt;</code></pre>
+
+      <!-- Normal CSS -->
+      <h3 class="text-sm font-semibold text-neutral-700 mb-2">In Normal CSS</h3>
+      <pre
+        class="bg-neutral-900 text-neutral-100 p-4 rounded-lg text-sm overflow-x-auto mb-4"
+      ><code>.my-component &#123;
+  /* Use CSS custom properties directly */
+  color: var&#40;--color-neutral-800&#41;;
+  background: var&#40;--color-primary-600&#41;;
+  border: 1px solid var&#40;--color-neutral-200&#41;;
+&#125;
+
+.my-component:hover &#123;
+  background: var&#40;--color-primary-700&#41;;
+&#125;
+
+.my-component--error &#123;
+  border-color: var&#40;--color-error-500&#41;;
+  color: var&#40;--color-error-600&#41;;
+&#125;</code></pre>
+
+      <!-- SCSS -->
+      <h3 class="text-sm font-semibold text-neutral-700 mb-2">In SCSS (if needed)</h3>
+      <pre
+        class="bg-neutral-900 text-neutral-100 p-4 rounded-lg text-sm overflow-x-auto"
+      ><code>$primary-600: var&#40;--color-primary-600&#41;;
+$neutral-800: var&#40;--color-neutral-800&#41;;
+
+.my-component &#123;
+  color: $neutral-800;
+  background: $primary-600;
+&#125;</code></pre>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!-- COLOR SYSTEM                                           -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <section class="bg-white rounded-lg border border-neutral-200 p-6 mb-6">
+      <h2 class="text-lg font-semibold text-neutral-800 mb-4">Color System</h2>
+
+      <p class="text-sm text-neutral-600 mb-6">
+        Colors follow a 10-shade scale (50-900) where 50 is lightest and 900 is darkest. Use 600 for
+        primary actions, 700 for hover states.
+      </p>
+
+      @for (palette of colorPalettes; track palette.name) {
+        <div class="mb-8 last:mb-0">
+          <div class="mb-3">
+            <h3 class="text-sm font-semibold text-neutral-800">{{ palette.name }}</h3>
+            <p class="text-xs text-neutral-500">{{ palette.description }}</p>
+          </div>
+
+          <div class="grid grid-cols-10 gap-1">
+            @for (shade of palette.shades; track shade.name) {
+              <div class="text-center">
+                <div
+                  class="w-full h-12 rounded-lg border border-neutral-200 mb-1 flex items-center justify-center"
+                  [style.background-color]="shade.value"
+                >
+                  <span
+                    class="text-xs font-medium"
+                    [class.text-white]="shade.text === 'white'"
+                    [class.text-neutral-900]="shade.text === 'dark'"
+                  >
+                    {{ shade.name }}
+                  </span>
+                </div>
+                <p class="text-[10px] text-neutral-400 truncate" [title]="shade.value">
+                  {{ shade.value }}
+                </p>
+              </div>
+            }
+          </div>
+        </div>
+      }
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!-- TOKEN NAMING                                           -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <section class="bg-white rounded-lg border border-neutral-200 p-6 mb-6">
+      <h2 class="text-lg font-semibold text-neutral-800 mb-4">Token Naming Convention</h2>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="border-b border-neutral-200">
+              <th class="text-left py-2 pr-4 text-neutral-500">Pattern</th>
+              <th class="text-left py-2 pr-4 text-neutral-500">Example</th>
+              <th class="text-left py-2 text-neutral-500">Usage</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="border-b border-neutral-100">
+              <td class="py-2 pr-4 font-mono text-primary-600">
+                --color-&#123;palette&#125;-&#123;shade&#125;
+              </td>
+              <td class="py-2 pr-4 text-neutral-600">--color-primary-600</td>
+              <td class="py-2 text-neutral-600">Color tokens</td>
+            </tr>
+            <tr class="border-b border-neutral-100">
+              <td class="py-2 pr-4 font-mono text-primary-600">
+                --spacing-&#123;element&#125;-&#123;axis&#125;
+              </td>
+              <td class="py-2 pr-4 text-neutral-600">--spacing-table-x</td>
+              <td class="py-2 text-neutral-600">Component spacing</td>
+            </tr>
+            <tr class="border-b border-neutral-100">
+              <td class="py-2 pr-4 font-mono text-primary-600">--radius-&#123;element&#125;</td>
+              <td class="py-2 pr-4 text-neutral-600">--radius-table</td>
+              <td class="py-2 text-neutral-600">Component border radius</td>
+            </tr>
+            <tr>
+              <td class="py-2 pr-4 font-mono text-primary-600">
+                --color-&#123;palette&#125;-overlay
+              </td>
+              <td class="py-2 pr-4 text-neutral-600">--color-primary-overlay</td>
+              <td class="py-2 text-neutral-600">Transparent version for backgrounds</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="mt-4 p-4 bg-neutral-50 rounded-lg">
+        <p class="text-xs text-neutral-600">
+          <strong>Shade Scale:</strong>
+          50 (lightest bg) → 100-200 (light borders) → 300-400 (disabled) → 500 (medium) →
+          <strong>600 (primary)</strong> → 700 (hover) → 800-900 (darkest)
+        </p>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!-- COMPONENT TOKENS                                       -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <section class="bg-white rounded-lg border border-neutral-200 p-6 mb-6">
+      <h2 class="text-lg font-semibold text-neutral-800 mb-4">Component Token Usage</h2>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="border-b border-neutral-200">
+              <th class="text-left py-2 pr-4 text-neutral-500">Component</th>
+              <th class="text-left py-2 pr-4 text-neutral-500">Token</th>
+              <th class="text-left py-2 text-neutral-500">Value</th>
+              <th class="text-left py-2 text-neutral-500">Purpose</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="border-b border-neutral-100">
+              <td class="py-2 pr-4 text-neutral-800 font-medium" rowspan="4">Table</td>
+              <td class="py-2 pr-4 font-mono text-primary-600">--color-table-bg</td>
+              <td class="py-2 pr-4">
+                <div class="flex items-center gap-2">
+                  <div
+                    class="w-4 h-4 rounded border border-neutral-200"
+                    style="background: #f8f8f8"
+                  ></div>
+                  <code class="text-xs text-neutral-500">#f8f8f8</code>
+                </div>
+              </td>
+              <td class="py-2 text-neutral-600">Table background</td>
+            </tr>
+            <tr class="border-b border-neutral-100">
+              <td class="py-2 pr-4 font-mono text-primary-600">--color-table-header-text</td>
+              <td class="py-2 pr-4">
+                <div class="flex items-center gap-2">
+                  <div
+                    class="w-4 h-4 rounded border border-neutral-200"
+                    style="background: #234199"
+                  ></div>
+                  <code class="text-xs text-neutral-500">#234199</code>
+                </div>
+              </td>
+              <td class="py-2 text-neutral-600">Header text color (brand)</td>
+            </tr>
+            <tr class="border-b border-neutral-100">
+              <td class="py-2 pr-4 font-mono text-primary-600">--color-table-label</td>
+              <td class="py-2 pr-4">
+                <div class="flex items-center gap-2">
+                  <div
+                    class="w-4 h-4 rounded border border-neutral-200"
+                    style="background: #555f7e"
+                  ></div>
+                  <code class="text-xs text-neutral-500">#555f7e</code>
+                </div>
+              </td>
+              <td class="py-2 text-neutral-600">Cell text color</td>
+            </tr>
+            <tr class="border-b border-neutral-100">
+              <td class="py-2 pr-4 font-mono text-primary-600">--color-table-border</td>
+              <td class="py-2 pr-4">
+                <div class="flex items-center gap-2">
+                  <div
+                    class="w-4 h-4 rounded border border-neutral-200"
+                    style="background: #e9eaf3"
+                  ></div>
+                  <code class="text-xs text-neutral-500">#e9eaf3</code>
+                </div>
+              </td>
+              <td class="py-2 text-neutral-600">Border and divider color</td>
+            </tr>
+            <tr class="border-b border-neutral-100">
+              <td class="py-2 pr-4 text-neutral-800 font-medium" rowspan="3">Button</td>
+              <td class="py-2 pr-4 font-mono text-primary-600">bg-primary-600</td>
+              <td class="py-2 pr-4 text-neutral-600">Tailwind class</td>
+              <td class="py-2 text-neutral-600">Primary button background</td>
+            </tr>
+            <tr class="border-b border-neutral-100">
+              <td class="py-2 pr-4 font-mono text-primary-600">hover:bg-primary-700</td>
+              <td class="py-2 pr-4 text-neutral-600">Tailwind class</td>
+              <td class="py-2 text-neutral-600">Primary button hover state</td>
+            </tr>
+            <tr class="border-b border-neutral-100">
+              <td class="py-2 pr-4 font-mono text-primary-600">bg-error-700</td>
+              <td class="py-2 pr-4 text-neutral-600">Tailwind class</td>
+              <td class="py-2 text-neutral-600">Danger button background</td>
+            </tr>
+            <tr class="border-b border-neutral-100">
+              <td class="py-2 pr-4 text-neutral-800 font-medium" rowspan="2">Modal</td>
+              <td class="py-2 pr-4 font-mono text-primary-600">bg-black/40</td>
+              <td class="py-2 pr-4 text-neutral-600">Tailwind class</td>
+              <td class="py-2 text-neutral-600">Backdrop overlay</td>
+            </tr>
+            <tr>
+              <td class="py-2 pr-4 font-mono text-primary-600">bg-white</td>
+              <td class="py-2 pr-4 text-neutral-600">Tailwind class</td>
+              <td class="py-2 text-neutral-600">Modal background</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+</div>

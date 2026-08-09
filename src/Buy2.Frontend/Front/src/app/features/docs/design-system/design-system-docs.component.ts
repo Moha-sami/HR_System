@@ -1,0 +1,110 @@
+import { Component } from '@angular/core';
+import { RouterLink } from '@angular/router';
+
+@Component({
+  selector: 'app-design-system-docs',
+  standalone: true,
+  imports: [RouterLink],
+  templateUrl: './design-system-docs.component.html',
+  styleUrl: './design-system-docs.component.css',
+})
+export class DesignSystemDocsComponent {
+  colorPalettes = [
+    {
+      name: 'Primary',
+      description: 'Brand color for CTAs, links, and active states',
+      shades: [
+        { name: '50', value: '#f0f3fa', text: 'dark' },
+        { name: '100', value: '#d9e1f2', text: 'dark' },
+        { name: '200', value: '#b8c6e8', text: 'dark' },
+        { name: '300', value: '#94a9dd', text: 'dark' },
+        { name: '400', value: '#708dd3', text: 'dark' },
+        { name: '500', value: '#4c71c9', text: 'white' },
+        { name: '600', value: '#234199', text: 'white' },
+        { name: '700', value: '#1e3885', text: 'white' },
+        { name: '800', value: '#182e6f', text: 'white' },
+        { name: '900', value: '#122358', text: 'white' },
+      ],
+    },
+    {
+      name: 'Secondary',
+      description: 'Neutral complement for non-primary actions',
+      shades: [
+        { name: '50', value: '#f5f5f5', text: 'dark' },
+        { name: '100', value: '#e8e8e8', text: 'dark' },
+        { name: '200', value: '#d4d4d4', text: 'dark' },
+        { name: '300', value: '#bfbfbf', text: 'dark' },
+        { name: '400', value: '#a3a3a3', text: 'dark' },
+        { name: '500', value: '#8c8c8c', text: 'white' },
+        { name: '600', value: '#737373', text: 'white' },
+        { name: '700', value: '#5c5c5c', text: 'white' },
+        { name: '800', value: '#454545', text: 'white' },
+        { name: '900', value: '#2e2e2e', text: 'white' },
+      ],
+    },
+    {
+      name: 'Error',
+      description: 'Destructive actions and error states',
+      shades: [
+        { name: '50', value: 'rgba(255, 0, 0, 0.06)', text: 'dark' },
+        { name: '100', value: '#ffc9bb', text: 'dark' },
+        { name: '200', value: '#ffa592', text: 'dark' },
+        { name: '300', value: '#ff816e', text: 'dark' },
+        { name: '400', value: '#ff5d4f', text: 'dark' },
+        { name: '500', value: '#ff0000', text: 'white' },
+        { name: '600', value: '#eb0000', text: 'white' },
+        { name: '700', value: '#ec1d27', text: 'white' },
+        { name: '800', value: '#a2000b', text: 'white' },
+        { name: '900', value: '#7d0005', text: 'white' },
+      ],
+    },
+    {
+      name: 'Success',
+      description: 'Positive feedback and confirmation states',
+      shades: [
+        { name: '50', value: '#e8f8ee', text: 'dark' },
+        { name: '100', value: '#c5edcf', text: 'dark' },
+        { name: '200', value: '#9fe0ae', text: 'dark' },
+        { name: '300', value: '#76d28b', text: 'dark' },
+        { name: '400', value: '#54c670', text: 'dark' },
+        { name: '500', value: '#34b956', text: 'white' },
+        { name: '600', value: '#289e45', text: 'white' },
+        { name: '700', value: '#1c8335', text: 'white' },
+        { name: '800', value: '#126826', text: 'white' },
+        { name: '900', value: '#084d18', text: 'white' },
+      ],
+    },
+    {
+      name: 'Warning',
+      description: 'Caution states and warnings',
+      shades: [
+        { name: '50', value: '#fff8e6', text: 'dark' },
+        { name: '100', value: '#ffedb3', text: 'dark' },
+        { name: '200', value: '#ffe180', text: 'dark' },
+        { name: '300', value: '#ffd54d', text: 'dark' },
+        { name: '400', value: '#ffc91a', text: 'dark' },
+        { name: '500', value: '#f5b800', text: 'dark' },
+        { name: '600', value: '#cca000', text: 'white' },
+        { name: '700', value: '#a17d00', text: 'white' },
+        { name: '800', value: '#775b00', text: 'white' },
+        { name: '900', value: '#4c3900', text: 'white' },
+      ],
+    },
+    {
+      name: 'Neutral',
+      description: 'Text, borders, and backgrounds',
+      shades: [
+        { name: '50', value: '#f9fafb', text: 'dark' },
+        { name: '100', value: '#f3f4f6', text: 'dark' },
+        { name: '200', value: '#e5e7eb', text: 'dark' },
+        { name: '300', value: '#d1d5db', text: 'dark' },
+        { name: '400', value: '#9ca3af', text: 'white' },
+        { name: '500', value: '#6b7280', text: 'white' },
+        { name: '600', value: '#4b5563', text: 'white' },
+        { name: '700', value: '#374151', text: 'white' },
+        { name: '800', value: '#1f2937', text: 'white' },
+        { name: '900', value: '#111827', text: 'white' },
+      ],
+    },
+  ];
+}
