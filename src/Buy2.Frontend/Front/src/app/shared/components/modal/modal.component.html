@@ -8,20 +8,20 @@
     [class.modal--large]="size() === 'large'"
     (click)="$event.stopPropagation()"
   >
-    @if (showHeader()) {
-      <header class="modal__header">
-        <ng-content select="[modal-header]" />
-      </header>
+    @if (showCloseButton()) {
+      <app-button
+        class="modal__close"
+        shape="circle"
+        size="sm"
+        (clicked)="close()"
+        aria-label="Close"
+      >
+        x
+      </app-button>
     }
 
-    <main class="modal__body">
-      <ng-content select="[modal-body]" />
-    </main>
-
-    @if (showActions()) {
-      <footer class="modal__actions">
-        <ng-content select="[modal-actions]" />
-      </footer>
-    }
+    <ng-content select="app-modal-header" />
+    <ng-content select="app-modal-body" />
+    <ng-content select="app-modal-footer" />
   </div>
 </div>

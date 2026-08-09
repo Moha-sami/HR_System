@@ -8,10 +8,15 @@ import {
   type OnInit,
   type OnDestroy,
 } from '@angular/core';
+import { ButtonComponent } from '../button/button.component';
+import { ModalHeaderComponent } from './modal-header.component';
+import { ModalBodyComponent } from './modal-body.component';
+import { ModalFooterComponent } from './modal-footer.component';
 
 @Component({
   selector: 'app-modal',
-  imports: [],
+  standalone: true,
+  imports: [ButtonComponent],
   templateUrl: './modal.component.html',
   styleUrl: './modal.component.css',
 })
@@ -22,6 +27,7 @@ export class ModalComponent implements OnInit, AfterViewInit, OnDestroy {
   size = input<'small' | 'medium' | 'large'>('medium');
   showHeader = input(true);
   showActions = input(true);
+  showCloseButton = input(true);
 
   closeOnBackdrop = input(true);
   closeOnEscape = input(true);
