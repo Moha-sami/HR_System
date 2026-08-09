@@ -28,32 +28,46 @@
       @if (basicModal()) {
         <app-modal (closed)="closeModal(basicModal)">
           <app-modal-header>
-            <h3 class="text-lg font-semibold text-neutral-800">Basic Modal</h3>
+            <h3 class="text-lg font-semibold text-neutral-800">Title</h3>
           </app-modal-header>
           <app-modal-body>
-            <p class="text-neutral-600">This is a basic modal with header, body, and footer.</p>
+            <p class="text-neutral-600">Content here</p>
           </app-modal-body>
           <app-modal-footer>
-            <app-button variant="primary" (clicked)="closeModal(basicModal)">Got it</app-button>
+            <app-button variant="primary" (clicked)="closeModal(basicModal)">Ok</app-button>
           </app-modal-footer>
         </app-modal>
       }
 
       <pre
         class="bg-neutral-900 text-neutral-100 p-4 rounded-lg text-sm overflow-x-auto"
-      ><code>&lt;app-modal (closed)="closeModal()"&gt;
-  &lt;app-modal-header&gt;
-    &lt;h3&gt;Title&lt;/h3&gt;
-  &lt;/app-modal-header&gt;
+      ><code>&lt;!-- Component (.ts) --&gt;
+showModal = signal&#40;false&#41;;
 
-  &lt;app-modal-body&gt;
-    &lt;p&gt;Content here&lt;/p&gt;
-  &lt;/app-modal-body&gt;
+openModal&#40;&#41; &#123;
+  this.showModal.set&#40;true&#41;;
+&#125;
 
-  &lt;app-modal-footer&gt;
-    &lt;app-button (clicked)="closeModal()"&gt;OK&lt;/app-button&gt;
-  &lt;/app-modal-footer&gt;
-&lt;/app-modal&gt;</code></pre>
+closeModal&#40;&#41; &#123;
+  this.showModal.set&#40;false&#41;;
+&#125;
+
+&lt;!-- Template (.html) --&gt;
+&lt;app-button &#40;clicked&#41;=&quot;openModal&#40;&#41;&quot;&gt;Open&lt;/app-button&gt;
+
+&#64;if &#40;showModal&#40;&#41;&#41; &#123;
+  &lt;app-modal &#40;closed&#41;=&quot;closeModal&#40;&#41;&quot;&gt;
+    &lt;app-modal-header&gt;
+      &lt;h3&gt;Title&lt;/h3&gt;
+    &lt;/app-modal-header&gt;
+    &lt;app-modal-body&gt;
+      &lt;p&gt;Content here&lt;/p&gt;
+    &lt;/app-modal-body&gt;
+    &lt;app-modal-footer&gt;
+      &lt;app-button &#40;clicked&#41;=&quot;closeModal&#40;&#41;&quot;&gt;OK&lt;/app-button&gt;
+    &lt;/app-modal-footer&gt;
+  &lt;/app-modal&gt;
+&#125;</code></pre>
     </section>
 
     <!-- ═══════════════════════════════════════════════════════ -->
