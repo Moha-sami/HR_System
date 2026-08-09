@@ -2,6 +2,8 @@
 
 Welcome to the **Buy2 HR Management System (HRMS)** open-source repository!
 
+**[🇪🇬 اقرأ شرح المهام بالعربية (Read API Tasks in Arabic)](./AVAILABLE_TASKS_AR.md) | [🇬🇧 Read in English](./AVAILABLE_TASKS.md)**
+
 This file breaks down the entire project into atomic, step-by-step tasks suitable for contributors of all skill levels.
 
 ---
