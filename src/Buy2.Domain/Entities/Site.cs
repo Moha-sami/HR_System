@@ -6,4 +6,8 @@ public class Site : BaseEntity
     public double Latitude { get; set; }
     public double Longitude { get; set; }
     public string MacAddressWhitelistJson { get; set; }= string.Empty;
+
+    public ICollection<Employee> Employees { get; set; } = new List<Employee>();
+    public ICollection<ShiftEntity> ShiftEntities { get; set; } = new List<ShiftEntity>();
+
 }
