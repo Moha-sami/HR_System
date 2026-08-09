@@ -1,6 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.10" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.10" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Buy2.Application\Buy2.Application.csproj" />
   </ItemGroup>
 
