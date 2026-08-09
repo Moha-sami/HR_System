@@ -199,11 +199,15 @@ To ensure automatic tracking between GitHub and Jira, follow these simple naming
   - `src/Buy2.Application/Features/Authentication/Login/LoginCommand.cs`
   - `src/Buy2.Api/Controllers/AuthLoginController.cs`
 - **Thought Process & Business Logic Rationale**:
-  - *Why*: Authentication is the entry gateway. Users must prove identity and obtain a signed JWT token before accessing HR features.
+  - *Why*: Authentication is the entry gateway. Before accessing HR features, users must prove identity and obtain a signed JWT token.
   - *Steps*:
-    1. Define login command record with email and password parameters.
-    2. In handler: Query employee by email to verify account existence, verify password hash for security, generate JWT token, and return login response DTO.
-    3. In controller: Inject mediator sender and add HTTP POST login endpoint calling mediator.
+    1. Define `LoginCommand(string Email, string Password) : IRequest<LoginResponseDto>`.
+    2. In `LoginCommandHandler`:
+       - Query employee by email using `IRepository<Employee>`. *Rationale: Ensures account exists.*
+       - Verify password hash against stored hash. *Rationale: Security enforcement.*
+       - Generate JWT bearer token via `IJwtTokenGenerator`. *Rationale: Provides stateless authentication token.*
+       - Return `LoginResponseDto(token, employee)`.
+    3. In `AuthLoginController`: Inject `ISender mediator`. Add `POST api/v1/auth/login` endpoint executing `await _mediator.Send(command)`.
 
 #### Task 52: `[Feature Slice] Create Password Reset Endpoint (Command, Handler & Controller)`
 - **Locations**:
@@ -212,20 +216,28 @@ To ensure automatic tracking between GitHub and Jira, follow these simple naming
 - **Thought Process & Business Logic Rationale**:
   - *Why*: Enables self-service security recovery when a user forgets credentials or requires a password refresh.
   - *Steps*:
-    1. Define password reset command record with email and new password.
-    2. In handler: Query target employee by email, hash new password securely, update employee record via unit of work, and return success flag.
-    3. In controller: Inject mediator sender and add HTTP POST password reset endpoint.
+    1. Define `ResetPasswordCommand(string Email, string NewPassword) : IRequest<bool>`.
+    2. In `ResetPasswordCommandHandler`:
+       - Query employee by email. *Rationale: Locate target user account.*
+       - Hash new password securely. *Rationale: Passwords must never be stored in plain text.*
+       - Update employee record and commit via `IUnitOfWork`. *Rationale: Atomically persist security update.*
+       - Return true on success.
+    3. In `AuthPasswordResetController`: Inject `ISender mediator`. Add `POST api/v1/auth/password/reset` executing `await _mediator.Send(command)`.
 
 #### Task 53: `[Feature Slice] Create Role Creation Endpoint (Command, Handler & Controller)`
 - **Locations**:
   - `src/Buy2.Application/Features/Roles/CreateRole/CreateRoleCommand.cs`
   - `src/Buy2.Api/Controllers/CreateRoleController.cs`
 - **Thought Process & Business Logic Rationale**:
-  - *Why*: Role-based access control requires dynamically defining administrative and operational roles with specific permission scopes.
+  - *Why*: Role-based access control (RBAC) requires dynamically defining administrative and operational roles with specific permission scopes.
   - *Steps*:
-    1. Define create role command record with role name and permissions list.
-    2. In handler: Check role name uniqueness to prevent duplicates, serialize permissions array to JSON string, save role entity via unit of work, and return new role id.
-    3. In controller: Inject mediator sender and add HTTP POST role creation endpoint.
+    1. Define `CreateRoleCommand(string RoleName, List<string> Permissions) : IRequest<int>`.
+    2. In `CreateRoleCommandHandler`:
+       - Check if `RoleName` already exists. *Rationale: Prevents duplicate role definitions.*
+       - Serialize permissions array into JSON string. *Rationale: Flexible string storage in database.*
+       - Add `Role` entity via `IRepository<Role>` and commit via `IUnitOfWork`. *Rationale: Persist new role.*
+       - Return `role.Id`.
+    3. In `CreateRoleController`: Inject `ISender mediator`. Add `POST api/v1/roles` executing `await _mediator.Send(command)`.
 
 #### Task 54: `[Feature Slice] Create Soft Delete Role Endpoint (Command, Handler & Controller)`
 - **Locations**:
@@ -234,9 +246,13 @@ To ensure automatic tracking between GitHub and Jira, follow these simple naming
 - **Thought Process & Business Logic Rationale**:
   - *Why*: Deleting roles must preserve historical audit logs and prevent breaking existing employee references.
   - *Steps*:
-    1. Define delete role command record with role id.
-    2. In handler: Retrieve role by id, ensure no active employees are assigned to prevent orphan references, mark role as inactive / soft-deleted, save via unit of work, and return true.
-    3. In controller: Inject mediator sender and add HTTP DELETE endpoint.
+    1. Define `DeleteRoleCommand(int RoleId) : IRequest<bool>`.
+    2. In `DeleteRoleCommandHandler`:
+       - Retrieve role by id. *Rationale: Verify role existence.*
+       - Check if any active employee is assigned to this role. *Rationale: Prevents orphan employee references.*
+       - Mark role as inactive / soft-deleted and save via `IUnitOfWork`. *Rationale: Safe preservation of audit logs.*
+       - Return true.
+    3. In `DeleteRoleController`: Inject `ISender mediator`. Add `DELETE api/v1/roles/{id}` executing `await _mediator.Send(command)`.
 
 #### Task 55: `[Feature Slice] Create Employee Onboarding Endpoint (Command, Handler & Controller)`
 - **Locations**:
@@ -245,20 +261,27 @@ To ensure automatic tracking between GitHub and Jira, follow these simple naming
 - **Thought Process & Business Logic Rationale**:
   - *Why*: Onboarding registers new staff into HR system with assigned job roles, default work site, and initial attendance profiles.
   - *Steps*:
-    1. Define onboard employee command record with personal details, job role id, and site id.
-    2. In handler: Check email uniqueness, verify JobRole and Site exist to enforce valid foreign keys, instantiate employee entity, save via unit of work, and return new employee id.
-    3. In controller: Inject mediator sender and add HTTP POST onboarding endpoint.
+    1. Define `OnboardEmployeeCommand(string FirstName, string LastName, string Email, int JobRoleId, int SiteId) : IRequest<int>`.
+    2. In `OnboardEmployeeCommandHandler`:
+       - Check email uniqueness. *Rationale: Email is the unique user identifier.*
+       - Verify assigned `JobRoleId` and `SiteId` exist. *Rationale: Enforces valid foreign key references.*
+       - Instantiate `Employee` entity and commit via `IUnitOfWork`. *Rationale: Creates core workforce record.*
+       - Return `employee.Id`.
+    3. In `EmployeeOnboardingController`: Inject `ISender mediator`. Add `POST api/v1/employees/onboard` executing `await _mediator.Send(command)`.
 
 #### Task 56: `[Feature Slice] Create Upload Employee Document Endpoint (Command, Handler & Controller)`
 - **Locations**:
   - `src/Buy2.Application/Features/Employees/UploadDocument/UploadEmployeeDocumentCommand.cs`
   - `src/Buy2.Api/Controllers/EmployeeDocumentsController.cs`
 - **Thought Process & Business Logic Rationale**:
-  - *Why*: Employee compliance requires tracking identity documents, work permits, and contracts stored securely in cloud storage.
+  - *Why*: Employee compliance requires tracking identity documents, work permits, and contracts stored securely in blob storage.
   - *Steps*:
-    1. Define upload document command record with employee id, category, and storage URL.
-    2. In handler: Verify target employee exists to prevent orphan documents, instantiate document record, save via unit of work, and return document id.
-    3. In controller: Inject mediator sender and add HTTP POST document upload endpoint.
+    1. Define `UploadEmployeeDocumentCommand(int EmployeeId, string Category, string StorageUrl) : IRequest<int>`.
+    2. In `UploadEmployeeDocumentCommandHandler`:
+       - Verify target employee exists. *Rationale: Prevent orphan document attachments.*
+       - Instantiate `EmployeeDocument` entity with category and storage URL. *Rationale: Records cloud file metadata.*
+       - Save via `IUnitOfWork` and return `document.Id`.
+    3. In `EmployeeDocumentsController`: Inject `ISender mediator`. Add `POST api/v1/employees/{id}/documents` executing `await _mediator.Send(command)`.
 
 #### Task 57: `[Feature Slice] Create Log Disciplinary Violation Endpoint (Command, Handler & Controller)`
 - **Locations**:
@@ -267,9 +290,12 @@ To ensure automatic tracking between GitHub and Jira, follow these simple naming
 - **Thought Process & Business Logic Rationale**:
   - *Why*: Tracks workplace violations and compliance warnings for HR performance reviews and penalty point deductions.
   - *Steps*:
-    1. Define log violation command record with employee id, severity, and description.
-    2. In handler: Verify employee exists, instantiate disciplinary violation record with severity level, save via unit of work, and return violation id.
-    3. In controller: Inject mediator sender and add HTTP POST violation endpoint.
+    1. Define `LogDisciplinaryViolationCommand(int EmployeeId, string Severity, string Description) : IRequest<int>`.
+    2. In `LogDisciplinaryViolationCommandHandler`:
+       - Verify employee exists. *Rationale: Ensures valid target staff.*
+       - Instantiate `DisciplinaryViolation` record with severity level. *Rationale: Audit record creation.*
+       - Save via `IUnitOfWork` and return `violation.Id`.
+    3. In `DisciplinaryViolationsController`: Inject `ISender mediator`. Add `POST api/v1/employees/{id}/violations` executing `await _mediator.Send(command)`.
 
 #### Task 58: `[Feature Slice] Create Site Creation Endpoint (Command, Handler & Controller)`
 - **Locations**:
@@ -278,9 +304,12 @@ To ensure automatic tracking between GitHub and Jira, follow these simple naming
 - **Thought Process & Business Logic Rationale**:
   - *Why*: Sites define physical branch locations with geofence coordinates and MAC address whitelists for mobile clock-in validation.
   - *Steps*:
-    1. Define create site command record with name, latitude, longitude, and MAC whitelist.
-    2. In handler: Instantiate site entity with coordinate bounds for GPS geofence checks, serialize MAC whitelist to JSON string for Wi-Fi clock-in validation, save via unit of work, and return site id.
-    3. In controller: Inject mediator sender and add HTTP POST site creation endpoint.
+    1. Define `CreateSiteCommand(string SiteName, decimal Latitude, decimal Longitude, List<string> MacWhitelist) : IRequest<int>`.
+    2. In `CreateSiteCommandHandler`:
+       - Instantiate `Site` entity with latitude/longitude bounds. *Rationale: Enables GPS geofence checks.*
+       - Serialize MAC whitelist array to JSON string. *Rationale: Enables Wi-Fi clock-in validation.*
+       - Save via `IUnitOfWork` and return `site.Id`.
+    3. In `CreateSiteController`: Inject `ISender mediator`. Add `POST api/v1/sites` executing `await _mediator.Send(command)`.
 
 #### Task 59: `[Feature Slice] Create Get Sites Endpoint (Query, Handler & Controller)`
 - **Locations**:
@@ -289,9 +318,12 @@ To ensure automatic tracking between GitHub and Jira, follow these simple naming
 - **Thought Process & Business Logic Rationale**:
   - *Why*: Provides branch site listings for shift scheduling, employee site selection, and manager dropdowns.
   - *Steps*:
-    1. Define get sites query record.
-    2. In handler: Query all active sites via repository, map site entities to lightweight site DTO list, and return list.
-    3. In controller: Inject mediator sender and add HTTP GET sites endpoint.
+    1. Define `GetSitesQuery() : IRequest<List<SiteDto>>`.
+    2. In `GetSitesQueryHandler`:
+       - Query all active sites via `IRepository<Site>`. *Rationale: Retrieve active work locations.*
+       - Map site entities to lightweight `SiteDto` list. *Rationale: Decouple domain entity from API response.*
+       - Return list.
+    3. In `GetSitesController`: Inject `ISender mediator`. Add `GET api/v1/sites` executing `await _mediator.Send(query)`.
 
 #### Task 60: `[Feature Slice] Create Validate Draft Schedule Endpoint (Command, Handler & Controller)`
 - **Locations**:
@@ -300,9 +332,11 @@ To ensure automatic tracking between GitHub and Jira, follow these simple naming
 - **Thought Process & Business Logic Rationale**:
   - *Why*: Pre-flight schedule engine validates shift overlap, rest periods, and overtime rules BEFORE managers publish schedules.
   - *Steps*:
-    1. Define validate draft schedule command record with draft shifts list.
-    2. In handler: Pass draft shifts list to schedule validation engine to evaluate compliance rules, and return pre-flight validation result containing warnings and conflict flags.
-    3. In controller: Inject mediator sender and add HTTP POST validation endpoint.
+    1. Define `ValidateScheduleDraftCommand(List<DraftShiftDto> Shifts) : IRequest<PreFlightValidationResultDto>`.
+    2. In `ValidateScheduleDraftCommandHandler`:
+       - Pass draft shift list to `IScheduleValidationEngine.Validate()`. *Rationale: Evaluates compliance rules.*
+       - Return `PreFlightValidationResultDto` containing warnings and error flags. *Rationale: Highlights scheduling conflicts to manager.*
+    3. In `ScheduleValidationController`: Inject `ISender mediator`. Add `POST api/v1/schedules/validate-draft` executing `await _mediator.Send(command)`.
 
 #### Task 61: `[Feature Slice] Create Get Open Shifts Market Endpoint (Query, Handler & Controller)`
 - **Locations**:
@@ -311,9 +345,11 @@ To ensure automatic tracking between GitHub and Jira, follow these simple naming
 - **Thought Process & Business Logic Rationale**:
   - *Why*: Shift Market enables eligible employees to view and claim unassigned open shifts for extra work hours.
   - *Steps*:
-    1. Define get open shifts query record.
-    2. In handler: Query published shifts without an assigned employee and with future start time, map to shift DTO list, and return list.
-    3. In controller: Inject mediator sender and add HTTP GET open shifts endpoint.
+    1. Define `GetOpenShiftsQuery() : IRequest<List<ShiftDto>>`.
+    2. In `GetOpenShiftsQueryHandler`:
+       - Query published shifts where `EmployeeId == null` and `StartTime > DateTimeOffset.UtcNow`. *Rationale: Retrieves active open opportunities.*
+       - Map to `ShiftDto` list and return. *Rationale: Formats data for UI market board.*
+    3. In `OpenShiftsController`: Inject `ISender mediator`. Add `GET api/v1/shift-market/open-shifts` calling `await _mediator.Send(query)`.
 
 #### Task 62: `[Feature Slice] Create Claim Shift Endpoint (Command, Handler & Controller)`
 - **Locations**:
@@ -322,9 +358,12 @@ To ensure automatic tracking between GitHub and Jira, follow these simple naming
 - **Thought Process & Business Logic Rationale**:
   - *Why*: Handles employee shift claims, logging overtime justifications for manager approval.
   - *Steps*:
-    1. Define claim shift command record with shift id, employee id, and overtime justification.
-    2. In handler: Verify target shift is open and unassigned to prevent double claiming, create shift claim record with Pending status, save via unit of work, and return true.
-    3. In controller: Inject mediator sender and add HTTP POST claim endpoint.
+    1. Define `ClaimShiftCommand(int ShiftId, int EmployeeId, string OvertimeJustification) : IRequest<bool>`.
+    2. In `ClaimShiftCommandHandler`:
+       - Verify target shift is open and unassigned. *Rationale: Prevents double claiming.*
+       - Create `ShiftClaim` record with status `Pending`. *Rationale: Creates claim audit record for manager review.*
+       - Save via `IUnitOfWork` and return true.
+    3. In `ShiftClaimsController`: Inject `ISender mediator`. Add `POST api/v1/shift-market/claims/{id}` calling `await _mediator.Send(command)`.
 
 #### Task 63: `[Feature Slice] Create Points Rule Creation Endpoint (Command, Handler & Controller)`
 - **Locations**:
@@ -333,9 +372,11 @@ To ensure automatic tracking between GitHub and Jira, follow these simple naming
 - **Thought Process & Business Logic Rationale**:
   - *Why*: Gamification system rewards punctual attendance and extra shifts with points redeemable in the reward store.
   - *Steps*:
-    1. Define create points rule command record with rule name, points value, and trigger type.
-    2. In handler: Instantiate points rule entity with trigger criteria (e.g. OnTimeClockIn, ClaimOpenShift), save via unit of work, and return rule id.
-    3. In controller: Inject mediator sender and add HTTP POST points rule endpoint.
+    1. Define `CreatePointsRuleCommand(string RuleName, int PointsValue, string TriggerType) : IRequest<int>`.
+    2. In `CreatePointsRuleCommandHandler`:
+       - Instantiate `PointsRule` entity with trigger criteria (e.g. `OnTimeClockIn`, `ClaimOpenShift`). *Rationale: Configures automation engine rule.*
+       - Save via `IUnitOfWork` and return `rule.Id`.
+    3. In `PointsRulesController`: Inject `ISender mediator`. Add `POST api/v1/points/rules` calling `await _mediator.Send(command)`.
 
 #### Task 64: `[Feature Slice] Create Redeem Reward Endpoint (Command, Handler & Controller)`
 - **Locations**:
@@ -344,6 +385,10 @@ To ensure automatic tracking between GitHub and Jira, follow these simple naming
 - **Thought Process & Business Logic Rationale**:
   - *Why*: Converts accumulated employee gamification points into digital voucher codes.
   - *Steps*:
-    1. Define redeem reward command record with reward item id and employee id.
-    2. In handler: Check employee total points balance against reward cost to ensure sufficient balance, reserve available voucher code from inventory to prevent duplicate distribution, create reward redemption record, deduct points via unit of work, and return voucher code string.
-    3. In controller: Inject mediator sender and add HTTP POST redemption endpoint.
+    1. Define `RedeemRewardCommand(int RewardItemId, int EmployeeId) : IRequest<string>`.
+    2. In `RedeemRewardCommandHandler`:
+       - Check employee total points balance against reward cost. *Rationale: Ensures sufficient points balance.*
+       - Reserve available voucher code from inventory. *Rationale: Prevents duplicate voucher distribution.*
+       - Create `RewardRedemption` record and deduct points via `IUnitOfWork`. *Rationale: Atomically records transaction.*
+       - Return voucher code string to employee.
+    3. In `RewardRedemptionController`: Inject `ISender mediator`. Add `POST api/v1/rewards/{id}/redeem` calling `await _mediator.Send(command)`.
