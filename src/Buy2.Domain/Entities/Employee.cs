@@ -9,4 +9,5 @@ public class Employee : BaseEntity
     public int JobRoleId { get; set; }
     public int RoleId { get; set; }
     public int SiteId { get; set; }
+    public virtual Site Site { get; set; } = null!;
 }
