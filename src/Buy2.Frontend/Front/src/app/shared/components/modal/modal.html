@@ -1,0 +1,24 @@
+<div class="modal-backdrop" (click)="onBackdropClick()">
+    <div class="modal" [class.modal--small]="size() === 'small'" [class.modal--medium]="size() === 'medium'"
+        [class.modal--large]="size() === 'large'" (click)="$event.stopPropagation()" (keydown.escape)="onEscape()">
+
+        @if (showHeader()) {
+        <header class="modal__header">
+
+            <ng-content select="[modal-header]" />
+
+        </header>
+        }
+
+        <main class="modal__body">
+            <ng-content select="[modal-body]" />
+        </main>
+
+        @if (showActions()) {
+        <footer class="modal__actions">
+            <ng-content select="[modal-actions]" />
+        </footer>
+        }
+
+    </div>
+</div>
