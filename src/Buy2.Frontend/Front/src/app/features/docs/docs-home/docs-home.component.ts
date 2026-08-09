@@ -49,6 +49,12 @@ import { RouterLink } from '@angular/router';
 export class DocsHomeComponent {
   components = [
     {
+      name: 'Design System',
+      route: 'design-system',
+      description: 'Color palette, design tokens, and usage guidelines.',
+      tags: ['colors', 'tokens', 'brand', 'guidelines'],
+    },
+    {
       name: 'Button',
       route: 'button',
       description: 'Reusable button with variants, sizes, shapes, icons, and loading state.',
@@ -68,12 +74,5 @@ export class DocsHomeComponent {
         'Dialog overlay with header, body, and actions. Supports sizes, backdrop close, and escape key.',
       tags: ['dialog', 'overlay', 'form', 'confirm'],
     },
-    // Add more components here as they are documented
-    // {
-    //   name: 'Input',
-    //   route: 'input',
-    //   description: 'Form input with validation states, labels, and icons.',
-    //   tags: ['text', 'password', 'error', 'disabled'],
-    // },
   ];
 }

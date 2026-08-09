@@ -23,4 +23,11 @@ export const DOCS_ROUTES: Routes = [
     path: 'modal',
     loadComponent: () => import('./modal/modal-docs.component').then((m) => m.ModalDocsComponent),
   },
+  {
+    path: 'design-system',
+    loadComponent: () =>
+      import('./design-system/design-system-docs.component').then(
+        (m) => m.DesignSystemDocsComponent,
+      ),
+  },
 ];
