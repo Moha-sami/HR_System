@@ -1,12 +1,22 @@
 import { Component, signal, type WritableSignal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { ModalComponent } from '../../../shared/components/modal/modal.component';
+import { ModalHeaderComponent } from '../../../shared/components/modal/modal-header.component';
+import { ModalBodyComponent } from '../../../shared/components/modal/modal-body.component';
+import { ModalFooterComponent } from '../../../shared/components/modal/modal-footer.component';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
 
 @Component({
   selector: 'app-modal-docs',
   standalone: true,
-  imports: [RouterLink, ModalComponent, ButtonComponent],
+  imports: [
+    RouterLink,
+    ModalComponent,
+    ModalHeaderComponent,
+    ModalBodyComponent,
+    ModalFooterComponent,
+    ButtonComponent,
+  ],
   templateUrl: './modal-docs.component.html',
   styleUrl: './modal-docs.component.css',
 })

@@ -27,35 +27,33 @@
 
       @if (basicModal()) {
         <app-modal (closed)="closeModal(basicModal)">
-          <div modal-header>
+          <app-modal-header>
             <h3 class="text-lg font-semibold text-neutral-800">Basic Modal</h3>
-          </div>
-          <div modal-body>
-            <p class="text-neutral-600">This is a basic modal with header, body, and actions.</p>
-          </div>
-          <div modal-actions>
+          </app-modal-header>
+          <app-modal-body>
+            <p class="text-neutral-600">This is a basic modal with header, body, and footer.</p>
+          </app-modal-body>
+          <app-modal-footer>
             <app-button variant="primary" (clicked)="closeModal(basicModal)">Got it</app-button>
-          </div>
+          </app-modal-footer>
         </app-modal>
       }
 
       <pre
         class="bg-neutral-900 text-neutral-100 p-4 rounded-lg text-sm overflow-x-auto"
-      ><code>&lt;!-- Component: use signal to control visibility --&gt;
-showModal = signal&#40;false&#41;;
-openModal&#40;&#41; &#123; this.showModal.set&#40;true&#41; &#125;
-closeModal&#40;&#41; &#123; this.showModal.set&#40;false&#41; &#125;
+      ><code>&lt;app-modal (closed)="closeModal()"&gt;
+  &lt;app-modal-header&gt;
+    &lt;h3&gt;Title&lt;/h3&gt;
+  &lt;/app-modal-header&gt;
 
-&lt;!-- Template: show modal conditionally --&gt;
-&lt;app-button &#40;clicked&#41;=&quot;openModal&#40;&#41;&quot;&gt;Open&lt;/app-button&gt;
+  &lt;app-modal-body&gt;
+    &lt;p&gt;Content here&lt;/p&gt;
+  &lt;/app-modal-body&gt;
 
-&#64;if &#40;showModal&#40;&#41;&#41; &#123;
-  &lt;app-modal &#40;closed&#41;=&quot;closeModal&#40;&#41;&quot;&gt;
-    &lt;div modal-header&gt;...&lt;/div&gt;
-    &lt;div modal-body&gt;...&lt;/div&gt;
-    &lt;div modal-actions&gt;...&lt;/div&gt;
-  &lt;/app-modal&gt;
-&#125;</code></pre>
+  &lt;app-modal-footer&gt;
+    &lt;app-button (clicked)="closeModal()"&gt;OK&lt;/app-button&gt;
+  &lt;/app-modal-footer&gt;
+&lt;/app-modal&gt;</code></pre>
     </section>
 
     <!-- ═══════════════════════════════════════════════════════ -->
@@ -76,29 +74,29 @@ closeModal&#40;&#41; &#123; this.showModal.set&#40;false&#41; &#125;
 
       @if (smallModal()) {
         <app-modal size="small" (closed)="closeModal(smallModal)">
-          <div modal-header>
+          <app-modal-header>
             <h3 class="text-lg font-semibold text-neutral-800">Small Modal</h3>
-          </div>
-          <div modal-body>
+          </app-modal-header>
+          <app-modal-body>
             <p class="text-neutral-600">360px wide. Good for alerts and confirmations.</p>
-          </div>
-          <div modal-actions>
+          </app-modal-body>
+          <app-modal-footer>
             <app-button variant="primary" (clicked)="closeModal(smallModal)">OK</app-button>
-          </div>
+          </app-modal-footer>
         </app-modal>
       }
 
       @if (largeModal()) {
         <app-modal size="large" (closed)="closeModal(largeModal)">
-          <div modal-header>
+          <app-modal-header>
             <h3 class="text-lg font-semibold text-neutral-800">Large Modal</h3>
-          </div>
-          <div modal-body>
+          </app-modal-header>
+          <app-modal-body>
             <p class="text-neutral-600">900px wide. Good for forms and complex content.</p>
-          </div>
-          <div modal-actions>
+          </app-modal-body>
+          <app-modal-footer>
             <app-button variant="primary" (clicked)="closeModal(largeModal)">Got it</app-button>
-          </div>
+          </app-modal-footer>
         </app-modal>
       }
 
@@ -107,54 +105,6 @@ closeModal&#40;&#41; &#123; this.showModal.set&#40;false&#41; &#125;
       ><code>&lt;app-modal size="small" ...&gt;  &lt;!-- 360px --&gt;
 &lt;app-modal size="medium" ...&gt; &lt;!-- 500px (default) --&gt;
 &lt;app-modal size="large" ...&gt;  &lt;!-- 900px --&gt;</code></pre>
-    </section>
-
-    <!-- ═══════════════════════════════════════════════════════ -->
-    <!-- SHOW/HIDE SECTIONS                                     -->
-    <!-- ═══════════════════════════════════════════════════════ -->
-    <section class="bg-white rounded-lg border border-neutral-200 p-6 mb-6">
-      <h2 class="text-lg font-semibold text-neutral-800 mb-4">Show/Hide Sections</h2>
-
-      <div class="flex gap-3 mb-4">
-        <app-button variant="secondary" (clicked)="openModal(noHeaderModal)">No Header</app-button>
-        <app-button variant="secondary" (clicked)="openModal(noActionsModal)"
-          >No Actions</app-button
-        >
-      </div>
-
-      @if (noHeaderModal()) {
-        <app-modal [showHeader]="false" (closed)="closeModal(noHeaderModal)">
-          <div modal-body>
-            <p class="text-neutral-600">
-              This modal has no header section. The close button is also hidden.
-            </p>
-          </div>
-          <div modal-actions>
-            <app-button variant="primary" (clicked)="closeModal(noHeaderModal)">Close</app-button>
-          </div>
-        </app-modal>
-      }
-
-      @if (noActionsModal()) {
-        <app-modal [showActions]="false" (closed)="closeModal(noActionsModal)">
-          <div modal-header>
-            <h3 class="text-lg font-semibold text-neutral-800">No Actions</h3>
-          </div>
-          <div modal-body>
-            <p class="text-neutral-600">
-              This modal has no actions footer. Close by clicking backdrop or pressing Escape.
-            </p>
-          </div>
-        </app-modal>
-      }
-
-      <pre
-        class="bg-neutral-900 text-neutral-100 p-4 rounded-lg text-sm overflow-x-auto"
-      ><code>&lt;!-- Hide header --&gt;
-&lt;app-modal [showHeader]="false" ...&gt;
-
-&lt;!-- Hide actions --&gt;
-&lt;app-modal [showActions]="false" ...&gt;</code></pre>
     </section>
 
     <!-- ═══════════════════════════════════════════════════════ -->
@@ -171,17 +121,17 @@ closeModal&#40;&#41; &#123; this.showModal.set&#40;false&#41; &#125;
 
       @if (noBackdropModal()) {
         <app-modal [closeOnBackdrop]="false" (closed)="closeModal(noBackdropModal)">
-          <div modal-header>
+          <app-modal-header>
             <h3 class="text-lg font-semibold text-neutral-800">Backdrop Disabled</h3>
-          </div>
-          <div modal-body>
+          </app-modal-header>
+          <app-modal-body>
             <p class="text-neutral-600">
               Clicking outside does nothing. Press Escape or click the button to close.
             </p>
-          </div>
-          <div modal-actions>
+          </app-modal-body>
+          <app-modal-footer>
             <app-button variant="primary" (clicked)="closeModal(noBackdropModal)">Close</app-button>
-          </div>
+          </app-modal-footer>
         </app-modal>
       }
 
@@ -215,10 +165,10 @@ closeModal&#40;&#41; &#123; this.showModal.set&#40;false&#41; &#125;
 
       @if (formModal()) {
         <app-modal size="large" (closed)="closeModal(formModal)">
-          <div modal-header>
+          <app-modal-header>
             <h3 class="text-lg font-semibold text-neutral-800">Add New Employee</h3>
-          </div>
-          <div modal-body>
+          </app-modal-header>
+          <app-modal-body>
             <form class="space-y-4">
               <div class="grid grid-cols-2 gap-4">
                 <div>
@@ -258,22 +208,22 @@ closeModal&#40;&#41; &#123; this.showModal.set&#40;false&#41; &#125;
                 </select>
               </div>
             </form>
-          </div>
-          <div modal-actions>
+          </app-modal-body>
+          <app-modal-footer>
             <app-button variant="secondary" (clicked)="closeModal(formModal)">Cancel</app-button>
             <app-button variant="primary" (clicked)="onSubmit()">Save Employee</app-button>
-          </div>
+          </app-modal-footer>
         </app-modal>
       }
 
       <pre
         class="bg-neutral-900 text-neutral-100 p-4 rounded-lg text-sm overflow-x-auto"
       ><code>&lt;app-modal size="large" (closed)="closeModal()"&gt;
-  &lt;div modal-header&gt;
+  &lt;app-modal-header&gt;
     &lt;h3&gt;Add New Employee&lt;/h3&gt;
-  &lt;/div&gt;
+  &lt;/app-modal-header&gt;
 
-  &lt;div modal-body&gt;
+  &lt;app-modal-body&gt;
     &lt;form&gt;
       &lt;div class="grid grid-cols-2 gap-4"&gt;
         &lt;div&gt;
@@ -286,12 +236,12 @@ closeModal&#40;&#41; &#123; this.showModal.set&#40;false&#41; &#125;
         &lt;/div&gt;
       &lt;/div&gt;
     &lt;/form&gt;
-  &lt;/div&gt;
+  &lt;/app-modal-body&gt;
 
-  &lt;div modal-actions&gt;
+  &lt;app-modal-footer&gt;
     &lt;app-button variant="secondary" (clicked)="closeModal()"&gt;Cancel&lt;/app-button&gt;
     &lt;app-button variant="primary" (clicked)="save()"&gt;Save&lt;/app-button&gt;
-  &lt;/div&gt;
+  &lt;/app-modal-footer&gt;
 &lt;/app-modal&gt;</code></pre>
     </section>
 
@@ -306,8 +256,8 @@ closeModal&#40;&#41; &#123; this.showModal.set&#40;false&#41; &#125;
       </div>
 
       @if (confirmModal()) {
-        <app-modal size="small" [showHeader]="false" (closed)="closeModal(confirmModal)">
-          <div modal-body>
+        <app-modal size="small" (closed)="closeModal(confirmModal)">
+          <app-modal-body>
             <div class="text-center">
               <div
                 class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4"
@@ -329,18 +279,18 @@ closeModal&#40;&#41; &#123; this.showModal.set&#40;false&#41; &#125;
               <h3 class="text-lg font-semibold text-neutral-800 mb-2">Delete Item?</h3>
               <p class="text-neutral-500 text-sm">This action cannot be undone.</p>
             </div>
-          </div>
-          <div modal-actions>
+          </app-modal-body>
+          <app-modal-footer>
             <app-button variant="secondary" (clicked)="onCancel()">Cancel</app-button>
             <app-button variant="danger" (clicked)="onConfirm()">Delete</app-button>
-          </div>
+          </app-modal-footer>
         </app-modal>
       }
 
       <pre
         class="bg-neutral-900 text-neutral-100 p-4 rounded-lg text-sm overflow-x-auto"
-      ><code>&lt;app-modal size="small" [showHeader]="false" (closed)="closeModal()"&gt;
-  &lt;div modal-body&gt;
+      ><code>&lt;app-modal size="small" (closed)="closeModal()"&gt;
+  &lt;app-modal-body&gt;
     &lt;div class="text-center"&gt;
       &lt;div class="icon-circle bg-red-100"&gt;
         &lt;svg class="text-red-600"&gt;...&lt;/svg&gt;
@@ -348,11 +298,12 @@ closeModal&#40;&#41; &#123; this.showModal.set&#40;false&#41; &#125;
       &lt;h3&gt;Delete Item?&lt;/h3&gt;
       &lt;p&gt;This action cannot be undone.&lt;/p&gt;
     &lt;/div&gt;
-  &lt;/div&gt;
-  &lt;div modal-actions&gt;
+  &lt;/app-modal-body&gt;
+
+  &lt;app-modal-footer&gt;
     &lt;app-button variant="secondary" (clicked)="cancel()"&gt;Cancel&lt;/app-button&gt;
     &lt;app-button variant="danger" (clicked)="confirm()"&gt;Delete&lt;/app-button&gt;
-  &lt;/div&gt;
+  &lt;/app-modal-footer&gt;
 &lt;/app-modal&gt;</code></pre>
     </section>
 
@@ -362,8 +313,8 @@ closeModal&#40;&#41; &#123; this.showModal.set&#40;false&#41; &#125;
     <section class="bg-white rounded-lg border border-neutral-200 p-6 mb-6">
       <h2 class="text-lg font-semibold text-neutral-800 mb-4">API Reference</h2>
 
-      <!-- Inputs -->
-      <h3 class="text-sm font-semibold text-neutral-700 mb-2">Inputs</h3>
+      <!-- Modal Inputs -->
+      <h3 class="text-sm font-semibold text-neutral-700 mb-2">app-modal Inputs</h3>
       <div class="overflow-x-auto mb-6">
         <table class="w-full text-sm">
           <thead>
@@ -382,16 +333,10 @@ closeModal&#40;&#41; &#123; this.showModal.set&#40;false&#41; &#125;
               <td class="py-2 text-neutral-600">Modal width (360px / 500px / 900px)</td>
             </tr>
             <tr class="border-b border-neutral-100">
-              <td class="py-2 pr-4 font-mono text-primary-600">showHeader</td>
+              <td class="py-2 pr-4 font-mono text-primary-600">showCloseButton</td>
               <td class="py-2 pr-4 text-neutral-600">boolean</td>
               <td class="py-2 pr-4 text-neutral-400">true</td>
-              <td class="py-2 text-neutral-600">Show/hide header section</td>
-            </tr>
-            <tr class="border-b border-neutral-100">
-              <td class="py-2 pr-4 font-mono text-primary-600">showActions</td>
-              <td class="py-2 pr-4 text-neutral-600">boolean</td>
-              <td class="py-2 pr-4 text-neutral-400">true</td>
-              <td class="py-2 text-neutral-600">Show/hide actions footer</td>
+              <td class="py-2 text-neutral-600">Show/hide close button (top-right)</td>
             </tr>
             <tr class="border-b border-neutral-100">
               <td class="py-2 pr-4 font-mono text-primary-600">closeOnBackdrop</td>
@@ -409,8 +354,8 @@ closeModal&#40;&#41; &#123; this.showModal.set&#40;false&#41; &#125;
         </table>
       </div>
 
-      <!-- Outputs -->
-      <h3 class="text-sm font-semibold text-neutral-700 mb-2">Outputs</h3>
+      <!-- Modal Outputs -->
+      <h3 class="text-sm font-semibold text-neutral-700 mb-2">app-modal Outputs</h3>
       <div class="overflow-x-auto mb-6">
         <table class="w-full text-sm">
           <thead>
@@ -432,32 +377,32 @@ closeModal&#40;&#41; &#123; this.showModal.set&#40;false&#41; &#125;
         </table>
       </div>
 
-      <!-- Content Projection Slots -->
-      <h3 class="text-sm font-semibold text-neutral-700 mb-2">Content Projection Slots</h3>
+      <!-- Sub-components -->
+      <h3 class="text-sm font-semibold text-neutral-700 mb-2">Sub-components</h3>
       <div class="overflow-x-auto">
         <table class="w-full text-sm">
           <thead>
             <tr class="border-b border-neutral-200">
-              <th class="text-left py-2 pr-4 text-neutral-500">Slot</th>
+              <th class="text-left py-2 pr-4 text-neutral-500">Component</th>
               <th class="text-left py-2 pr-4 text-neutral-500">Selector</th>
               <th class="text-left py-2 text-neutral-500">Description</th>
             </tr>
           </thead>
           <tbody>
             <tr class="border-b border-neutral-100">
-              <td class="py-2 pr-4 font-mono text-primary-600">Header</td>
-              <td class="py-2 pr-4 text-neutral-600">[modal-header]</td>
+              <td class="py-2 pr-4 font-mono text-primary-600">ModalHeaderComponent</td>
+              <td class="py-2 pr-4 text-neutral-600">app-modal-header</td>
               <td class="py-2 text-neutral-600">Top section with title</td>
             </tr>
             <tr class="border-b border-neutral-100">
-              <td class="py-2 pr-4 font-mono text-primary-600">Body</td>
-              <td class="py-2 pr-4 text-neutral-600">[modal-body]</td>
+              <td class="py-2 pr-4 font-mono text-primary-600">ModalBodyComponent</td>
+              <td class="py-2 pr-4 text-neutral-600">app-modal-body</td>
               <td class="py-2 text-neutral-600">Main content area (scrollable)</td>
             </tr>
             <tr>
-              <td class="py-2 pr-4 font-mono text-primary-600">Actions</td>
-              <td class="py-2 pr-4 text-neutral-600">[modal-actions]</td>
-              <td class="py-2 text-neutral-600">Bottom section with buttons</td>
+              <td class="py-2 pr-4 font-mono text-primary-600">ModalFooterComponent</td>
+              <td class="py-2 pr-4 text-neutral-600">app-modal-footer</td>
+              <td class="py-2 text-neutral-600">Bottom section with buttons (flex, gap 16px)</td>
             </tr>
           </tbody>
         </table>
