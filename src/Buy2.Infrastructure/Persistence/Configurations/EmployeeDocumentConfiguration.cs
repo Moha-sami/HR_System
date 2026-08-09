@@ -19,7 +19,7 @@ namespace Buy2.Infrastructure.Persistence.Configurations
             builder.HasOne(ed => ed.Employee)
                 .WithMany()
                 .HasForeignKey(ed => ed.EmployeeId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }
