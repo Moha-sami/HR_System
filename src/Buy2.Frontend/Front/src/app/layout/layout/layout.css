@@ -1,0 +1,637 @@
+/* ============================================
+   LAYOUT CONTAINER
+   ============================================ */
+.layout {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+  background: #f5f7fa;
+}
+
+/* ============================================
+   SIDEBAR
+   ============================================ */
+.sidebar {
+  width: 240px;
+  height: 100vh;
+  background: #234199;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  transition: width 0.3s ease, transform 0.3s ease;
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 1000;
+  overflow: visible;
+  flex-shrink: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.sidebar.collapsed {
+  width: 64px;
+}
+
+.sidebar.collapsed .label,
+.sidebar.collapsed .arrow {
+  display: none;
+}
+
+.sidebar.collapsed .nav-item {
+  justify-content: center;
+  padding: 12px 0;
+}
+
+.sidebar.collapsed .sidebar-header {
+  justify-content: center;
+  padding: 16px 8px;
+}
+
+/* ============================================
+   SIDEBAR OVERLAY (للشاشات الصغيرة)
+   ============================================ */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.sidebar-overlay.active {
+  display: block;
+  opacity: 1;
+}
+
+/* ============================================
+   SIDEBAR HEADER - LOGO
+   ============================================ */
+.sidebar-header {
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  min-height: 70px;
+  background: #fff;
+  border-bottom: 1px solid #e8ecf0;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logo-img {
+  width: 85px;
+  height: auto;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+
+.logo-img.logo-collapsed {
+  width: 40px;
+}
+
+/* ============================================
+   SIDEBAR TOGGLE BUTTON (edge button)
+   ============================================ */
+.sidebar-toggle-btn {
+  position: absolute;
+  right: -14px;
+  top: 50px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #234199;
+  border: 2px solid #fff;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 1100;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  transition: background 0.2s, transform 0.3s ease;
+  padding: 0;
+}
+
+.sidebar-toggle-btn:hover {
+  background: #1a3178;
+}
+
+/* ============================================
+   NAVIGATION MENU
+   ============================================ */
+.nav-menu {
+  flex: 1;
+  padding: 8px 10px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.nav-menu::-webkit-scrollbar {
+  width: 4px;
+}
+
+.nav-menu::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 14px;
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.75);
+  text-decoration: none;
+  transition: all 0.2s;
+  margin-bottom: 2px;
+  white-space: nowrap;
+  cursor: pointer;
+  position: relative;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.nav-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  flex-shrink: 0;
+}
+
+.nav-item .label {
+  font-size: 14px;
+  font-weight: 500;
+  flex: 1;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.nav-item .arrow {
+  font-size: 18px;
+  font-weight: 300;
+  color: rgba(255,255,255,0.5);
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+}
+
+.nav-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.nav-item:hover .nav-icon svg {
+  stroke: #fff;
+}
+
+.nav-item.active {
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+}
+
+.nav-item.active .nav-icon svg {
+  stroke: #fff;
+}
+
+/* ============================================
+   MAIN CONTENT
+   ============================================ */
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  margin-left: 240px;
+  transition: margin-left 0.3s ease;
+  min-width: 0;
+}
+
+.sidebar-collapsed .main-content {
+  margin-left: 64px;
+}
+
+/* ============================================
+   HEADER
+   ============================================ */
+.header {
+  background: #fff;
+  padding: 0 24px;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  border-bottom: 1px solid #e2e8f0;
+  height: 64px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.header-left {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* ============================================
+   HAMBURGER BUTTON (للموبايل)
+   ============================================ */
+.hamburger-btn {
+  display: none;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 6px;
+  transition: background 0.2s;
+  color: #234199;
+}
+
+.hamburger-btn:hover {
+  background: #f0f0f0;
+}
+
+/* ============================================
+   LOGOUT BUTTON (header)
+   ============================================ */
+.logout-btn-header {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 14px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #e53e3e;
+  font-size: 13.5px;
+  font-weight: 500;
+  border-radius: 6px;
+  transition: background 0.2s;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.logout-btn-header svg {
+  stroke: #e53e3e;
+}
+
+.logout-btn-header:hover {
+  background: #fff5f5;
+}
+
+/* ============================================
+   USER AVATAR
+   ============================================ */
+.user-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f0f0f0;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.user-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.avatar-fallback {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+/* ============================================
+   LANGUAGE SELECTOR
+   ============================================ */
+.language-selector {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+}
+
+.language-selector select {
+  border: none;
+  background: transparent;
+  font-size: 13.5px;
+  outline: none;
+  cursor: pointer;
+  color: #234199;
+  font-weight: 500;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* ============================================
+   PAGE CONTENT
+   ============================================ */
+.page-content {
+  flex: 1;
+  overflow-y: auto;
+  background: #f5f7fa;
+}
+
+.page-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.page-content::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.page-content::-webkit-scrollbar-thumb {
+  background: #c1c7cd;
+  border-radius: 3px;
+}
+
+/* ============================================
+   RESPONSIVE - TABLET (768px - 1024px)
+   ============================================ */
+@media (max-width: 1024px) {
+  .sidebar {
+    transform: translateX(-100%);
+    width: 280px !important;
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+    box-shadow: 2px 0 20px rgba(0, 0, 0, 0.2);
+  }
+
+  .sidebar.collapsed {
+    transform: translateX(-100%);
+    width: 280px !important;
+  }
+
+  /* إخفاء زر التبديل الجانبي عند الإغلاق */
+  .sidebar.collapsed .sidebar-toggle-btn {
+    display: none !important;
+  }
+
+  /* إظهار زر التبديل فقط عند الفتح */
+  .sidebar.open .sidebar-toggle-btn {
+    display: flex !important;
+  }
+
+  /* إظهار الأيقونات والنصوص عند فتح السايدبار */
+  .sidebar.open .label,
+  .sidebar.open .arrow {
+    display: inline-block;
+  }
+
+  .sidebar.open .nav-item {
+    justify-content: flex-start;
+    padding: 11px 14px;
+  }
+
+  .sidebar.open .sidebar-header {
+    justify-content: flex-start;
+    padding: 14px 20px;
+  }
+
+  .sidebar.open .logo-img {
+    width: 85px;
+  }
+
+  .sidebar.open .logo-img.logo-collapsed {
+    width: 85px;
+  }
+
+  .main-content {
+    margin-left: 0 !important;
+  }
+
+  /* إظهار زر الهامبرغر */
+  .hamburger-btn {
+    display: flex !important;
+  }
+
+  /* زر التبديل الجانبي */
+  .sidebar-toggle-btn {
+    display: flex !important;
+    right: -14px;
+    top: 50px;
+  }
+
+  .sidebar.open .sidebar-toggle-btn {
+    right: -14px;
+  }
+
+  /* إظهار الـ Overlay عند فتح السايدبار */
+  .sidebar-overlay.active {
+    display: block;
+    opacity: 1;
+  }
+}
+
+/* ============================================
+   RESPONSIVE - MOBILE (480px - 768px)
+   ============================================ */
+@media (max-width: 768px) {
+  .sidebar {
+    width: 280px !important;
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+  }
+
+  .sidebar.collapsed {
+    transform: translateX(-100%);
+    width: 280px !important;
+  }
+
+  /* إخفاء زر التبديل الجانبي عند الإغلاق */
+  .sidebar.collapsed .sidebar-toggle-btn {
+    display: none !important;
+  }
+
+  /* إظهار زر التبديل فقط عند الفتح */
+  .sidebar.open .sidebar-toggle-btn {
+    display: flex !important;
+  }
+
+  /* إظهار النصوص عند الفتح */
+  .sidebar.open .label,
+  .sidebar.open .arrow {
+    display: inline-block;
+  }
+
+  .sidebar.open .nav-item {
+    justify-content: flex-start;
+    padding: 11px 14px;
+  }
+
+  .sidebar.open .sidebar-header {
+    justify-content: flex-start;
+    padding: 14px 20px;
+  }
+
+  .sidebar.open .logo-img {
+    width: 85px;
+  }
+
+  .sidebar.open .logo-img.logo-collapsed {
+    width: 85px;
+  }
+
+  .main-content {
+    margin-left: 0 !important;
+  }
+
+  .header-right {
+    gap: 10px;
+  }
+
+  .logout-btn-header span {
+    display: none;
+  }
+
+  .page-content {
+    padding: 16px;
+  }
+
+  /* تحسين زر التبديل للشاشات الصغيرة */
+  .sidebar-toggle-btn {
+    right: -14px;
+    top: 50px;
+    width: 28px;
+    height: 28px;
+  }
+
+  .sidebar.open .sidebar-toggle-btn {
+    right: -14px;
+  }
+
+  .sidebar-overlay.active {
+    display: block;
+    opacity: 1;
+  }
+
+  /* إظهار زر الهامبرغر */
+  .hamburger-btn {
+    display: flex !important;
+  }
+}
+
+/* ============================================
+   RESPONSIVE - SMALL MOBILE (اقل من 480px)
+   ============================================ */
+@media (max-width: 480px) {
+  .header {
+    padding: 10px 12px;
+    height: 58px;
+  }
+
+  .sidebar {
+    width: 100% !important;
+    max-width: 300px;
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+  }
+
+  .sidebar.collapsed {
+    transform: translateX(-100%);
+    width: 100% !important;
+    max-width: 300px;
+  }
+
+  /* إخفاء زر التبديل الجانبي عند الإغلاق */
+  .sidebar.collapsed .sidebar-toggle-btn {
+    display: none !important;
+  }
+
+  /* إظهار زر التبديل فقط عند الفتح */
+  .sidebar.open .sidebar-toggle-btn {
+    display: flex !important;
+  }
+
+  /* إظهار النصوص عند الفتح */
+  .sidebar.open .label,
+  .sidebar.open .arrow {
+    display: inline-block;
+  }
+
+  .sidebar.open .nav-item {
+    justify-content: flex-start;
+    padding: 11px 14px;
+  }
+
+  .sidebar.open .sidebar-header {
+    justify-content: flex-start;
+    padding: 14px 20px;
+  }
+
+  .sidebar.open .logo-img {
+    width: 85px;
+  }
+
+  .sidebar.open .logo-img.logo-collapsed {
+    width: 85px;
+  }
+
+  .main-content {
+    margin-left: 0 !important;
+  }
+
+  /* زر التبديل في الأعلى قليلاً */
+  .sidebar-toggle-btn {
+    right: 12px;
+    top: 20px;
+    width: 32px;
+    height: 32px;
+  }
+
+  .sidebar.open .sidebar-toggle-btn {
+    right: 12px;
+    top: 20px;
+  }
+
+  .sidebar-overlay.active {
+    display: block;
+    opacity: 1;
+  }
+
+  .hamburger-btn {
+    display: flex !important;
+  }
+
+  .language-selector select {
+    font-size: 12px;
+    max-width: 50px;
+  }
+
+  .user-avatar {
+    width: 32px;
+    height: 32px;
+  }
+}
