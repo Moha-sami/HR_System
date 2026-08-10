@@ -1,6 +1,7 @@
 using Buy2.Application.Common.Interfaces;
 using Buy2.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 namespace Buy2.Infrastructure.Persistence.Repositories;
 
@@ -26,6 +27,11 @@ public class GenericRepository<T> : IRepository<T> where T : BaseEntity
     public async Task<T?> GetByIdAsync(int id)
     {
         return await _context.Set<T>().FindAsync(id);
+    }
+
+    public async Task<bool> AnyAsync(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken = default)
+    {
+        return await _context.Set<T>().AnyAsync(predicate, cancellationToken);
     }
 
     public void Update(T entity) => _context.Update(entity);    
