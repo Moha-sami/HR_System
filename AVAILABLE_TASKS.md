@@ -201,12 +201,12 @@ To ensure automatic tracking between GitHub and Jira, follow these simple naming
 
 #### Task 51: `[Feature Slice] Create Login Endpoint (Command, Handler & Controller)`
 - **Locations**:
-  - `src/Buy2.Application/Features/Authentication/Login/LoginCommand.cs`
+  - `src/Buy2.Application/Features/Authentication/Login/LoginCommand.cs` (Contains `LoginCommand` & `LoginCommandHandler` together in 1 file)
   - `src/Buy2.Api/Controllers/AuthLoginController.cs`
 - **Thought Process & Business Logic Rationale**:
   - *Why*: Authentication is the entry gateway. Before accessing HR features, users must prove identity and obtain a signed JWT token.
   - *Steps*:
-    1. Define `LoginCommand(string Email, string Password) : IRequest<LoginResponseDto>`.
+    1. In `LoginCommand.cs`, define `LoginCommand(string Email, string Password) : IRequest<LoginResponseDto>` AND `LoginCommandHandler` together in 1 file.
     2. In `LoginCommandHandler`:
        - Query employee by email using `IRepository<Employee>`. *Rationale: Ensures account exists.*
        - Verify password hash against stored hash. *Rationale: Security enforcement.*
