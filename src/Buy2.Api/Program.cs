@@ -1,9 +1,13 @@
+using Buy2.Application;
 using Buy2.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add API Controllers
 builder.Services.AddControllers();
+
+// Add Application Layer Services (MediatR Handlers)
+builder.Services.AddApplicationServices();
 
 // Add Infrastructure Layer Services (DbContext, Repositories, UnitOfWork, JWT Generator)
 builder.Services.AddInfrastructureServices(builder.Configuration);

@@ -1,4 +1,4 @@
-namespace Buy2.Application.Features.Authentication.Login;
+namespace Buy2.Application.DTOs;
 
 public class LoginResponseDto
 {
