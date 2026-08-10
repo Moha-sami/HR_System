@@ -1,6 +1,7 @@
 import type { Routes } from '@angular/router';
 import { devGuard } from './core/guards/dev.guard';
 import { Layout } from './layout/layout/layout';
+import { AddUser } from './features/users/add-user/add-user.component';
 // import { authGuard } from './core/guards/auth.guard';
 
 /**
@@ -142,6 +143,20 @@ export const routes: Routes = [
       //   path: 'settings',
       //   loadChildren: () => import('./features/settings/settings.routes').then(m => m.SETTINGS_ROUTES)
       // },
+
+        // ──────────────────────────────────────────────────────────────────────
+      // User Management — Add New User
+      // ──────────────────────────────────────────────────────────────────────
+      {
+        path: 'users',
+        children: [
+          { path: 'add', component: AddUser },
+          { path: '', redirectTo: 'add', pathMatch: 'full' }
+        ]
+      },
+
+
+
     ]
   },
 

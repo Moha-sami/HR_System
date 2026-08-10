@@ -1,0 +1,246 @@
+/* ============================================
+   WRAPPER
+   ============================================ */
+.add-user-wrapper {
+  background: #fff;
+  min-height: calc(100vh - 64px);
+  padding: 0;
+}
+
+/* ============================================
+   PAGE HEADER / BREADCRUMB
+   ============================================ */
+.page-header {
+  padding: 22px 32px 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.breadcrumb-parent {
+  font-size: 14px;
+  color: #555;
+  font-weight: 400;
+}
+
+.breadcrumb-sep {
+  font-size: 16px;
+  color: #999;
+}
+
+.breadcrumb-current {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1a1a2e;
+}
+
+/* ============================================
+   DIVIDERS
+   ============================================ */
+.form-divider-top,
+.form-divider-bottom {
+  height: 1px;
+  background: #e8ecf0;
+  margin: 0 0;
+}
+
+/* ============================================
+   FORM BODY
+   ============================================ */
+.form-body {
+  padding: 8px 32px 16px;
+}
+
+/* ============================================
+   FORM ROW
+   ============================================ */
+.form-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 32px;
+  padding: 18px 0;
+  border-bottom: 1px solid #f2f4f7;
+}
+
+.form-row:last-child {
+  border-bottom: none;
+}
+
+.form-label {
+  min-width: 90px;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: #234199;
+  padding-top: 10px;
+  flex-shrink: 0;
+}
+
+/* ============================================
+   INPUTS GROUP
+   ============================================ */
+.form-inputs-group {
+  display: flex;
+  gap: 14px;
+  flex: 1;
+}
+
+.form-inputs-group.full-width {
+  flex-direction: column;
+}
+
+.form-input {
+  flex: 1;
+  padding: 10px 14px;
+  border: none;
+  border-radius: 6px;
+  background: #f2f4f7;
+  font-size: 13.5px;
+  color: #333;
+  outline: none;
+  transition: background 0.2s, box-shadow 0.2s;
+}
+
+.form-input::placeholder {
+  color: #aaa;
+}
+
+.form-input:focus {
+  background: #eaeef5;
+  box-shadow: 0 0 0 2px rgba(35, 65, 153, 0.12);
+}
+
+/* ============================================
+   DATE INPUT
+   ============================================ */
+.date-input {
+  max-width: 100%;
+}
+
+/* ============================================
+   SELECT
+   ============================================ */
+.custom-select-wrapper {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+.form-select {
+  width: 100%;
+  padding: 10px 36px 10px 14px;
+  border: none;
+  border-radius: 6px;
+  background: #f2f4f7;
+  font-size: 13.5px;
+  color: #333;
+  outline: none;
+  appearance: none;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.form-select:focus {
+  background: #eaeef5;
+  box-shadow: 0 0 0 2px rgba(35, 65, 153, 0.12);
+}
+
+.form-select option[value=""][disabled] {
+  color: #aaa;
+}
+
+.select-arrow {
+  position: absolute;
+  right: 12px;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+}
+
+/* ============================================
+   RADIO GROUP
+   ============================================ */
+.radio-group {
+  display: flex;
+  flex-direction: row;
+  gap: 28px;
+  align-items: center;
+  padding-top: 6px;
+}
+
+.radio-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #333;
+  cursor: pointer;
+  user-select: none;
+}
+
+.radio-label input[type="radio"] {
+  display: none;
+}
+
+.radio-circle {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid #234199;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.2s;
+  flex-shrink: 0;
+}
+
+.radio-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #234199;
+}
+
+/* ============================================
+   FORM ACTIONS
+   ============================================ */
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 32px 28px;
+}
+
+.btn-discard {
+  background: transparent;
+  border: none;
+  font-size: 14px;
+  font-weight: 500;
+  color: #234199;
+  cursor: pointer;
+  padding: 10px 20px;
+  border-radius: 6px;
+  transition: background 0.2s;
+}
+
+.btn-discard:hover {
+  background: #f0f4ff;
+}
+
+.btn-save {
+  background: #234199;
+  color: #fff;
+  border: none;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 10px 36px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s, box-shadow 0.2s;
+}
+
+.btn-save:hover {
+  background: #1a3178;
+  box-shadow: 0 4px 12px rgba(35, 65, 153, 0.25);
+}
