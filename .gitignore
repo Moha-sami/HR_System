@@ -6,8 +6,12 @@ obj/
 *.suo
 *.userosscache
 *.sln.docstates
+Migrations
 
 ## Node / Angular
 node_modules/
 dist/
 .angular/
+
+## Ai
+.llm-wiki/
