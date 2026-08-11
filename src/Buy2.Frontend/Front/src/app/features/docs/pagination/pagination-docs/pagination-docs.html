@@ -1,0 +1,23 @@
+<div class="space-y-6">
+  <div>
+    <h1 class="text-2xl font-semibold">Pagination</h1>
+    <p class="text-gray-500">
+      Pagination component for navigating between pages.
+    </p>
+  </div>
+
+  <div class="rounded-lg border p-6">
+    <h2 class="mb-4 text-lg font-medium">Basic Pagination</h2>
+
+    <app-pagination
+      [currentPage]="currentPage()"
+      [totalPages]="totalPages()"
+      [pageSize]="10"
+      (pageChanged)="onPageChange($event)"
+    />
+
+    <p class="mt-4 text-sm text-gray-500">
+      Current page: {{ currentPage() }}
+    </p>
+  </div>
+</div>

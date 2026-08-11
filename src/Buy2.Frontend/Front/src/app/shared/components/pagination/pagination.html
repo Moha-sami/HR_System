@@ -1,0 +1,29 @@
+<div class="flex items-center gap-2">
+  <app-button
+    variant="ghost"
+    size="sm"
+    [disabled]="currentPage() === 1"
+    (clicked)="previousPage()"
+  >
+    Previous
+  </app-button>
+
+  @for (page of pages(); track page) {
+    <app-button
+      size="sm"
+      [variant]="currentPage() === page ? 'primary' : 'ghost'"
+      (clicked)="changePage(page)"
+    >
+      {{ page }}
+    </app-button>
+  }
+
+  <app-button
+    variant="ghost"
+    size="sm"
+    [disabled]="currentPage() === totalPages()"
+    (clicked)="nextPage()"
+  >
+    Next
+  </app-button>
+</div>
