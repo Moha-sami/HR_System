@@ -5,7 +5,6 @@
 [![Backend](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
 [![Frontend](https://img.shields.io/badge/Angular-18+-red.svg)](https://angular.dev/)
 [![Jira Space](https://img.shields.io/badge/Jira-SCRUM-0052CC.svg)](https://buy2-hrms.atlassian.net)
-[![All Contributors](https://img.shields.io/badge/all_contributors-101-orange.svg?style=flat-square)](#contributors)
 [![GitHub Contributors](https://img.shields.io/github/contributors/Moha-sami/HR_system.svg?style=flat-square)](https://github.com/Moha-sami/HR_system/graphs/contributors)
 
 An enterprise-grade open-source HR Management System built with **.NET 10 Clean Architecture** and **Angular 18+**. Buy2 HRMS features advanced shift scheduling engines, geofenced clock-in attendance, gamification points ledgers, and digital reward voucher stores.
@@ -116,7 +115,7 @@ ng serve
 
 Thanks goes to all our amazing contributors!
 
-[![All Contributors](https://img.shields.io/badge/all_contributors-101-orange.svg?style=flat-square)](#contributors)
+[![GitHub Contributors](https://img.shields.io/github/contributors/Moha-sami/HR_system.svg?style=flat-square)](https://github.com/Moha-sami/HR_system/graphs/contributors)
 
 *Want to contribute? Check out [`AVAILABLE_TASKS.md`](./AVAILABLE_TASKS.md) to pick an open task!*
 
