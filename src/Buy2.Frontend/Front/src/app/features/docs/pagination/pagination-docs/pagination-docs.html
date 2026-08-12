@@ -1,0 +1,49 @@
+<div class="min-h-screen bg-neutral-50">
+  <div class="max-w-4xl mx-auto px-8 py-12">
+    <a routerLink="/docs" class="text-primary-600 hover:text-primary-700 text-sm mb-4 inline-block">Back to Docs</a>
+    <h1 class="text-3xl font-bold text-neutral-900 mb-2">Pagination</h1>
+    <p class="text-neutral-500 mb-8">A self-managed page navigator with adaptive page ranges.</p>
+
+    <section class="bg-white rounded-lg border border-neutral-200 p-6 mb-6">
+      <h2 class="text-lg font-semibold text-neutral-800 mb-4">Basic Usage</h2>
+      <app-pagination [totalPages]="totalPages" [initialPage]="6" />
+      <p class="mt-4 text-sm text-neutral-500">The component manages its selected page internally; <code class="text-primary-600">initialPage</code> only chooses its starting page.</p>
+      <pre class="bg-neutral-900 text-neutral-100 p-4 rounded-lg text-sm overflow-x-auto mt-4"><code>&lt;app-pagination [totalPages]="12" [initialPage]="6" /&gt;</code></pre>
+    </section>
+
+    <section class="bg-white rounded-lg border border-neutral-200 p-6 mb-6">
+      <h2 class="text-lg font-semibold text-neutral-800 mb-4">Adaptive Page Range</h2>
+      <p class="text-sm text-neutral-600">The first and last pages remain visible. The selected page and one adjacent page on each side appear when available; ellipses mark hidden ranges.</p>
+    </section>
+
+    <section class="bg-white rounded-lg border border-neutral-200 p-6 mb-6">
+      <h2 class="text-lg font-semibold text-neutral-800 mb-4">Reacting to Page Changes</h2>
+      <p class="text-sm text-neutral-600 mb-4">Use <code class="text-primary-600">pageChanged</code> to load data. It does not need to be used to control the pagination UI.</p>
+      <pre class="bg-neutral-900 text-neutral-100 p-4 rounded-lg text-sm overflow-x-auto"><code>&lt;app-pagination
+  [totalPages]="totalPages"
+  (pageChanged)="loadPage($event)"
+/&gt;</code></pre>
+    </section>
+
+    <section class="bg-white rounded-lg border border-neutral-200 p-6">
+      <h2 class="text-lg font-semibold text-neutral-800 mb-4">API Reference</h2>
+      <h3 class="text-sm font-semibold text-neutral-700 mb-2">Inputs</h3>
+      <div class="overflow-x-auto mb-6">
+        <table class="w-full text-sm">
+          <thead><tr class="border-b border-neutral-200"><th class="text-left py-2 pr-4 text-neutral-500">Input</th><th class="text-left py-2 pr-4 text-neutral-500">Type</th><th class="text-left py-2 pr-4 text-neutral-500">Default</th><th class="text-left py-2 text-neutral-500">Description</th></tr></thead>
+          <tbody>
+            <tr class="border-b border-neutral-100"><td class="py-2 pr-4 font-mono text-primary-600">totalPages</td><td class="py-2 pr-4 text-neutral-600">number</td><td class="py-2 pr-4 text-neutral-400">1</td><td class="py-2 text-neutral-600">Total number of available pages.</td></tr>
+            <tr><td class="py-2 pr-4 font-mono text-primary-600">initialPage</td><td class="py-2 pr-4 text-neutral-600">number</td><td class="py-2 pr-4 text-neutral-400">1</td><td class="py-2 text-neutral-600">Starting page, clamped to the valid page range.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <h3 class="text-sm font-semibold text-neutral-700 mb-2">Outputs</h3>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead><tr class="border-b border-neutral-200"><th class="text-left py-2 pr-4 text-neutral-500">Output</th><th class="text-left py-2 pr-4 text-neutral-500">Type</th><th class="text-left py-2 text-neutral-500">Description</th></tr></thead>
+          <tbody><tr><td class="py-2 pr-4 font-mono text-primary-600">pageChanged</td><td class="py-2 pr-4 text-neutral-600">number</td><td class="py-2 text-neutral-600">Emits the newly selected page after internal state updates.</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+</div>

@@ -68,6 +68,12 @@ export class DocsHomeComponent {
       tags: ['data', 'sorting', 'templates', 'grid'],
     },
     {
+      name: 'Pagination',
+      route: 'pagination',
+      description: 'Self-managed page navigation with adaptive page ranges and ellipses.',
+      tags: ['navigation', 'pages', 'ellipsis', 'events'],
+    },
+    {
       name: 'Modal',
       route: 'modal',
       description:

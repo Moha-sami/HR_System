@@ -30,4 +30,11 @@ export const DOCS_ROUTES: Routes = [
         (m) => m.DesignSystemDocsComponent,
       ),
   },
+  {
+    path: 'pagination',
+    loadComponent: () =>
+      import('./pagination/pagination-docs/pagination-docs').then(
+        (m) => m.PaginationDocs
+      ),
+  },
 ];
