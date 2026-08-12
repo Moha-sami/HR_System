@@ -29,5 +29,7 @@ public class Buy2DbContext : DbContext
         base.OnModelCreating(modelBuilder);
 
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(Buy2DbContext).Assembly);
+
+        modelBuilder.Entity<Role>().HasQueryFilter(r => r.IsActive);
     }
 }
