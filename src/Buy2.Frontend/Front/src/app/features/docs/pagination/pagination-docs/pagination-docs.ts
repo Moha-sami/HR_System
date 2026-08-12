@@ -1,17 +1,13 @@
 import { Pagination } from '../../../../shared/components/pagination/pagination';
-import { Component, signal } from '@angular/core';
+import { Component } from '@angular/core';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-pagination-docs',
-  imports: [Pagination],
+  imports: [Pagination, RouterLink],
   templateUrl: './pagination-docs.html',
   styleUrl: './pagination-docs.css',
 })
 export class PaginationDocs {
-  currentPage = signal(1);
-  totalPages = signal(10);
-
-  onPageChange(page: number): void {
-  this.currentPage.set(page);
-  }
+  totalPages = 12;
 }
