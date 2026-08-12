@@ -1,0 +1,13 @@
+<div class="form">
+    @if (showHeader()){
+    <header class="formHeader">
+        <ng-content select="[form-header]" />
+    </header>}
+    <div class="formBody">
+        <ng-content select="[form-body]" />
+    </div>
+    @if(showActions()){
+    <footer class="formActions">
+        <ng-content select="[form-actions]" />
+    </footer>}
+</div>
