@@ -1,0 +1,14 @@
+{
+  "LAYOUT": {
+    "LOGOUT": "Log Out",
+    "LANGUAGE": { "ENGLISH": "Eng", "ARABIC": "Arabic" },
+    "NAV": {
+      "DASHBOARD": "Dashboard", "EMPLOYEE_MANAGEMENT": "Employee Management",
+      "JOB_MANAGEMENT": "Job Management", "USER_MANAGEMENT": "User Management",
+      "REWARD_MANAGEMENT": "Reward Management", "POINTS_MANAGEMENT": "Points Management",
+      "SITE_MANAGEMENT": "Site Management", "REQUEST_MANAGEMENT": "Request Management",
+      "TIME_AND_ATTENDANCE": "Time & Attendance", "NOTIFICATIONS": "Notifications",
+      "SCHEDULING": "Scheduling"
+    }
+  }
+}
