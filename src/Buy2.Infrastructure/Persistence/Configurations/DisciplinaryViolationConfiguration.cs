@@ -1,9 +1,6 @@
-﻿using Buy2.Domain.Entities;
+using Buy2.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Buy2.Infrastructure.Persistence.Configurations;
 
@@ -18,9 +15,9 @@ public class DisciplinaryViolationConfiguration : IEntityTypeConfiguration<Disci
             .IsRequired()
             .HasColumnType("nvarchar(1000)");
 
-        builder.HasOne<Employee>()
+        builder.HasOne(d => d.Employee)
             .WithMany()
             .HasForeignKey(d => d.EmployeeId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

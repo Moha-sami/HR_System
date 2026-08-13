@@ -1,4 +1,4 @@
-﻿using Buy2.Domain.Entities;
+using Buy2.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -15,11 +15,12 @@ public class PointsTransactionConfiguration : IEntityTypeConfiguration<PointsTra
             .IsRequired()
             .HasColumnType("varchar(30)");
 
-        builder.HasOne<Employee>()
+        builder.HasOne(p => p.Employee)
             .WithMany()
             .HasForeignKey(p => p.EmployeeId)
             .OnDelete(DeleteBehavior.Restrict);
-        builder.HasOne<PointsRule>()
+
+        builder.HasOne(p => p.PointsRule)
             .WithMany()
             .HasForeignKey(p => p.PointsRuleId)
             .OnDelete(DeleteBehavior.SetNull);
