@@ -51,6 +51,11 @@ public static class DatabaseSeeder
         int targetTotal = 100000;
         int remainingToSeed = targetTotal - existingCount;
 
+        // Ensure exact role distribution (2 Admins, 4 Managers, rest Employees)
+        await context.Database.ExecuteSqlRawAsync("UPDATE Employees SET RoleId = 3;");
+        await context.Database.ExecuteSqlRawAsync("UPDATE Employees SET RoleId = 1 WHERE Id IN (1, 2);");
+        await context.Database.ExecuteSqlRawAsync("UPDATE Employees SET RoleId = 2 WHERE Id IN (3, 4, 5, 6);");
+
         if (remainingToSeed <= 0)
         {
             return;
@@ -80,13 +85,27 @@ public static class DatabaseSeeder
                 string fname = FirstNames[globalIndex % FirstNames.Length];
                 string lname = LastNames[globalIndex % LastNames.Length];
 
+                int assignedRoleId;
+                if (globalIndex <= 2)
+                {
+                    assignedRoleId = roles.FirstOrDefault(r => r.Name == "Admin")?.Id ?? defaultRoleId;
+                }
+                else if (globalIndex <= 6)
+                {
+                    assignedRoleId = roles.FirstOrDefault(r => r.Name == "Manager")?.Id ?? defaultRoleId;
+                }
+                else
+                {
+                    assignedRoleId = roles.FirstOrDefault(r => r.Name == "Employee")?.Id ?? defaultRoleId;
+                }
+
                 batchEmployees.Add(new Employee
                 {
                     FirstName = fname,
                     LastName = lname,
                     Email = $"employee_{globalIndex}@buy2hrms.com",
                     PhoneNumber = $"+2010{10000000 + (globalIndex % 90000000)}",
-                    RoleId = roles[globalIndex % roles.Count].Id,
+                    RoleId = assignedRoleId,
                     SiteId = sites[globalIndex % sites.Count].Id,
                     JobRoleId = jobRoles[globalIndex % jobRoles.Count].Id
                 });
