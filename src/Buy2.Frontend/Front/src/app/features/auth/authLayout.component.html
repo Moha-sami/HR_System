@@ -1,0 +1,15 @@
+<main class="min-h-screen flex flex-col bg-white">
+  <section class="flex-1 grid grid-cols-2 min-h-0 max-lg:grid-cols-1">
+    <div class="flex flex-col p-8">
+      <header class="flex justify-start pb-8">
+        <img src="/buy2logo.png" alt="Buy2" class="h-12" />
+      </header>
+      <div class="flex-1 flex items-center justify-center">
+        <router-outlet />
+      </div>
+    </div>
+    <aside class="relative overflow-hidden max-lg:hidden" aria-hidden="true">
+      <img src="/analyst-networking.jpg" alt="" class="w-full h-full object-fill object-center" />
+    </aside>
+  </section>
+</main>
