@@ -1,5 +1,6 @@
 import type { Routes } from '@angular/router';
 import { devGuard } from './core/guards/dev.guard';
+import { authGuard } from './core/guards/auth.guard';
 import { Layout } from './layout/layout/layout';
 // import { authGuard } from './core/guards/auth.guard';
 
@@ -34,14 +35,10 @@ export const routes: Routes = [
   // ──────────────────────────────────────────────────────────────────────────
   // PUBLIC ROUTES — No layout shell, no auth required
   // ──────────────────────────────────────────────────────────────────────────
-  // {
-  //   path: 'auth',
-  //   children: [
-  //     { path: 'login', loadChildren: () => import('./features/auth/auth.routes').then(m => m.AUTH_ROUTES) },
-  //     { path: 'forgot-password', loadChildren: () => import('./features/auth/auth.routes').then(m => m.AUTH_ROUTES) },
-  //     { path: 'initial-setup', loadChildren: () => import('./features/auth/auth.routes').then(m => m.AUTH_ROUTES) },
-  //   ]
-  // },
+  {
+    path: 'auth',
+    loadChildren: () => import('./features/auth/auth.routes').then((m) => m.AUTH_ROUTES),
+  },
 
   // ──────────────────────────────────────────────────────────────────────────
   // PROTECTED ROUTES — Wrapped in Layout shell (sidebar + header)
@@ -49,9 +46,8 @@ export const routes: Routes = [
   {
     path: '',
     component: Layout,
-    // canActivate: [authGuard],   // ← uncomment when auth is ready
+    canActivate: [authGuard], // ← uncomment when auth is ready
     children: [
-
       // Default redirect → docs (temporary until dashboard is built)
       { path: '', redirectTo: 'docs', pathMatch: 'full' },
 
@@ -142,11 +138,11 @@ export const routes: Routes = [
       //   path: 'settings',
       //   loadChildren: () => import('./features/settings/settings.routes').then(m => m.SETTINGS_ROUTES)
       // },
-    ]
+    ],
   },
 
   // ──────────────────────────────────────────────────────────────────────────
   // WILDCARD — Unknown paths redirect to home
   // ──────────────────────────────────────────────────────────────────────────
-  { path: '**', redirectTo: '' }
+  { path: '**', redirectTo: '' },
 ];
