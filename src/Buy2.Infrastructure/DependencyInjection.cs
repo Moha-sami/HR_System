@@ -23,6 +23,7 @@ public static class DependencyInjection
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
         services.AddTransient<ExcelVoucherParser>();
+        services.AddScoped<IScheduleValidationEngine, ScheduleValidationEngine>();
 
         return services;
     }
