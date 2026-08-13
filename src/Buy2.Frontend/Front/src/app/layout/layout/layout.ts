@@ -2,16 +2,19 @@ import { Component, signal, inject, HostListener, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet, RouterLink, RouterLinkActive, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { TranslatePipe } from '@ngx-translate/core';
+import { type AppLanguage, LanguageService } from '../../core/services/language.service';
 
 @Component({
   selector: 'app-layout',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive, FormsModule],
+  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive, FormsModule, TranslatePipe],
   templateUrl: './layout.html',
   styleUrls: ['./layout.css']
 })
 export class Layout implements OnInit {
   private router = inject(Router);
+  private languageService = inject(LanguageService);
 
   // ===== STATE =====
   isSidebarOpen = signal(true);
@@ -23,21 +26,22 @@ export class Layout implements OnInit {
 
   // ===== MENU ITEMS =====
   menuItems = [
-    { icon: 'svg-dashboard', label: 'Dashboard', route: '/dashboard' },
-    { icon: 'svg-employee', label: 'Employee Management', route: '/employees' },
-    { icon: 'svg-job', label: 'Job Management', route: '/jobs' },
-    { icon: 'svg-user', label: 'User Management', route: '/users/add' },
-    { icon: 'svg-reward', label: 'Reward Management', route: '/rewards' },
-    { icon: 'svg-points', label: 'Points Management', route: '/points' },
-    { icon: 'svg-site', label: 'Site Management', route: '/sites' },
-    { icon: 'svg-request', label: 'Request Management', route: '/requests', hasArrow: true },
-    { icon: 'svg-time', label: 'Time & Attendance', route: '/attendance' },
-    { icon: 'svg-notifications', label: 'Notifications', route: '/notifications' },
-    { icon: 'svg-scheduling', label: 'Scheduling', route: '/scheduling', hasArrow: true },
+    { icon: 'svg-dashboard', labelKey: 'LAYOUT.NAV.DASHBOARD', route: '/dashboard' },
+    { icon: 'svg-employee', labelKey: 'LAYOUT.NAV.EMPLOYEE_MANAGEMENT', route: '/employees' },
+    { icon: 'svg-job', labelKey: 'LAYOUT.NAV.JOB_MANAGEMENT', route: '/jobs' },
+    { icon: 'svg-user', labelKey: 'LAYOUT.NAV.USER_MANAGEMENT', route: '/users/add' },
+    { icon: 'svg-reward', labelKey: 'LAYOUT.NAV.REWARD_MANAGEMENT', route: '/rewards' },
+    { icon: 'svg-points', labelKey: 'LAYOUT.NAV.POINTS_MANAGEMENT', route: '/points' },
+    { icon: 'svg-site', labelKey: 'LAYOUT.NAV.SITE_MANAGEMENT', route: '/sites' },
+    { icon: 'svg-request', labelKey: 'LAYOUT.NAV.REQUEST_MANAGEMENT', route: '/requests', hasArrow: true },
+    { icon: 'svg-time', labelKey: 'LAYOUT.NAV.TIME_AND_ATTENDANCE', route: '/attendance' },
+    { icon: 'svg-notifications', labelKey: 'LAYOUT.NAV.NOTIFICATIONS', route: '/notifications' },
+    { icon: 'svg-scheduling', labelKey: 'LAYOUT.NAV.SCHEDULING', route: '/scheduling', hasArrow: true },
   ];
 
   // ===== LIFECYCLE =====
   ngOnInit() {
+    this.selectedLanguage = this.languageService.currentLanguage();
     this.checkScreenSize();
   }
 
@@ -71,6 +75,11 @@ export class Layout implements OnInit {
 
   logout() {
     this.router.navigate(['/auth/login']);
+  }
+
+  changeLanguage(language: AppLanguage): void {
+    this.selectedLanguage = language;
+    this.languageService.changeLanguage(language).subscribe();
   }
 
 
