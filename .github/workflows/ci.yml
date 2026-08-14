@@ -18,7 +18,8 @@ jobs:
     - name: Setup .NET SDK
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: '9.0.x'
+        dotnet-version: '10.0.x'
+        include-prerelease: true
 
     - name: Restore & Build Solution
       run: dotnet build --configuration Release HR_system.slnx
