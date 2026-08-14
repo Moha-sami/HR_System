@@ -10,6 +10,8 @@ jobs:
   build-dotnet:
     name: Build & Test .NET Backend
     runs-on: ubuntu-latest
+    env:
+      MONSTERASP_FTP_PASSWORD: ${{ secrets.MONSTERASP_FTP_PASSWORD }}
 
     steps:
     - name: Checkout Code
@@ -29,7 +31,7 @@ jobs:
       run: dotnet publish src/Buy2.Api/Buy2.Api.csproj -c Release -o publish_out
 
     - name: FTP Auto-Deploy to MonsterASP
-      if: github.ref == 'refs/heads/main' && github.event_name == 'push' && secrets.MONSTERASP_FTP_PASSWORD != ''
+      if: github.ref == 'refs/heads/main' && github.event_name == 'push' && env.MONSTERASP_FTP_PASSWORD != ''
       uses: SamKirkland/FTP-Deploy-Action@v4.3.5
       with:
         server: hr-system-api.runasp.net
