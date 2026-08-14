@@ -1,4 +1,4 @@
-name: HR_system CI/CD Pipeline
+name: HR_system CI/CD & MonsterASP Auto-Deploy
 
 on:
   push:
@@ -18,10 +18,25 @@ jobs:
     - name: Setup .NET SDK
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: '9.0.x'
+        dotnet-version: '10.0.x'
 
     - name: Restore & Build Solution
       run: dotnet build --configuration Release HR_system.slnx
+
+    - name: Publish .NET Backend API
+      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      run: dotnet publish src/Buy2.Api/Buy2.Api.csproj -c Release -o publish_out
+
+    - name: FTP Auto-Deploy to MonsterASP
+      if: github.ref == 'refs/heads/main' && github.event_name == 'push' && secrets.MONSTERASP_FTP_PASSWORD != ''
+      uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+      with:
+        server: hr-system-api.runasp.net
+        username: site84943
+        password: ${{ secrets.MONSTERASP_FTP_PASSWORD }}
+        local-dir: ./publish_out/
+        server-dir: /wwwroot/
+        dangerous-clean-slate: false
 
   build-angular:
     name: Verify Angular Frontend Scaffold
