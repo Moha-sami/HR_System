@@ -3,11 +3,16 @@
     "LOGOUT": "تسجيل الخروج",
     "LANGUAGE": { "ENGLISH": "الإنجليزية", "ARABIC": "العربية" },
     "NAV": {
-      "DASHBOARD": "لوحة التحكم", "EMPLOYEE_MANAGEMENT": "إدارة الموظفين",
-      "JOB_MANAGEMENT": "إدارة الوظائف", "USER_MANAGEMENT": "إدارة المستخدمين",
-      "REWARD_MANAGEMENT": "إدارة المكافآت", "POINTS_MANAGEMENT": "إدارة النقاط",
-      "SITE_MANAGEMENT": "إدارة المواقع", "REQUEST_MANAGEMENT": "إدارة الطلبات",
-      "TIME_AND_ATTENDANCE": "الوقت والحضور", "NOTIFICATIONS": "الإشعارات",
+      "DASHBOARD": "لوحة التحكم",
+      "EMPLOYEE_MANAGEMENT": "إدارة الموظفين",
+      "JOB_MANAGEMENT": "إدارة الوظائف",
+      "ROLE_MANAGMENT": "إدارة الأدوار",
+      "REWARD_MANAGEMENT": "إدارة المكافآت",
+      "POINTS_MANAGEMENT": "إدارة النقاط",
+      "SITE_MANAGEMENT": "إدارة المواقع",
+      "REQUEST_MANAGEMENT": "إدارة الطلبات",
+      "TIME_AND_ATTENDANCE": "الوقت والحضور",
+      "NOTIFICATIONS": "الإشعارات",
       "SCHEDULING": "الجدولة"
     }
   }

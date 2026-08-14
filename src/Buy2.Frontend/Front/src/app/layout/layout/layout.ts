@@ -29,7 +29,7 @@ export class Layout implements OnInit {
     { icon: 'svg-dashboard', labelKey: 'LAYOUT.NAV.DASHBOARD', route: '/dashboard' },
     { icon: 'svg-employee', labelKey: 'LAYOUT.NAV.EMPLOYEE_MANAGEMENT', route: '/employees' },
     { icon: 'svg-job', labelKey: 'LAYOUT.NAV.JOB_MANAGEMENT', route: '/jobs' },
-    { icon: 'svg-user', labelKey: 'LAYOUT.NAV.USER_MANAGEMENT', route: '/users/add' },
+    { icon: 'svg-role', labelKey: 'LAYOUT.NAV.ROLE_MANAGMENT', route: '/users/add' },
     { icon: 'svg-reward', labelKey: 'LAYOUT.NAV.REWARD_MANAGEMENT', route: '/rewards' },
     { icon: 'svg-points', labelKey: 'LAYOUT.NAV.POINTS_MANAGEMENT', route: '/points' },
     { icon: 'svg-site', labelKey: 'LAYOUT.NAV.SITE_MANAGEMENT', route: '/sites' },
