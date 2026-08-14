@@ -21,14 +21,15 @@ jobs:
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: '10.0.x'
-        include-prerelease: true
 
     - name: Restore & Build Solution
       run: dotnet build --configuration Release HR_system.slnx
 
     - name: Publish .NET Backend API
       if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-      run: dotnet publish src/Buy2.Api/Buy2.Api.csproj -c Release -o publish_out
+      run: |
+        dotnet publish src/Buy2.Api/Buy2.Api.csproj -c Release -o publish_out
+        echo "<h1>Site updating...</h1>" > ./publish_out/app_offline.htm
 
     - name: FTP Auto-Deploy to MonsterASP
       if: github.ref == 'refs/heads/main' && github.event_name == 'push' && env.MONSTERASP_FTP_PASSWORD != ''
@@ -40,6 +41,11 @@ jobs:
         local-dir: ./publish_out/
         server-dir: /wwwroot/
         dangerous-clean-slate: false
+
+    - name: Bring Site Back Online (Delete app_offline.htm)
+      if: github.ref == 'refs/heads/main' && github.event_name == 'push' && env.MONSTERASP_FTP_PASSWORD != ''
+      run: |
+        curl -u "site84943:${{ secrets.MONSTERASP_FTP_PASSWORD }}" -Q "DELE /wwwroot/app_offline.htm" ftp://hr-system-api.runasp.net/ || true
 
   build-angular:
     name: Verify Angular Frontend Scaffold
