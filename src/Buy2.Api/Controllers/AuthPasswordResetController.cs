@@ -1,11 +1,13 @@
 using Buy2.Application.Features.Authentication.ResetPassword;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Buy2.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/auth")]
+[AllowAnonymous]
 public class AuthPasswordResetController : ControllerBase
 {
     private readonly ISender _mediator;
@@ -16,7 +18,9 @@ public class AuthPasswordResetController : ControllerBase
     }
 
     [HttpPost("password/reset")]
-    public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordCommand command)
+    [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<bool>> ResetPassword([FromBody] ResetPasswordCommand command)
     {
         var result = await _mediator.Send(command);
         return Ok(result);

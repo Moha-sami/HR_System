@@ -1,23 +1,26 @@
-﻿using Buy2.Application.Features.Employees.UploadDocument;
+using Buy2.Application.Features.Employees.UploadDocument;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.ComponentModel.DataAnnotations;
 
 namespace Buy2.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/employees/{id}/documents")]
-
-public class EmployeeDocumentController : ControllerBase
+[Authorize]
+public class EmployeeDocumentsController : ControllerBase
 {
     private readonly ISender _mediator;
-    public EmployeeDocumentController(ISender mediator)
+    public EmployeeDocumentsController(ISender mediator)
     {
         _mediator = mediator;
     }
 
     [HttpPost]
-    public async Task<ActionResult<int>> Upload(int id, UploadEmployeeDocumentCommand command)
+    [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult<int>> Upload(int id, [FromBody] UploadEmployeeDocumentCommand command)
     {
         if (id != command.EmployeeId)
         {

@@ -1,12 +1,58 @@
+using System.Text;
 using Buy2.Application;
 using Buy2.Infrastructure;
 using Buy2.Infrastructure.Persistence;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add API Controllers
 builder.Services.AddControllers();
+
+// Configure CORS Policy
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy.WithOrigins(
+            "http://localhost:4200",
+            "http://localhost:3000",
+            "https://hr-system-api.runasp.net"
+        )
+        .AllowAnyHeader()
+        .AllowAnyMethod()
+        .AllowCredentials();
+    });
+});
+
+// Configure JWT Bearer Authentication
+var jwtSettings = builder.Configuration.GetSection("JwtSettings");
+var secretKey = jwtSettings["SecretKey"] ?? "Buy2HRMS_SuperSecretKey_ForJWTTokenGeneration_2026";
+var issuer = jwtSettings["Issuer"] ?? "Buy2.Api";
+var audience = jwtSettings["Audience"] ?? "Buy2.Client";
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = issuer,
+        ValidAudience = audience,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey))
+    };
+});
+
+builder.Services.AddAuthorization();
 
 // Configure Swagger / OpenAPI
 builder.Services.AddEndpointsApiExplorer();
@@ -32,7 +78,7 @@ builder.Services.AddSwaggerGen(options =>
         Scheme = "Bearer",
         BearerFormat = "JWT",
         In = ParameterLocation.Header,
-        Description = "Enter 'Bearer' followed by a space and your JWT token."
+        Description = "Enter your JWT token directly."
     });
 
     options.AddSecurityRequirement(new OpenApiSecurityRequirement
@@ -76,6 +122,11 @@ app.UseSwaggerUI(c =>
 
 app.UseHttpsRedirection();
 
+// Enable CORS
+app.UseCors("AllowFrontend");
+
+// Authentication must run BEFORE Authorization
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

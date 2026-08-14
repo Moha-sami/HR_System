@@ -1,11 +1,13 @@
-﻿using Buy2.Application.Features.ShiftMarket.ClaimShift;
+using Buy2.Application.Features.ShiftMarket.ClaimShift;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Buy2.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/shift-market/claims/{id}")]
+[Authorize]
 public class ShiftClaimsController : ControllerBase
 {
     private readonly ISender _mediator;
@@ -14,11 +16,13 @@ public class ShiftClaimsController : ControllerBase
         _mediator = mediator;
     }
 
-
     [HttpPost]
-    public async Task<ActionResult<bool>> Create(int id, ClaimShiftCommand command)
+    [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult<bool>> Create(int id, [FromBody] ClaimShiftCommand command)
     {
-        if(command.ShiftId != id)
+        if (command.ShiftId != id)
         {
             return BadRequest("Shift Not Match");
         }
