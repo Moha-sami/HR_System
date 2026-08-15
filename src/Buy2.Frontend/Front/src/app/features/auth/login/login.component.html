@@ -1,0 +1,153 @@
+<main class="login-main w-full max-w-[420px] mx-auto p-6 md:p-8">
+  <h1 class="login-title text-2xl md:text-3xl font-semibold text-black mb-2 text-center">
+    Welcome Back
+  </h1>
+  <p class="login-subtitle text-base text-gray-500 mb-8 text-center">
+    Sign in to your account to continue
+  </p>
+
+  <form
+    #loginForm="ngForm"
+    (ngSubmit)="onSubmit(loginForm)"
+    class="login-form flex flex-col gap-5"
+    novalidate
+  >
+    @if (error()) {
+      <div
+        class="login-error bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm text-center"
+        role="alert"
+      >
+        {{ error() }}
+      </div>
+    }
+
+    <div class="form-group flex flex-col gap-1.5">
+      <label for="email" class="form-label text-sm font-medium text-gray-700">Email Address</label>
+      <input
+        id="email"
+        type="email"
+        name="email"
+        [(ngModel)]="email"
+        required
+        email
+        class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-blue-600 transition-colors"
+        [class.border-red-500]="
+          loginForm.controls['email']?.invalid && loginForm.controls['email']?.touched
+        "
+        [class.focus:ring-red-200]="
+          loginForm.controls['email']?.invalid && loginForm.controls['email']?.touched
+        "
+        placeholder="Enter your email"
+        autocomplete="email"
+      />
+      @if (loginForm.controls['email']?.invalid && loginForm.controls['email']?.touched) {
+        <span class="form-error text-xs text-red-600">
+          @if (loginForm.controls['email']?.errors?.['required']) {
+            Email is required
+          } @else if (loginForm.controls['email']?.errors?.['email']) {
+            Enter a valid email address
+          }
+        </span>
+      }
+    </div>
+
+    <div class="form-group flex flex-col gap-1.5">
+      <label for="password" class="form-label text-sm font-medium text-gray-700">Password</label>
+      <div class="password-wrapper relative">
+        <input
+          id="password"
+          [type]="showPassword() ? 'text' : 'password'"
+          name="password"
+          [(ngModel)]="password"
+          required
+          minlength="6"
+          class="form-input w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-blue-600 transition-colors"
+          [class.border-red-500]="
+            loginForm.controls['password']?.invalid && loginForm.controls['password']?.touched
+          "
+          [class.focus:ring-red-200]="
+            loginForm.controls['password']?.invalid && loginForm.controls['password']?.touched
+          "
+          placeholder="Enter your password"
+          autocomplete="current-password"
+        />
+        <button
+          type="button"
+          class="password-toggle absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+          (click)="showPassword.set(!showPassword())"
+          [attr.aria-label]="showPassword() ? 'Hide password' : 'Show password'"
+        >
+          @if (showPassword()) {
+            <svg
+              class="icon w-5 h-5"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path
+                d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"
+              ></path>
+              <line x1="1" y1="1" x2="23" y2="23"></line>
+            </svg>
+          } @else {
+            <svg
+              class="icon w-5 h-5"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+              <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+          }
+        </button>
+      </div>
+      @if (loginForm.controls['password']?.invalid && loginForm.controls['password']?.touched) {
+        <span class="form-error text-xs text-red-600">
+          @if (loginForm.controls['password']?.errors?.['required']) {
+            Password is required
+          } @else if (loginForm.controls['password']?.errors?.['minlength']) {
+            Password must be at least 6 characters
+          }
+        </span>
+      }
+    </div>
+
+    <div class="form-options flex items-center justify-between">
+      <label class="checkbox-wrapper flex items-center gap-2 cursor-pointer">
+        <input
+          type="checkbox"
+          name="remember"
+          class="checkbox w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          [(ngModel)]="remember"
+        />
+        <span class="checkbox-label text-sm text-gray-700">Remember me</span>
+      </label>
+      <a
+        routerLink="/auth/reset-password"
+        class="forgot-password-link text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors"
+        >Forgot Password?</a
+      >
+    </div>
+
+    <button
+      type="submit"
+      class="login-btn w-full py-3.5 px-6 font-semibold text-white rounded-lg transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+      [class.bg-blue-600]="!loading()"
+      [class.hover:bg-blue-700]="!loading()"
+      [class.bg-gray-400]="loading()"
+      [disabled]="loginForm.invalid || loading()"
+    >
+      @if (loading()) {
+        <span
+          class="btn-spinner w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"
+        ></span>
+        <span>Signing in...</span>
+      } @else {
+        <span>Sign In</span>
+      }
+    </button>
+  </form>
+</main>

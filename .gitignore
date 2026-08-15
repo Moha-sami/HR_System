@@ -16,3 +16,6 @@ dist/
 
 ## Ai
 .llm-wiki/
+docs/plans
+docs/assets
+.playwright-mcp
