@@ -26,11 +26,17 @@ jobs:
 
     - name: Publish .NET Backend API
       if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-      run: |
-        dotnet publish src/Buy2.Api/Buy2.Api.csproj -c Release -o publish_out
-        echo "App is being updated..." > publish_out/app_offline.htm
+      run: dotnet publish src/Buy2.Api/Buy2.Api.csproj -c Release -o publish_out
 
-    - name: Take Site Offline & Deploy via FTP
+    - name: Take Site Offline via FTP
+      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      run: |
+        echo "App is being updated, please wait..." > /tmp/app_offline.htm
+        curl -s -T /tmp/app_offline.htm --user "site84943:${{ secrets.MONSTERASP_FTP_PASSWORD }}" "ftp://hr-system-api.runasp.net/wwwroot/app_offline.htm"
+        echo "Uploaded app_offline.htm - waiting for IIS to release file locks..."
+        sleep 10
+
+    - name: Deploy via FTP
       if: github.ref == 'refs/heads/main' && github.event_name == 'push'
       uses: SamKirkland/FTP-Deploy-Action@v4.3.5
       with:
@@ -44,7 +50,8 @@ jobs:
     - name: Bring Site Back Online
       if: github.ref == 'refs/heads/main' && github.event_name == 'push'
       run: |
-        curl -s --ftp-ssl --user "site84943:${{ secrets.MONSTERASP_FTP_PASSWORD }}" "ftp://hr-system-api.runasp.net/wwwroot/" -Q "DELE /wwwroot/app_offline.htm" || true
+        curl -s --user "site84943:${{ secrets.MONSTERASP_FTP_PASSWORD }}" "ftp://hr-system-api.runasp.net" -Q "DELE /wwwroot/app_offline.htm" || true
+        echo "Deleted app_offline.htm - site is back online!"
 
   build-angular:
     name: Verify Angular Frontend Scaffold
