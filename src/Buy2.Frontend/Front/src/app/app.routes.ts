@@ -46,7 +46,7 @@ export const routes: Routes = [
   {
     path: '',
     component: Layout,
-    canActivate: [authGuard], // ← uncomment when auth is ready
+    // canActivate: [authGuard], // ← uncomment when auth is ready
     children: [
       // Default redirect → docs (temporary until dashboard is built)
       { path: '', redirectTo: 'docs', pathMatch: 'full' },
@@ -62,10 +62,11 @@ export const routes: Routes = [
       // ──────────────────────────────────────────────────────────────────────
       // §2.2 — Comprehensive Employee Profiles
       // ──────────────────────────────────────────────────────────────────────
-      // {
-      //   path: 'employees',
-      //   loadChildren: () => import('./features/employees/employees.routes').then(m => m.EMPLOYEES_ROUTES)
-      // },
+      {
+        path: 'employees',
+        loadChildren: () =>
+          import('./features/employees/employees.routes').then((m) => m.EMPLOYEES_ROUTES),
+      },
 
       // ──────────────────────────────────────────────────────────────────────
       // §2.1 — Job Management & Role Engineering
