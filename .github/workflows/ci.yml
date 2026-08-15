@@ -43,12 +43,8 @@ jobs:
 
     - name: Bring Site Back Online
       if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-      uses: StephanThi662/ftp-delete-action@v1.1
-      with:
-        host: hr-system-api.runasp.net
-        user: site84943
-        password: ${{ secrets.MONSTERASP_FTP_PASSWORD }}
-        remoteFile: /wwwroot/app_offline.htm
+      run: |
+        curl -s --ftp-ssl --user "site84943:${{ secrets.MONSTERASP_FTP_PASSWORD }}" "ftp://hr-system-api.runasp.net/wwwroot/" -Q "DELE /wwwroot/app_offline.htm" || true
 
   build-angular:
     name: Verify Angular Frontend Scaffold
