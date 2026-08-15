@@ -1,10 +1,11 @@
-import { Injectable, inject, signal, computed } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { type Observable, tap } from 'rxjs';
 import { TokenService } from './token.service';
+import { environment } from '../../../environments/environment';
 import type { LoginRequest, LoginResponse, ResetPasswordRequest } from '../models/auth.models';
 
-const API_BASE = '/api/v1/auth';
+const API_BASE = `${environment.baseUrl}/auth`;
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -14,7 +15,7 @@ export class AuthService {
   readonly isAuthenticated = this.tokenSvc.isAuthenticated;
   readonly currentUser = this.tokenSvc.user;
 
-  /** Login — POST /api/v1/auth/login */
+  /** Login — POST /auth/login */
   login(req: LoginRequest): Observable<LoginResponse> {
     return this.http.post<LoginResponse>(`${API_BASE}/login`, req).pipe(
       tap((res) => {
@@ -28,7 +29,7 @@ export class AuthService {
     this.tokenSvc.clearToken();
   }
 
-  /** Reset password — POST /api/v1/auth/password/reset */
+  /** Reset password — POST /auth/password/reset */
   resetPassword(req: ResetPasswordRequest): Observable<boolean> {
     return this.http.post<boolean>(`${API_BASE}/password/reset`, req);
   }
