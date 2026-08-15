@@ -124,12 +124,12 @@ export const routes: Routes = [
       // },
 
       // ──────────────────────────────────────────────────────────────────────
-      // Org Structure — Department Management
+      // RBAC — Role-Based Access Control
       // ──────────────────────────────────────────────────────────────────────
-      // {
-      //   path: 'departments',
-      //   loadChildren: () => import('./features/departments/departments.routes').then(m => m.DEPARTMENTS_ROUTES)
-      // },
+      {
+        path: 'roles',
+        loadChildren: () => import('./features/roles/roles.routes').then((m) => m.ROLES_ROUTES),
+      },
 
       // ──────────────────────────────────────────────────────────────────────
       // User Profile & Company Config

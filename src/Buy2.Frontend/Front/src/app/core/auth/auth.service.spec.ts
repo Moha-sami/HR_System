@@ -4,7 +4,9 @@ import { provideHttpClient } from '@angular/common/http';
 import { AuthService } from './auth.service';
 import { TokenService } from './token.service';
 import type { LoginRequest, LoginResponse } from '../models/auth.models';
-import { fakeJwt, futureExp } from './test-helpers';
+import { environment } from '../../../environments/environment';
+
+const AUTH_URL = `${environment.baseUrl}/auth`;
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -46,7 +48,7 @@ describe('AuthService', () => {
         result = res;
       });
 
-      const req = httpMock.expectOne('/api/v1/auth/login');
+      const req = httpMock.expectOne(`${AUTH_URL}/login`);
       expect(req.request.method).toBe('POST');
       expect(req.request.body).toEqual(loginReq);
 
@@ -69,7 +71,7 @@ describe('AuthService', () => {
         },
       });
 
-      const req = httpMock.expectOne('/api/v1/auth/login');
+      const req = httpMock.expectOne(`${AUTH_URL}/login`);
       req.flush({ message: 'Invalid credentials' }, { status: 401, statusText: 'Unauthorized' });
 
       expect(error).toBeTruthy();
@@ -100,7 +102,7 @@ describe('AuthService', () => {
         result = res;
       });
 
-      const req = httpMock.expectOne('/api/v1/auth/password/reset');
+      const req = httpMock.expectOne(`${AUTH_URL}/password/reset`);
       expect(req.request.method).toBe('POST');
       expect(req.request.body).toEqual(resetReq);
 
@@ -118,7 +120,7 @@ describe('AuthService', () => {
         result = res;
       });
 
-      const req = httpMock.expectOne('/api/v1/auth/password/reset');
+      const req = httpMock.expectOne(`${AUTH_URL}/password/reset`);
       req.flush(false);
 
       expect(result).toBeFalsy();
@@ -135,7 +137,7 @@ describe('AuthService', () => {
         },
       });
 
-      const req = httpMock.expectOne('/api/v1/auth/password/reset');
+      const req = httpMock.expectOne(`${AUTH_URL}/password/reset`);
       req.flush({ message: 'Server error' }, { status: 500, statusText: 'Internal Server Error' });
 
       expect(error).toBeTruthy();

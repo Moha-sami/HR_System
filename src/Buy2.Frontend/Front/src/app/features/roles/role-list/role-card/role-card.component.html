@@ -1,0 +1,56 @@
+<div
+  class="role-card bg-white border-2 border-[#E2E2E2] rounded-[12px] p-5 shadow-[0px_4px_18px_0px_rgba(75,70,92,0.1)] hover:shadow-[0px_8px_24px_0px_rgba(75,70,92,0.15)] transition-shadow duration-200"
+  [style.min-width.px]="320"
+>
+  <div class="flex justify-between items-start">
+    <div class="flex-1 min-w-0">
+      <h3 class="font-semibold text-[#1E1E1E] text-base leading-tight truncate">
+        {{ role.roleName }}
+      </h3>
+      <p class="text-xs text-[#868686] mt-1">{{ permissionCount }} permissions</p>
+    </div>
+    <div class="relative ml-3 flex-shrink-0">
+      <button
+        type="button"
+        class="text-[#868686] hover:text-[#1E1E1E] p-1.5"
+        (click)="$event.stopPropagation(); menuOpen = !menuOpen"
+        aria-label="More options"
+        aria-expanded="menuOpen"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-5 w-5"
+          viewBox="0 0 20 20"
+          fill="currentColor"
+        >
+          <path
+            d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"
+          />
+        </svg>
+      </button>
+      @if (menuOpen) {
+        <div
+          class="absolute right-0 mt-2 w-40 bg-white rounded-lg shadow-[0px_4px_18px_0px_rgba(75,70,92,0.1)] z-10 border border-[#E2E2E2] py-1.5"
+          role="menu"
+        >
+          <button
+            type="button"
+            class="block w-full text-left px-4 py-2 text-sm text-[#234199] hover:bg-[#F3F6F9] transition-colors"
+            (click)="onEdit()"
+            role="menuitem"
+          >
+            Edit
+          </button>
+          <button
+            type="button"
+            class="block w-full text-left px-4 py-2 text-sm text-[#EC1D27] hover:bg-[#FEF2F2] transition-colors"
+            (click)="onDelete()"
+            role="menuitem"
+          >
+            Delete
+          </button>
+        </div>
+      }
+    </div>
+  </div>
+</div>
