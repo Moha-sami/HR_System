@@ -1,0 +1,48 @@
+<div class="jobs-container">
+  <div class="page-header-top">
+    <h1 class="page-title">Job Management</h1>
+    <div class="header-actions-top">
+      <button class="btn-secondary">Sort <i class="fas fa-sort-amount-down"></i></button>
+      <button class="btn-danger">Export <i class="fas fa-file-export"></i></button>
+    </div>
+  </div>
+
+  <div class="page-header-bottom">
+    <div class="search-box">
+      <i class="fas fa-search search-icon"></i>
+      <input 
+        type="text" 
+        class="search-input" 
+        placeholder="Type here..." 
+        [value]="searchTerm()"
+        (input)="onSearch($event)"
+      >
+    </div>
+    <button class="btn-primary">Create a New Job</button>
+  </div>
+
+  <div class="table-container">
+    <app-table 
+      [columns]="columns" 
+      [rows]="paginatedJobs()" 
+      [cellTemplates]="cellTemplates"
+      (sortChange)="onSort($event)"
+    ></app-table>
+    
+    <ng-template #actionsTemplate let-ctx>
+      <div class="actions-cell">
+        <i class="fas fa-pen"></i>
+        <i class="fas fa-trash text-danger"></i>
+        <i class="fas fa-eye"></i>
+      </div>
+    </ng-template>
+
+    <div class="pagination-wrapper" *ngIf="totalPages() > 1">
+      <app-pagination 
+        [totalPages]="totalPages()" 
+        [initialPage]="currentPage()"
+        (pageChanged)="onPageChange($event)"
+      ></app-pagination>
+    </div>
+  </div>
+</div>

@@ -22,7 +22,8 @@ export class Layout implements OnInit {
   isMobileDevice = signal(false);
 
   // ===== LOGO PATH =====
-  logoPath = '/assets/buy2logo.png';
+  logoPath = '/buy2logo.png';
+
 
   // ===== MENU ITEMS =====
   menuItems = [
