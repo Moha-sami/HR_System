@@ -25,12 +25,12 @@ export class JobService {
     return this.http.get<Job>(`${this.apiUrl}/${id}`);
   }
 
-  createJob(job: Job): Observable<Job> {
+  createJob(job: Omit<Job, 'id'>): Observable<Job> {
     return this.http.post<Job>(this.apiUrl, job);
   }
 
-  updateJob(id: number, job: Job): Observable<Job> {
-    return this.http.put<Job>(`${this.apiUrl}/${id}`, job);
+  updateJob(id: number, job: Partial<Job>): Observable<Job> {
+    return this.http.patch<Job>(`${this.apiUrl}/${id}`, job);
   }
 
   deleteJob(id: number): Observable<void> {

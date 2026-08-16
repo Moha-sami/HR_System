@@ -52,6 +52,14 @@
   padding: 8px 24px;
   cursor: pointer;
   font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background-color 0.2s;
+}
+
+.btn-primary:hover {
+  background-color: #1f2a6e;
 }
 
 .btn-secondary {
@@ -64,6 +72,11 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  transition: background-color 0.2s;
+}
+
+.btn-secondary:hover {
+  background-color: #1f2a6e;
 }
 
 .btn-danger {
@@ -76,6 +89,11 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  transition: background-color 0.2s;
+}
+
+.btn-danger:hover {
+  background-color: #dc2626;
 }
 
 .table-container {
@@ -85,22 +103,139 @@
   box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
 
+/* ============================================
+   أزرار الإجراءات - تصميم متقدم
+   ============================================ */
 .actions-cell {
   display: flex;
-  gap: 16px;
-  color: #2b3990;
+  gap: 6px;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
 }
 
-.actions-cell i {
+.action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 6px;
   cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 14px;
+  background: transparent;
+  color: #6b7280;
 }
 
-.actions-cell i.text-danger {
+.action-btn:hover {
+  transform: scale(1.1);
+}
+
+.action-btn:active {
+  transform: scale(0.95);
+}
+
+/* 👁️ View - أزرق */
+.action-view {
+  color: #3b82f6;
+}
+.action-view:hover {
+  background-color: #eff6ff;
+  color: #2563eb;
+}
+
+/* ✏️ Edit - برتقالي */
+.action-edit {
+  color: #f59e0b;
+}
+.action-edit:hover {
+  background-color: #fffbeb;
+  color: #d97706;
+}
+
+/* 📋 Duplicate - بنفسجي */
+.action-duplicate {
+  color: #8b5cf6;
+}
+.action-duplicate:hover {
+  background-color: #f5f3ff;
+  color: #7c3aed;
+}
+
+/* 🗑️ Delete - أحمر */
+.action-delete {
   color: #ef4444;
+}
+.action-delete:hover {
+  background-color: #fef2f2;
+  color: #dc2626;
+}
+
+/* ⏸️ Toggle - رمادي */
+.action-toggle {
+  color: #6b7280;
+}
+.action-toggle:hover {
+  background-color: #f3f4f6;
+  color: #4b5563;
+}
+
+/* 📊 Report - أخضر */
+.action-report {
+  color: #22c55e;
+}
+.action-report:hover {
+  background-color: #f0fdf4;
+  color: #16a34a;
+}
+
+/* 🔄 Reset - أحمر غامق */
+.action-reset {
+  color: #dc2626;
+}
+.action-reset:hover {
+  background-color: #fef2f2;
+  color: #b91c1c;
 }
 
 .pagination-wrapper {
   margin-top: 24px;
   display: flex;
   justify-content: center;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .page-header-top {
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .page-header-bottom {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .search-box {
+    margin-right: 0;
+    width: 100%;
+  }
+
+  .btn-primary {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .actions-cell {
+    gap: 4px;
+  }
+
+  .action-btn {
+    width: 28px;
+    height: 28px;
+    font-size: 12px;
+  }
 }
