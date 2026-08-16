@@ -13,15 +13,15 @@ import {
   TranslateService,
 } from '@ngx-translate/core';
 
-import { LanguageService } from '../../core/services/language.service';
-import { ButtonComponent } from '../../shared/components/button/button.component';
-import { Pagination } from '../../shared/components/pagination/pagination';
+import { LanguageService } from '../../../core/services/language.service';
+import { ButtonComponent } from '../../../shared/components/button/button.component';
+import { Pagination } from '../../../shared/components/pagination/pagination';
 import {
   TableComponent,
   type CellContext,
   type ColumnDef,
-} from '../../shared/components/table/table.component';
-import { PointsManagementService } from './service/points-management.service';
+} from '../../../shared/components/table/table.component';
+import { PointsManagementService } from '../service/points-management.service';
 
 @Component({
   selector: 'app-points-management',

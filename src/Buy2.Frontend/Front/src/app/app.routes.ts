@@ -131,6 +131,11 @@ export const routes: Routes = [
         path: 'roles',
         loadChildren: () => import('./features/roles/roles.routes').then((m) => m.ROLES_ROUTES),
       },
+      
+      {
+        path: 'points',
+        loadChildren: () => import('./features/points/points.routes').then((m) => m.POINTS_ROUTES),
+      }
 
       // ──────────────────────────────────────────────────────────────────────
       // User Profile & Company Config
