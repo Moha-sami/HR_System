@@ -46,7 +46,7 @@ export const routes: Routes = [
   {
     path: '',
     component: Layout,
-    canActivate: [authGuard], // ← uncomment when auth is ready
+    // canActivate: [authGuard], // ← uncomment when auth is ready
     children: [
       // Default redirect → docs (temporary until dashboard is built)
       { path: '', redirectTo: 'docs', pathMatch: 'full' },
@@ -71,10 +71,10 @@ export const routes: Routes = [
       // ──────────────────────────────────────────────────────────────────────
       // §2.1 — Job Management & Role Engineering
       // ──────────────────────────────────────────────────────────────────────
-      // {
-      //   path: 'jobs',
-      //   loadChildren: () => import('./features/jobs/jobs.routes').then(m => m.JOBS_ROUTES)
-      // },
+      {
+        path: 'jobs',
+        loadChildren: () => import('./features/jobs/jobs.routes').then(m => m.JOBS_ROUTES)
+      },
 
       // ──────────────────────────────────────────────────────────────────────
       // §3.1 — Site & Location Management
