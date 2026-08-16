@@ -15,5 +15,17 @@
       "NOTIFICATIONS": "الإشعارات",
       "SCHEDULING": "الجدولة"
     }
+  },
+  "EMPLOYEE_MANAGEMENT": {
+    "TITLE": "إدارة الموظفين",
+    "ADD_EMPLOYEES": "إضافة موظفين",
+    "EMPLOYEE_ID": "معرف الموظف",
+    "EMPLOYEE_NAME": "اسم الموظف",
+    "JOIN_DATE": "تاريخ الانضمام",
+    "JOB_TITLE": "المسمى الوظيفي",
+    "EMAIL": "البريد الإلكتروني",
+    "ADMIN_ACCESS": "صلاحية المسؤول",
+    "ACTIONS": "الإجراءات",
+    "NO_EMPLOYEES": "لا يوجد موظفون"
   }
 }
