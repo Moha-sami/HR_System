@@ -15,5 +15,17 @@
       "NOTIFICATIONS": "Notifications",
       "SCHEDULING": "Scheduling"
     }
+  },
+  "EMPLOYEE_MANAGEMENT": {
+    "TITLE": "Employee Management",
+    "ADD_EMPLOYEES": "Add Employees",
+    "EMPLOYEE_ID": "Employee ID",
+    "EMPLOYEE_NAME": "Employee Name",
+    "JOIN_DATE": "Join Date",
+    "JOB_TITLE": "Job Title",
+    "EMAIL": "Email",
+    "ADMIN_ACCESS": "Admin Access",
+    "ACTIONS": "Actions",
+    "NO_EMPLOYEES": "No employees available"
   }
 }
