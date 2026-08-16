@@ -62,10 +62,11 @@ export const routes: Routes = [
       // ──────────────────────────────────────────────────────────────────────
       // §2.2 — Comprehensive Employee Profiles
       // ──────────────────────────────────────────────────────────────────────
-      // {
-      //   path: 'employees',
-      //   loadChildren: () => import('./features/employees/employees.routes').then(m => m.EMPLOYEES_ROUTES)
-      // },
+      {
+        path: 'employees',
+        loadChildren: () =>
+          import('./features/employees/employees.routes').then((m) => m.EMPLOYEES_ROUTES),
+      },
 
       // ──────────────────────────────────────────────────────────────────────
       // §2.1 — Job Management & Role Engineering
