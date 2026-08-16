@@ -1,0 +1,82 @@
+<section class="flex flex-col gap-4">
+    <ng-template #pointsTemplate let-row>
+        <span class="text-sm font-medium" [style.color]="row.points >= 0 ? '#16a34a' : '#dc2626'">
+            {{ row.points > 0 ? '+' + row.points : row.points }}
+        </span>
+    </ng-template>
+
+    <div class="flex items-center justify-between">
+        <h1 class="text-lg font-semibold">
+            {{ 'POINTS.TITLE' | translate }}
+        </h1>
+
+        <app-button variant="primary-light" size="sm">
+            {{ 'POINTS.POINTS_AUTOMATION' | translate }}
+        </app-button>
+    </div>
+
+    <div class="flex items-center justify-between gap-4">
+        <select class="rounded-lg border px-3 py-2 text-sm" [value]="selectedMonth()" (change)="updateMonth($event)">
+            <option value="">
+                {{ 'POINTS.ALL_MONTHS' | translate }}
+            </option>
+
+            @for (month of availableMonths(); track month) {
+            <option [value]="month">
+                {{ formatMonth(month) }}
+            </option>
+            }
+        </select>
+
+        <div class="flex items-center gap-2">
+            <span class="text-sm">
+                {{ 'POINTS.FILTER_BY' | translate }}
+            </span>
+
+            <select class="rounded-lg border px-3 py-2 text-sm" [value]="selectedTrigger()"
+                (change)="updateTrigger($event)">
+                <option value="">
+                    {{ 'POINTS.TRIGGERED_BY' | translate }}
+                </option>
+
+                @for (
+                trigger of availableTriggers();
+                track trigger
+                ) {
+                <option [value]="trigger">
+                    {{ trigger }}
+                </option>
+                }
+            </select>
+
+            <select class="rounded-lg border px-3 py-2 text-sm" [value]="selectedType()" (change)="updateType($event)">
+                <option value="">
+                    {{ 'POINTS.TYPE' | translate }}
+                </option>
+
+                @for (type of availableTypes(); track type) {
+                <option [value]="type">
+                    {{ type }}
+                </option>
+                }
+            </select>
+        </div>
+    </div>
+
+    <div class="flex items-center gap-2">
+        <input type="search" class="w-full rounded-lg border px-3 py-2 text-sm" [placeholder]="
+        'POINTS.SEARCH_PLACEHOLDER' | translate
+      " [value]="searchTerm()" (input)="updateSearch($event)" />
+
+        <app-button size="sm">
+            {{ 'POINTS.ADD_TRANSACTION' | translate }}
+        </app-button>
+    </div>
+
+    <app-table [columns]="columns()" [rows]="paginatedTransactions()" [cellTemplates]="cellTemplates()" size="sm"
+        [emptyMessage]="'POINTS.NO_TRANSACTIONS' | translate" />
+
+    <div class="flex justify-center">
+        <app-pagination [totalPages]="totalPages()" [initialPage]="currentPage()" (pageChanged)="changePage($event)" />
+    </div>
+</section>
