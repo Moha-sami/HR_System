@@ -1,7 +1,10 @@
 {
   "LAYOUT": {
     "LOGOUT": "Log Out",
-    "LANGUAGE": { "ENGLISH": "Eng", "ARABIC": "Arabic" },
+    "LANGUAGE": {
+      "ENGLISH": "Eng",
+      "ARABIC": "Arabic"
+    },
     "NAV": {
       "DASHBOARD": "Dashboard",
       "EMPLOYEE_MANAGEMENT": "Employee Management",
@@ -14,6 +17,26 @@
       "TIME_AND_ATTENDANCE": "Time & Attendance",
       "NOTIFICATIONS": "Notifications",
       "SCHEDULING": "Scheduling"
+    }
+  },
+  "POINTS": {
+    "TITLE": "Points Management",
+    "POINTS_AUTOMATION": "Points Automation",
+    "ALL_MONTHS": "All months",
+    "FILTER_BY": "Filter by",
+    "TRIGGERED_BY": "Triggered by",
+    "TYPE": "Type",
+    "SEARCH_PLACEHOLDER": "Search by employee name or ID",
+    "ADD_TRANSACTION": "Add Transaction",
+    "NO_TRANSACTIONS": "No point transactions found",
+    "TABLE": {
+      "ID": "ID",
+      "NAME": "Name",
+      "DATE": "Date",
+      "TIME": "Time",
+      "POINTS": "Points",
+      "TRIGGERED_BY": "Triggered by",
+      "COMMENTS": "Comments"
     }
   }
 }
