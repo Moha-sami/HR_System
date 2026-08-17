@@ -37,7 +37,8 @@
       "POINTS": "النقاط",
       "TRIGGERED_BY": "تم التشغيل بواسطة",
       "COMMENTS": "التعليقات"
-    },
+    }
+  },
   "EMPLOYEE_MANAGEMENT": {
     "TITLE": "إدارة الموظفين",
     "ADD_EMPLOYEES": "إضافة موظفين",

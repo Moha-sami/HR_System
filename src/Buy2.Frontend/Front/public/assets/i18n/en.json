@@ -37,7 +37,8 @@
       "POINTS": "Points",
       "TRIGGERED_BY": "Triggered by",
       "COMMENTS": "Comments"
-    },
+    }
+  },
   "EMPLOYEE_MANAGEMENT": {
     "TITLE": "Employee Management",
     "ADD_EMPLOYEES": "Add Employees",
