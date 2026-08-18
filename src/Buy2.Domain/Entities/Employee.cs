@@ -31,5 +31,6 @@ public class Employee : BaseEntity
     public Employee? DirectManager { get; set; }
     public ICollection<Site> WorkSites { get; set; } = new List<Site>();
     public ICollection<EmployeeSite> EmployeeSites { get; set; } = new List<EmployeeSite>();
+    public ICollection<EmployeeAchievement> Achievements { get; set; } = new List<EmployeeAchievement>();
     public PayrollProfile? PayrollProfile { get; set; }
 }
