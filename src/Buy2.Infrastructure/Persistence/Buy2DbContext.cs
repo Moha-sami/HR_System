@@ -24,6 +24,7 @@ public class Buy2DbContext : DbContext
     public DbSet<ShiftEntity> ShiftEntities => Set<ShiftEntity>();
     public DbSet<Site> Sites => Set<Site>();
     public DbSet<PayrollProfile> PayrollProfiles => Set<PayrollProfile>();
+    public DbSet<EmployeeSite> EmployeeSites => Set<EmployeeSite>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -32,5 +33,8 @@ public class Buy2DbContext : DbContext
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(Buy2DbContext).Assembly);
 
         modelBuilder.Entity<Role>().HasQueryFilter(r => r.IsActive);
+
+        modelBuilder.Entity<EmployeeSite>()
+            .HasKey(es => new { es.EmployeeId, es.SiteId });
     }
 }

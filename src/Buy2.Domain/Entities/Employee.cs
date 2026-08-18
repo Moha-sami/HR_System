@@ -30,5 +30,6 @@ public class Employee : BaseEntity
     // Navigation Properties
     public Employee? DirectManager { get; set; }
     public ICollection<Site> WorkSites { get; set; } = new List<Site>();
+    public ICollection<EmployeeSite> EmployeeSites { get; set; } = new List<EmployeeSite>();
     public PayrollProfile? PayrollProfile { get; set; }
 }
