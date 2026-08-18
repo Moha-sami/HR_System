@@ -32,5 +32,6 @@ public class Employee : BaseEntity
     public ICollection<Site> WorkSites { get; set; } = new List<Site>();
     public ICollection<EmployeeSite> EmployeeSites { get; set; } = new List<EmployeeSite>();
     public ICollection<EmployeeAchievement> Achievements { get; set; } = new List<EmployeeAchievement>();
+    public ICollection<EmployeeTask> Tasks { get; set; } = new List<EmployeeTask>();
     public PayrollProfile? PayrollProfile { get; set; }
 }
