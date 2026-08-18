@@ -25,6 +25,8 @@ public class Buy2DbContext : DbContext
     public DbSet<Site> Sites => Set<Site>();
     public DbSet<PayrollProfile> PayrollProfiles => Set<PayrollProfile>();
     public DbSet<EmployeeSite> EmployeeSites => Set<EmployeeSite>();
+    public DbSet<PerformanceMetric> PerformanceMetrics => Set<PerformanceMetric>();
+    public DbSet<PerformanceSubmission> PerformanceSubmissions => Set<PerformanceSubmission>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
