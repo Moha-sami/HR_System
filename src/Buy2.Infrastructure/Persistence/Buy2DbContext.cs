@@ -23,6 +23,7 @@ public class Buy2DbContext : DbContext
     public DbSet<ShiftClaim> ShiftClaims => Set<ShiftClaim>();
     public DbSet<ShiftEntity> ShiftEntities => Set<ShiftEntity>();
     public DbSet<Site> Sites => Set<Site>();
+    public DbSet<PayrollProfile> PayrollProfiles => Set<PayrollProfile>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
