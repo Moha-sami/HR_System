@@ -28,6 +28,7 @@ public class Buy2DbContext : DbContext
     public DbSet<PerformanceMetric> PerformanceMetrics => Set<PerformanceMetric>();
     public DbSet<PerformanceSubmission> PerformanceSubmissions => Set<PerformanceSubmission>();
     public DbSet<EmployeeAchievement> EmployeeAchievements => Set<EmployeeAchievement>();
+    public DbSet<EmployeeTask> EmployeeTasks => Set<EmployeeTask>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
