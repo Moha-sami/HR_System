@@ -1,46 +1,71 @@
 <div class="employee-list p-6">
-
   <div class="mb-6 flex items-center justify-between">
-    <h1 class="text-2xl font-semibold text-neutral-900">
-      {{ 'EMPLOYEE_MANAGEMENT.TITLE' | translate }}
-    </h1>
-
-    <app-button variant="primary" (clicked)="navigateToAddEmployee()">
-      {{ 'EMPLOYEE_MANAGEMENT.ADD_EMPLOYEES' | translate }}
+    <h1 class="text-2xl font-semibold text-neutral-900">{{ 'EMPLOYEE_MANAGEMENT.TITLE' | translate }}</h1>
+    <app-button variant="primary" (clicked)="openCreateModal()">
+      {{ 'EMPLOYEE_MANAGEMENT.ADD_EMPLOYEE' | translate }}
     </app-button>
   </div>
 
-  <app-table
-    [columns]="columns()"
-    [rows]="displayedEmployees()"
-    [cellTemplates]="cellTemplates()"
-    [emptyMessage]="'EMPLOYEE_MANAGEMENT.NO_EMPLOYEES' | translate"
-  />
+  @if (loadError()) {
+    <p class="mb-4 rounded-lg bg-error-50 p-4 text-sm text-error-700" role="alert">
+      {{ 'EMPLOYEE_MANAGEMENT.LIST_LOAD_FAILED' | translate }}
+    </p>
+  }
+
+  <app-table [columns]="columns()" [rows]="displayedEmployees()" [cellTemplates]="cellTemplates()" [emptyMessage]="'EMPLOYEE_MANAGEMENT.NO_EMPLOYEES' | translate" />
 
   <div class="mt-4 flex justify-center">
-    <app-pagination
-      [totalPages]="totalPages"
-      [initialPage]="1"
-      (pageChanged)="onPageChanged($event)"
-    />
+    <app-pagination [totalPages]="totalPages()" [initialPage]="1" (pageChanged)="onPageChanged($event)" />
   </div>
 
   <ng-template #employeeNameTemplate let-employee>
     <span>{{ employee.firstName }} {{ employee.lastName }}</span>
   </ng-template>
 
-  <ng-template #actionsTemplate let-employee>
-    <button
-      type="button"
-      class="rounded p-1 text-primary-600 transition-colors hover:bg-primary-50 focus:outline-none focus:ring-2 focus:ring-primary-400"
-      [attr.aria-label]="'View ' + employee.firstName + ' ' + employee.lastName"
-      (click)="viewEmployee(employee); $event.stopPropagation()"
-    >
-      <svg aria-hidden="true" class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+  <ng-template #actionsTemplate>
+    <span class="inline-flex size-7 items-center justify-center rounded text-neutral-400" aria-hidden="true">
+      <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path stroke-linecap="round" stroke-linejoin="round" d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" />
         <circle cx="12" cy="12" r="2.5" />
       </svg>
-    </button>
+    </span>
   </ng-template>
-
 </div>
+
+@if (showCreateModal()) {
+  <app-modal size="large" [closeOnBackdrop]="false" (closed)="closeCreateModal()">
+    <app-modal-header>
+      <h2 class="w-full text-left text-xl font-semibold leading-7 text-neutral-900">
+        {{ 'EMPLOYEE_MANAGEMENT.ADD_EMPLOYEE' | translate }}
+      </h2>
+    </app-modal-header>
+    <app-modal-body>
+      <app-employee-create (created)="onEmployeeCreated()" />
+    </app-modal-body>
+    <app-modal-footer>
+      <div class="flex w-full flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+        <app-button variant="secondary" (clicked)="closeCreateModal()">
+          {{ 'EMPLOYEE_MANAGEMENT.DISCARD' | translate }}
+        </app-button>
+        <app-button variant="primary" [disabled]="isEmployeeFormUnavailable()" [loading]="isSubmittingEmployee()" (clicked)="submitEmployeeForm()">
+          {{ 'EMPLOYEE_MANAGEMENT.SAVE' | translate }}
+        </app-button>
+      </div>
+    </app-modal-footer>
+  </app-modal>
+}
+
+@if (showSuccessModal()) {
+  <app-modal size="small" [showCloseButton]="false" [closeOnBackdrop]="false" [closeOnEscape]="false">
+    <app-modal-body>
+      <div class="text-center">
+        <div class="mx-auto mb-4 flex size-12 items-center justify-center rounded-full bg-green-100">
+          <svg class="size-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m5 13 4 4L19 7" /></svg>
+        </div>
+        <h2 class="text-lg font-semibold text-neutral-900">{{ 'EMPLOYEE_MANAGEMENT.SUCCESS_TITLE' | translate }}</h2>
+        <p class="mt-2 text-neutral-600">{{ 'EMPLOYEE_MANAGEMENT.SUCCESS_MESSAGE' | translate }}</p>
+      </div>
+    </app-modal-body>
+    <app-modal-footer><app-button variant="primary" (clicked)="confirmSuccess()">{{ 'EMPLOYEE_MANAGEMENT.SUCCESS_ACTION' | translate }}</app-button></app-modal-footer>
+  </app-modal>
+}
