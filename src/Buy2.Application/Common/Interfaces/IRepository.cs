@@ -5,6 +5,7 @@ namespace Buy2.Application.Common.Interfaces
 {
     public interface IRepository<T> where T : BaseEntity
     {
+        IQueryable<T> Query(bool asNoTracking = true);
         Task<T?> GetByIdAsync(int id);
         Task<IEnumerable<T>> GetAllAsync();
         Task<bool> AnyAsync(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken = default);
