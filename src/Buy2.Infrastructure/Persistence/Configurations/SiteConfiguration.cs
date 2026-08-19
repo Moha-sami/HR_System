@@ -53,7 +53,7 @@ namespace Buy2.Infrastructure.Persistence.Configurations
                 .WithMany()
                 .HasForeignKey(s => s.RegionId)
                 .OnDelete(DeleteBehavior.Restrict);
-            builder.HasMany<SiteOperationalHourConfiguration>()
+            builder.HasMany<SiteOperationalHour>()
                 .WithOne()
                 .HasForeignKey(s => s.SiteId)
                 .OnDelete(DeleteBehavior.Cascade);

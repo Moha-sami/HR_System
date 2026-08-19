@@ -28,8 +28,8 @@ public static class DatabaseSeeder
         if (!await context.Set<Site>().AnyAsync())
         {
             context.Set<Site>().AddRange(
-                new Site { SiteName = "Cairo HQ", Latitude = 30.0444, Longitude = 31.2357, MacAddressWhitelistJson = "[\"00:1A:2B:3C:4D:5E\"]" },
-                new Site { SiteName = "Alexandria Hub", Latitude = 31.2001, Longitude = 29.9187, MacAddressWhitelistJson = "[\"00:1A:2B:3C:4D:5F\"]" }
+                new Site { SiteName = "Cairo HQ", Latitude = 30.0444, Longitude = 31.2357, MacAddress = "[\"00:1A:2B:3C:4D:5E\"]" },
+                new Site { SiteName = "Alexandria Hub", Latitude = 31.2001, Longitude = 29.9187, MacAddress = "[\"00:1A:2B:3C:4D:5F\"]" }
             );
             await context.SaveChangesAsync();
         }
