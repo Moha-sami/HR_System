@@ -6,7 +6,7 @@ public class PerformanceSubmission : BaseEntity
     public Employee? Employee { get; set; }
 
     public int MetricId { get; set; }
-    public PerformanceMetric? Metric { get; set; }
+    public PerformanceMetric? PerformanceMetric { get; set; }
 
     public decimal AchievedPercent { get; set; }
     public decimal Score { get; set; }

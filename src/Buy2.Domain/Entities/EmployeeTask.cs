@@ -6,7 +6,7 @@ public class EmployeeTask : BaseEntity
 {
     public int EmployeeId { get; set; }
     public Employee? Employee { get; set; }
-    public string Title { get; set; } = string.Empty;
+    public string TaskName { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
     public EmployeeTaskStatus Status { get; set; } = EmployeeTaskStatus.Todo;
     public DateTime? DueDate { get; set; }
