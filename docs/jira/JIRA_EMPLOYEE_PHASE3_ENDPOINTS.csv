@@ -1,0 +1,278 @@
+Issue Type,Summary,Description,Labels
+Task,[EP-1] GET Employee List with Pagination Filter Sort,"**Priority**: P2
+**Layer**: Buy2.Application + Buy2.Api
+**Depends on**: ENTITY-9 and DTO-1 complete
+
+**Files**:
+- `src/Buy2.Application/Features/Employees/GetEmployees/GetEmployeesQuery.cs` [NEW]
+- `src/Buy2.Api/Controllers/EmployeeDirectoryController.cs` [NEW]
+
+**Steps**:
+1. Create a query record with parameters: Page, PageSize, Department, Region, Search, Sort, SortDir.
+2. In the handler fetch employees with their JobRole and Site included.
+3. Apply filters: search by name or EmployeeCode, filter by department name, filter by site region.
+4. Apply sorting by the requested column. Default sort is JoinDate descending.
+5. Count total results before paginating then apply Skip and Take.
+6. Map results to the employee list item DTO.
+7. Create the controller with route `GET api/v1/employees`. Authorize any authenticated user. Accept all filter params from query string with sensible defaults (page=1, pageSize=20).","P2,layer:application,layer:api,employee,endpoint,list"
+Task,[EP-2] GET Employee List Export as CSV,"**Priority**: P2
+**Layer**: Buy2.Application + Buy2.Api
+**Depends on**: ENTITY-9 and DTO-1 complete
+
+**Files**:
+- `src/Buy2.Application/Features/Employees/ExportEmployees/ExportEmployeesQuery.cs` [NEW]
+- Add action to existing `EmployeeDirectoryController`
+
+**Steps**:
+1. Create a query record with the same filter params as EP-1 but no pagination.
+2. In the handler apply the same filters and fetch all matching employees without limit.
+3. Build a CSV string with a header row and one data row per employee.
+4. Return the CSV as a byte array.
+5. Add action to the controller at route `GET api/v1/employees/export`. Authorize Admin and Manager roles only. Return the bytes as a file download with content type text/csv and filename employees.csv.","P2,layer:application,layer:api,employee,endpoint,export"
+Task,[EP-3] POST Bulk Onboard Employees,"**Priority**: P2
+**Layer**: Buy2.Application + Buy2.Api
+**Depends on**: ENTITY-1, ENTITY-9 and DTO-1 complete
+
+**Files**:
+- `src/Buy2.Application/Features/Employees/BulkOnboard/BulkOnboardCommand.cs` [NEW]
+- Add action to existing `EmployeeOnboardingController`
+
+**Steps**:
+1. Create a command record that accepts a list of employee input DTOs.
+2. In the handler loop through each employee. For each row validate that the email is not already in use and that the requested role exists. Collect failures with the row index and error message without stopping the loop.
+3. For valid rows hash a default password and auto-generate an EmployeeCode after the insert.
+4. Insert all valid employees in a single SaveChangesAsync call.
+5. Return a result containing the count of created employees and the list of failed rows.
+6. Add action to the controller at route `POST api/v1/employees/bulk-onboard`. Authorize Admin and Manager roles only.","P2,layer:application,layer:api,employee,endpoint,onboarding"
+Task,[EP-4] DELETE Employee Hard Delete,"**Priority**: P2
+**Layer**: Buy2.Application + Buy2.Api
+**Depends on**: ENTITY-9 complete
+
+**Files**:
+- `src/Buy2.Application/Features/Employees/DeleteEmployee/DeleteEmployeeCommand.cs` [NEW]
+- `src/Buy2.Api/Controllers/EmployeeManagementController.cs` [NEW]
+
+**Steps**:
+1. Create a command record with EmployeeId.
+2. In the handler fetch the employee by Id. Throw a not found exception if missing.
+3. Delete the employee record. EF cascade delete handles all related records automatically (payroll, violations, documents, points transactions, shift claims).
+4. Call SaveChangesAsync and return.
+5. Create the controller at route `DELETE api/v1/employees/{id}`. Authorize Admin role only. Return 204 No Content on success.","P2,layer:application,layer:api,employee,endpoint,delete"
+Task,[EP-5] GET Employee Full Profile Information Tab,"**Priority**: P2
+**Layer**: Buy2.Application + Buy2.Api
+**Depends on**: ENTITY-1, ENTITY-9 and DTO-1 complete
+
+**Files**:
+- `src/Buy2.Application/Features/Employees/GetEmployee/GetEmployeeProfileQuery.cs` [NEW]
+- Add action to existing `EmployeeDirectoryController`
+
+**Steps**:
+1. Create a query record with EmployeeId.
+2. In the handler fetch the employee including JobRole, Site, DirectManager, and Role.
+3. Calculate live stats from the database: TotalPoints by summing all PointsTransactions for this employee, TotalTasks by counting EmployeeTasks, TotalGifts by counting RewardRedemptions.
+4. Map all data to the full employee profile DTO including the personal info and job details sections.
+5. Add action to the controller at route `GET api/v1/employees/{id}`. Authorize any authenticated user. Return 404 if employee not found.","P2,layer:application,layer:api,employee,endpoint,profile"
+Task,[EP-6] PUT Update Employee Personal Information,"**Priority**: P3
+**Layer**: Buy2.Application + Buy2.Api
+**Depends on**: ENTITY-1, ENTITY-9 and DTO-1 complete
+
+**Files**:
+- `src/Buy2.Application/Features/Employees/UpdateEmployee/UpdatePersonalInfoCommand.cs` [NEW]
+- Add action to existing `EmployeeManagementController`
+
+**Steps**:
+1. Create a command record with EmployeeId and the personal info update DTO.
+2. In the handler fetch the employee. Throw not found if missing.
+3. Apply partial update — only overwrite fields that are not null in the request. Do not touch fields that were not sent.
+4. Call SaveChangesAsync.
+5. Add action to the controller at route `PUT api/v1/employees/{id}/personal`. Authorize Admin and Manager roles only.","P3,layer:application,layer:api,employee,endpoint,update"
+Task,[EP-7] PUT Update Employee Job Details,"**Priority**: P3
+**Layer**: Buy2.Application + Buy2.Api
+**Depends on**: ENTITY-1, ENTITY-9 and DTO-1 complete
+
+**Files**:
+- `src/Buy2.Application/Features/Employees/UpdateEmployee/UpdateJobDetailsCommand.cs` [NEW]
+- Add action to existing `EmployeeManagementController`
+
+**Steps**:
+1. Create a command record with EmployeeId and the job details update DTO.
+2. In the handler fetch the employee. Throw not found if missing.
+3. If a new JobRoleId was provided validate it exists in the database before updating.
+4. If a DirectManagerId was provided validate that the target employee exists and that it is not the same as the employee being updated (cannot be own manager).
+5. Apply partial update on non-null fields only then call SaveChangesAsync.
+6. Add action to the controller at route `PUT api/v1/employees/{id}/job`. Authorize Admin and Manager roles only. Return 400 for invalid FK references.","P3,layer:application,layer:api,employee,endpoint,update"
+Task,[EP-8] GET Employee Payroll Profile,"**Priority**: P3
+**Layer**: Buy2.Application + Buy2.Api
+**Depends on**: ENTITY-2, ENTITY-3, ENTITY-9 and DTO-2 complete
+
+**Files**:
+- `src/Buy2.Application/Features/Employees/Payroll/GetPayrollProfileQuery.cs` [NEW]
+- `src/Buy2.Api/Controllers/EmployeePayrollController.cs` [NEW]
+
+**Steps**:
+1. Create a query record with EmployeeId.
+2. In the handler fetch the PayrollProfile for the employee. If none exists return an empty default DTO instead of a 404 — payroll may not be configured yet.
+3. Fetch the list of assigned WorkSiteIds from the EmployeeSite junction table.
+4. Fetch the employee's AttendanceType, OnlineWorkdaysJson, OfflineWorkdaysJson and deserialize the JSON strings into lists.
+5. Map everything to the payroll profile DTO.
+6. Create the controller at route `GET api/v1/employees/{id}/payroll`. Authorize any authenticated user.","P3,layer:application,layer:api,employee,endpoint,payroll"
+Task,[EP-9] PUT Update Employee Payroll Profile,"**Priority**: P3
+**Layer**: Buy2.Application + Buy2.Api
+**Depends on**: ENTITY-2, ENTITY-3, ENTITY-9 and DTO-2 complete
+
+**Files**:
+- `src/Buy2.Application/Features/Employees/Payroll/UpdatePayrollProfileCommand.cs` [NEW]
+- Add action to existing `EmployeePayrollController`
+
+**Steps**:
+1. Create a command record with EmployeeId and the update payroll DTO.
+2. In the handler fetch the existing PayrollProfile. If it does not exist create a new one (upsert). Update all fields from the request.
+3. Sync work site assignments: delete all existing EmployeeSite records for this employee then insert new ones for each SiteId in the request. Validate each SiteId exists before inserting.
+4. Serialize the OnlineWorkdays and OfflineWorkdays lists to JSON and update on the Employee entity.
+5. Call a single SaveChangesAsync to commit everything.
+6. Add action to the controller at route `PUT api/v1/employees/{id}/payroll`. Authorize Admin and Manager roles only. Return 400 for invalid SiteIds.","P3,layer:application,layer:api,employee,endpoint,payroll"
+Task,[EP-10] GET Performance Overview Main Dashboard,"**Priority**: P3
+**Layer**: Buy2.Application + Buy2.Api
+**Depends on**: ENTITY-4 through ENTITY-7, ENTITY-9 and DTO-3 complete
+
+**Files**:
+- `src/Buy2.Application/Features/Employees/Performance/GetPerformanceOverviewQuery.cs` [NEW]
+- `src/Buy2.Api/Controllers/EmployeePerformanceController.cs` [NEW]
+
+**Steps**:
+1. Create a query record with EmployeeId and date range parameters: Period (today / thisWeek / thisMonth / thisYear), Days (7 / 30 / 90 / 365), From, To.
+2. In the handler resolve the actual date range from whichever parameter was provided. Default to current month.
+3. Fetch performance submissions for the employee within the date range. Calculate an overall weighted score across all metrics.
+4. Apply score label based on range: 0-39 Needs Improvement, 40-69 Satisfactory, 70-89 Good Performance, 90-100 Excellent.
+5. Fetch employee tasks and calculate counts per status column and deadline compliance stats.
+6. Fetch employee achievements for the badge section.
+7. Build chart data by grouping submissions by date.
+8. Create the controller at route `GET api/v1/employees/{id}/performance/overview`. Authorize any authenticated user. Accept date range params from query string.","P3,layer:application,layer:api,employee,endpoint,performance"
+Task,[EP-11] GET KPI Metric Detail Drill-Down,"**Priority**: P3
+**Layer**: Buy2.Application + Buy2.Api
+**Depends on**: ENTITY-4, ENTITY-5, ENTITY-9 and DTO-3 complete
+
+**Files**:
+- `src/Buy2.Application/Features/Employees/Performance/GetMetricDetailQuery.cs` [NEW]
+- Add action to existing `EmployeePerformanceController`
+
+**Steps**:
+1. Create a query record with EmployeeId, MetricId, and date range params.
+2. In the handler fetch the metric definition. Throw not found if it does not exist.
+3. Fetch all submissions for this employee and metric across all time for the all-time average calculation.
+4. Apply the date range filter separately to calculate the current period score.
+5. Build the monthly chart by grouping all-time submissions by month and averaging scores per month.
+6. Return the submissions table filtered by the requested period.
+7. Add action to the controller at route `GET api/v1/employees/{id}/performance/metrics/{metricId}`. Authorize any authenticated user. Return 404 if metric not found.","P3,layer:application,layer:api,employee,endpoint,performance"
+Task,[EP-12] GET Employee Tasks List by Status,"**Priority**: P3
+**Layer**: Buy2.Application + Buy2.Api
+**Depends on**: ENTITY-7, ENTITY-9 and DTO-3 complete
+
+**Files**:
+- `src/Buy2.Application/Features/Employees/Performance/GetEmployeeTasksQuery.cs` [NEW]
+- Add action to existing `EmployeePerformanceController`
+
+**Steps**:
+1. Create a query record with EmployeeId and an optional Status filter.
+2. In the handler fetch all tasks for the employee. If a status filter is provided apply it.
+3. Map results to the task item DTO.
+4. Add action to the controller at route `GET api/v1/employees/{id}/performance/tasks`. Authorize any authenticated user. Accept status as an optional query string param.","P3,layer:application,layer:api,employee,endpoint,performance,tasks"
+Task,[EP-13] GET Attendance Calendar Time and Attendance Tab,"**Priority**: P3
+**Layer**: Buy2.Application + Buy2.Api
+**Depends on**: AttendanceRecord entity from clock-in task, ENTITY-9 and DTO-4 complete
+
+**Files**:
+- `src/Buy2.Application/Features/Employees/Attendance/GetAttendanceCalendarQuery.cs` [NEW]
+- `src/Buy2.Api/Controllers/EmployeeAttendanceController.cs` [NEW]
+
+**Steps**:
+1. Create a query record with EmployeeId, Month, and Year.
+2. In the handler fetch all AttendanceRecords for the employee in the given month.
+3. Iterate through each calendar day in the month. For each day find the matching record if it exists and determine the status (OnTime if clocked in on time, Late otherwise, or the leave/absence status if no record).
+4. Calculate hours worked from clock-in to clock-out time and format as a readable string.
+5. Calculate summary stats: attendance rate, punctuality score, average lateness, and total recorded hours across the month.
+6. Create the controller at route `GET api/v1/employees/{id}/attendance/calendar`. Accept month and year as query params, defaulting to current month. Authorize any authenticated user.","P3,layer:application,layer:api,employee,endpoint,attendance"
+Task,[EP-14] GET Employee Points and Rewards Summary,"**Priority**: P3
+**Layer**: Buy2.Application + Buy2.Api
+**Depends on**: ENTITY-9 complete (uses existing PointsTransaction and RewardRedemption tables)
+
+**Files**:
+- `src/Buy2.Application/Features/Employees/Points/GetPointsSummaryQuery.cs` [NEW]
+- `src/Buy2.Api/Controllers/EmployeePointsController.cs` [NEW]
+
+**Steps**:
+1. Create a query record with EmployeeId.
+2. In the handler calculate four values from the database: CurrentBalance by summing all PointsTransaction amounts for the employee (positive = earned, negative = spent), TotalPointsRedeemed by summing the absolute value of redemption transactions only, TotalRewardsRedeemed by counting RewardRedemption records for the employee, TotalRewardsCostPoints by summing the CostInPoints of redeemed reward items.
+3. Return zero values if the employee has no transactions — do not return 404.
+4. Create the controller at route `GET api/v1/employees/{id}/points/summary`. Authorize any authenticated user.","P3,layer:application,layer:api,employee,endpoint,points"
+Task,[EP-15] GET Employee Points Transaction Ledger,"**Priority**: P3
+**Layer**: Buy2.Application + Buy2.Api
+**Depends on**: ENTITY-9 complete
+
+**Files**:
+- `src/Buy2.Application/Features/Employees/Points/GetPointsTransactionsQuery.cs` [NEW]
+- Add action to existing `EmployeePointsController`
+
+**Steps**:
+1. Create a query record with EmployeeId and filter params: Page, PageSize, Type (Earned or Redeemed), TriggeredBy, DateFrom, DateTo.
+2. In the handler fetch PointsTransactions for the employee. Filter by positive amounts for Earned and negative amounts for Redeemed. Apply TriggeredBy and date range filters if provided.
+3. Count total results then paginate.
+4. Map to the transaction DTO with date, points value, triggered by, and comments.
+5. Add action to the controller at route `GET api/v1/employees/{id}/points/transactions`. Accept all filter params from query string. Authorize any authenticated user.","P3,layer:application,layer:api,employee,endpoint,points"
+Task,[EP-16] GET Employee Violations List,"**Priority**: P3
+**Layer**: Buy2.Application + Buy2.Api
+**Depends on**: ENTITY-8, ENTITY-9 and DTO-5 complete
+
+**Files**:
+- `src/Buy2.Application/Features/Employees/Violations/GetViolationsQuery.cs` [NEW]
+- `src/Buy2.Api/Controllers/ViolationsController.cs` [NEW]
+
+**Steps**:
+1. Create a query record with EmployeeId and optional filter params: Type, SeverityLevel, DateFrom, DateTo.
+2. In the handler fetch all violations for the employee including the ReportedBy employee record.
+3. Apply type, severity, and date filters if provided.
+4. Map to the list item DTO. ReportedBy should be the employee name string not an ID.
+5. Create the controller at route `GET api/v1/employees/{id}/violations`. Accept filter params from query string. Authorize any authenticated user.","P3,layer:application,layer:api,employee,endpoint,violations"
+Task,[EP-17] GET Violation Detail Page,"**Priority**: P3
+**Layer**: Buy2.Application + Buy2.Api
+**Depends on**: ENTITY-8, ENTITY-9 and DTO-5 complete
+
+**Files**:
+- `src/Buy2.Application/Features/Employees/Violations/GetViolationDetailQuery.cs` [NEW]
+- Add action to existing `ViolationsController`
+
+**Steps**:
+1. Create a query record with EmployeeId and ViolationId.
+2. In the handler fetch the violation verifying it belongs to the given employee. Include the ReportedBy and ActionTakenBy employee navigations. Throw not found if missing.
+3. Deserialize the WitnessesJson field into a string list. Return empty list if null.
+4. Build the action taken section. If no action has been taken yet return Status as Pending with all other action fields null. If resolved fill in all action fields.
+5. Add action to the controller at route `GET api/v1/employees/{id}/violations/{violationId}`. Authorize any authenticated user. Return 404 if not found or does not belong to that employee.","P3,layer:application,layer:api,employee,endpoint,violations"
+Task,[EP-18] PATCH Resolve Violation Manager Action,"**Priority**: P3
+**Layer**: Buy2.Application + Buy2.Api
+**Depends on**: ENTITY-8, ENTITY-9 and DTO-5 complete
+
+**Files**:
+- `src/Buy2.Application/Features/Employees/Violations/ResolveViolationCommand.cs` [NEW]
+- Add action to existing `ViolationsController`
+
+**Steps**:
+1. Create a command record with EmployeeId, ViolationId, and the resolve input DTO.
+2. In the handler fetch the violation and verify it belongs to the given employee. Throw not found if missing.
+3. If the violation is already resolved throw a bad request exception — cannot resolve twice.
+4. Update Status to Resolved and fill in ActionType, ActionDate, ActionTakenById, and ActionDescription from the request.
+5. Call SaveChangesAsync.
+6. Add action to the controller at route `PATCH api/v1/employees/{id}/violations/{violationId}/resolve`. Authorize Admin and Manager roles only. Return 400 if already resolved.","P3,layer:application,layer:api,employee,endpoint,violations"
+Task,[EP-19] GET Violations Export as CSV,"**Priority**: P3
+**Layer**: Buy2.Application + Buy2.Api
+**Depends on**: ENTITY-8, ENTITY-9 and DTO-5 complete
+
+**Files**:
+- `src/Buy2.Application/Features/Employees/Violations/ExportViolationsQuery.cs` [NEW]
+- Add action to existing `ViolationsController`
+
+**Steps**:
+1. Create a query record with EmployeeId and the same optional filter params as EP-16.
+2. In the handler apply the same filters and fetch all matching violations without pagination.
+3. Build a CSV string with a header row and one row per violation.
+4. Return the content as a byte array.
+5. Add action to the controller at route `GET api/v1/employees/{id}/violations/export`. Authorize Admin and Manager roles only. Return the file with content type text/csv and a filename that includes the employee ID.","P3,layer:application,layer:api,employee,endpoint,violations,export"

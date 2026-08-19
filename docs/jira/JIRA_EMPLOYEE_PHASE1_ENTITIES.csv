@@ -1,0 +1,350 @@
+Issue Type,Summary,Description,Labels
+Task,[ENTITY-1] Extend Employee Entity with New Profile Fields,"**Priority**: P0 — PREREQUISITE (blocks all employee endpoints)
+**Layer**: Buy2.Domain
+**Estimated Effort**: Small (1-2 hours)
+
+**Location**:
+- `src/Buy2.Domain/Entities/Employee.cs` [MODIFY]
+
+**What to add**:
+Add the following properties to the existing Employee class:
+
+```csharp
+public string EmployeeCode { get; set; } = null!;
+// Auto-generated sequential display ID shown in UI (""0409"")
+// Generate on insert: EmployeeCode = Id.ToString(""D4"")
+
+public DateOnly? Birthdate { get; set; }
+public string? Gender { get; set; }
+public string? ProfilePhotoUrl { get; set; }
+public DateOnly JoinDate { get; set; }
+public string? SeniorityLevel { get; set; }
+// Values: ""Junior"" | ""Mid"" | ""Senior""
+
+public int? ExperienceYears { get; set; }
+public int? DirectManagerId { get; set; }
+// Self-referential FK → Employee table
+
+public string? JobType { get; set; }
+// Values: ""Full Time"" | ""Part Time"" | ""Contract""
+
+public string? AttendanceType { get; set; }
+// Values: ""Hybrid"" | ""OnSite"" | ""Remote""
+
+public string? OnlineWorkdaysJson { get; set; }
+// Stored as JSON string: [""Sat"",""Sun"",""Mon""]
+
+public string? OfflineWorkdaysJson { get; set; }
+// Stored as JSON string: [""Wed"",""Thu""]
+
+public string? PasswordHash { get; set; }
+```
+
+Add navigation properties:
+```csharp
+public virtual Employee? DirectManager { get; set; }
+public virtual ICollection<EmployeeSite> WorkSites { get; set; } = new List<EmployeeSite>();
+public virtual PayrollProfile? PayrollProfile { get; set; }
+```
+
+**Note**: Keep existing SiteId as primary/home site. WorkSites collection is the multi-site assignment.
+
+**Acceptance Criteria**:
+- Employee.cs compiles with zero errors.
+- All new properties present and nullable where appropriate.
+- Navigation properties configured correctly.","P0,layer:domain,employee,entity,prerequisite"
+Task,[ENTITY-2] Create PayrollProfile Entity,"**Priority**: P0 — PREREQUISITE
+**Layer**: Buy2.Domain
+**Estimated Effort**: Small (30 min)
+
+**Location**:
+- `src/Buy2.Domain/Entities/PayrollProfile.cs` [NEW]
+
+**Create new file** with the following content:
+
+```csharp
+namespace Buy2.Domain.Entities;
+
+public class PayrollProfile : BaseEntity
+{
+    public int EmployeeId { get; set; }
+
+    public string SalaryType { get; set; } = null!;
+    // Values: ""Fixed"" | ""Hourly""
+
+    public string PayoutPeriod { get; set; } = null!;
+    // Values: ""Weekly"" | ""Monthly"" | ""Biweekly""
+
+    public string PayoutDay { get; set; } = null!;
+    // Values: day of week e.g. ""Sunday""
+
+    public string WorkWeekStart { get; set; } = null!;
+    // e.g. ""Saturday""
+
+    public string WorkWeekEnd { get; set; } = null!;
+    // e.g. ""Thursday""
+
+    public decimal PaymentAmount { get; set; }
+
+    public int OvertimeThresholdHours { get; set; }
+    // e.g. 40 (after 40 hours per week = overtime)
+
+    public decimal OvertimeHourlyRate { get; set; }
+    // e.g. 50.00
+
+    public virtual Employee Employee { get; set; } = null!;
+}
+```
+
+**Acceptance Criteria**:
+- File created, compiles with zero errors.
+- One-to-one relationship with Employee configured.","P0,layer:domain,employee,entity,prerequisite,payroll"
+Task,[ENTITY-3] Create EmployeeSite Junction Entity (Many-to-Many),"**Priority**: P0 — PREREQUISITE
+**Layer**: Buy2.Domain
+**Estimated Effort**: Small (30 min)
+
+**Location**:
+- `src/Buy2.Domain/Entities/EmployeeSite.cs` [NEW]
+
+**Why**: Frontend shows employees can work across multiple sites (""Work Sites: Site 1, Site 2, Site 4""). Current Employee has a single SiteId. This junction table adds multi-site support.
+
+**Create new file**:
+```csharp
+namespace Buy2.Domain.Entities;
+
+public class EmployeeSite
+{
+    public int EmployeeId { get; set; }
+    public int SiteId { get; set; }
+
+    public virtual Employee Employee { get; set; } = null!;
+    public virtual Site Site { get; set; } = null!;
+}
+```
+
+**Important**:
+- No BaseEntity inheritance — no Id column.
+- Composite primary key: (EmployeeId, SiteId).
+- EF config in ENTITY-9 task.
+
+**Acceptance Criteria**:
+- File created, compiles with zero errors.","P0,layer:domain,employee,entity,prerequisite,sites"
+Task,[ENTITY-4] Create PerformanceMetric Entity,"**Priority**: P0 — PREREQUISITE
+**Layer**: Buy2.Domain
+**Estimated Effort**: Small (30 min)
+
+**Location**:
+- `src/Buy2.Domain/Entities/PerformanceMetric.cs` [NEW]
+
+**Why**: Performance tab shows KPI metrics (Metric 1–5) each with name, description, target, and weight. These need to be managed in the system.
+
+**Create new file**:
+```csharp
+namespace Buy2.Domain.Entities;
+
+public class PerformanceMetric : BaseEntity
+{
+    public string Name { get; set; } = null!;
+    // e.g. ""Metric 1"", ""Sales Target""
+
+    public string? Description { get; set; }
+
+    public int Target { get; set; }
+    // Target score e.g. 88
+
+    public decimal Weight { get; set; }
+    // How much this metric contributes to the total score
+    // e.g. 40 means 40% weight
+
+    public virtual ICollection<PerformanceSubmission> Submissions { get; set; }
+        = new List<PerformanceSubmission>();
+}
+```
+
+**Acceptance Criteria**:
+- File created, compiles with zero errors.","P0,layer:domain,employee,entity,prerequisite,performance"
+Task,[ENTITY-5] Create PerformanceSubmission Entity,"**Priority**: P0 — PREREQUISITE
+**Layer**: Buy2.Domain
+**Estimated Effort**: Small (30 min)
+
+**Location**:
+- `src/Buy2.Domain/Entities/PerformanceSubmission.cs` [NEW]
+
+**Why**: Each row in the KPI detail table (Achieved %, Weight, Score, Date, Feedback) is a PerformanceSubmission. Each employee has multiple submissions per metric over time.
+
+**Create new file**:
+```csharp
+namespace Buy2.Domain.Entities;
+
+public class PerformanceSubmission : BaseEntity
+{
+    public int EmployeeId { get; set; }
+    public int MetricId { get; set; }
+
+    public decimal AchievedPercent { get; set; }
+    // e.g. 90 means employee achieved 90%
+
+    public decimal Score { get; set; }
+    // Calculated: AchievedPercent * Metric.Weight / 100
+
+    public DateTimeOffset SubmissionDate { get; set; }
+
+    public string? Feedback { get; set; }
+
+    public virtual Employee Employee { get; set; } = null!;
+    public virtual PerformanceMetric Metric { get; set; } = null!;
+}
+```
+
+**Acceptance Criteria**:
+- File created, compiles with zero errors.","P0,layer:domain,employee,entity,prerequisite,performance"
+Task,[ENTITY-6] Create EmployeeAchievement Entity,"**Priority**: P0 — PREREQUISITE
+**Layer**: Buy2.Domain
+**Estimated Effort**: Small (30 min)
+
+**Location**:
+- `src/Buy2.Domain/Entities/EmployeeAchievement.cs` [NEW]
+
+**Why**: Performance tab shows achievement badges: Perfect Attendance, Best Salesman, Top Performance, Employee of Month. These need to be stored and queried per employee.
+
+**Create new file**:
+```csharp
+namespace Buy2.Domain.Entities;
+
+public class EmployeeAchievement : BaseEntity
+{
+    public int EmployeeId { get; set; }
+
+    public string BadgeType { get; set; } = null!;
+    // Values: ""PerfectAttendance"" | ""BestSalesman""
+    //         | ""TopPerformance"" | ""EmployeeOfMonth""
+
+    public DateTimeOffset AwardedAt { get; set; }
+
+    public virtual Employee Employee { get; set; } = null!;
+}
+```
+
+**Acceptance Criteria**:
+- File created, compiles with zero errors.","P0,layer:domain,employee,entity,prerequisite,performance"
+Task,[ENTITY-7] Create EmployeeTask Entity,"**Priority**: P0 — PREREQUISITE
+**Layer**: Buy2.Domain
+**Estimated Effort**: Small (30 min)
+
+**Location**:
+- `src/Buy2.Domain/Entities/EmployeeTask.cs` [NEW]
+
+**Why**: Performance tab bottom section shows employee tasks in a Kanban board (To-do, In-progress, In-review, Completed, Overdue) with count per column.
+
+**Create new file**:
+```csharp
+namespace Buy2.Domain.Entities;
+
+public class EmployeeTask : BaseEntity
+{
+    public int EmployeeId { get; set; }
+
+    public string TaskName { get; set; } = null!;
+
+    public string Status { get; set; } = null!;
+    // Values: ""Todo"" | ""InProgress"" | ""InReview""
+    //         | ""Completed"" | ""Overdue""
+
+    public DateTimeOffset? DueDate { get; set; }
+
+    public virtual Employee Employee { get; set; } = null!;
+}
+```
+
+**Acceptance Criteria**:
+- File created, compiles with zero errors.","P0,layer:domain,employee,entity,prerequisite,performance"
+Task,[ENTITY-8] Extend DisciplinaryViolation Entity,"**Priority**: P0 — PREREQUISITE
+**Layer**: Buy2.Domain
+**Estimated Effort**: Small (1 hour)
+
+**Location**:
+- `src/Buy2.Domain/Entities/DisciplinaryViolation.cs` [MODIFY]
+
+**Current state**: Entity only has EmployeeId, Severity, Description. Frontend shows much more.
+
+**Add the following properties** to existing class:
+
+```csharp
+public string ViolationType { get; set; } = null!;
+// Values: ""Attendance"" | ""Performance"" | ""Behavior""
+// (Severity already exists — keep it: Minor / Major / Critical)
+
+public int ReportedById { get; set; }
+// FK → Employee (who filed the report)
+
+public string? WitnessesJson { get; set; }
+// JSON array: [""Ahmed Ali"", ""Hosam Mahomoud""]
+
+public string? DocumentUrl { get; set; }
+// Path to attached evidence PDF
+
+public string Status { get; set; } = ""Pending"";
+// Values: ""Pending"" | ""UnderInvestigation"" | ""Resolved""
+
+// Action Taken section (filled when manager resolves violation)
+public string? ActionType { get; set; }
+// Values: ""VerbalWarning"" | ""WrittenWarning"" | ""Termination""
+
+public DateTimeOffset? ActionDate { get; set; }
+
+public int? ActionTakenById { get; set; }
+// FK → Employee (who resolved it)
+
+public string? ActionDescription { get; set; }
+```
+
+Add navigation properties:
+```csharp
+public virtual Employee ReportedBy { get; set; } = null!;
+public virtual Employee? ActionTakenBy { get; set; }
+```
+
+**Acceptance Criteria**:
+- File compiles with zero errors.
+- All new nullable fields have correct nullable types.","P0,layer:domain,employee,entity,prerequisite,violations"
+Task,[ENTITY-9] Register All New Entities — DbContext + EF Configurations + Migration,"**Priority**: P0 — PREREQUISITE (must be done LAST in Phase 1, after ENTITY-1 through ENTITY-8)
+**Layer**: Buy2.Infrastructure
+**Estimated Effort**: Medium (2-3 hours)
+
+**Files to modify/create**:
+- `src/Buy2.Infrastructure/Persistence/Buy2DbContext.cs` [MODIFY]
+- `src/Buy2.Infrastructure/Persistence/Configurations/PayrollProfileConfiguration.cs` [NEW]
+- `src/Buy2.Infrastructure/Persistence/Configurations/EmployeeSiteConfiguration.cs` [NEW]
+- `src/Buy2.Infrastructure/Persistence/Configurations/PerformanceMetricConfiguration.cs` [NEW]
+- `src/Buy2.Infrastructure/Persistence/Configurations/PerformanceSubmissionConfiguration.cs` [NEW]
+- `src/Buy2.Infrastructure/Persistence/Configurations/EmployeeAchievementConfiguration.cs` [NEW]
+- `src/Buy2.Infrastructure/Persistence/Configurations/EmployeeTaskConfiguration.cs` [NEW]
+- `src/Buy2.Infrastructure/Persistence/Configurations/DisciplinaryViolationConfiguration.cs` [MODIFY]
+
+**Step 1 — Add DbSets to Buy2DbContext.cs**:
+```csharp
+public DbSet<PayrollProfile> PayrollProfiles => Set<PayrollProfile>();
+public DbSet<EmployeeSite> EmployeeSites => Set<EmployeeSite>();
+public DbSet<PerformanceMetric> PerformanceMetrics => Set<PerformanceMetric>();
+public DbSet<PerformanceSubmission> PerformanceSubmissions => Set<PerformanceSubmission>();
+public DbSet<EmployeeAchievement> EmployeeAchievements => Set<EmployeeAchievement>();
+public DbSet<EmployeeTask> EmployeeTasks => Set<EmployeeTask>();
+```
+
+**Step 2 — EF Configuration rules**:
+- `EmployeeSiteConfiguration`: Composite PK HasKey(e => new { e.EmployeeId, e.SiteId }). No Id column.
+- `Employee.DirectManagerId`: Self-referential FK with DeleteBehavior.Restrict (not cascade).
+- `PayrollProfileConfiguration`: One-to-one HasOne/WithOne, cascade delete.
+- `DisciplinaryViolationConfiguration`: Add new columns. ReportedById FK Restrict. ActionTakenById FK Restrict (nullable).
+
+**Step 3 — Run migration**:
+```bash
+dotnet ef migrations add EmployeeModuleExpansion --project src/Buy2.Infrastructure --startup-project src/Buy2.Api
+dotnet ef database update --project src/Buy2.Infrastructure --startup-project src/Buy2.Api
+```
+
+**Acceptance Criteria**:
+- Solution builds with 0 errors.
+- Migration applies clean with no data loss.
+- All new tables visible in DB.
+- EmployeeSite has composite PK (no Id column).","P0,layer:infrastructure,database,migration,prerequisite,employee"
