@@ -1,18 +1,18 @@
 <div class="role-list p-6">
   <div class="flex justify-between items-center mb-6">
-    <h1 class="text-2xl font-semibold">Roles</h1>
+    <h1 class="text-2xl font-semibold">{{ 'ROLES.LIST.TITLE' | translate }}</h1>
     <a
       routerLink="/roles/create"
-      class="px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+      class="px-4 py-2 bg-[#234199] text-white rounded-[6px] text-sm font-medium hover:bg-[#1A337A] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#234199]"
     >
-      Create Role
+      {{ 'ROLES.LIST.CREATE_BUTTON' | translate }}
     </a>
   </div>
 
   @if (loading()) {
-    <p class="text-gray-500">Loading roles...</p>
+    <p class="text-gray-500">{{ 'ROLES.LIST.LOADING' | translate }}</p>
   } @else if (error()) {
-    <p class="text-red-600">Error: {{ error() }}</p>
+    <p class="text-red-600">{{ 'ROLES.LIST.ERROR_PREFIX' | translate }}{{ error() }}</p>
   } @else {
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       @for (role of roles(); track role.id) {
