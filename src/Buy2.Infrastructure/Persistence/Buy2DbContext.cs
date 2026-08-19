@@ -29,6 +29,10 @@ public class Buy2DbContext : DbContext
     public DbSet<PerformanceSubmission> PerformanceSubmissions => Set<PerformanceSubmission>();
     public DbSet<EmployeeAchievement> EmployeeAchievements => Set<EmployeeAchievement>();
     public DbSet<EmployeeTask> EmployeeTasks => Set<EmployeeTask>();
+    public DbSet<Region> Regions => Set<Region>();
+    public DbSet<SitePreferredEmployee> SitePreferredEmployees => Set<SitePreferredEmployee>();
+    public DbSet<SiteDocument> SiteDocuments => Set<SiteDocument>();
+    public DbSet<SiteOperationalHour> SiteOperationalHours => Set<SiteOperationalHour>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
