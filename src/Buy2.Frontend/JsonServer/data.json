@@ -1,599 +1,730 @@
 {
-    "books": [
-        {"id": 1, "title": "test title 1", "description": "test description 1"},
-        {"id": 2, "title": "test title 2", "description": "test description 2"},
-        {"id": 3, "title": "test title 3", "description": "test description 3"},
-        {"id": 4, "title": "test title 4", "description": "test description 4"}
-    ],
-    "departments": [
-        {"id": 1, "name": "Technology", "createdAt": "2026-01-01T08:00:00Z"},
-        {"id": 2, "name": "Design", "createdAt": "2026-01-01T08:00:00Z"},
-        {"id": 3, "name": "Operations", "createdAt": "2026-01-01T08:00:00Z"},
-        {"id": 4, "name": "Human Resources", "createdAt": "2026-01-01T08:00:00Z"},
-        {"id": 5, "name": "Finance", "createdAt": "2026-01-01T08:00:00Z"}
-    ],
-    "sites": [
-        {
+  "books": [
+    {
+      "id": "1",
+      "title": "test title 1",
+      "description": "test description 1"
+    },
+    {
+      "id": "2",
+      "title": "test title 2",
+      "description": "test description 2"
+    },
+    {
+      "id": "3",
+      "title": "test title 3",
+      "description": "test description 3"
+    },
+    {
+      "id": "4",
+      "title": "test title 4",
+      "description": "test description 4"
+    }
+  ],
+  "departments": [
+    {
+      "id": "1",
+      "name": "Technology",
+      "createdAt": "2026-01-01T08:00:00Z"
+    },
+    {
+      "id": "2",
+      "name": "Design",
+      "createdAt": "2026-01-01T08:00:00Z"
+    },
+    {
+      "id": "3",
+      "name": "Operations",
+      "createdAt": "2026-01-01T08:00:00Z"
+    },
+    {
+      "id": "4",
+      "name": "Human Resources",
+      "createdAt": "2026-01-01T08:00:00Z"
+    },
+    {
+      "id": "5",
+      "name": "Finance",
+      "createdAt": "2026-01-01T08:00:00Z"
+    }
+  ],
+  "sites": [
+    {
+      "id": "1",
+      "siteName": "Downtown Campus",
+      "latitude": 30.0444,
+      "longitude": 31.2357,
+      "macAddressWhitelistJson": "[\"00:1B:44:11:3A:B7\", \"00:1B:44:11:3A:B8\"]",
+      "createdAt": "2026-01-01T08:00:00Z"
+    },
+    {
+      "id": "2",
+      "siteName": "Riyadh Branch",
+      "latitude": 24.7136,
+      "longitude": 46.6753,
+      "macAddressWhitelistJson": "[\"00:1B:44:11:3C:D1\"]",
+      "createdAt": "2026-01-01T08:00:00Z"
+    },
+    {
+      "id": "3",
+      "siteName": "Jeddah Branch",
+      "latitude": 21.4858,
+      "longitude": 39.1925,
+      "macAddressWhitelistJson": "[\"00:1B:44:11:3D:E5\"]",
+      "createdAt": "2026-02-15T08:00:00Z"
+    }
+  ],
+  "roles": [
+    {
+      "id": "1",
+      "name": "SuperAdmin",
+      "permissionsJson": "{\"employeeManagement\":[\"Add\",\"Edit\",\"View\",\"Delete\",\"Suspend\"],\"siteManagement\":[\"Add\",\"Edit\",\"View\",\"Delete\",\"Shifts\"],\"pointsManagement\":[\"ViewTransactions\",\"Adjust\",\"Configure\"],\"rewardsManagement\":[\"Add\",\"Edit\",\"View\",\"Delete\"],\"reports\":[\"View\",\"Export\"]}",
+      "createdAt": "2026-01-01T08:00:00Z"
+    },
+    {
+      "id": "2",
+      "name": "Branch Manager",
+      "permissionsJson": "{\"employeeManagement\":[\"Add\",\"Edit\",\"View\"],\"siteManagement\":[\"View\",\"Shifts\"],\"pointsManagement\":[\"ViewTransactions\",\"Adjust\"],\"rewardsManagement\":[\"View\"],\"reports\":[\"View\"]}",
+      "createdAt": "2026-01-01T08:00:00Z"
+    },
+    {
+      "id": "3",
+      "name": "Branch Facilitator",
+      "permissionsJson": "{\"employeeManagement\":[\"View\"],\"siteManagement\":[\"View\",\"Shifts\"],\"pointsManagement\":[\"ViewTransactions\"],\"rewardsManagement\":[],\"reports\":[]}",
+      "createdAt": "2026-01-01T08:00:00Z"
+    },
+    {
+      "id": "4",
+      "name": "Employee",
+      "permissionsJson": "{\"employeeManagement\":[\"View\"],\"siteManagement\":[],\"pointsManagement\":[\"ViewTransactions\"],\"rewardsManagement\":[\"View\"],\"reports\":[]}",
+      "createdAt": "2026-01-01T08:00:00Z"
+    }
+  ],
+  "jobRoles": [
+    {
+      "id": "1",
+      "title": "UI/UX Designer",
+      "departmentId": 2,
+      "requiredQualificationsJson": "[\"figma\",\"management\"]",
+      "createdAt": "2026-01-01T08:00:00Z"
+    },
+    {
+      "id": "2",
+      "title": "Software Developer",
+      "departmentId": 1,
+      "requiredQualificationsJson": "[\"angular\",\"dotnet\",\"sql\"]",
+      "createdAt": "2026-01-01T08:00:00Z"
+    },
+    {
+      "id": "3",
+      "title": "Cashier",
+      "departmentId": 3,
+      "requiredQualificationsJson": "[\"pos_system\"]",
+      "createdAt": "2026-01-01T08:00:00Z"
+    },
+    {
+      "id": "4",
+      "title": "Barista",
+      "departmentId": 3,
+      "requiredQualificationsJson": "[\"coffee_machine\",\"food_safety\"]",
+      "createdAt": "2026-01-01T08:00:00Z"
+    },
+    {
+      "id": "5",
+      "title": "HR Coordinator",
+      "departmentId": 4,
+      "requiredQualificationsJson": "[\"hr_systems\",\"conflict_resolution\"]",
+      "createdAt": "2026-01-01T08:00:00Z"
+    },
+    {
+      "id": "6",
+      "title": "Financial Analyst",
+      "departmentId": 5,
+      "requiredQualificationsJson": "[\"excel\",\"financial_modeling\"]",
+      "createdAt": "2026-01-01T08:00:00Z"
+    }
+  ],
+  "jobs": [
+    {
+      "id": "1",
+      "jobName": "UI UX Designer",
+      "jobDescription": "Lorem Ipsum is simply dummy text of the printing and",
+      "numberOfEmployees": 5
+    },
+    {
+      "id": "2",
+      "jobName": "Software Engineer",
+      "jobDescription": "Lorem Ipsum is simply dummy text of the printing and",
+      "numberOfEmployees": 12
+    },
+    {
+      "id": "3",
+      "jobName": "Product Manager",
+      "jobDescription": "Lorem Ipsum is simply dummy text of the printing and",
+      "numberOfEmployees": 3
+    },
+    {
+      "id": "4",
+      "jobName": "QA Tester",
+      "jobDescription": "Lorem Ipsum is simply dummy text of the printing and",
+      "numberOfEmployees": 8
+    },
+    {
+      "id": "5",
+      "jobName": "Data Analyst",
+      "jobDescription": "Lorem Ipsum is simply dummy text of the printing and",
+      "numberOfEmployees": 4
+    },
+    {
+      "id": "6",
+      "jobName": "HR Specialist",
+      "jobDescription": "Lorem Ipsum is simply dummy text of the printing and",
+      "numberOfEmployees": 2
+    },
+    {
+      "id": "7",
+      "jobName": "Marketing Manager",
+      "jobDescription": "Lorem Ipsum is simply dummy text of the printing and",
+      "numberOfEmployees": 6
+    },
+    {
+      "id": "8",
+      "jobName": "Sales Representative",
+      "jobDescription": "Lorem Ipsum is simply dummy text of the printing and",
+      "numberOfEmployees": 15
+    },
+    {
+      "id": "9",
+      "jobName": "Customer Support",
+      "jobDescription": "Lorem Ipsum is simply dummy text of the printing and",
+      "numberOfEmployees": 20
+    },
+    {
+      "id": "10",
+      "jobName": "DevOps Engineer",
+      "jobDescription": "Lorem Ipsum is simply dummy text of the printing and",
+      "numberOfEmployees": 5
+    }
+  ],
+  "employees": [
+    {
+      "id": "1",
+      "firstName": "Ahmed",
+      "lastName": "Ali",
+      "email": "a.ali@buy2.com",
+      "phoneNumber": "+966598432423",
+      "jobRoleId": 2,
+      "roleId": 1,
+      "siteId": 1,
+      "createdAt": "2026-01-15T08:00:00Z"
+    },
+    {
+      "id": "2",
+      "firstName": "Nayef",
+      "lastName": "Fahd",
+      "email": "n.fahd@buy2.com",
+      "phoneNumber": "+966591234567",
+      "jobRoleId": 5,
+      "roleId": 2,
+      "siteId": 1,
+      "createdAt": "2026-01-20T08:00:00Z"
+    },
+    {
+      "id": "3",
+      "firstName": "Sara",
+      "lastName": "Khalid",
+      "email": "s.khalid@buy2.com",
+      "phoneNumber": "+966598765432",
+      "jobRoleId": 1,
+      "roleId": 3,
+      "siteId": 1,
+      "createdAt": "2026-02-01T08:00:00Z"
+    },
+    {
+      "id": "4",
+      "firstName": "Mohammed",
+      "lastName": "Hassan",
+      "email": "m.hassan@buy2.com",
+      "phoneNumber": "+966592345678",
+      "jobRoleId": 3,
+      "roleId": 4,
+      "siteId": 2,
+      "createdAt": "2026-02-10T08:00:00Z"
+    },
+    {
+      "id": "5",
+      "firstName": "Fatima",
+      "lastName": "Omar",
+      "email": "f.omar@buy2.com",
+      "phoneNumber": "+966593456789",
+      "jobRoleId": 4,
+      "roleId": 4,
+      "siteId": 2,
+      "createdAt": "2026-02-15T08:00:00Z"
+    },
+    {
+      "id": "6",
+      "firstName": "Khalid",
+      "lastName": "Ibrahim",
+      "email": "k.ibrahim@buy2.com",
+      "phoneNumber": "+966594567890",
+      "jobRoleId": 6,
+      "roleId": 3,
+      "siteId": 3,
+      "createdAt": "2026-03-01T08:00:00Z"
+    },
+    {
+      "id": "7",
+      "firstName": "Lina",
+      "lastName": "Mohammed",
+      "email": "l.mohammed@buy2.com",
+      "phoneNumber": "+966595678901",
+      "jobRoleId": 2,
+      "roleId": 4,
+      "siteId": 1,
+      "createdAt": "2026-03-10T08:00:00Z"
+    },
+    {
+      "id": "8",
+      "firstName": "Youssef",
+      "lastName": "Ahmad",
+      "email": "y.ahmad@buy2.com",
+      "phoneNumber": "+966596789012",
+      "jobRoleId": 3,
+      "roleId": 4,
+      "siteId": 3,
+      "createdAt": "2026-03-20T08:00:00Z"
+    }
+  ],
+  "attendanceProfiles": [
+    {
+      "id": "1",
+      "profileName": "Standard Day Shift",
+      "expectedClockIn": "08:00:00",
+      "expectedClockOut": "17:00:00",
+      "requiredWorkHours": 8,
+      "createdAt": "2026-01-01T08:00:00Z"
+    },
+    {
+      "id": "2",
+      "profileName": "Morning Shift",
+      "expectedClockIn": "06:00:00",
+      "expectedClockOut": "14:00:00",
+      "requiredWorkHours": 8,
+      "createdAt": "2026-01-01T08:00:00Z"
+    },
+    {
+      "id": "3",
+      "profileName": "Evening Shift",
+      "expectedClockIn": "14:00:00",
+      "expectedClockOut": "22:00:00",
+      "requiredWorkHours": 8,
+      "createdAt": "2026-01-01T08:00:00Z"
+    },
+    {
+      "id": "4",
+      "profileName": "Night Shift",
+      "expectedClockIn": "22:00:00",
+      "expectedClockOut": "06:00:00",
+      "requiredWorkHours": 8,
+      "createdAt": "2026-01-01T08:00:00Z"
+    }
+  ],
+  "shifts": [
+    {
+      "id": "1",
+      "employeeId": 4,
+      "siteId": 2,
+      "jobRoleId": 3,
+      "startTime": "2026-06-14T08:00:00Z",
+      "endTime": "2026-06-14T16:00:00Z",
+      "isPublished": true,
+      "createdAt": "2026-06-01T08:00:00Z"
+    },
+    {
+      "id": "2",
+      "employeeId": 5,
+      "siteId": 2,
+      "jobRoleId": 4,
+      "startTime": "2026-06-14T06:00:00Z",
+      "endTime": "2026-06-14T14:00:00Z",
+      "isPublished": true,
+      "createdAt": "2026-06-01T08:00:00Z"
+    },
+    {
+      "id": "3",
+      "employeeId": null,
+      "siteId": 1,
+      "jobRoleId": 3,
+      "startTime": "2026-06-15T14:00:00Z",
+      "endTime": "2026-06-15T22:00:00Z",
+      "isPublished": false,
+      "createdAt": "2026-06-05T08:00:00Z"
+    },
+    {
+      "id": "4",
+      "employeeId": null,
+      "siteId": 1,
+      "jobRoleId": 4,
+      "startTime": "2026-06-15T14:00:00Z",
+      "endTime": "2026-06-15T22:00:00Z",
+      "isPublished": false,
+      "createdAt": "2026-06-05T08:00:00Z"
+    },
+    {
+      "id": "5",
+      "employeeId": 7,
+      "siteId": 1,
+      "jobRoleId": 2,
+      "startTime": "2026-06-16T08:00:00Z",
+      "endTime": "2026-06-16T17:00:00Z",
+      "isPublished": true,
+      "createdAt": "2026-06-05T08:00:00Z"
+    },
+    {
+      "id": "6",
+      "employeeId": 1,
+      "siteId": 1,
+      "jobRoleId": 2,
+      "startTime": "2026-06-16T08:00:00Z",
+      "endTime": "2026-06-16T17:00:00Z",
+      "isPublished": true,
+      "createdAt": "2026-06-05T08:00:00Z"
+    }
+  ],
+  "shiftClaims": [
+    {
+      "id": "1",
+      "shiftId": 3,
+      "employeeId": 4,
+      "status": "PendingApproval",
+      "overtimeJustification": "Available to cover evening shift at Downtown Campus.",
+      "createdAt": "2026-06-06T10:00:00Z"
+    },
+    {
+      "id": "2",
+      "shiftId": 4,
+      "employeeId": 5,
+      "status": "Approved",
+      "overtimeJustification": "",
+      "createdAt": "2026-06-06T11:00:00Z"
+    }
+  ],
+  "pointsRules": [
+    {
+      "id": "1",
+      "ruleKey": "LATENESS_DEDUCTION",
+      "eventType": "ClockIn",
+      "conditionExpression": "ActualClockIn > ExpectedClockIn + 15m",
+      "actionType": "Debit",
+      "pointValue": 500,
+      "createdAt": "2026-01-01T08:00:00Z"
+    },
+    {
+      "id": "2",
+      "ruleKey": "EARLY_LEAVE_DEDUCTION",
+      "eventType": "ClockOut",
+      "conditionExpression": "ActualClockOut < ExpectedClockOut - 15m",
+      "actionType": "Debit",
+      "pointValue": 300,
+      "createdAt": "2026-01-01T08:00:00Z"
+    },
+    {
+      "id": "3",
+      "ruleKey": "PERFECT_ATTENDANCE_REWARD",
+      "eventType": "MonthlyReview",
+      "conditionExpression": "AbsencesInMonth == 0 AND LateCountInMonth == 0",
+      "actionType": "Credit",
+      "pointValue": 1000,
+      "createdAt": "2026-01-01T08:00:00Z"
+    },
+    {
+      "id": "4",
+      "ruleKey": "SHIFT_SWAP_BONUS",
+      "eventType": "ShiftClaim",
+      "conditionExpression": "ClaimStatus == 'Approved' AND IsShortNotice == true",
+      "actionType": "Credit",
+      "pointValue": 250,
+      "createdAt": "2026-01-01T08:00:00Z"
+    },
+    {
+      "id": "5",
+      "ruleKey": "NO_SHOW_PENALTY",
+      "eventType": "Absence",
+      "conditionExpression": "IsUnexcused == true",
+      "actionType": "Debit",
+      "pointValue": 1500,
+      "createdAt": "2026-01-01T08:00:00Z"
+    },
+    {
+      "id": "6",
+      "ruleKey": "OVERTIME_PREMIUM",
+      "eventType": "ClockOut",
+      "conditionExpression": "ActualWorkHours > RequiredWorkHours + 1h",
+      "actionType": "Credit",
+      "pointValue": 200,
+      "createdAt": "2026-01-01T08:00:00Z"
+    }
+  ],
+  "pointsTransactions": [
+    {
+      "id": "1",
+      "employeeId": 4,
+      "pointsRuleId": 1,
+      "amount": -500,
+      "transactionType": "Debit",
+      "createdAt": "2026-06-01T08:20:00Z"
+    },
+    {
+      "id": "2",
+      "employeeId": 7,
+      "pointsRuleId": 3,
+      "amount": 1000,
+      "transactionType": "Credit",
+      "createdAt": "2026-06-01T08:00:00Z"
+    },
+    {
+      "id": "3",
+      "employeeId": 1,
+      "pointsRuleId": 6,
+      "amount": 200,
+      "transactionType": "Credit",
+      "createdAt": "2026-06-02T17:30:00Z"
+    },
+    {
+      "id": "4",
+      "employeeId": 5,
+      "pointsRuleId": 4,
+      "amount": 250,
+      "transactionType": "Credit",
+      "createdAt": "2026-06-06T11:00:00Z"
+    },
+    {
+      "id": "5",
+      "employeeId": 4,
+      "pointsRuleId": 2,
+      "amount": -300,
+      "transactionType": "Debit",
+      "createdAt": "2026-06-07T13:45:00Z"
+    },
+    {
+      "id": "6",
+      "employeeId": 3,
+      "pointsRuleId": 3,
+      "amount": 1000,
+      "transactionType": "Credit",
+      "createdAt": "2026-06-01T08:00:00Z"
+    },
+    {
+      "id": "7",
+      "employeeId": 8,
+      "pointsRuleId": 5,
+      "amount": -1500,
+      "transactionType": "Debit",
+      "createdAt": "2026-06-10T08:00:00Z"
+    },
+    {
+      "id": "8",
+      "employeeId": 2,
+      "pointsRuleId": null,
+      "amount": 500,
+      "transactionType": "ManualAdjustment",
+      "createdAt": "2026-06-05T10:00:00Z"
+    }
+  ],
+  "disciplinaryViolations": [
+    {
+      "id": "1",
+      "employeeId": 4,
+      "severity": "Minor",
+      "description": "Uniform violation - wearing incorrect footwear during shift.",
+      "createdAt": "2026-06-01T09:00:00Z"
+    },
+    {
+      "id": "2",
+      "employeeId": 8,
+      "severity": "Major",
+      "description": "Unexcused absence - failed to report or call in for scheduled shift.",
+      "createdAt": "2026-06-10T08:00:00Z"
+    },
+    {
+      "id": "3",
+      "employeeId": 5,
+      "severity": "Minor",
+      "description": "Late return from break - 10 minutes over allowed break time.",
+      "createdAt": "2026-06-03T15:00:00Z"
+    },
+    {
+      "id": "4",
+      "employeeId": 4,
+      "severity": "Moderate",
+      "description": "Repeated lateness - third occurrence within the month.",
+      "createdAt": "2026-06-12T08:20:00Z"
+    }
+  ],
+  "rewardItems": [
+    {
+      "id": "1",
+      "rewardName": "Talabat Voucher",
+      "costInPoints": 1000,
+      "availableStock": 50,
+      "createdAt": "2026-01-01T08:00:00Z"
+    },
+    {
+      "id": "2",
+      "rewardName": "Noon Voucher",
+      "costInPoints": 1500,
+      "availableStock": 30,
+      "createdAt": "2026-01-01T08:00:00Z"
+    },
+    {
+      "id": "3",
+      "rewardName": "Extra Day Off",
+      "costInPoints": 5000,
+      "availableStock": 10,
+      "createdAt": "2026-01-01T08:00:00Z"
+    },
+    {
+      "id": "4",
+      "rewardName": "Gift Card - Starbucks",
+      "costInPoints": 800,
+      "availableStock": 40,
+      "createdAt": "2026-01-01T08:00:00Z"
+    },
+    {
+      "id": "5",
+      "rewardName": "Parking Spot - 1 Month",
+      "costInPoints": 3000,
+      "availableStock": 5,
+      "createdAt": "2026-01-01T08:00:00Z"
+    },
+    {
+      "id": "6",
+      "rewardName": "Company Merchandise Pack",
+      "costInPoints": 2000,
+      "availableStock": 25,
+      "createdAt": "2026-01-01T08:00:00Z"
+    }
+  ],
+  "rewardRedemptions": [
+    {
+      "id": "1",
+      "rewardItemId": 1,
+      "employeeId": 7,
+      "voucherCode": "TBT-2026-A1B2C3",
+      "redeemedAt": "2026-06-02T10:00:00Z",
+      "createdAt": "2026-06-02T10:00:00Z"
+    },
+    {
+      "id": "2",
+      "rewardItemId": 4,
+      "employeeId": 3,
+      "voucherCode": "SBX-2026-D4E5F6",
+      "redeemedAt": "2026-06-05T14:00:00Z",
+      "createdAt": "2026-06-05T14:00:00Z"
+    },
+    {
+      "id": "3",
+      "rewardItemId": 2,
+      "employeeId": 1,
+      "voucherCode": "NOON-2026-G7H8I9",
+      "redeemedAt": "2026-06-08T09:00:00Z",
+      "createdAt": "2026-06-08T09:00:00Z"
+    }
+  ],
+  "pointsAutomation": [
+    {
+      "id": "1",
+      "activeCategory": "attendance",
+      "performance": {
+        "enabled": false,
+        "period": "daily",
+        "ranges": [
+          {
             "id": 1,
-            "siteName": "Downtown Campus",
-            "latitude": 30.0444,
-            "longitude": 31.2357,
-            "macAddressWhitelistJson": "[\"00:1B:44:11:3A:B7\", \"00:1B:44:11:3A:B8\"]",
-            "createdAt": "2026-01-01T08:00:00Z"
-        },
-        {
+            "type": "Deduction",
+            "from": 0,
+            "to": 60,
+            "value": 500
+          },
+          {
             "id": 2,
-            "siteName": "Riyadh Branch",
-            "latitude": 24.7136,
-            "longitude": 46.6753,
-            "macAddressWhitelistJson": "[\"00:1B:44:11:3C:D1\"]",
-            "createdAt": "2026-01-01T08:00:00Z"
-        },
-        {
+            "type": "Reward",
+            "from": 80,
+            "to": 90,
+            "value": 1000
+          },
+          {
             "id": 3,
-            "siteName": "Jeddah Branch",
-            "latitude": 21.4858,
-            "longitude": 39.1925,
-            "macAddressWhitelistJson": "[\"00:1B:44:11:3D:E5\"]",
-            "createdAt": "2026-02-15T08:00:00Z"
-        }
-    ],
-    "roles": [
-        {
+            "type": "Reward",
+            "from": 91,
+            "to": 100,
+            "value": 2000
+          }
+        ]
+      },
+      "tasks": {
+        "enabled": false,
+        "period": "daily",
+        "completionRanges": [
+          {
             "id": 1,
-            "name": "SuperAdmin",
-            "permissionsJson": "{\"employeeManagement\":[\"Add\",\"Edit\",\"View\",\"Delete\",\"Suspend\"],\"siteManagement\":[\"Add\",\"Edit\",\"View\",\"Delete\",\"Shifts\"],\"pointsManagement\":[\"ViewTransactions\",\"Adjust\",\"Configure\"],\"rewardsManagement\":[\"Add\",\"Edit\",\"View\",\"Delete\"],\"reports\":[\"View\",\"Export\"]}",
-            "createdAt": "2026-01-01T08:00:00Z"
-        },
-        {
+            "type": "Reward",
+            "from": 80,
+            "to": 90,
+            "value": 1000
+          },
+          {
             "id": 2,
-            "name": "Branch Manager",
-            "permissionsJson": "{\"employeeManagement\":[\"Add\",\"Edit\",\"View\"],\"siteManagement\":[\"View\",\"Shifts\"],\"pointsManagement\":[\"ViewTransactions\",\"Adjust\"],\"rewardsManagement\":[\"View\"],\"reports\":[\"View\"]}",
-            "createdAt": "2026-01-01T08:00:00Z"
-        },
-        {
-            "id": 3,
-            "name": "Branch Facilitator",
-            "permissionsJson": "{\"employeeManagement\":[\"View\"],\"siteManagement\":[\"View\",\"Shifts\"],\"pointsManagement\":[\"ViewTransactions\"],\"rewardsManagement\":[],\"reports\":[]}",
-            "createdAt": "2026-01-01T08:00:00Z"
-        },
-        {
-            "id": 4,
-            "name": "Employee",
-            "permissionsJson": "{\"employeeManagement\":[\"View\"],\"siteManagement\":[],\"pointsManagement\":[\"ViewTransactions\"],\"rewardsManagement\":[\"View\"],\"reports\":[]}",
-            "createdAt": "2026-01-01T08:00:00Z"
-        }
-    ],
-    "jobRoles": [
-        {
+            "type": "Deduction",
+            "from": 0,
+            "to": 60,
+            "value": 500
+          }
+        ],
+        "deadlineRules": [
+          {
             "id": 1,
-            "title": "UI/UX Designer",
-            "departmentId": 2,
-            "requiredQualificationsJson": "[\"figma\",\"management\"]",
-            "createdAt": "2026-01-01T08:00:00Z"
-        },
-        {
-            "id": 2,
-            "title": "Software Developer",
-            "departmentId": 1,
-            "requiredQualificationsJson": "[\"angular\",\"dotnet\",\"sql\"]",
-            "createdAt": "2026-01-01T08:00:00Z"
-        },
-        {
-            "id": 3,
-            "title": "Cashier",
-            "departmentId": 3,
-            "requiredQualificationsJson": "[\"pos_system\"]",
-            "createdAt": "2026-01-01T08:00:00Z"
-        },
-        {
-            "id": 4,
-            "title": "Barista",
-            "departmentId": 3,
-            "requiredQualificationsJson": "[\"coffee_machine\",\"food_safety\"]",
-            "createdAt": "2026-01-01T08:00:00Z"
-        },
-        {
-            "id": 5,
-            "title": "HR Coordinator",
-            "departmentId": 4,
-            "requiredQualificationsJson": "[\"hr_systems\",\"conflict_resolution\"]",
-            "createdAt": "2026-01-01T08:00:00Z"
-        },
-        {
-            "id": 6,
-            "title": "Financial Analyst",
-            "departmentId": 5,
-            "requiredQualificationsJson": "[\"excel\",\"financial_modeling\"]",
-            "createdAt": "2026-01-01T08:00:00Z"
-        }
-    ],
-    "jobs": [
-        {
+            "priority": "Urgent",
+            "pointsPerDayDelay": 1000
+          }
+        ]
+      },
+      "attendance": {
+        "enabled": true,
+        "period": "daily",
+        "attendanceRanges": [
+          {
             "id": 1,
-            "jobName": "UI UX Designer",
-            "jobDescription": "Lorem Ipsum is simply dummy text of the printing and",
-            "numberOfEmployees": 5
-        },
-        {
+            "type": "Reward",
+            "from": 80,
+            "to": 90,
+            "value": 1000
+          },
+          {
             "id": 2,
-            "jobName": "Software Engineer",
-            "jobDescription": "Lorem Ipsum is simply dummy text of the printing and",
-            "numberOfEmployees": 12
-        },
-        {
-            "id": 3,
-            "jobName": "Product Manager",
-            "jobDescription": "Lorem Ipsum is simply dummy text of the printing and",
-            "numberOfEmployees": 3
-        },
-        {
-            "id": 4,
-            "jobName": "QA Tester",
-            "jobDescription": "Lorem Ipsum is simply dummy text of the printing and",
-            "numberOfEmployees": 8
-        },
-        {
-            "id": 5,
-            "jobName": "Data Analyst",
-            "jobDescription": "Lorem Ipsum is simply dummy text of the printing and",
-            "numberOfEmployees": 4
-        },
-        {
-            "id": 6,
-            "jobName": "HR Specialist",
-            "jobDescription": "Lorem Ipsum is simply dummy text of the printing and",
-            "numberOfEmployees": 2
-        },
-        {
-            "id": 7,
-            "jobName": "Marketing Manager",
-            "jobDescription": "Lorem Ipsum is simply dummy text of the printing and",
-            "numberOfEmployees": 6
-        },
-        {
-            "id": 8,
-            "jobName": "Sales Representative",
-            "jobDescription": "Lorem Ipsum is simply dummy text of the printing and",
-            "numberOfEmployees": 15
-        },
-        {
-            "id": 9,
-            "jobName": "Customer Support",
-            "jobDescription": "Lorem Ipsum is simply dummy text of the printing and",
-            "numberOfEmployees": 20
-        },
-        {
-            "id": 10,
-            "jobName": "DevOps Engineer",
-            "jobDescription": "Lorem Ipsum is simply dummy text of the printing and",
-            "numberOfEmployees": 5
-        }
-    ],
-    "employees": [
-        {
+            "type": "Deduction",
+            "from": 0,
+            "to": 60,
+            "value": 500
+          }
+        ],
+        "latenessRanges": [
+          {
             "id": 1,
-            "firstName": "Ahmed",
-            "lastName": "Ali",
-            "email": "a.ali@buy2.com",
-            "phoneNumber": "+966598432423",
-            "jobRoleId": 2,
-            "roleId": 1,
-            "siteId": 1,
-            "createdAt": "2026-01-15T08:00:00Z"
-        },
-        {
+            "fromMinutes": 5,
+            "toMinutes": 15,
+            "pointsDeduction": 500
+          },
+          {
             "id": 2,
-            "firstName": "Nayef",
-            "lastName": "Fahd",
-            "email": "n.fahd@buy2.com",
-            "phoneNumber": "+966591234567",
-            "jobRoleId": 5,
-            "roleId": 2,
-            "siteId": 1,
-            "createdAt": "2026-01-20T08:00:00Z"
-        },
-        {
-            "id": 3,
-            "firstName": "Sara",
-            "lastName": "Khalid",
-            "email": "s.khalid@buy2.com",
-            "phoneNumber": "+966598765432",
-            "jobRoleId": 1,
-            "roleId": 3,
-            "siteId": 1,
-            "createdAt": "2026-02-01T08:00:00Z"
-        },
-        {
-            "id": 4,
-            "firstName": "Mohammed",
-            "lastName": "Hassan",
-            "email": "m.hassan@buy2.com",
-            "phoneNumber": "+966592345678",
-            "jobRoleId": 3,
-            "roleId": 4,
-            "siteId": 2,
-            "createdAt": "2026-02-10T08:00:00Z"
-        },
-        {
-            "id": 5,
-            "firstName": "Fatima",
-            "lastName": "Omar",
-            "email": "f.omar@buy2.com",
-            "phoneNumber": "+966593456789",
-            "jobRoleId": 4,
-            "roleId": 4,
-            "siteId": 2,
-            "createdAt": "2026-02-15T08:00:00Z"
-        },
-        {
-            "id": 6,
-            "firstName": "Khalid",
-            "lastName": "Ibrahim",
-            "email": "k.ibrahim@buy2.com",
-            "phoneNumber": "+966594567890",
-            "jobRoleId": 6,
-            "roleId": 3,
-            "siteId": 3,
-            "createdAt": "2026-03-01T08:00:00Z"
-        },
-        {
-            "id": 7,
-            "firstName": "Lina",
-            "lastName": "Mohammed",
-            "email": "l.mohammed@buy2.com",
-            "phoneNumber": "+966595678901",
-            "jobRoleId": 2,
-            "roleId": 4,
-            "siteId": 1,
-            "createdAt": "2026-03-10T08:00:00Z"
-        },
-        {
-            "id": 8,
-            "firstName": "Youssef",
-            "lastName": "Ahmad",
-            "email": "y.ahmad@buy2.com",
-            "phoneNumber": "+966596789012",
-            "jobRoleId": 3,
-            "roleId": 4,
-            "siteId": 3,
-            "createdAt": "2026-03-20T08:00:00Z"
-        }
-    ],
-    "attendanceProfiles": [
-        {
-            "id": 1,
-            "profileName": "Standard Day Shift",
-            "expectedClockIn": "08:00:00",
-            "expectedClockOut": "17:00:00",
-            "requiredWorkHours": 8,
-            "createdAt": "2026-01-01T08:00:00Z"
-        },
-        {
-            "id": 2,
-            "profileName": "Morning Shift",
-            "expectedClockIn": "06:00:00",
-            "expectedClockOut": "14:00:00",
-            "requiredWorkHours": 8,
-            "createdAt": "2026-01-01T08:00:00Z"
-        },
-        {
-            "id": 3,
-            "profileName": "Evening Shift",
-            "expectedClockIn": "14:00:00",
-            "expectedClockOut": "22:00:00",
-            "requiredWorkHours": 8,
-            "createdAt": "2026-01-01T08:00:00Z"
-        },
-        {
-            "id": 4,
-            "profileName": "Night Shift",
-            "expectedClockIn": "22:00:00",
-            "expectedClockOut": "06:00:00",
-            "requiredWorkHours": 8,
-            "createdAt": "2026-01-01T08:00:00Z"
-        }
-    ],
-    "shifts": [
-        {
-            "id": 1,
-            "employeeId": 4,
-            "siteId": 2,
-            "jobRoleId": 3,
-            "startTime": "2026-06-14T08:00:00Z",
-            "endTime": "2026-06-14T16:00:00Z",
-            "isPublished": true,
-            "createdAt": "2026-06-01T08:00:00Z"
-        },
-        {
-            "id": 2,
-            "employeeId": 5,
-            "siteId": 2,
-            "jobRoleId": 4,
-            "startTime": "2026-06-14T06:00:00Z",
-            "endTime": "2026-06-14T14:00:00Z",
-            "isPublished": true,
-            "createdAt": "2026-06-01T08:00:00Z"
-        },
-        {
-            "id": 3,
-            "employeeId": null,
-            "siteId": 1,
-            "jobRoleId": 3,
-            "startTime": "2026-06-15T14:00:00Z",
-            "endTime": "2026-06-15T22:00:00Z",
-            "isPublished": false,
-            "createdAt": "2026-06-05T08:00:00Z"
-        },
-        {
-            "id": 4,
-            "employeeId": null,
-            "siteId": 1,
-            "jobRoleId": 4,
-            "startTime": "2026-06-15T14:00:00Z",
-            "endTime": "2026-06-15T22:00:00Z",
-            "isPublished": false,
-            "createdAt": "2026-06-05T08:00:00Z"
-        },
-        {
-            "id": 5,
-            "employeeId": 7,
-            "siteId": 1,
-            "jobRoleId": 2,
-            "startTime": "2026-06-16T08:00:00Z",
-            "endTime": "2026-06-16T17:00:00Z",
-            "isPublished": true,
-            "createdAt": "2026-06-05T08:00:00Z"
-        },
-        {
-            "id": 6,
-            "employeeId": 1,
-            "siteId": 1,
-            "jobRoleId": 2,
-            "startTime": "2026-06-16T08:00:00Z",
-            "endTime": "2026-06-16T17:00:00Z",
-            "isPublished": true,
-            "createdAt": "2026-06-05T08:00:00Z"
-        }
-    ],
-    "shiftClaims": [
-        {
-            "id": 1,
-            "shiftId": 3,
-            "employeeId": 4,
-            "status": "PendingApproval",
-            "overtimeJustification": "Available to cover evening shift at Downtown Campus.",
-            "createdAt": "2026-06-06T10:00:00Z"
-        },
-        {
-            "id": 2,
-            "shiftId": 4,
-            "employeeId": 5,
-            "status": "Approved",
-            "overtimeJustification": "",
-            "createdAt": "2026-06-06T11:00:00Z"
-        }
-    ],
-    "pointsRules": [
-        {
-            "id": 1,
-            "ruleKey": "LATENESS_DEDUCTION",
-            "eventType": "ClockIn",
-            "conditionExpression": "ActualClockIn > ExpectedClockIn + 15m",
-            "actionType": "Debit",
-            "pointValue": 500,
-            "createdAt": "2026-01-01T08:00:00Z"
-        },
-        {
-            "id": 2,
-            "ruleKey": "EARLY_LEAVE_DEDUCTION",
-            "eventType": "ClockOut",
-            "conditionExpression": "ActualClockOut < ExpectedClockOut - 15m",
-            "actionType": "Debit",
-            "pointValue": 300,
-            "createdAt": "2026-01-01T08:00:00Z"
-        },
-        {
-            "id": 3,
-            "ruleKey": "PERFECT_ATTENDANCE_REWARD",
-            "eventType": "MonthlyReview",
-            "conditionExpression": "AbsencesInMonth == 0 AND LateCountInMonth == 0",
-            "actionType": "Credit",
-            "pointValue": 1000,
-            "createdAt": "2026-01-01T08:00:00Z"
-        },
-        {
-            "id": 4,
-            "ruleKey": "SHIFT_SWAP_BONUS",
-            "eventType": "ShiftClaim",
-            "conditionExpression": "ClaimStatus == 'Approved' AND IsShortNotice == true",
-            "actionType": "Credit",
-            "pointValue": 250,
-            "createdAt": "2026-01-01T08:00:00Z"
-        },
-        {
-            "id": 5,
-            "ruleKey": "NO_SHOW_PENALTY",
-            "eventType": "Absence",
-            "conditionExpression": "IsUnexcused == true",
-            "actionType": "Debit",
-            "pointValue": 1500,
-            "createdAt": "2026-01-01T08:00:00Z"
-        },
-        {
-            "id": 6,
-            "ruleKey": "OVERTIME_PREMIUM",
-            "eventType": "ClockOut",
-            "conditionExpression": "ActualWorkHours > RequiredWorkHours + 1h",
-            "actionType": "Credit",
-            "pointValue": 200,
-            "createdAt": "2026-01-01T08:00:00Z"
-        }
-    ],
-    "pointsTransactions": [
-        {
-            "id": 1,
-            "employeeId": 4,
-            "pointsRuleId": 1,
-            "amount": -500,
-            "transactionType": "Debit",
-            "createdAt": "2026-06-01T08:20:00Z"
-        },
-        {
-            "id": 2,
-            "employeeId": 7,
-            "pointsRuleId": 3,
-            "amount": 1000,
-            "transactionType": "Credit",
-            "createdAt": "2026-06-01T08:00:00Z"
-        },
-        {
-            "id": 3,
-            "employeeId": 1,
-            "pointsRuleId": 6,
-            "amount": 200,
-            "transactionType": "Credit",
-            "createdAt": "2026-06-02T17:30:00Z"
-        },
-        {
-            "id": 4,
-            "employeeId": 5,
-            "pointsRuleId": 4,
-            "amount": 250,
-            "transactionType": "Credit",
-            "createdAt": "2026-06-06T11:00:00Z"
-        },
-        {
-            "id": 5,
-            "employeeId": 4,
-            "pointsRuleId": 2,
-            "amount": -300,
-            "transactionType": "Debit",
-            "createdAt": "2026-06-07T13:45:00Z"
-        },
-        {
-            "id": 6,
-            "employeeId": 3,
-            "pointsRuleId": 3,
-            "amount": 1000,
-            "transactionType": "Credit",
-            "createdAt": "2026-06-01T08:00:00Z"
-        },
-        {
-            "id": 7,
-            "employeeId": 8,
-            "pointsRuleId": 5,
-            "amount": -1500,
-            "transactionType": "Debit",
-            "createdAt": "2026-06-10T08:00:00Z"
-        },
-        {
-            "id": 8,
-            "employeeId": 2,
-            "pointsRuleId": null,
-            "amount": 500,
-            "transactionType": "ManualAdjustment",
-            "createdAt": "2026-06-05T10:00:00Z"
-        }
-    ],
-    "disciplinaryViolations": [
-        {
-            "id": 1,
-            "employeeId": 4,
-            "severity": "Minor",
-            "description": "Uniform violation - wearing incorrect footwear during shift.",
-            "createdAt": "2026-06-01T09:00:00Z"
-        },
-        {
-            "id": 2,
-            "employeeId": 8,
-            "severity": "Major",
-            "description": "Unexcused absence - failed to report or call in for scheduled shift.",
-            "createdAt": "2026-06-10T08:00:00Z"
-        },
-        {
-            "id": 3,
-            "employeeId": 5,
-            "severity": "Minor",
-            "description": "Late return from break - 10 minutes over allowed break time.",
-            "createdAt": "2026-06-03T15:00:00Z"
-        },
-        {
-            "id": 4,
-            "employeeId": 4,
-            "severity": "Moderate",
-            "description": "Repeated lateness - third occurrence within the month.",
-            "createdAt": "2026-06-12T08:20:00Z"
-        }
-    ],
-    "rewardItems": [
-        {
-            "id": 1,
-            "rewardName": "Talabat Voucher",
-            "costInPoints": 1000,
-            "availableStock": 50,
-            "createdAt": "2026-01-01T08:00:00Z"
-        },
-        {
-            "id": 2,
-            "rewardName": "Noon Voucher",
-            "costInPoints": 1500,
-            "availableStock": 30,
-            "createdAt": "2026-01-01T08:00:00Z"
-        },
-        {
-            "id": 3,
-            "rewardName": "Extra Day Off",
-            "costInPoints": 5000,
-            "availableStock": 10,
-            "createdAt": "2026-01-01T08:00:00Z"
-        },
-        {
-            "id": 4,
-            "rewardName": "Gift Card - Starbucks",
-            "costInPoints": 800,
-            "availableStock": 40,
-            "createdAt": "2026-01-01T08:00:00Z"
-        },
-        {
-            "id": 5,
-            "rewardName": "Parking Spot - 1 Month",
-            "costInPoints": 3000,
-            "availableStock": 5,
-            "createdAt": "2026-01-01T08:00:00Z"
-        },
-        {
-            "id": 6,
-            "rewardName": "Company Merchandise Pack",
-            "costInPoints": 2000,
-            "availableStock": 25,
-            "createdAt": "2026-01-01T08:00:00Z"
-        }
-    ],
-    "rewardRedemptions": [
-        {
-            "id": 1,
-            "rewardItemId": 1,
-            "employeeId": 7,
-            "voucherCode": "TBT-2026-A1B2C3",
-            "redeemedAt": "2026-06-02T10:00:00Z",
-            "createdAt": "2026-06-02T10:00:00Z"
-        },
-        {
-            "id": 2,
-            "rewardItemId": 4,
-            "employeeId": 3,
-            "voucherCode": "SBX-2026-D4E5F6",
-            "redeemedAt": "2026-06-05T14:00:00Z",
-            "createdAt": "2026-06-05T14:00:00Z"
-        },
-        {
-            "id": 3,
-            "rewardItemId": 2,
-            "employeeId": 1,
-            "voucherCode": "NOON-2026-G7H8I9",
-            "redeemedAt": "2026-06-08T09:00:00Z",
-            "createdAt": "2026-06-08T09:00:00Z"
-        }
-    ]
+            "fromMinutes": 16,
+            "toMinutes": 60,
+            "pointsDeduction": 1000
+          }
+        ],
+        "onTimeBonus": 1000
+      }
+    }
+  ]
 }
