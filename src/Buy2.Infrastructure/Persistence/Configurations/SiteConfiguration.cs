@@ -49,7 +49,7 @@ namespace Buy2.Infrastructure.Persistence.Configurations
                 .WithOne()
                 .HasForeignKey(s => s.SiteId)
                 .OnDelete(DeleteBehavior.Restrict);
-            builder.HasOne<RegionConfiguration>()
+            builder.HasOne<Region>()
                 .WithMany()
                 .HasForeignKey(s => s.RegionId)
                 .OnDelete(DeleteBehavior.Restrict);
