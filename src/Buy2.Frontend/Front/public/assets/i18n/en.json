@@ -15,5 +15,120 @@
       "NOTIFICATIONS": "Notifications",
       "SCHEDULING": "Scheduling"
     }
+  },
+  "AUTH": {
+    "LOGIN": {
+      "TITLE": "Welcome Back",
+      "SUBTITLE": "Sign in to your account to continue",
+      "EMAIL_LABEL": "Email Address",
+      "EMAIL_PLACEHOLDER": "Enter your email",
+      "EMAIL_REQUIRED": "Email is required",
+      "EMAIL_INVALID": "Enter a valid email address",
+      "PASSWORD_LABEL": "Password",
+      "PASSWORD_PLACEHOLDER": "Enter your password",
+      "PASSWORD_REQUIRED": "Password is required",
+      "PASSWORD_MINLENGTH": "Password must be at least 6 characters",
+      "REMEMBER_ME": "Remember me",
+      "FORGOT_PASSWORD": "Forgot Password?",
+      "SIGN_IN": "Sign In",
+      "SIGNING_IN": "Signing in...",
+      "ERROR_GENERIC": "Login failed. Please try again."
+    }
+  },
+  "ROLES": {
+    "LIST": {
+      "TITLE": "Roles",
+      "CREATE_BUTTON": "Create Role",
+      "LOADING": "Loading roles...",
+      "ERROR_PREFIX": "Error: "
+    },
+    "CARD": {
+      "PERMISSIONS_COUNT": "{{count}} permissions",
+      "EDIT": "Edit",
+      "DELETE": "Delete",
+      "DELETE_CONFIRM": "Delete role \"{{name}}\"?"
+    },
+    "CREATE": {
+      "TITLE": "Create Role",
+      "ROLE_NAME_LABEL": "Role Name",
+      "ROLE_NAME_PLACEHOLDER": "Enter role name",
+      "DESCRIPTION_LABEL": "Description",
+      "DESCRIPTION_PLACEHOLDER": "Enter description",
+      "PERMISSIONS_TITLE": "Permissions",
+      "DISCARD": "Discard",
+      "SAVE": "Save",
+      "SUCCESS_TITLE": "Role Created",
+      "SUCCESS_MESSAGE": "The role has been created successfully.",
+      "SUCCESS_OK": "OK"
+    },
+    "EDIT": {
+      "TITLE": "Edit Role",
+      "ROLE_NAME_LABEL": "Role Name",
+      "ROLE_NAME_PLACEHOLDER": "Enter role name",
+      "DESCRIPTION_LABEL": "Description",
+      "DESCRIPTION_PLACEHOLDER": "Enter description",
+      "PERMISSIONS_TITLE": "Permissions",
+      "DISCARD": "Discard",
+      "UPDATE": "Update Role",
+      "SUCCESS_TITLE": "Role Updated",
+      "SUCCESS_MESSAGE": "The role has been updated successfully.",
+      "SUCCESS_OK": "OK"
+    }
+  },
+  "PERMISSIONS": {
+    "GROUPS": {
+      "EMPLOYEE_MANAGEMENT": "Employee Management",
+      "JOB_MANAGEMENT": "Job Management",
+      "SITE_MANAGEMENT": "Site Management",
+      "POINTS_MANAGEMENT": "Points Management",
+      "NOTIFICATIONS_MANAGEMENT": "Notifications Management",
+      "REWARD_MANAGEMENT": "Reward Management",
+      "REWARDS_MANAGEMENT": "Rewards Management"
+    },
+    "TOGGLES": {
+      "ADD": "Add",
+      "EDIT": "Edit",
+      "DELETE": "Delete",
+      "SUSPEND": "Suspend",
+      "ADMIN_ACCESS": "Admin Access",
+      "ADD_TRANSACTION": "Add Transaction",
+      "AUTOMATION": "Automation",
+      "VIEW_TRANSACTIONS": "View Transactions",
+      "SEND": "Send",
+      "SEND_NOTIFICATION": "Send Notification",
+      "SHIFTS": "Shifts",
+      "ADD_REWARD": "Add",
+      "EDIT_REWARD": "Edit",
+      "DELETE_REWARD": "Delete",
+      "INVENTORY": "Inventory"
+    },
+    "ACCESS_TYPES": {
+      "LABEL": "Access Type:",
+      "ALL": "All",
+      "REGION": "Region",
+      "DEPARTMENT": "Department",
+      "SITES": "Sites",
+      "TEAMS": "Teams",
+      "SPECIFIC": "Specific",
+      "CHOOSE_GROUPS": "Choose Groups"
+    }
+  },
+  "COMMON": {
+    "DISCARD": "Discard",
+    "SAVE": "Save",
+    "CANCEL": "Cancel",
+    "DELETE": "Delete",
+    "EDIT": "Edit",
+    "CREATE": "Create",
+    "UPDATE": "Update",
+    "OK": "OK",
+    "YES": "Yes",
+    "NO": "No",
+    "LOADING": "Loading...",
+    "ERROR": "Error",
+    "SUCCESS": "Success",
+    "PERMISSIONS": "Permissions",
+    "DESCRIPTION": "Description",
+    "ROLE_NAME": "Role Name"
   }
 }

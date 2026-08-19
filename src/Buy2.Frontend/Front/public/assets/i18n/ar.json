@@ -15,5 +15,120 @@
       "NOTIFICATIONS": "الإشعارات",
       "SCHEDULING": "الجدولة"
     }
+  },
+  "AUTH": {
+    "LOGIN": {
+      "TITLE": "مرحباً بعودتك",
+      "SUBTITLE": "سجّل الدخول إلى حسابك للمتابعة",
+      "EMAIL_LABEL": "عنوان البريد الإلكتروني",
+      "EMAIL_PLACEHOLDER": "أدخل بريدك الإلكتروني",
+      "EMAIL_REQUIRED": "البريد الإلكتروني مطلوب",
+      "EMAIL_INVALID": "أدخل عنوان بريد إلكتروني صحيح",
+      "PASSWORD_LABEL": "كلمة المرور",
+      "PASSWORD_PLACEHOLDER": "أدخل كلمة المرور",
+      "PASSWORD_REQUIRED": "كلمة المرور مطلوبة",
+      "PASSWORD_MINLENGTH": "يجب أن تكون كلمة المرور 6 أحرف على الأقل",
+      "REMEMBER_ME": "تذكرني",
+      "FORGOT_PASSWORD": "نسيت كلمة المرور؟",
+      "SIGN_IN": "تسجيل الدخول",
+      "SIGNING_IN": "جاري تسجيل الدخول...",
+      "ERROR_GENERIC": "فشل تسجيل الدخول. يرجى المحاولة مرة أخرى."
+    }
+  },
+  "ROLES": {
+    "LIST": {
+      "TITLE": "الأدوار",
+      "CREATE_BUTTON": "إنشاء دور",
+      "LOADING": "جاري تحميل الأدوار...",
+      "ERROR_PREFIX": "خطأ: "
+    },
+    "CARD": {
+      "PERMISSIONS_COUNT": "{{count}} صلاحية",
+      "EDIT": "تعديل",
+      "DELETE": "حذف",
+      "DELETE_CONFIRM": "حذف الدور \"{{name}}\"؟"
+    },
+    "CREATE": {
+      "TITLE": "إنشاء دور",
+      "ROLE_NAME_LABEL": "اسم الدور",
+      "ROLE_NAME_PLACEHOLDER": "أدخل اسم الدور",
+      "DESCRIPTION_LABEL": "الوصف",
+      "DESCRIPTION_PLACEHOLDER": "أدخل الوصف",
+      "PERMISSIONS_TITLE": "الصلاحيات",
+      "DISCARD": "إلغاء",
+      "SAVE": "حفظ",
+      "SUCCESS_TITLE": "تم إنشاء الدور",
+      "SUCCESS_MESSAGE": "تم إنشاء الدور بنجاح.",
+      "SUCCESS_OK": "موافق"
+    },
+    "EDIT": {
+      "TITLE": "تعديل دور",
+      "ROLE_NAME_LABEL": "اسم الدور",
+      "ROLE_NAME_PLACEHOLDER": "أدخل اسم الدور",
+      "DESCRIPTION_LABEL": "الوصف",
+      "DESCRIPTION_PLACEHOLDER": "أدخل الوصف",
+      "PERMISSIONS_TITLE": "الصلاحيات",
+      "DISCARD": "إلغاء",
+      "UPDATE": "تحديث الدور",
+      "SUCCESS_TITLE": "تم تحديث الدور",
+      "SUCCESS_MESSAGE": "تم تحديث الدور بنجاح.",
+      "SUCCESS_OK": "موافق"
+    }
+  },
+  "PERMISSIONS": {
+    "GROUPS": {
+      "EMPLOYEE_MANAGEMENT": "إدارة الموظفين",
+      "JOB_MANAGEMENT": "إدارة الوظائف",
+      "SITE_MANAGEMENT": "إدارة المواقع",
+      "POINTS_MANAGEMENT": "إدارة النقاط",
+      "NOTIFICATIONS_MANAGEMENT": "إدارة الإشعارات",
+      "REWARD_MANAGEMENT": "إدارة المكافآت",
+      "REWARDS_MANAGEMENT": "إدارة المكافآت"
+    },
+    "TOGGLES": {
+      "ADD": "إضافة",
+      "EDIT": "تعديل",
+      "DELETE": "حذف",
+      "SUSPEND": "إيقاف",
+      "ADMIN_ACCESS": "صلاحية مسؤول",
+      "ADD_TRANSACTION": "إضافة معاملة",
+      "AUTOMATION": "أتمتة",
+      "VIEW_TRANSACTIONS": "عرض المعاملات",
+      "SEND": "إرسال",
+      "SEND_NOTIFICATION": "إرسال إشعار",
+      "SHIFTS": "الورديات",
+      "ADD_REWARD": "إضافة",
+      "EDIT_REWARD": "تعديل",
+      "DELETE_REWARD": "حذف",
+      "INVENTORY": "المخزون"
+    },
+    "ACCESS_TYPES": {
+      "LABEL": "نوع الوصول:",
+      "ALL": "الكل",
+      "REGION": "المنطقة",
+      "DEPARTMENT": "القسم",
+      "SITES": "المواقع",
+      "TEAMS": "الفرق",
+      "SPECIFIC": "محدد",
+      "CHOOSE_GROUPS": "اختيار المجموعات"
+    }
+  },
+  "COMMON": {
+    "DISCARD": "إلغاء",
+    "SAVE": "حفظ",
+    "CANCEL": "إلغاء",
+    "DELETE": "حذف",
+    "EDIT": "تعديل",
+    "CREATE": "إنشاء",
+    "UPDATE": "تحديث",
+    "OK": "موافق",
+    "YES": "نعم",
+    "NO": "لا",
+    "LOADING": "جاري التحميل...",
+    "ERROR": "خطأ",
+    "SUCCESS": "نجاح",
+    "PERMISSIONS": "الصلاحيات",
+    "DESCRIPTION": "الوصف",
+    "ROLE_NAME": "اسم الدور"
   }
 }
