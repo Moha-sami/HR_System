@@ -10,7 +10,7 @@ public record CreateSiteCommand
         string SiteName,
         decimal Latitude,
         decimal Longitude,
-        List<string> MacWhitelist
+        string MacWhitelist
     ) : IRequest<int>;
 
 public class CreateSiteCommandHandler : IRequestHandler<CreateSiteCommand, int>
@@ -31,7 +31,7 @@ public class CreateSiteCommandHandler : IRequestHandler<CreateSiteCommand, int>
             SiteName = command.SiteName,
             Latitude = (double)command.Latitude,
             Longitude = (double)command.Longitude,
-            MacAddressWhitelistJson = JsonSerializer.Serialize(command.MacWhitelist)
+            MacAddress = command.MacWhitelist
         };
 
         await _siteRepository.AddAsync(site);
