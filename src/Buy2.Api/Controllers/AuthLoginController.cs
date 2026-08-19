@@ -20,11 +20,14 @@ public class AuthLoginController : ControllerBase
 
     [HttpPost("login")]
     [ProducesResponseType(typeof(LoginResponseDto), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult<LoginResponseDto>> Login([FromBody] LoginCommand command)
     {
         var result = await _mediator.Send(command);
+        if (result is null)
+        {
+            return Unauthorized(new { message = "Invalid email or password." });
+        }
         return Ok(result);
     }
 }

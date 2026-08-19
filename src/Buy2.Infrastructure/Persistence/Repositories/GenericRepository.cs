@@ -12,6 +12,7 @@ public class GenericRepository<T> : IRepository<T> where T : BaseEntity
     {
         _context = context;
     }
+
     public IQueryable<T> Query(bool asNoTracking = true)
     {
         return asNoTracking 
@@ -20,11 +21,8 @@ public class GenericRepository<T> : IRepository<T> where T : BaseEntity
     }
 
     public async Task AddAsync(T entity) => await _context.AddAsync(entity);
- 
-    
 
     public void Delete(T entity) => _context.Remove(entity);
-
 
     public async Task<IEnumerable<T>> GetAllAsync()
     {
@@ -42,5 +40,4 @@ public class GenericRepository<T> : IRepository<T> where T : BaseEntity
     }
 
     public void Update(T entity) => _context.Update(entity);    
-
 }

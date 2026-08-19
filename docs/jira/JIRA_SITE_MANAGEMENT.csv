@@ -1,0 +1,201 @@
+Issue Type,Summary,Description,Labels
+Task,[SITE-ENTITY-1] Extend Site Entity and Create Supporting Domain Entities,"**Priority**: P0 — Prerequisite (Blocks all Site endpoints)
+**Layer**: Buy2.Domain + Buy2.Infrastructure
+**Estimated Effort**: Medium (2-3 hours)
+
+**Locations**:
+- `src/Buy2.Domain/Entities/Site.cs` [MODIFY]
+- `src/Buy2.Domain/Entities/Region.cs` [NEW]
+- `src/Buy2.Domain/Entities/SiteOperationalHour.cs` [NEW]
+- `src/Buy2.Domain/Entities/SitePreferredEmployee.cs` [NEW]
+- `src/Buy2.Domain/Entities/SiteDocument.cs` [NEW]
+
+**Steps**:
+1. Create `Region.cs` entity: Id, Name (unique index), optional Description. Add navigation collection to Sites.
+2. Extend `Site.cs` entity with UI fields:
+   - Name (unique constraint), RegionId (FK to Region), Address (string), MapUrl (string), Latitude (double), Longitude (double).
+   - PhoneNumber (string), MacAddress (string), Instructions (multiline text), MaxCapacity (int).
+   - Add navigation collections: OperationalHours, PreferredEmployees, Documents, EmployeeSites, Shifts.
+3. Create `SiteOperationalHour.cs` entity: SiteId (FK), DayOfWeek (enum/int 0-6), IsOpen (bool), OpenTime (TimeOnly/TimeSpan), CloseTime (TimeOnly/TimeSpan).
+4. Create `SitePreferredEmployee.cs` entity: SiteId (FK), EmployeeId (FK). Composite primary key (SiteId, EmployeeId).
+5. Create `SiteDocument.cs` entity: SiteId (FK), FileName, FilePath/Url, UploadedAt.
+6. Register all new DbSets in `Buy2DbContext`.
+7. Add EF configurations: Unique index on Site Name, composite keys, cascade rules (Site delete cascades to OperationalHours, Documents, PreferredEmployees; Restrict on Region).
+8. Add and apply EF Core migration.","P0,layer:domain,layer:infrastructure,site,entity,prerequisite"
+Task,[SITE-DTO-1] Create Site Management DTOs,"**Priority**: P1 — Prerequisite for Site endpoints
+**Layer**: Buy2.Application
+**Estimated Effort**: Small (1-2 hours)
+**Depends on**: SITE-ENTITY-1 complete
+
+**Location**:
+- `src/Buy2.Application/DTOs/Sites/SiteDtos.cs` [NEW]
+
+**Steps**:
+1. Create Region DTOs: RegionListItemDto (Id, Name), CreateRegionDto (Name).
+2. Create Site List & Grid DTOs:
+   - SiteListItemDto: Id, SiteName, RegionName, Location/Address, OperationalDaysCount, TotalOperationalHours, MaxCapacity.
+   - SiteListResponseDto: Items list, TotalCount, Page, PageSize.
+3. Create Site Create/Update input DTO:
+   - SiteName, RegionId, Address, MapUrl, Latitude, Longitude, PhoneNumber, MacAddress, Instructions, MaxCapacity.
+   - PreferredEmployeeIds (list of int).
+   - OperationalHours (list of objects: DayOfWeek, IsOpen, From, To).
+4. Create Site Full Profile DTO for View Site tabs:
+   - Basic Info: SiteName, RegionName, Location/Address, MapUrl, PhoneNumber, MacAddress, PreferredPeople (list of Name + Role title), Documents (list of Id, FileName, Url), Instructions, OperationalSchedule (list of Day, From, To).
+   - Assigned Shifts Tab: ShiftId, ShiftName, StartTime, EndTime, IsSmartPostingEnabled, RolesAndHeadcounts list.
+   - Assigned Employees Tab: EmployeeId, FullName, RoleName, Email, PhoneNumber, Status (Active/Suspended/Terminated).
+5. Create Site Deletion Validation & Reallocation DTOs:
+   - SiteDeletionCheckDto: CanDelete (bool), AllocatedEmployeesCount (int), AllocatedEmployees list (EmployeeId, FullName).
+   - ReallocateAndBackupDeleteSiteDto: TargetSiteReassignments (list of EmployeeId + NewSiteId).","P1,layer:application,dto,site,prerequisite"
+Task,[SITE-EP-1] GET Sites List with Card/Table View, Search, Filter & Export,"**Priority**: P2
+**Layer**: Buy2.Application + Buy2.Api
+**Estimated Effort**: Medium (2-3 hours)
+**Depends on**: SITE-ENTITY-1, SITE-DTO-1 complete
+
+**Files**:
+- `src/Buy2.Application/Features/Sites/GetSites/GetSitesQuery.cs` [NEW]
+- `src/Buy2.Application/Features/Sites/ExportSites/ExportSitesQuery.cs` [NEW]
+- `src/Buy2.Api/Controllers/SitesController.cs` [NEW / REPLACE existing GetSitesController]
+
+**Steps**:
+1. Implement `GetSitesQuery` & Handler:
+   - Query parameters: Page, PageSize, RegionId, Search (filters by site name or address), Sort, SortDir.
+   - Include Region and OperationalHours in query.
+   - Calculate summary stats per row (total operational days, sum of daily hours).
+   - Apply pagination (Skip/Take) and return `SiteListResponseDto`.
+2. Implement `ExportSitesQuery` & Handler:
+   - Same filter logic without pagination.
+   - Build CSV file containing: SiteName, Region, Location, OperationalDays, OperationalHours, MaxCapacity.
+   - Return CSV byte array.
+3. Create `SitesController` endpoints:
+   - `GET api/v1/sites`: `[Authorize]`, returns paginated site list.
+   - `GET api/v1/sites/export`: `[Authorize(Roles = ""Admin,Manager"")]`, returns CSV file download.","P2,layer:application,layer:api,site,endpoint,list"
+Task,[SITE-EP-2] Region Management Endpoints (List & Quick Add),"**Priority**: P2
+**Layer**: Buy2.Application + Buy2.Api
+**Estimated Effort**: Small (1-2 hours)
+**Depends on**: SITE-ENTITY-1, SITE-DTO-1 complete
+
+**Files**:
+- `src/Buy2.Application/Features/Sites/Regions/GetRegionsQuery.cs` [NEW]
+- `src/Buy2.Application/Features/Sites/Regions/CreateRegionCommand.cs` [NEW]
+- Add actions to `SitesController` (or `RegionsController.cs`)
+
+**Steps**:
+1. Implement `GetRegionsQuery` & Handler:
+   - Fetch all active regions from database, ordered alphabetically by name.
+   - Return list of `RegionListItemDto`.
+2. Implement `CreateRegionCommand` & Handler:
+   - Accept region name.
+   - Check unique name constraint (case-insensitive). If already exists, return existing or validation error.
+   - Insert new Region record, save changes, and return newly created Region ID.
+3. Add Controller actions:
+   - `GET api/v1/sites/regions`: `[Authorize]`, populates region dropdown in filters and create site page.
+   - `POST api/v1/sites/regions`: `[Authorize(Roles = ""Admin,Manager"")]`, handles inline ""+ Add Region"" from the dropdown.","P2,layer:application,layer:api,site,region,endpoint"
+Task,[SITE-EP-3] POST Create Site with Operational Hours, Preferred Staff & Documents,"**Priority**: P2
+**Layer**: Buy2.Application + Buy2.Api
+**Estimated Effort**: Medium (2-3 hours)
+**Depends on**: SITE-ENTITY-1, SITE-DTO-1 complete
+
+**Files**:
+- `src/Buy2.Application/Features/Sites/CreateSite/CreateSiteCommand.cs` [UPDATE / REPLACE existing]
+- Add action to `SitesController`
+
+**Steps**:
+1. Implement `CreateSiteCommand` & Handler:
+   - Check unique site name. If already taken, throw validation error (""A site with this name already exists"").
+   - Verify RegionId exists.
+   - Create and map Site entity with basic info, GPS latitude/longitude, instructions, and capacity.
+   - Map and attach `SiteOperationalHour` records (Sun-Sat time intervals).
+   - Attach `SitePreferredEmployee` junction records for selected preferred employees.
+   - Save atomically in single `SaveChangesAsync()` call. Return new Site ID.
+2. Add Controller action:
+   - `POST api/v1/sites`: `[Authorize(Roles = ""Admin"")]`, returns `201 Created` with new site ID.","P2,layer:application,layer:api,site,endpoint,create"
+Task,[SITE-EP-4] PUT Update Site Details & Schedule,"**Priority**: P2
+**Layer**: Buy2.Application + Buy2.Api
+**Estimated Effort**: Medium (2 hours)
+**Depends on**: SITE-ENTITY-1, SITE-DTO-1 complete
+
+**Files**:
+- `src/Buy2.Application/Features/Sites/UpdateSite/UpdateSiteCommand.cs` [NEW]
+- Add action to `SitesController`
+
+**Steps**:
+1. Implement `UpdateSiteCommand` & Handler:
+   - Fetch Site by ID including OperationalHours and PreferredEmployees. Throw 404 if missing.
+   - Verify updated name is not taken by another site.
+   - Update scalar properties (RegionId, Address, MapUrl, Latitude, Longitude, Phone, MAC, Instructions, MaxCapacity).
+   - Sync OperationalHours: update existing day schedules or recreate them.
+   - Sync PreferredEmployees: replace junction entries with new selected employee IDs.
+   - Commit changes atomically via `IUnitOfWork`.
+2. Add Controller action:
+   - `PUT api/v1/sites/{id}`: `[Authorize(Roles = ""Admin,Manager"")]`, returns `200 OK`.","P2,layer:application,layer:api,site,endpoint,update"
+Task,[SITE-EP-5] DELETE Site with Employee Reallocation Pre-Check Flow,"**Priority**: P2
+**Layer**: Buy2.Application + Buy2.Api
+**Estimated Effort**: Medium (2-3 hours)
+**Depends on**: SITE-ENTITY-1, SITE-DTO-1 complete
+
+**Files**:
+- `src/Buy2.Application/Features/Sites/DeleteSite/CheckSiteDeletionQuery.cs` [NEW]
+- `src/Buy2.Application/Features/Sites/DeleteSite/DeleteSiteCommand.cs` [NEW]
+- Add actions to `SitesController`
+
+**Steps**:
+1. Implement `CheckSiteDeletionQuery` & Handler (Pre-check endpoint):
+   - Check if any employees currently have this site assigned as primary SiteId or in EmployeeSites.
+   - Check if any active/future shifts exist at this site.
+   - Return `SiteDeletionCheckDto`: `CanDelete: true` if 0 allocations, or `CanDelete: false` with list of affected employees.
+2. Implement `DeleteSiteCommand` & Handler:
+   - Accept SiteId and optional list of reallocations (`EmployeeId` -> `NewSiteId`).
+   - If employees are still assigned and no reallocation list provided, reject with 400 (""Please reallocate or remove employees before proceeding"").
+   - If reallocation list provided, update assigned employees to their new target sites.
+   - Delete site entity. EF cascade removes related documents, operational hours, and junction rows.
+   - Commit in a single transaction.
+3. Add Controller actions:
+   - `GET api/v1/sites/{id}/deletion-check`: `[Authorize(Roles = ""Admin"")]`, drives the warning modal in UI.
+   - `DELETE api/v1/sites/{id}`: `[Authorize(Roles = ""Admin"")]`, accepts optional reallocation body, returns `204 NoContent`.","P2,layer:application,layer:api,site,endpoint,delete"
+Task,[SITE-EP-6] GET View Site Full Details (Basic Info, Assigned Shifts, Assigned Employees),"**Priority**: P2
+**Layer**: Buy2.Application + Buy2.Api
+**Estimated Effort**: Medium (2-3 hours)
+**Depends on**: SITE-ENTITY-1, SITE-DTO-1 complete
+
+**Files**:
+- `src/Buy2.Application/Features/Sites/GetSiteDetails/GetSiteBasicInfoQuery.cs` [NEW]
+- `src/Buy2.Application/Features/Sites/GetSiteDetails/GetSiteShiftsQuery.cs` [NEW]
+- `src/Buy2.Application/Features/Sites/GetSiteDetails/GetSiteEmployeesQuery.cs` [NEW]
+- Add actions to `SitesController`
+
+**Steps**:
+1. Implement `GetSiteBasicInfoQuery` & Handler (Tab 1):
+   - Fetch Site with Region, OperationalHours, PreferredEmployees (include employee job roles), and Documents.
+   - Map to basic info DTO (includes map link, phone, MAC address, operational hours list, document links).
+2. Implement `GetSiteShiftsQuery` & Handler (Tab 2):
+   - Query scheduled shifts associated with this SiteId.
+   - Group shifts by template/type (Morning, Evening, Afternoon) with start/end time and smart posting toggle status.
+   - Return hourly timeline blocks and headcount requirements.
+3. Implement `GetSiteEmployeesQuery` & Handler (Tab 3):
+   - Query all employees assigned to this site (via primary SiteId or EmployeeSite junction).
+   - Return list with ID, FullName, Role/JobTitle, Email, Phone, and Status (Active/Suspended/Terminated).
+4. Add Controller actions:
+   - `GET api/v1/sites/{id}`: `[Authorize]`, returns basic info tab.
+   - `GET api/v1/sites/{id}/shifts`: `[Authorize]`, returns assigned shifts tab.
+   - `GET api/v1/sites/{id}/employees`: `[Authorize]`, returns assigned employees tab.","P2,layer:application,layer:api,site,endpoint,profile"
+Task,[SITE-EP-7] POST/DELETE Site Training Material Documents,"**Priority**: P3
+**Layer**: Buy2.Application + Buy2.Api
+**Estimated Effort**: Small (1-2 hours)
+**Depends on**: SITE-ENTITY-1, SITE-DTO-1 complete
+
+**Files**:
+- `src/Buy2.Application/Features/Sites/Documents/UploadSiteDocumentCommand.cs` [NEW]
+- `src/Buy2.Application/Features/Sites/Documents/DeleteSiteDocumentCommand.cs` [NEW]
+- Add actions to `SitesController`
+
+**Steps**:
+1. Implement `UploadSiteDocumentCommand` & Handler:
+   - Accept SiteId and `IFormFile` from multipart request.
+   - Validate file type (.pdf, .doc, .docx) and file size (< 10MB).
+   - Save file to storage / uploads directory and record `SiteDocument` entity in DB.
+   - Return new document ID and download URL.
+2. Implement `DeleteSiteDocumentCommand` & Handler:
+   - Fetch `SiteDocument` by ID, remove from DB and delete physical file.
+3. Add Controller actions:
+   - `POST api/v1/sites/{id}/documents`: `[Authorize(Roles = ""Admin,Manager"")]`, multipart form upload.
+   - `DELETE api/v1/sites/{id}/documents/{documentId}`: `[Authorize(Roles = ""Admin,Manager"")]`.","P3,layer:application,layer:api,site,documents,endpoint"
