@@ -1,12 +1,15 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 export interface Job {
   id: number;
   jobName: string;
   jobDescription: string;
   numberOfEmployees: number;
+  department?: string;
+  qualifications?: string[];
 }
 
 @Injectable({
@@ -35,5 +38,13 @@ export class JobService {
 
   deleteJob(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  }
+
+  getDepartments(): Observable<any[]> {
+    return this.http.get<any[]>('http://localhost:3000/departments');
+  }
+
+  getQualifications(): Observable<any[]> {
+    return this.http.get<any[]>('http://localhost:3000/qualifications');
   }
 }

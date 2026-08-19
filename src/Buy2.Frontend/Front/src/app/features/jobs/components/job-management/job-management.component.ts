@@ -7,6 +7,7 @@ import {
   inject,
   signal,
 } from '@angular/core';
+import { RouterLink, RouterOutlet, Router } from '@angular/router';
 
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
 import { Pagination } from '../../../../shared/components/pagination/pagination';
@@ -18,6 +19,8 @@ import {
 } from '../../../../shared/components/table/table.component';
 
 import { JobService, Job } from '../../services/job.service';
+import { JobCreateComponent } from '../job-create/job-create.component';
+import { TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-job-management',
@@ -26,13 +29,17 @@ import { JobService, Job } from '../../services/job.service';
     ButtonComponent,
     Pagination,
     TableComponent,
+    RouterLink,
+    RouterOutlet,
   ],
   templateUrl: './job-management.component.html',
 })
 export class JobManagementComponent implements AfterViewInit {
 
+  private readonly translate = inject(TranslateService);
 
   private readonly jobService = inject(JobService);
+  private readonly router = inject(Router);
 
 
   // =========================================================
@@ -48,6 +55,7 @@ export class JobManagementComponent implements AfterViewInit {
   // =========================================================
 
   readonly jobs = signal<Job[]>([]);
+  // readonly showJobCreateModal = signal(false); // <-- REMOVE THIS
 
   readonly currentPage = signal(1);
 
@@ -65,38 +73,38 @@ export class JobManagementComponent implements AfterViewInit {
       new Map()
     );
 
+  @ViewChild('qualificationsTemplate')
+  qualificationsTemplate!: TemplateRef<CellContext>;
+
 
   // =========================================================
   // TABLE COLUMNS
   // =========================================================
 
-  readonly columns: ColumnDef[] = [
+  readonly columns = computed<ColumnDef[]>(() => [
     {
       key: 'jobName',
-      label: 'Job Name',
+      label: this.translate.instant('JOB_MANAGEMENT.TABLE.JOB_NAME'),
     },
-
     {
-      key: 'jobDescription',
-      label: 'Job Description',
+      key: 'department',
+      label: this.translate.instant('JOB_MANAGEMENT.TABLE.DEPARTMENT'),
       sortable: true,
     },
-
     {
-      key: 'numberOfEmployees',
-      label: 'Number of employees',
-      sortable: true,
-      align: 'center',
+      key: 'qualifications',
+      label: this.translate.instant('JOB_MANAGEMENT.TABLE.QUALIFICATIONS'),
+      template: 'qualificationsTemplate',
+      width: '200px',
     },
-
     {
       key: 'actions',
-      label: 'Actions',
+      label: this.translate.instant('JOB_MANAGEMENT.TABLE.ACTIONS'),
       align: 'center',
       template: 'actionsTemplate',
       width: '140px',
     },
-  ];
+  ]);
 
 
   // =========================================================
@@ -115,6 +123,10 @@ export class JobManagementComponent implements AfterViewInit {
         [
           'actionsTemplate',
           this.actionsTemplate,
+        ],
+        [
+          'qualificationsTemplate',
+          this.qualificationsTemplate,
         ],
       ])
     );
@@ -144,9 +156,11 @@ export class JobManagementComponent implements AfterViewInit {
         .toLowerCase()
         .includes(search)
       ||
-      (job.jobDescription ?? '')
+      (job.department ?? '')
         .toLowerCase()
         .includes(search)
+      ||
+      (job.qualifications ?? []).some(q => q.toLowerCase().includes(search))
     );
 
   });
@@ -411,11 +425,7 @@ export class JobManagementComponent implements AfterViewInit {
   // =========================================================
 
   navigateToCreateJob(): void {
-
-    console.log(
-      'Create new job'
-    );
-
+    this.router.navigate(['/jobs/create']);
   }
 
 
@@ -438,12 +448,7 @@ export class JobManagementComponent implements AfterViewInit {
   // =========================================================
 
   editJob(job: Job): void {
-
-    console.log(
-      'Edit job:',
-      job
-    );
-
+    this.router.navigate(['/jobs/edit', job.id]);
   }
 
 
