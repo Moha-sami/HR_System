@@ -19,3 +19,6 @@ dist/
 docs/plans
 docs/assets
 .playwright-mcp
+/publish_out
+/docs/jira
+/publish.zip

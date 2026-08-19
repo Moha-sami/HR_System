@@ -7,14 +7,16 @@
       <h3 class="font-semibold text-[#1E1E1E] text-base leading-tight truncate">
         {{ role.roleName }}
       </h3>
-      <p class="text-xs text-[#868686] mt-1">{{ permissionCount }} permissions</p>
+      <p class="text-xs text-[#868686] mt-1">
+        {{ 'ROLES.CARD.PERMISSIONS_COUNT' | translate: { count: permissionCount } }}
+      </p>
     </div>
     <div class="relative ml-3 flex-shrink-0">
       <button
         type="button"
         class="text-[#868686] hover:text-[#1E1E1E] p-1.5"
         (click)="$event.stopPropagation(); menuOpen = !menuOpen"
-        aria-label="More options"
+        [attr.aria-label]="'More options' | translate"
         aria-expanded="menuOpen"
       >
         <svg
@@ -39,7 +41,7 @@
             (click)="onEdit()"
             role="menuitem"
           >
-            Edit
+            {{ 'ROLES.CARD.EDIT' | translate }}
           </button>
           <button
             type="button"
@@ -47,7 +49,7 @@
             (click)="onDelete()"
             role="menuitem"
           >
-            Delete
+            {{ 'ROLES.CARD.DELETE' | translate }}
           </button>
         </div>
       }

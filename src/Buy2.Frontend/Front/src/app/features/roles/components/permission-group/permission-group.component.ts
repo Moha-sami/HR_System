@@ -1,12 +1,13 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import type { PermissionGroup } from '../../models/permission';
-import { AccessTypeTabsComponent } from "../access-type-tabs/access-type-tabs.component";
+import { AccessTypeTabsComponent } from '../access-type-tabs/access-type-tabs.component';
 
 @Component({
   selector: 'app-permission-group',
   standalone: true,
   templateUrl: './permission-group.component.html',
-  imports: [AccessTypeTabsComponent],
+  imports: [AccessTypeTabsComponent, TranslatePipe],
 })
 export class PermissionGroupComponent {
   @Input({ required: true }) group!: PermissionGroup;

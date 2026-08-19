@@ -108,8 +108,16 @@ var app = builder.Build();
 // Auto-Seed Database on Startup
 using (var scope = app.Services.CreateScope())
 {
-    var dbContext = scope.ServiceProvider.GetRequiredService<Buy2DbContext>();
-    await DatabaseSeeder.SeedAsync(dbContext);
+    try
+    {
+        var dbContext = scope.ServiceProvider.GetRequiredService<Buy2DbContext>();
+        await DatabaseSeeder.SeedAsync(dbContext);
+    }
+    catch (Exception ex)
+    {
+        var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "An error occurred while seeding the database.");
+    }
 }
 
 // Enable Swagger UI middleware at root ("/")
