@@ -65,17 +65,17 @@ public class EmployeeConfiguration : IEntityTypeConfiguration<Employee>
             .HasColumnType("nvarchar(max)");
 
         // Foreign Key Relationships
-        builder.HasOne<JobRole>()
+        builder.HasOne(e => e.JobRole)
             .WithMany()
             .HasForeignKey(e => e.JobRoleId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasOne<Role>()
+        builder.HasOne(e => e.Role)
             .WithMany()
             .HasForeignKey(e => e.RoleId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasOne<Site>()
+        builder.HasOne(e => e.Site)
             .WithMany()
             .HasForeignKey(e => e.SiteId)
             .OnDelete(DeleteBehavior.Restrict);
