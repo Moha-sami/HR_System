@@ -1,0 +1,654 @@
+<section class="points-automation-setup p-6">
+  <h1 class="mb-8 text-2xl font-semibold text-primary-600">
+    {{ 'POINTS.AUTOMATION.SETUP_TITLE' | translate }}
+  </h1>
+
+  @if (loading()) {
+    <p class="text-sm text-neutral-500">{{ 'POINTS.AUTOMATION.LOADING' | translate }}</p>
+  } @else if (config(); as cfg) {
+    <div class="mb-8 grid grid-cols-1 gap-6 md:grid-cols-3">
+      <button
+        type="button"
+        class="category-tab text-start"
+        [class.category-tab--active]="activeCategory() === 'performance'"
+        [class.category-tab--locked]="!isEditingCategory('performance')"
+        [disabled]="!isEditingCategory('performance')"
+        (click)="selectCategory('performance')"
+      >
+        <div class="flex items-start justify-between gap-3">
+          <div>
+            <p class="text-base font-semibold text-primary-600">
+              {{ 'POINTS.AUTOMATION.PERFORMANCE' | translate }}
+            </p>
+            <p class="mt-1 text-xs text-neutral-500">
+              {{ 'POINTS.AUTOMATION.PERFORMANCE_HINT' | translate }}
+            </p>
+          </div>
+          <label class="toggle" (click)="$event.stopPropagation()">
+            <input
+              type="checkbox"
+              [checked]="cfg.performance.enabled"
+              [disabled]="!isEditingCategory('performance')"
+              (change)="toggleCategory('performance', $any($event.target).checked)"
+            />
+            <span class="toggle__track"></span>
+          </label>
+        </div>
+      </button>
+
+      <button
+        type="button"
+        class="category-tab text-start"
+        [class.category-tab--active]="activeCategory() === 'tasks'"
+        [class.category-tab--locked]="!isEditingCategory('tasks')"
+        [disabled]="!isEditingCategory('tasks')"
+        (click)="selectCategory('tasks')"
+      >
+        <div class="flex items-start justify-between gap-3">
+          <div>
+            <p class="text-base font-semibold text-primary-600">
+              {{ 'POINTS.AUTOMATION.TASKS' | translate }}
+            </p>
+            <p class="mt-1 text-xs text-neutral-500">
+              {{ 'POINTS.AUTOMATION.TASKS_HINT' | translate }}
+            </p>
+          </div>
+          <label class="toggle" (click)="$event.stopPropagation()">
+            <input
+              type="checkbox"
+              [checked]="cfg.tasks.enabled"
+              [disabled]="!isEditingCategory('tasks')"
+              (change)="toggleCategory('tasks', $any($event.target).checked)"
+            />
+            <span class="toggle__track"></span>
+          </label>
+        </div>
+      </button>
+
+      <button
+        type="button"
+        class="category-tab text-start"
+        [class.category-tab--active]="activeCategory() === 'attendance'"
+        [class.category-tab--locked]="!isEditingCategory('attendance')"
+        [disabled]="!isEditingCategory('attendance')"
+        (click)="selectCategory('attendance')"
+      >
+        <div class="flex items-start justify-between gap-3">
+          <div>
+            <p class="text-base font-semibold text-primary-600">
+              {{ 'POINTS.AUTOMATION.ATTENDANCE' | translate }}
+            </p>
+            <p class="mt-1 text-xs text-neutral-500">
+              {{ 'POINTS.AUTOMATION.ATTENDANCE_HINT' | translate }}
+            </p>
+          </div>
+          <label class="toggle" (click)="$event.stopPropagation()">
+            <input
+              type="checkbox"
+              [checked]="cfg.attendance.enabled"
+              [disabled]="!isEditingCategory('attendance')"
+              (change)="toggleCategory('attendance', $any($event.target).checked)"
+            />
+            <span class="toggle__track"></span>
+          </label>
+        </div>
+      </button>
+    </div>
+
+    @if (activeCategory() === 'performance') {
+      <div class="automation-card mb-6">
+        <div class="edit-table">
+          <div class="edit-table__head edit-table__head--range">
+            <span>{{ 'POINTS.AUTOMATION.COL_TYPE' | translate }}</span>
+            <span>{{ 'POINTS.AUTOMATION.COL_FROM_PCT' | translate }}</span>
+            <span>{{ 'POINTS.AUTOMATION.COL_TO_PCT' | translate }}</span>
+            <span>{{ 'POINTS.AUTOMATION.COL_VALUE' | translate }}</span>
+            <span></span>
+          </div>
+
+          @for (row of cfg.performance.ranges; track row.id; let i = $index) {
+            <div
+              class="edit-table__row edit-table__row--range"
+              [class.edit-table__row--error]="performanceOverlapIndexes().has(i)"
+            >
+              <select
+                class="field"
+                [ngModel]="row.type"
+                (ngModelChange)="updatePercentRange('performance', i, { type: $event })"
+              >
+                @for (type of rangeTypes; track type) {
+                  <option [value]="type">{{ type }}</option>
+                }
+              </select>
+              <input
+                class="field"
+                type="number"
+                [ngModel]="row.from"
+                (ngModelChange)="updatePercentRange('performance', i, { from: +$event })"
+              />
+              <input
+                class="field"
+                type="number"
+                [ngModel]="row.to"
+                (ngModelChange)="updatePercentRange('performance', i, { to: +$event })"
+              />
+              <input
+                class="field"
+                type="number"
+                [ngModel]="row.value"
+                (ngModelChange)="updatePercentRange('performance', i, { value: +$event })"
+              />
+              <button type="button" class="delete-btn" (click)="removePercentRange('performance', i)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" />
+                </svg>
+              </button>
+            </div>
+          }
+
+          @if (performanceOverlapIndexes().size > 0) {
+            <p class="overlap-error">{{ 'POINTS.AUTOMATION.OVERLAP_ERROR' | translate }}</p>
+          }
+
+          <div class="edit-table__row edit-table__row--range">
+            <select
+              class="field"
+              [ngModel]="draftPercentRange().type"
+              (ngModelChange)="draftPercentRange.set({ ...draftPercentRange(), type: $event })"
+            >
+              @for (type of rangeTypes; track type) {
+                <option [value]="type">{{ type }}</option>
+              }
+            </select>
+            <input
+              class="field"
+              type="number"
+              [ngModel]="draftPercentRange().from"
+              (ngModelChange)="draftPercentRange.set({ ...draftPercentRange(), from: +$event })"
+            />
+            <input
+              class="field"
+              type="number"
+              [ngModel]="draftPercentRange().to"
+              (ngModelChange)="draftPercentRange.set({ ...draftPercentRange(), to: +$event })"
+            />
+            <input
+              class="field"
+              type="number"
+              [ngModel]="draftPercentRange().value"
+              (ngModelChange)="draftPercentRange.set({ ...draftPercentRange(), value: +$event })"
+            />
+            <span></span>
+          </div>
+        </div>
+
+        <div class="mt-3 flex justify-end">
+          <button type="button" class="add-range-btn" (click)="addPercentRange('performance')">
+            {{ 'POINTS.AUTOMATION.ADD_RANGE' | translate }}
+          </button>
+        </div>
+      </div>
+
+      <div class="mb-8">
+        <p class="mb-3 text-sm font-medium text-neutral-700">
+          {{ 'POINTS.AUTOMATION.PERIOD' | translate }}
+        </p>
+        <div class="flex flex-wrap gap-5">
+          @for (option of periodOptions; track option.value) {
+            <label class="inline-flex items-center gap-2 text-sm text-neutral-800">
+              <input
+                type="radio"
+                name="period"
+                class="accent-primary-600"
+                [value]="option.value"
+                [checked]="currentPeriod() === option.value"
+                (change)="setPeriod(option.value)"
+              />
+              {{ option.labelKey | translate }}
+            </label>
+          }
+        </div>
+      </div>
+    }
+
+    @if (activeCategory() === 'tasks') {
+      <div class="automation-card mb-6">
+        <h2 class="mb-4 text-sm font-semibold text-neutral-800">
+          {{ 'POINTS.AUTOMATION.COMPLETION_RATE' | translate }}
+        </h2>
+        <div class="edit-table">
+          <div class="edit-table__head edit-table__head--range">
+            <span>{{ 'POINTS.AUTOMATION.COL_TYPE' | translate }}</span>
+            <span>{{ 'POINTS.AUTOMATION.COL_FROM_PCT' | translate }}</span>
+            <span>{{ 'POINTS.AUTOMATION.COL_TO_PCT' | translate }}</span>
+            <span>{{ 'POINTS.AUTOMATION.COL_VALUE' | translate }}</span>
+            <span></span>
+          </div>
+
+          @for (row of cfg.tasks.completionRanges; track row.id; let i = $index) {
+            <div
+              class="edit-table__row edit-table__row--range"
+              [class.edit-table__row--error]="tasksCompletionOverlapIndexes().has(i)"
+            >
+              <select
+                class="field"
+                [ngModel]="row.type"
+                (ngModelChange)="updatePercentRange('tasksCompletion', i, { type: $event })"
+              >
+                @for (type of rangeTypes; track type) {
+                  <option [value]="type">{{ type }}</option>
+                }
+              </select>
+              <input
+                class="field"
+                type="number"
+                [ngModel]="row.from"
+                (ngModelChange)="updatePercentRange('tasksCompletion', i, { from: +$event })"
+              />
+              <input
+                class="field"
+                type="number"
+                [ngModel]="row.to"
+                (ngModelChange)="updatePercentRange('tasksCompletion', i, { to: +$event })"
+              />
+              <input
+                class="field"
+                type="number"
+                [ngModel]="row.value"
+                (ngModelChange)="updatePercentRange('tasksCompletion', i, { value: +$event })"
+              />
+              <button
+                type="button"
+                class="delete-btn"
+                (click)="removePercentRange('tasksCompletion', i)"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" />
+                </svg>
+              </button>
+            </div>
+          }
+
+          @if (tasksCompletionOverlapIndexes().size > 0) {
+            <p class="overlap-error">{{ 'POINTS.AUTOMATION.OVERLAP_ERROR' | translate }}</p>
+          }
+
+          <div class="edit-table__row edit-table__row--range">
+            <select
+              class="field"
+              [ngModel]="draftPercentRange().type"
+              (ngModelChange)="draftPercentRange.set({ ...draftPercentRange(), type: $event })"
+            >
+              @for (type of rangeTypes; track type) {
+                <option [value]="type">{{ type }}</option>
+              }
+            </select>
+            <input
+              class="field"
+              type="number"
+              [ngModel]="draftPercentRange().from"
+              (ngModelChange)="draftPercentRange.set({ ...draftPercentRange(), from: +$event })"
+            />
+            <input
+              class="field"
+              type="number"
+              [ngModel]="draftPercentRange().to"
+              (ngModelChange)="draftPercentRange.set({ ...draftPercentRange(), to: +$event })"
+            />
+            <input
+              class="field"
+              type="number"
+              [ngModel]="draftPercentRange().value"
+              (ngModelChange)="draftPercentRange.set({ ...draftPercentRange(), value: +$event })"
+            />
+            <span></span>
+          </div>
+        </div>
+        <div class="mt-3 flex justify-end">
+          <button
+            type="button"
+            class="add-range-btn"
+            (click)="addPercentRange('tasksCompletion')"
+          >
+            {{ 'POINTS.AUTOMATION.ADD_RANGE' | translate }}
+          </button>
+        </div>
+      </div>
+
+      <div class="mb-6">
+        <p class="mb-3 text-sm font-medium text-neutral-700">
+          {{ 'POINTS.AUTOMATION.PERIOD' | translate }}
+        </p>
+        <div class="flex flex-wrap gap-5">
+          @for (option of periodOptions; track option.value) {
+            <label class="inline-flex items-center gap-2 text-sm text-neutral-800">
+              <input
+                type="radio"
+                name="periodTasks"
+                class="accent-primary-600"
+                [value]="option.value"
+                [checked]="currentPeriod() === option.value"
+                (change)="setPeriod(option.value)"
+              />
+              {{ option.labelKey | translate }}
+            </label>
+          }
+        </div>
+      </div>
+
+      <div class="automation-card mb-8">
+        <h2 class="mb-4 text-sm font-semibold text-neutral-800">
+          {{ 'POINTS.AUTOMATION.DEADLINE' | translate }}
+        </h2>
+        <div class="edit-table">
+          <div class="edit-table__head edit-table__head--deadline">
+            <span>{{ 'POINTS.AUTOMATION.COL_PRIORITY' | translate }}</span>
+            <span>{{ 'POINTS.AUTOMATION.COL_POINTS_PER_DAY' | translate }}</span>
+            <span></span>
+          </div>
+          @for (row of cfg.tasks.deadlineRules; track row.id; let i = $index) {
+            <div class="edit-table__row edit-table__row--deadline">
+              <select
+                class="field"
+                [ngModel]="row.priority"
+                (ngModelChange)="updateDeadline(i, { priority: $event })"
+              >
+                @for (priority of priorities; track priority) {
+                  <option [value]="priority">{{ priority }}</option>
+                }
+              </select>
+              <input
+                class="field"
+                type="number"
+                [ngModel]="row.pointsPerDayDelay"
+                (ngModelChange)="updateDeadline(i, { pointsPerDayDelay: +$event })"
+              />
+              <button type="button" class="delete-btn" (click)="removeDeadline(i)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" />
+                </svg>
+              </button>
+            </div>
+          }
+          <div class="edit-table__row edit-table__row--deadline">
+            <select
+              class="field"
+              [ngModel]="draftDeadline().priority"
+              (ngModelChange)="draftDeadline.set({ ...draftDeadline(), priority: $event })"
+            >
+              @for (priority of priorities; track priority) {
+                <option [value]="priority">{{ priority }}</option>
+              }
+            </select>
+            <input
+              class="field"
+              type="number"
+              [ngModel]="draftDeadline().pointsPerDayDelay"
+              (ngModelChange)="
+                draftDeadline.set({ ...draftDeadline(), pointsPerDayDelay: +$event })
+              "
+            />
+            <span></span>
+          </div>
+        </div>
+        <div class="mt-3 flex justify-end">
+          <button type="button" class="add-range-btn" (click)="addDeadline()">
+            {{ 'POINTS.AUTOMATION.ADD_RANGE' | translate }}
+          </button>
+        </div>
+      </div>
+    }
+
+    @if (activeCategory() === 'attendance') {
+      <div class="automation-card mb-6">
+        <h2 class="mb-4 text-sm font-semibold text-neutral-800">
+          {{ 'POINTS.AUTOMATION.ATTENDANCE_RATE' | translate }}
+        </h2>
+        <div class="edit-table">
+          <div class="edit-table__head edit-table__head--range">
+            <span>{{ 'POINTS.AUTOMATION.COL_TYPE' | translate }}</span>
+            <span>{{ 'POINTS.AUTOMATION.COL_FROM_PCT' | translate }}</span>
+            <span>{{ 'POINTS.AUTOMATION.COL_TO_PCT' | translate }}</span>
+            <span>{{ 'POINTS.AUTOMATION.COL_VALUE' | translate }}</span>
+            <span></span>
+          </div>
+          @for (row of cfg.attendance.attendanceRanges; track row.id; let i = $index) {
+            <div
+              class="edit-table__row edit-table__row--range"
+              [class.edit-table__row--error]="attendanceOverlapIndexes().has(i)"
+            >
+              <select
+                class="field"
+                [ngModel]="row.type"
+                (ngModelChange)="updatePercentRange('attendance', i, { type: $event })"
+              >
+                @for (type of rangeTypes; track type) {
+                  <option [value]="type">{{ type }}</option>
+                }
+              </select>
+              <input
+                class="field"
+                type="number"
+                [ngModel]="row.from"
+                (ngModelChange)="updatePercentRange('attendance', i, { from: +$event })"
+              />
+              <input
+                class="field"
+                type="number"
+                [ngModel]="row.to"
+                (ngModelChange)="updatePercentRange('attendance', i, { to: +$event })"
+              />
+              <input
+                class="field"
+                type="number"
+                [ngModel]="row.value"
+                (ngModelChange)="updatePercentRange('attendance', i, { value: +$event })"
+              />
+              <button type="button" class="delete-btn" (click)="removePercentRange('attendance', i)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" />
+                </svg>
+              </button>
+            </div>
+          }
+          @if (attendanceOverlapIndexes().size > 0) {
+            <p class="overlap-error">{{ 'POINTS.AUTOMATION.OVERLAP_ERROR' | translate }}</p>
+          }
+          <div class="edit-table__row edit-table__row--range">
+            <select
+              class="field"
+              [ngModel]="draftPercentRange().type"
+              (ngModelChange)="draftPercentRange.set({ ...draftPercentRange(), type: $event })"
+            >
+              @for (type of rangeTypes; track type) {
+                <option [value]="type">{{ type }}</option>
+              }
+            </select>
+            <input
+              class="field"
+              type="number"
+              [ngModel]="draftPercentRange().from"
+              (ngModelChange)="draftPercentRange.set({ ...draftPercentRange(), from: +$event })"
+            />
+            <input
+              class="field"
+              type="number"
+              [ngModel]="draftPercentRange().to"
+              (ngModelChange)="draftPercentRange.set({ ...draftPercentRange(), to: +$event })"
+            />
+            <input
+              class="field"
+              type="number"
+              [ngModel]="draftPercentRange().value"
+              (ngModelChange)="draftPercentRange.set({ ...draftPercentRange(), value: +$event })"
+            />
+            <span></span>
+          </div>
+        </div>
+        <div class="mt-3 flex justify-end">
+          <button type="button" class="add-range-btn" (click)="addPercentRange('attendance')">
+            {{ 'POINTS.AUTOMATION.ADD_RANGE' | translate }}
+          </button>
+        </div>
+      </div>
+
+      <div class="mb-6">
+        <p class="mb-3 text-sm font-medium text-neutral-700">
+          {{ 'POINTS.AUTOMATION.PERIOD' | translate }}
+        </p>
+        <div class="flex flex-wrap gap-5">
+          @for (option of periodOptions; track option.value) {
+            <label class="inline-flex items-center gap-2 text-sm text-neutral-800">
+              <input
+                type="radio"
+                name="periodAttendance"
+                class="accent-primary-600"
+                [value]="option.value"
+                [checked]="currentPeriod() === option.value"
+                (change)="setPeriod(option.value)"
+              />
+              {{ option.labelKey | translate }}
+            </label>
+          }
+        </div>
+      </div>
+
+      <div class="automation-card mb-6">
+        <h2 class="mb-4 text-sm font-semibold text-neutral-800">
+          {{ 'POINTS.AUTOMATION.LATENESS' | translate }}
+        </h2>
+        <div class="edit-table">
+          <div class="edit-table__head edit-table__head--lateness">
+            <span>{{ 'POINTS.AUTOMATION.COL_FROM_MIN' | translate }}</span>
+            <span>{{ 'POINTS.AUTOMATION.COL_TO_MIN' | translate }}</span>
+            <span>{{ 'POINTS.AUTOMATION.COL_POINTS_DEDUCTION' | translate }}</span>
+            <span></span>
+          </div>
+          @for (row of cfg.attendance.latenessRanges; track row.id; let i = $index) {
+            <div
+              class="edit-table__row edit-table__row--lateness"
+              [class.edit-table__row--error]="latenessOverlapIndexes().has(i)"
+            >
+              <input
+                class="field"
+                type="number"
+                [ngModel]="row.fromMinutes"
+                (ngModelChange)="updateLateness(i, { fromMinutes: +$event })"
+              />
+              <input
+                class="field"
+                type="number"
+                [ngModel]="row.toMinutes"
+                (ngModelChange)="updateLateness(i, { toMinutes: +$event })"
+              />
+              <input
+                class="field"
+                type="number"
+                [ngModel]="row.pointsDeduction"
+                (ngModelChange)="updateLateness(i, { pointsDeduction: +$event })"
+              />
+              <button type="button" class="delete-btn" (click)="removeLateness(i)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" />
+                </svg>
+              </button>
+            </div>
+          }
+          @if (latenessOverlapIndexes().size > 0) {
+            <p class="overlap-error">{{ 'POINTS.AUTOMATION.OVERLAP_ERROR' | translate }}</p>
+          }
+          <div class="edit-table__row edit-table__row--lateness">
+            <input
+              class="field"
+              type="number"
+              [ngModel]="draftLateness().fromMinutes"
+              (ngModelChange)="draftLateness.set({ ...draftLateness(), fromMinutes: +$event })"
+            />
+            <input
+              class="field"
+              type="number"
+              [ngModel]="draftLateness().toMinutes"
+              (ngModelChange)="draftLateness.set({ ...draftLateness(), toMinutes: +$event })"
+            />
+            <input
+              class="field"
+              type="number"
+              [ngModel]="draftLateness().pointsDeduction"
+              (ngModelChange)="
+                draftLateness.set({ ...draftLateness(), pointsDeduction: +$event })
+              "
+            />
+            <span></span>
+          </div>
+        </div>
+        <div class="mt-3 flex justify-end">
+          <button type="button" class="add-range-btn" (click)="addLateness()">
+            {{ 'POINTS.AUTOMATION.ADD_RANGE' | translate }}
+          </button>
+        </div>
+      </div>
+
+      <div class="automation-card mb-8">
+        <div class="flex flex-wrap items-center justify-between gap-4">
+          <h2 class="text-sm font-semibold text-neutral-800">
+            {{ 'POINTS.AUTOMATION.ON_TIME_BONUS' | translate }}
+          </h2>
+          <input
+            class="field max-w-40"
+            type="number"
+            [ngModel]="cfg.attendance.onTimeBonus"
+            (ngModelChange)="setOnTimeBonus(+$event)"
+          />
+        </div>
+      </div>
+    }
+
+    <div class="flex justify-end gap-3 border-t border-[#E9EAF3] pt-4">
+      <button
+        type="button"
+        class="px-4 py-2 text-sm font-medium text-primary-600 hover:text-primary-700"
+        (click)="onDiscard()"
+      >
+        {{ 'POINTS.AUTOMATION.DISCARD' | translate }}
+      </button>
+      <app-button
+        size="sm"
+        [disabled]="hasOverlapError() || saving()"
+        [loading]="saving()"
+        (clicked)="onSave()"
+      >
+        {{ 'POINTS.AUTOMATION.SAVE' | translate }}
+      </app-button>
+    </div>
+  }
+</section>
+
+@if (showSuccessModal()) {
+  <app-modal
+    size="small"
+    [showHeader]="false"
+    [showActions]="false"
+    [closeOnBackdrop]="false"
+    [closeOnEscape]="false"
+    (closed)="onSuccessClose()"
+  >
+    <app-modal-body>
+      <div class="flex flex-col items-center px-4 py-6 text-center">
+        <div class="mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-green-500">
+          <svg
+            class="h-8 w-8 text-white"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            stroke-width="2.5"
+          >
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+          </svg>
+        </div>
+        <p class="text-lg font-semibold text-neutral-900 whitespace-pre-line">
+          {{ successMessageKey() | translate }}
+        </p>
+      </div>
+    </app-modal-body>
+  </app-modal>
+}
