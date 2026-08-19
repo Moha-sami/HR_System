@@ -22,6 +22,8 @@ const routeLabels: Record<string, string> = {
   'roles/edit': 'Edit Role',
   rewards: 'Reward Management',
   points: 'Points Management',
+  'points/automation': 'Points Automation',
+  'points/automation/setup': 'Set up',
   sites: 'Site Management',
   requests: 'Request Management',
   attendance: 'Time & Attendance',
@@ -49,7 +51,7 @@ export class BreadcrumbComponent {
   }
 
   private buildBreadcrumbs(): void {
-    const url = this.router.url;
+    const url = this.router.url.split('?')[0].split('#')[0];
     const segments = url.split('/').filter(Boolean);
 
     if (segments.length === 0) {
@@ -63,7 +65,8 @@ export class BreadcrumbComponent {
     segments.forEach((segment, index) => {
       currentPath += '/' + segment;
       const isLast = index === segments.length - 1;
-      const label = routeLabels[currentPath] || this.formatLabel(segment);
+      const labelKey = currentPath.replace(/^\//, '');
+      const label = routeLabels[labelKey] || this.formatLabel(segment);
       breadcrumbs.push({ label, url: currentPath, isActive: isLast });
     });
 
