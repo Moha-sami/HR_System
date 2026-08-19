@@ -133,6 +133,7 @@
     "PERMISSIONS": "Permissions",
     "DESCRIPTION": "Description",
     "ROLE_NAME": "Role Name"
+  },
   "POINTS": {
     "TITLE": "Points Management",
     "POINTS_AUTOMATION": "Points Automation",
