@@ -30,8 +30,11 @@ jobs:
 
     - name: Inject Production Database Password
       if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      env:
+        DB_PASS: ${{ secrets.MONSTERASP_DB_PASSWORD }}
       run: |
-        sed -i 's/YOUR_MONSTERASP_DB_PASSWORD/${{ secrets.MONSTERASP_DB_PASSWORD }}/g' publish_out/appsettings.json
+        PASS="${DB_PASS:-N=q67M?gf4S#}"
+        sed -i "s|YOUR_MONSTERASP_DB_PASSWORD|${PASS}|g" publish_out/appsettings.json
 
     - name: Take Site Offline via FTP
       if: github.ref == 'refs/heads/main' && github.event_name == 'push'
