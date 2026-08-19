@@ -133,6 +133,7 @@
     "PERMISSIONS": "الصلاحيات",
     "DESCRIPTION": "الوصف",
     "ROLE_NAME": "اسم الدور"
+  },
   "POINTS": {
     "TITLE": "إدارة النقاط",
     "POINTS_AUTOMATION": "أتمتة النقاط",
