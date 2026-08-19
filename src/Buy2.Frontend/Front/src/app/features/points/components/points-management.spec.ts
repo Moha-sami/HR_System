@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { PointsManagement } from '../points-management';
+import { PointsManagement } from './points-management';
 
 describe('PointsManagement', () => {
   let component: PointsManagement;
