@@ -1,0 +1,244 @@
+:host {
+  display: block;
+  height: 100%;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 2px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
+/* Tab transitions */
+button[class*="border-b-2"] {
+  transition: all 0.2s ease;
+}
+
+/* Input focus animations */
+input:focus,
+select:focus,
+textarea:focus {
+  transition: all 0.15s ease;
+}
+
+/* Disable button hover when disabled */
+button:disabled:hover {
+  transform: none;
+}
+
+/* Smooth scrolling for the panel */
+:host {
+  scroll-behavior: smooth;
+}
+
+/* Better touch targets for mobile */
+@media (max-width: 768px) {
+  :host {
+    height: auto;
+    min-height: 100vh;
+  }
+
+  button {
+    min-height: 44px;
+  }
+
+  input, select, textarea {
+    font-size: 16px !important; /* Prevents iOS zoom */
+  }
+}
+
+/* Animation for the side panel */
+:host {
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Sticky header and footer */
+.sticky {
+  backdrop-filter: blur(8px);
+  background-color: rgba(255, 255, 255, 0.95);
+}
+
+/* Tab active state smooth transition */
+.border-b-2 {
+  transition: all 0.25s ease-in-out;
+}
+
+/* Qualification chips hover effect */
+.bg-primary-100 {
+  transition: all 0.2s ease;
+}
+
+.bg-primary-100:hover {
+  background-color: #dbeafe;
+}
+
+/* Button loading state */
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Success modal animation */
+.fixed.inset-0.z-\[60\] {
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Success modal icon pulse */
+.bg-green-100 {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Form field focus ring */
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(43, 57, 144, 0.15);
+  border-color: #2b3990;
+}
+
+/* Placeholder styling */
+::placeholder {
+  color: #9ca3af;
+  font-size: 0.875rem;
+}
+
+/* Select dropdown arrow custom */
+select {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 0.5rem center;
+  background-repeat: no-repeat;
+  background-size: 1.5em 1.5em;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  padding-right: 2.5rem;
+}
+
+/* Scrollable tabs container on small screens */
+@media (max-width: 640px) {
+  .flex.gap-1.border-b {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .flex.gap-1.border-b::-webkit-scrollbar {
+    display: none;
+  }
+
+  .flex.gap-1.border-b button {
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+}
+
+/* Grid responsive */
+@media (max-width: 640px) {
+  .grid.grid-cols-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Tag/chip remove button hover */
+button[type="button"]:hover svg {
+  transform: scale(1.1);
+}
+
+/* Footer buttons hover effect */
+.border-gray-300:hover {
+  background-color: #f3f4f6;
+}
+
+/* Primary button hover */
+.bg-primary-600:hover:not(:disabled) {
+  background-color: #1f2a6e;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(43, 57, 144, 0.3);
+}
+
+/* Success modal button hover */
+.bg-primary-600.px-8:hover {
+  background-color: #1f2a6e;
+  transform: translateY(-1px);
+}
+
+
+
+/* Tab number badge animation */
+.inline-flex.items-center.justify-center.w-4.h-4 {
+  transition: all 0.3s ease;
+}
+
+/* Form label required asterisk */
+.text-red-500 {
+  font-weight: 600;
+}
+
+/* Card shadow on hover */
+.bg-white.rounded-2xl {
+  transition: box-shadow 0.3s ease;
+}
+
+.bg-white.rounded-2xl:hover {
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+}
+
+/* Responsive padding */
+@media (max-width: 640px) {
+  .px-6 {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .p-6 {
+    padding: 1rem;
+  }
+}

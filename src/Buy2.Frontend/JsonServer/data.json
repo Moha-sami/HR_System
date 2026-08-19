@@ -12,6 +12,16 @@
         {"id": 4, "name": "Human Resources", "createdAt": "2026-01-01T08:00:00Z"},
         {"id": 5, "name": "Finance", "createdAt": "2026-01-01T08:00:00Z"}
     ],
+    "qualifications": [
+        {"id": 1, "name": "Management"},
+        {"id": 2, "name": "POS"},
+        {"id": 3, "name": "Development"},
+        {"id": 4, "name": "C++"},
+        {"id": 5, "name": "UI/UX Design"},
+        {"id": 6, "name": "Figma"},
+        {"id": 7, "name": "Angular"},
+        {"id": 8, "name": ".NET"}
+    ],
     "sites": [
         {
             "id": 1,

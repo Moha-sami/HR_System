@@ -39,6 +39,33 @@
       "COMMENTS": "Comments"
     }
   },
+  "JOB_MANAGEMENT": {
+    "TITLE": "Job Management",
+    "ADD_JOB": "Add New Job",
+    "JOB_ROLE": "Job Role",
+    "JOB_ROLE_PLACEHOLDER": "Enter job role",
+    "DEPARTMENT": "Department",
+    "SELECT_DEPARTMENT": "Select a department",
+    "QUALIFICATIONS": "Qualifications",
+    "QUALIFICATION_PLACEHOLDER": "Type a qualification and press Enter",
+    "CANCEL": "Cancel",
+    "SAVE": "Save",
+    "JOB_CREATED": "Job Created",
+    "SUCCESS_MESSAGE": "The job has been created successfully.",
+    "SORT": "Sort",
+    "EXPORT": "Export",
+    "SEARCH_PLACEHOLDER": "Type here...",
+    "NO_JOBS": "No jobs available",
+    "EDIT": "Edit Job",
+    "DELETE": "Delete Job",
+    "VIEW": "View Job",
+    "TABLE": {
+      "JOB_NAME": "Job Name",
+      "DEPARTMENT": "Department",
+      "QUALIFICATIONS": "Qualifications",
+      "ACTIONS": "Actions"
+    }
+  },
   "EMPLOYEE_MANAGEMENT": {
     "TITLE": "Employee Management",
     "ADD_EMPLOYEES": "Add Employees",
