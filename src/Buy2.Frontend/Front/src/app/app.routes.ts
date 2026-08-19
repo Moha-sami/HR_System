@@ -46,7 +46,7 @@ export const routes: Routes = [
   {
     path: '',
     component: Layout,
-    canActivate: [authGuard], // ← uncomment when auth is ready
+    // canActivate: [authGuard], // ← uncomment when auth is ready
     children: [
       // Default redirect → docs (temporary until dashboard is built)
       { path: '', redirectTo: 'docs', pathMatch: 'full' },
@@ -62,18 +62,19 @@ export const routes: Routes = [
       // ──────────────────────────────────────────────────────────────────────
       // §2.2 — Comprehensive Employee Profiles
       // ──────────────────────────────────────────────────────────────────────
-      // {
-      //   path: 'employees',
-      //   loadChildren: () => import('./features/employees/employees.routes').then(m => m.EMPLOYEES_ROUTES)
-      // },
+      {
+        path: 'employees',
+        loadChildren: () =>
+          import('./features/employees/employees.routes').then((m) => m.EMPLOYEES_ROUTES),
+      },
 
       // ──────────────────────────────────────────────────────────────────────
       // §2.1 — Job Management & Role Engineering
       // ──────────────────────────────────────────────────────────────────────
-      // {
-      //   path: 'jobs',
-      //   loadChildren: () => import('./features/jobs/jobs.routes').then(m => m.JOBS_ROUTES)
-      // },
+      {
+        path: 'jobs',
+        loadChildren: () => import('./features/jobs/jobs.routes').then(m => m.JOBS_ROUTES)
+      },
 
       // ──────────────────────────────────────────────────────────────────────
       // §3.1 — Site & Location Management
@@ -130,6 +131,11 @@ export const routes: Routes = [
         path: 'roles',
         loadChildren: () => import('./features/roles/roles.routes').then((m) => m.ROLES_ROUTES),
       },
+      
+      {
+        path: 'points',
+        loadChildren: () => import('./features/points/points.routes').then((m) => m.POINTS_ROUTES),
+      }
 
       // ──────────────────────────────────────────────────────────────────────
       // User Profile & Company Config

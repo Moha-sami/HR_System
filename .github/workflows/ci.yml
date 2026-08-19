@@ -10,8 +10,6 @@ jobs:
   build-dotnet:
     name: Build & Test .NET Backend
     runs-on: ubuntu-latest
-    env:
-      MONSTERASP_FTP_PASSWORD: ${{ secrets.MONSTERASP_FTP_PASSWORD }}
 
     steps:
     - name: Checkout Code
@@ -21,18 +19,25 @@ jobs:
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: '10.0.x'
+        include-prerelease: true
 
     - name: Restore & Build Solution
       run: dotnet build --configuration Release HR_system.slnx
 
     - name: Publish .NET Backend API
       if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-      run: |
-        dotnet publish src/Buy2.Api/Buy2.Api.csproj -c Release -o publish_out
-        echo "<h1>Site updating...</h1>" > ./publish_out/app_offline.htm
+      run: dotnet publish src/Buy2.Api/Buy2.Api.csproj -c Release -o publish_out
 
-    - name: FTP Auto-Deploy to MonsterASP
-      if: github.ref == 'refs/heads/main' && github.event_name == 'push' && env.MONSTERASP_FTP_PASSWORD != ''
+    - name: Take Site Offline via FTP
+      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      run: |
+        echo "App is being updated, please wait..." > /tmp/app_offline.htm
+        curl -s -T /tmp/app_offline.htm --user "site84943:${{ secrets.MONSTERASP_FTP_PASSWORD }}" "ftp://hr-system-api.runasp.net/wwwroot/app_offline.htm"
+        echo "Uploaded app_offline.htm - waiting for IIS to release file locks..."
+        sleep 10
+
+    - name: Deploy via FTP
+      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
       uses: SamKirkland/FTP-Deploy-Action@v4.3.5
       with:
         server: hr-system-api.runasp.net
@@ -42,10 +47,11 @@ jobs:
         server-dir: /wwwroot/
         dangerous-clean-slate: false
 
-    - name: Bring Site Back Online (Delete app_offline.htm)
-      if: github.ref == 'refs/heads/main' && github.event_name == 'push' && env.MONSTERASP_FTP_PASSWORD != ''
+    - name: Bring Site Back Online
+      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
       run: |
-        curl -u "site84943:${{ secrets.MONSTERASP_FTP_PASSWORD }}" -Q "DELE /wwwroot/app_offline.htm" ftp://hr-system-api.runasp.net/ || true
+        curl -s --user "site84943:${{ secrets.MONSTERASP_FTP_PASSWORD }}" "ftp://hr-system-api.runasp.net" -Q "DELE /wwwroot/app_offline.htm" || true
+        echo "Deleted app_offline.htm - site is back online!"
 
   build-angular:
     name: Verify Angular Frontend Scaffold

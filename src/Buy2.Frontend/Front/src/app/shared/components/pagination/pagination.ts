@@ -5,6 +5,7 @@ type PageItem = number | 'ellipsis';
 
 @Component({
   selector: 'app-pagination',
+  standalone: true,
   imports: [ButtonComponent],
   templateUrl: './pagination.html',
   styleUrl: './pagination.css',

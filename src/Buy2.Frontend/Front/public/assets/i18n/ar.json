@@ -1,7 +1,10 @@
 {
   "LAYOUT": {
     "LOGOUT": "تسجيل الخروج",
-    "LANGUAGE": { "ENGLISH": "الإنجليزية", "ARABIC": "العربية" },
+    "LANGUAGE": {
+      "ENGLISH": "الإنجليزية",
+      "ARABIC": "العربية"
+    },
     "NAV": {
       "DASHBOARD": "لوحة التحكم",
       "EMPLOYEE_MANAGEMENT": "إدارة الموظفين",
@@ -130,5 +133,36 @@
     "PERMISSIONS": "الصلاحيات",
     "DESCRIPTION": "الوصف",
     "ROLE_NAME": "اسم الدور"
+  "POINTS": {
+    "TITLE": "إدارة النقاط",
+    "POINTS_AUTOMATION": "أتمتة النقاط",
+    "ALL_MONTHS": "كل الأشهر",
+    "FILTER_BY": "تصفية حسب",
+    "TRIGGERED_BY": "تم التشغيل بواسطة",
+    "TYPE": "النوع",
+    "SEARCH_PLACEHOLDER": "البحث باسم الموظف أو الرقم التعريفي",
+    "ADD_TRANSACTION": "إضافة معاملة",
+    "NO_TRANSACTIONS": "لا توجد معاملات نقاط",
+    "TABLE": {
+      "ID": "الرقم",
+      "NAME": "الاسم",
+      "DATE": "التاريخ",
+      "TIME": "الوقت",
+      "POINTS": "النقاط",
+      "TRIGGERED_BY": "تم التشغيل بواسطة",
+      "COMMENTS": "التعليقات"
+    }
+  },
+  "EMPLOYEE_MANAGEMENT": {
+    "TITLE": "إدارة الموظفين",
+    "ADD_EMPLOYEES": "إضافة موظفين",
+    "EMPLOYEE_ID": "معرف الموظف",
+    "EMPLOYEE_NAME": "اسم الموظف",
+    "JOIN_DATE": "تاريخ الانضمام",
+    "JOB_TITLE": "المسمى الوظيفي",
+    "EMAIL": "البريد الإلكتروني",
+    "ADMIN_ACCESS": "صلاحية المسؤول",
+    "ACTIONS": "الإجراءات",
+    "NO_EMPLOYEES": "لا يوجد موظفون"
   }
 }

@@ -23,6 +23,12 @@ public class Buy2DbContext : DbContext
     public DbSet<ShiftClaim> ShiftClaims => Set<ShiftClaim>();
     public DbSet<ShiftEntity> ShiftEntities => Set<ShiftEntity>();
     public DbSet<Site> Sites => Set<Site>();
+    public DbSet<PayrollProfile> PayrollProfiles => Set<PayrollProfile>();
+    public DbSet<EmployeeSite> EmployeeSites => Set<EmployeeSite>();
+    public DbSet<PerformanceMetric> PerformanceMetrics => Set<PerformanceMetric>();
+    public DbSet<PerformanceSubmission> PerformanceSubmissions => Set<PerformanceSubmission>();
+    public DbSet<EmployeeAchievement> EmployeeAchievements => Set<EmployeeAchievement>();
+    public DbSet<EmployeeTask> EmployeeTasks => Set<EmployeeTask>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -31,5 +37,8 @@ public class Buy2DbContext : DbContext
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(Buy2DbContext).Assembly);
 
         modelBuilder.Entity<Role>().HasQueryFilter(r => r.IsActive);
+
+        modelBuilder.Entity<EmployeeSite>()
+            .HasKey(es => new { es.EmployeeId, es.SiteId });
     }
 }
