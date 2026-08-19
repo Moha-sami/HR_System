@@ -6,7 +6,8 @@
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "server": "npx json-server --watch ./JsonServer/data.json --port 3000"
   },
   "private": true,
   "packageManager": "npm@11.8.0",
@@ -32,6 +33,7 @@
     "prettier": "^3.8.1",
     "tailwindcss": "^4.1.12",
     "typescript": "~5.9.2",
-    "vitest": "^4.0.8"
+    "vitest": "^4.0.8",
+    "json-server": "^1.0.0-beta.3"
   }
 }

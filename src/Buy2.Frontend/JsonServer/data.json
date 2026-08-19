@@ -695,6 +695,111 @@
         "period": "daily",
         "attendanceRanges": [
           {
+            "title": "UI/UX Designer",
+            "departmentId": 2,
+            "requiredQualificationsJson": "[\"figma\",\"management\"]",
+            "createdAt": "2026-01-01T08:00:00Z"
+        },
+        {
+            "id": 2,
+            "title": "Software Developer",
+            "departmentId": 1,
+            "requiredQualificationsJson": "[\"angular\",\"dotnet\",\"sql\"]",
+            "createdAt": "2026-01-01T08:00:00Z"
+        },
+        {
+            "id": 3,
+            "title": "Cashier",
+            "departmentId": 3,
+            "requiredQualificationsJson": "[\"pos_system\"]",
+            "createdAt": "2026-01-01T08:00:00Z"
+        },
+        {
+            "id": 4,
+            "title": "Barista",
+            "departmentId": 3,
+            "requiredQualificationsJson": "[\"coffee_machine\",\"food_safety\"]",
+            "createdAt": "2026-01-01T08:00:00Z"
+        },
+        {
+            "id": 5,
+            "title": "HR Coordinator",
+            "departmentId": 4,
+            "requiredQualificationsJson": "[\"hr_systems\",\"conflict_resolution\"]",
+            "createdAt": "2026-01-01T08:00:00Z"
+        },
+        {
+            "id": 6,
+            "title": "Financial Analyst",
+            "departmentId": 5,
+            "requiredQualificationsJson": "[\"excel\",\"financial_modeling\"]",
+            "createdAt": "2026-01-01T08:00:00Z"
+        }
+    ],
+    "jobs": [
+        {
+            "id": 1,
+            "jobName": "UI UX Designer",
+            "jobDescription": "Lorem Ipsum is simply dummy text of the printing and",
+            "numberOfEmployees": 5
+        },
+        {
+            "id": 2,
+            "jobName": "Software Engineer",
+            "jobDescription": "Lorem Ipsum is simply dummy text of the printing and",
+            "numberOfEmployees": 12
+        },
+        {
+            "id": 3,
+            "jobName": "Product Manager",
+            "jobDescription": "Lorem Ipsum is simply dummy text of the printing and",
+            "numberOfEmployees": 3
+        },
+        {
+            "id": 4,
+            "jobName": "QA Tester",
+            "jobDescription": "Lorem Ipsum is simply dummy text of the printing and",
+            "numberOfEmployees": 8
+        },
+        {
+            "id": 5,
+            "jobName": "Data Analyst",
+            "jobDescription": "Lorem Ipsum is simply dummy text of the printing and",
+            "numberOfEmployees": 4
+        },
+        {
+            "id": 6,
+            "jobName": "HR Specialist",
+            "jobDescription": "Lorem Ipsum is simply dummy text of the printing and",
+            "numberOfEmployees": 2
+        },
+        {
+            "id": 7,
+            "jobName": "Marketing Manager",
+            "jobDescription": "Lorem Ipsum is simply dummy text of the printing and",
+            "numberOfEmployees": 6
+        },
+        {
+            "id": 8,
+            "jobName": "Sales Representative",
+            "jobDescription": "Lorem Ipsum is simply dummy text of the printing and",
+            "numberOfEmployees": 15
+        },
+        {
+            "id": 9,
+            "jobName": "Customer Support",
+            "jobDescription": "Lorem Ipsum is simply dummy text of the printing and",
+            "numberOfEmployees": 20
+        },
+        {
+            "id": 10,
+            "jobName": "DevOps Engineer",
+            "jobDescription": "Lorem Ipsum is simply dummy text of the printing and",
+            "numberOfEmployees": 5
+        }
+    ],
+    "employees": [
+        {
             "id": 1,
             "type": "Reward",
             "from": 80,

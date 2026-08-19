@@ -1,46 +1,50 @@
 import { Component, inject, effect, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DOCUMENT } from '@angular/common';
 import { Router, NavigationEnd, RouterLink } from '@angular/router';
 import { filter } from 'rxjs/operators';
+import { TranslatePipe } from '@ngx-translate/core';
 
 interface BreadcrumbItem {
   label: string;
   url: string;
   isActive: boolean;
+  translationKey?: string;
 }
 
-const routeLabels: Record<string, string> = {
-  dashboard: 'Dashboard',
-  employees: 'Employee Management',
-  'employees/add': 'Add Employee',
-  'employees/edit': 'Edit Employee',
-  jobs: 'Job Management',
-  'jobs/create': 'Create Job',
-  'jobs/edit': 'Edit Job',
-  roles: 'Role Management',
-  'roles/create': 'Create Role',
-  'roles/edit': 'Edit Role',
-  rewards: 'Reward Management',
-  points: 'Points Management',
-  'points/add': 'Add Transaction',
-  'points/automation': 'Points Automation',
-  'points/automation/setup': 'Set up',
-  sites: 'Site Management',
-  requests: 'Request Management',
-  attendance: 'Time & Attendance',
-  notifications: 'Notifications',
-  scheduling: 'Scheduling',
+const routeTranslationKeys: Record<string, string> = {
+  '/dashboard': 'LAYOUT.NAV.DASHBOARD',
+  '/employees': 'LAYOUT.NAV.EMPLOYEE_MANAGEMENT',
+  '/employees/add': 'COMMON.CREATE',
+  '/employees/edit': 'COMMON.EDIT',
+  '/jobs': 'LAYOUT.NAV.JOB_MANAGEMENT',
+  '/jobs/create': 'COMMON.CREATE',
+  '/jobs/edit': 'COMMON.EDIT',
+  '/roles': 'LAYOUT.NAV.ROLE_MANAGMENT',
+  '/roles/create': 'ROLES.CREATE.TITLE',
+  '/roles/edit': 'ROLES.EDIT.TITLE',
+  '/rewards': 'LAYOUT.NAV.REWARD_MANAGEMENT',
+  '/points': 'LAYOUT.NAV.POINTS_MANAGEMENT',
+  '/sites': 'LAYOUT.NAV.SITE_MANAGEMENT',
+  '/requests': 'LAYOUT.NAV.REQUEST_MANAGEMENT',
+  '/attendance': 'LAYOUT.NAV.TIME_AND_ATTENDANCE',
+  '/notifications': 'LAYOUT.NAV.NOTIFICATIONS',
+  '/scheduling': 'LAYOUT.NAV.SCHEDULING',
 };
 
 @Component({
   selector: 'app-breadcrumb',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, TranslatePipe],
   templateUrl: './breadcrumb.html',
 })
 export class BreadcrumbComponent {
   private router = inject(Router);
+  private document = inject(DOCUMENT);
   items = signal<BreadcrumbItem[]>([]);
+
+  get isRtl(): boolean {
+    return this.document.documentElement.dir === 'rtl';
+  }
 
   constructor() {
     effect(() => {
@@ -64,20 +68,17 @@ export class BreadcrumbComponent {
 
     let currentPath = '';
     segments.forEach((segment, index) => {
-      currentPath += '/' + segment;
+      currentPath = `${currentPath}/${segment}`;
       const isLast = index === segments.length - 1;
-      const labelKey = currentPath.replace(/^\//, '');
-      const label = routeLabels[labelKey] || this.formatLabel(segment);
-      breadcrumbs.push({ label, url: currentPath, isActive: isLast });
+      const translationKey = routeTranslationKeys[currentPath];
+      breadcrumbs.push({
+        label: '',
+        url: currentPath,
+        isActive: isLast,
+        translationKey: translationKey || undefined,
+      });
     });
 
     this.items.set(breadcrumbs);
-  }
-
-  private formatLabel(segment: string): string {
-    return segment
-      .split('-')
-      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-      .join(' ');
   }
 }

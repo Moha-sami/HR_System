@@ -1,5 +1,6 @@
 import { Component, Input, type OnInit, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
+import { TranslatePipe } from '@ngx-translate/core';
 import { RoleService } from '../services/role.service';
 import { PermissionGroupComponent } from '@app/features/roles/components/permission-group/permission-group.component';
 import { AccessTypeTabsComponent } from '@app/features/roles/components/access-type-tabs/access-type-tabs.component';
@@ -24,6 +25,7 @@ import { ButtonComponent } from '@app/shared/components/button/button.component'
     ModalBodyComponent,
     ModalFooterComponent,
     ButtonComponent,
+    TranslatePipe,
   ],
   templateUrl: './role-edit.component.html',
 })
