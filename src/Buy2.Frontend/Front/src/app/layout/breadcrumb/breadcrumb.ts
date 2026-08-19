@@ -56,7 +56,7 @@ export class BreadcrumbComponent {
   }
 
   private buildBreadcrumbs(): void {
-    const url = this.router.url.split('?')[0].split('#')[0];
+    const url = this.router.url;
     const segments = url.split('/').filter(Boolean);
 
     if (segments.length === 0) {

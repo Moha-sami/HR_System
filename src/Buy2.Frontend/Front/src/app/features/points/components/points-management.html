@@ -1,167 +1,82 @@
-<section class="points-management p-6 flex flex-col gap-5">
-  <ng-template #pointsTemplate let-row>
-    <span
-      class="text-sm font-medium"
-      [style.color]="row.points >= 0 ? '#16a34a' : '#dc2626'"
-    >
-      {{ formatPoints(row.points) }}
-    </span>
-  </ng-template>
+<section class="flex flex-col gap-4">
+    <ng-template #pointsTemplate let-row>
+        <span class="text-sm font-medium" [style.color]="row.points >= 0 ? '#16a34a' : '#dc2626'">
+            {{ row.points > 0 ? '+' + row.points : row.points }}
+        </span>
+    </ng-template>
 
-  <ng-template #triggeredByTemplate let-row>
-    <span class="text-sm text-neutral-700">{{ row.triggeredBy }}</span>
-  </ng-template>
+    <div class="flex items-center justify-between">
+        <h1 class="text-lg font-semibold">
+            {{ 'POINTS.TITLE' | translate }}
+        </h1>
 
-  <div class="flex items-center justify-between gap-4">
-    <h1 class="text-2xl font-semibold text-neutral-900">
-      {{ 'POINTS.TITLE' | translate }}
-    </h1>
+        <app-button variant="primary-light" size="sm">
+            {{ 'POINTS.POINTS_AUTOMATION' | translate }}
+        </app-button>
+    </div>
 
-    <app-button variant="primary-light" size="sm" (clicked)="navigateToAutomation()">
-      {{ 'POINTS.POINTS_AUTOMATION' | translate }}
-    </app-button>
-  </div>
-
-  <div class="flex flex-wrap items-center justify-between gap-4">
-    <div class="flex items-center gap-1">
-      <button
-        type="button"
-        class="inline-flex h-9 w-9 items-center justify-center rounded-md text-primary-600 hover:bg-primary-50"
-        [attr.aria-label]="'POINTS.PREVIOUS_MONTH' | translate"
-        (click)="shiftMonth(-1)"
-      >
-        <svg
-          aria-hidden="true"
-          class="h-4 w-4"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-        >
-          <path stroke-linecap="round" stroke-linejoin="round" d="M15 18l-6-6 6-6" />
-        </svg>
-      </button>
-
-      <div class="relative min-w-40">
-        <select
-          class="h-9 w-full appearance-none rounded-lg border-0 bg-transparent pe-7 ps-2 text-sm font-medium text-neutral-800 focus:outline-none focus:ring-2 focus:ring-primary-400"
-          [value]="selectedMonth()"
-          (change)="updateSelectedMonth($event)"
-        >
-          @for (month of availableMonths(); track month) {
-            <option [value]="month">
-              {{ monthOptionLabel(month) }}
+    <div class="flex items-center justify-between gap-4">
+        <select class="rounded-lg border px-3 py-2 text-sm" [value]="selectedMonth()" (change)="updateMonth($event)">
+            <option value="">
+                {{ 'POINTS.ALL_MONTHS' | translate }}
             </option>
-          }
+
+            @for (month of availableMonths(); track month) {
+            <option [value]="month">
+                {{ formatMonth(month) }}
+            </option>
+            }
         </select>
 
-        <svg
-          aria-hidden="true"
-          class="pointer-events-none absolute end-1 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-neutral-500"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-        >
-          <path stroke-linecap="round" stroke-linejoin="round" d="M6 9l6 6 6-6" />
-        </svg>
-      </div>
+        <div class="flex items-center gap-2">
+            <span class="text-sm">
+                {{ 'POINTS.FILTER_BY' | translate }}
+            </span>
 
-      <button
-        type="button"
-        class="inline-flex h-9 w-9 items-center justify-center rounded-md text-primary-600 hover:bg-primary-50"
-        [attr.aria-label]="'POINTS.NEXT_MONTH' | translate"
-        (click)="shiftMonth(1)"
-      >
-        <svg
-          aria-hidden="true"
-          class="h-4 w-4"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-        >
-          <path stroke-linecap="round" stroke-linejoin="round" d="M9 18l6-6-6-6" />
-        </svg>
-      </button>
+            <select class="rounded-lg border px-3 py-2 text-sm" [value]="selectedTrigger()"
+                (change)="updateTrigger($event)">
+                <option value="">
+                    {{ 'POINTS.TRIGGERED_BY' | translate }}
+                </option>
+
+                @for (
+                trigger of availableTriggers();
+                track trigger
+                ) {
+                <option [value]="trigger">
+                    {{ trigger }}
+                </option>
+                }
+            </select>
+
+            <select class="rounded-lg border px-3 py-2 text-sm" [value]="selectedType()" (change)="updateType($event)">
+                <option value="">
+                    {{ 'POINTS.TYPE' | translate }}
+                </option>
+
+                @for (type of availableTypes(); track type) {
+                <option [value]="type">
+                    {{ type }}
+                </option>
+                }
+            </select>
+        </div>
     </div>
 
-    <div class="flex flex-wrap items-center gap-2">
-      <span class="text-sm text-neutral-600">
-        {{ 'POINTS.FILTER_BY' | translate }}
-      </span>
+    <div class="flex items-center gap-2">
+        <input type="search" class="w-full rounded-lg border px-3 py-2 text-sm" [placeholder]="
+        'POINTS.SEARCH_PLACEHOLDER' | translate
+      " [value]="searchTerm()" (input)="updateSearch($event)" />
 
-      <select
-        class="h-10 min-w-40 rounded-lg border border-neutral-200 bg-white px-3 text-sm text-neutral-700 focus:outline-none focus:ring-2 focus:ring-primary-400"
-        [value]="selectedTrigger()"
-        (change)="updateTrigger($event)"
-      >
-        <option value="">
-          {{ 'POINTS.TRIGGERED_BY' | translate }}
-        </option>
-
-        @for (trigger of availableTriggers(); track trigger) {
-          <option [value]="trigger">{{ trigger }}</option>
-        }
-      </select>
-
-      <select
-        class="h-10 min-w-32 rounded-lg border border-neutral-200 bg-white px-3 text-sm text-neutral-700 focus:outline-none focus:ring-2 focus:ring-primary-400"
-        [value]="selectedType()"
-        (change)="updateType($event)"
-      >
-        <option value="">
-          {{ 'POINTS.TYPE' | translate }}
-        </option>
-
-        @for (type of availableTypes(); track type) {
-          <option [value]="type">{{ type }}</option>
-        }
-      </select>
-    </div>
-  </div>
-
-  <div class="flex flex-wrap items-center gap-3">
-    <div class="relative min-w-0 flex-1">
-      <svg
-        aria-hidden="true"
-        class="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-      >
-        <circle cx="11" cy="11" r="7" />
-        <path stroke-linecap="round" d="M20 20l-3-3" />
-      </svg>
-
-      <input
-        type="search"
-        class="h-11 w-full rounded-lg border border-neutral-200 bg-white pe-3 ps-10 text-sm text-neutral-800 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-400"
-        [placeholder]="'POINTS.SEARCH_PLACEHOLDER' | translate"
-        [value]="searchTerm()"
-        (input)="updateSearch($event)"
-      />
+        <app-button size="sm">
+            {{ 'POINTS.ADD_TRANSACTION' | translate }}
+        </app-button>
     </div>
 
-    <app-button size="sm" (clicked)="navigateToAddTransaction()">
-      {{ 'POINTS.ADD_TRANSACTION' | translate }}
-    </app-button>
-  </div>
+    <app-table [columns]="columns()" [rows]="paginatedTransactions()" [cellTemplates]="cellTemplates()" size="sm"
+        [emptyMessage]="'POINTS.NO_TRANSACTIONS' | translate" />
 
-  <app-table
-    [columns]="columns()"
-    [rows]="paginatedTransactions()"
-    [cellTemplates]="cellTemplates()"
-    size="sm"
-    [emptyMessage]="'POINTS.NO_TRANSACTIONS' | translate"
-  />
-
-  <div class="flex justify-center">
-    <app-pagination
-      [totalPages]="totalPages()"
-      [initialPage]="currentPage()"
-      (pageChanged)="changePage($event)"
-    />
-  </div>
+    <div class="flex justify-center">
+        <app-pagination [totalPages]="totalPages()" [initialPage]="currentPage()" (pageChanged)="changePage($event)" />
+    </div>
 </section>
