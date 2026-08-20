@@ -24,3 +24,4 @@ docs/assets
 /.agents/agents
 /GEMINI.md
 /docs/migrations/20260818_AddNewEntities.sql
+/CHANGELOG.md
