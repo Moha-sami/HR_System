@@ -37,6 +37,7 @@ public class Buy2DbContext : DbContext
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(Buy2DbContext).Assembly);
 
         modelBuilder.Entity<Role>().HasQueryFilter(r => r.IsActive);
+        modelBuilder.Entity<Employee>().HasQueryFilter(e => !e.IsDeleted);
 
         modelBuilder.Entity<EmployeeSite>()
             .HasKey(es => new { es.EmployeeId, es.SiteId });

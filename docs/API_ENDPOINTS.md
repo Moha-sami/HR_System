@@ -61,3 +61,15 @@ This document outlines the REST API endpoints provided by the Buy2 HRMS backend 
     - `Id`, `FirstName`, `LastName`, `EmployeeCode`, `Email`, `Phone`, `BirthDate`, `Gender`, `JobTitle`, `Department`, `SeniorityLevel`, `ExperienceYears`, `DirectManagerName`, `JobType`, `SiteName`, `RoleName`, `Qualifications` (array of strings), `TotalPoints`, `TotalTasks`, `TotalGifts`
   - `404 Not Found` if employee with specified `id` does not exist.
 
+### `DELETE /api/v1/employees/{id}`
+- **Authorization**: `[Authorize(Roles = "Admin,SuperAdmin")]`
+- **Path Parameters**:
+  - `id` (int, required) - Unique ID of the employee
+- **Description**: Soft deletes / deactivates an employee by setting `IsDeleted = true`, `DeletedAt = DateTimeOffset.UtcNow`, and `IsActive = false`. Preserves related historical records (payroll, points, tasks, and disciplinary actions). Soft-deleted records are automatically filtered out from standard queries via EF Core global query filters.
+- **Responses**:
+  - `204 No Content` on successful soft deletion / deactivation.
+  - `404 Not Found` if employee with specified `id` does not exist or has already been soft-deleted.
+  - `401 Unauthorized` if the request is unauthenticated.
+  - `403 Forbidden` if authenticated user does not have `Admin` or `SuperAdmin` role.
+
+
