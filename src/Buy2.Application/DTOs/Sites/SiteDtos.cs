@@ -1,6 +1,4 @@
-﻿using Buy2.Domain.Entities;
-
-namespace Buy2.Application.DTOs.Sites;
+﻿namespace Buy2.Application.DTOs.Sites;
 public record CreateUpdateSiteDto(
     string SiteName,
     double Latitude,
@@ -17,10 +15,10 @@ public record CreateUpdateSiteDto(
 );
 public record SiteOperationalHourDto
 (
-    DayOfWeek DayOfWeek,
+    DayOfWeek Day,
     bool IsOpen,
-    DateTimeOffset OpenTime,
-    DateTimeOffset CloseTime
+    TimeOnly From,
+    TimeOnly To
 );
 public record RegionListItemDto(
     int Id, string Name
@@ -41,3 +39,54 @@ public record SiteListResponseDto(
     int Page,
     int PageSize
 );
+
+// Setp 4
+public record SiteFullProfile(
+    string SiteName,
+    string RegionName,
+    string Address,
+    string MacAddress,
+    string MapUrl,
+    string PhoneNumber,
+    string Instructions,
+    List<PreferredPersonDto> PreferredPeople,
+    List<DocumentDto> Documents,
+    List<OperationalScheduleDto> OperationalSchedule
+);
+public record PreferredPersonDto(string Name, string RoleTitle);
+public record DocumentDto(int Id, string FileName, string Url);
+public record OperationalScheduleDto(DayOfWeek Day, TimeOnly From, TimeOnly To);
+
+public record ShiftTabDto(
+    int ShiftId,
+    string ShiftName,
+    TimeOnly StartTime,
+    TimeOnly EndTime,
+    bool IsSmartPostingEnabled,
+    List<ShiftRoleHeadcountDto> Roles
+);
+public record ShiftRoleHeadcountDto(
+    string RoleName,
+    int RequiredHeadcount
+);
+
+public record EmployeeTabDto(
+    int EmployeeId, 
+    string FullName,
+    string RoleName,
+    string Email,
+    string PhoneNumber,
+    string Status
+);
+
+// step 5
+public record DeletionCheckDto(
+    bool CanDelete, 
+    int AllocatedEmployeesCount,
+    List<AllocatedEmployeeDto> AllocatedEmployees
+);
+public record AllocatedEmployeeDto(int EmployeeId, string FullName);
+public record ReallocateAndDeleteSiteDto(
+    List<EmployeeSiteReassignmentsDto> EmployeeSiteReassignments
+);
+public record EmployeeSiteReassignmentsDto(int EmployeeId, int NewSiteId);
