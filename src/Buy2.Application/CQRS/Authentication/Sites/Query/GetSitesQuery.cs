@@ -29,8 +29,8 @@ public class GetSitesQueryHandler : IRequestHandler<GetSitesQuery, List<SiteDto>
             s.MapUrl,
             s.PhoneNumber,
             s.Instructions,
-            s.MaxCapacity,
-            s.RegionId
+            s.RegionId,
+            s.MaxCapacity
         )).ToList();
     }
 }
