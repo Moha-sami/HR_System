@@ -24,7 +24,13 @@ public class GetSitesQueryHandler : IRequestHandler<GetSitesQuery, List<SiteDto>
             s.SiteName,
             s.Latitude,
             s.Longitude,
-            new List<string>()
+            s.MacAddress,
+            s.Address,
+            s.MapUrl,
+            s.PhoneNumber,
+            s.Instructions,
+            s.MaxCapacity,
+            s.RegionId
         )).ToList();
     }
 }

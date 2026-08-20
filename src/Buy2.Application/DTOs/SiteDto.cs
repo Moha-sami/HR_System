@@ -1,3 +1,5 @@
+using Buy2.Domain.Entities;
+
 namespace Buy2.Application.DTOs;
 
 public record SiteDto(
@@ -5,5 +7,11 @@ public record SiteDto(
     string SiteName,
     double Latitude,
     double Longitude,
-    List<string> MacAddressWhitelist
+    string MacAddress,
+    string Address,
+    string MapUrl,
+    string PhoneNumber,
+    string Instructions,
+    int RegionId,
+    int MaxCapacity
 );
