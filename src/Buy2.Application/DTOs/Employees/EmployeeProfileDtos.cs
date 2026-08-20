@@ -80,26 +80,3 @@ public record UpdateJobDetailsRequestDto(
     string? JobType
 );
 
-// 8. Bulk Onboard DTOs
-public record BulkOnboardEmployeeRowDto(
-    string FirstName,
-    string LastName,
-    string Email,
-    string? PhoneNumber,
-    int JobRoleId,
-    int SiteId,
-    int RoleId,
-    Gender? Gender = null,
-    DateTime? Birthdate = null
-);
-
-public record BulkOnboardFailedRowDto(
-    int RowIndex,
-    string ErrorMessage
-);
-
-public record BulkOnboardResultDto(
-    int CreatedCount,
-    int FailedCount,
-    List<BulkOnboardFailedRowDto> FailedRows
-);
