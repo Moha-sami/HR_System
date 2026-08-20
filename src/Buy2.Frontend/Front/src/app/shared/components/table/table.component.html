@@ -66,12 +66,12 @@
 
   <!-- Body -->
   <div class="flex flex-col">
-    @if (sortedRows().length === 0) {
+    @if (rows().length === 0) {
       <div class="p-8 text-center text-sm text-neutral-400">
         {{ emptyMessage() }}
       </div>
     } @else {
-      @for (row of sortedRows(); track $index) {
+      @for (row of rows(); track $index) {
         <div
           class="grid items-center cursor-pointer transition-colors bg-white hover:bg-neutral-50"
           [style.grid-template-columns]="getGridTemplate()"
