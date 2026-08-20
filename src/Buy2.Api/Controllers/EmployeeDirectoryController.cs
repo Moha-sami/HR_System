@@ -1,4 +1,5 @@
 using Buy2.Application.DTOs.Employees;
+using Buy2.Application.Features.Employees.DeleteEmployee;
 using Buy2.Application.Features.Employees.ExportEmployees;
 using Buy2.Application.Features.Employees.GetEmployee;
 using Buy2.Application.Features.Employees.GetEmployees;
@@ -50,6 +51,22 @@ public class EmployeeDirectoryController : ControllerBase
     {
         var result = await _mediator.Send(query, cancellationToken);
         return File(result, "text/csv", "employees.csv");
+    }
+
+    [HttpDelete("{id:int}")]
+    [Authorize(Roles = "Admin,SuperAdmin")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> DeleteEmployee(int id, CancellationToken cancellationToken)
+    {
+        var deleted = await _mediator.Send(new DeleteEmployeeCommand(id), cancellationToken);
+        if (!deleted)
+        {
+            return NotFound();
+        }
+        return NoContent();
     }
 }
 
