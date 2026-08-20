@@ -1,4 +1,4 @@
-import { Component, input, output, signal, computed, type TemplateRef } from '@angular/core';
+import { Component, input, output, signal, type TemplateRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 export interface ColumnDef {
@@ -38,19 +38,6 @@ export class TableComponent {
   sortColumn = signal('');
   sortDirection = signal<'asc' | 'desc'>('asc');
   selectedRows = signal<Set<any>>(new Set());
-
-  sortedRows = computed(() => {
-    const rows = this.rows();
-    const col = this.sortColumn();
-    const dir = this.sortDirection();
-    if (!col) return rows;
-    return [...rows].sort((a, b) => {
-      const aVal = a[col];
-      const bVal = b[col];
-      const comparison = String(aVal).localeCompare(String(bVal));
-      return dir === 'asc' ? comparison : -comparison;
-    });
-  });
 
   getTemplate(column: ColumnDef): TemplateRef<CellContext> | null {
     if (!column.template) return null;
