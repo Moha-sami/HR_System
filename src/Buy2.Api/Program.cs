@@ -97,6 +97,9 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
+// Add Health Checks
+builder.Services.AddHealthChecks();
+
 // Add Application Layer Services (MediatR Handlers)
 builder.Services.AddApplicationServices();
 
@@ -108,8 +111,20 @@ var app = builder.Build();
 // Auto-Seed Database on Startup
 using (var scope = app.Services.CreateScope())
 {
-    var dbContext = scope.ServiceProvider.GetRequiredService<Buy2DbContext>();
-    await DatabaseSeeder.SeedAsync(dbContext);
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+    try
+    {
+        var dbContext = scope.ServiceProvider.GetRequiredService<Buy2DbContext>();
+        await DatabaseSeeder.SeedAsync(dbContext);
+    }
+    catch (Exception ex)
+    {
+        logger.LogCritical(ex, "FATAL: Database seeding or startup check failed: {Message}", ex.Message);
+        if (app.Environment.IsDevelopment())
+        {
+            throw;
+        }
+    }
 }
 
 // Enable Swagger UI middleware at root ("/")
@@ -129,6 +144,7 @@ app.UseCors("AllowFrontend");
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.MapHealthChecks("/health");
 app.MapControllers();
 
 app.Run();

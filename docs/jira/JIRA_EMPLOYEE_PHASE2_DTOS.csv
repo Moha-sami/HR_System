@@ -1,0 +1,59 @@
+Issue Type,Summary,Description,Labels
+Task,[DTO-1] Create Employee List and Profile DTOs,"**Priority**: P1 — Prerequisite for all employee endpoints
+**Layer**: Buy2.Application
+**Depends on**: ENTITY-1 through ENTITY-9 complete
+
+**Location**: `src/Buy2.Application/DTOs/Employees/EmployeeProfileDtos.cs` [NEW]
+
+**Steps**:
+1. Create a DTO for the employee list row containing: EmployeeCode, EmployeeName, JoinDate, JobTitle, Email, AdminAccess.
+2. Create a paginated list response DTO wrapping the list with TotalCount, Page, PageSize.
+3. Create an employee stats DTO with: TotalPoints, TotalTasks, TotalGifts (used in profile header on all tabs).
+4. Create a full profile DTO for the Information tab containing: EmployeeCode, FullName, Phone, Email, Location, ProfilePhotoUrl, Stats, PersonalInfo section, and JobDetails section.
+5. Create a PersonalInfo DTO with: Birthdate, Gender.
+6. Create a JobDetails DTO with: Title, Department, SeniorityLevel, ExperienceYears, DirectManager name, JobType, Qualifications list.
+7. Create update input DTOs for personal info and job details — all fields nullable to support partial updates.
+8. Create bulk onboard input DTO for a single employee row and a result DTO that includes count of created and a list of failed rows with their index and error message.","P1,layer:application,dto,employee,prerequisite"
+Task,[DTO-2] Create Payroll and Attendance Config DTOs,"**Priority**: P1 — Prerequisite for payroll endpoints
+**Layer**: Buy2.Application
+**Depends on**: ENTITY-2, ENTITY-3 complete
+
+**Location**: `src/Buy2.Application/DTOs/Employees/PayrollDtos.cs` [NEW]
+
+**Steps**:
+1. Create a payroll profile DTO containing: SalaryType, PayoutPeriod, PayoutDay, WorkWeekStart, WorkWeekEnd, PaymentAmount, OvertimeThresholdHours, OvertimeHourlyRate, AttendanceType, WorkSiteIds (list of integers), OnlineWorkdays (list of day strings), OfflineWorkdays (list of day strings).
+2. Create an update input DTO with the same shape used as the request body for the PUT endpoint.","P1,layer:application,dto,employee,prerequisite,payroll"
+Task,[DTO-3] Create Performance DTOs,"**Priority**: P1 — Prerequisite for performance endpoints
+**Layer**: Buy2.Application
+**Depends on**: ENTITY-4 through ENTITY-7 complete
+
+**Location**: `src/Buy2.Application/DTOs/Employees/PerformanceDtos.cs` [NEW]
+
+**Steps**:
+1. Create a performance overview DTO containing: PerformanceScore, ScoreLabel, list of metric scores, task completion stats (DeadlineCompliance, CompletionRate, AverageDelayDays), list of achievements, chart data points, and employee tasks summary.
+2. Create a tasks summary DTO with a column breakdown for each status (Todo, InProgress, InReview, Completed, Overdue) each having Count, Total, Percent. Also include a flat list of task items.
+3. Create a chart data point DTO with Label and Score.
+4. Create an achievement DTO with BadgeType and AwardedAt.
+5. Create a metric detail DTO for the KPI drill-down page containing: metric name, description, target, current score, score label, all-time average, chart data points, and a list of submissions.
+6. Create a submission DTO for the table at the bottom of KPI detail: AchievedPercent, Weight, Score, SubmissionDate, Feedback.","P1,layer:application,dto,employee,prerequisite,performance"
+Task,[DTO-4] Create Attendance Calendar DTOs,"**Priority**: P1 — Prerequisite for attendance endpoint
+**Layer**: Buy2.Application
+**Depends on**: AttendanceRecord entity from existing clock-in task
+
+**Location**: `src/Buy2.Application/DTOs/Employees/AttendanceDtos.cs` [NEW]
+
+**Steps**:
+1. Create an attendance calendar DTO containing a summary section and a list of daily entries.
+2. Create an attendance summary DTO with: AttendanceRate, PunctualityScore, AverageLatenessMinutes, RecordedHours, TargetHours.
+3. Create an attendance day DTO for each calendar cell containing: Date, Status, LeaveType (nullable), HoursWorked, HoursLeft, OtHours, BreakTime, LatenessMinutes (nullable). Status values are: OnTime, Late, ApprovedLeave, UnapprovedLeave, PartialLeave, NoAttendance, PublicHoliday, AttendanceNotRequired.","P1,layer:application,dto,employee,prerequisite,attendance"
+Task,[DTO-5] Create Violations DTOs,"**Priority**: P1 — Prerequisite for violations endpoints
+**Layer**: Buy2.Application
+**Depends on**: ENTITY-8 complete
+
+**Location**: `src/Buy2.Application/DTOs/Employees/ViolationDtos.cs` [NEW]
+
+**Steps**:
+1. Create a violation list item DTO for the table row containing: Id, Date, ViolationType, Description, ReportedBy (employee name string), SeverityLevel, Status.
+2. Create a violation detail DTO for the full detail page containing: ViolationType, Date, ReportedBy name, SeverityLevel, Witnesses list, DocumentUrl, and an ActionTaken section.
+3. Create an action taken DTO containing: Status, ActionDate, ActionType, TakenBy name, Description. All fields except Status are nullable to handle pending violations with no action yet.
+4. Create a resolve violation input DTO used as the request body for the PATCH endpoint: ActionType, ActionDate, ActionTakenById, ActionDescription.","P1,layer:application,dto,employee,prerequisite,violations"

@@ -28,6 +28,9 @@ public class Employee : BaseEntity
     public int? DirectManagerId { get; set; }
 
     // Navigation Properties
+    public JobRole? JobRole { get; set; }
+    public Role? Role { get; set; }
+    public Site? Site { get; set; }
     public Employee? DirectManager { get; set; }
     public ICollection<Site> WorkSites { get; set; } = new List<Site>();
     public ICollection<EmployeeSite> EmployeeSites { get; set; } = new List<EmployeeSite>();

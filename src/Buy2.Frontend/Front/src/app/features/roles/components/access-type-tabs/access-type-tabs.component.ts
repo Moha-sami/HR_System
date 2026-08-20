@@ -1,9 +1,11 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import type { PermissionGroup } from '../../models/permission';
 
 @Component({
   selector: 'app-access-type-tabs',
   standalone: true,
+  imports: [TranslatePipe],
   templateUrl: './access-type-tabs.component.html',
 })
 export class AccessTypeTabsComponent {
