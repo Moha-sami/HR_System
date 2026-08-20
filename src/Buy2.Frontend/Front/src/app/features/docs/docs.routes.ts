@@ -33,8 +33,13 @@ export const DOCS_ROUTES: Routes = [
   {
     path: 'pagination',
     loadComponent: () =>
-      import('./pagination/pagination-docs/pagination-docs').then(
-        (m) => m.PaginationDocs
+      import('./pagination/pagination-docs/pagination-docs').then((m) => m.PaginationDocs),
+  },
+  {
+    path: 'has-permission',
+    loadComponent: () =>
+      import('./has-permission/has-permission-docs.component').then(
+        (m) => m.HasPermissionDocsComponent,
       ),
   },
 ];
