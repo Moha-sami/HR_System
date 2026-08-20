@@ -33,6 +33,8 @@ export interface CreateEmployeeRequest {
   readonly createdAt: string;
 }
 
+export type UpdateEmployeeRequest = CreateEmployeeRequest;
+
 /** Job-role option returned by the JSON Server jobRoles resource. */
 export interface JobRoleApiResponse {
   readonly id: number;
@@ -82,5 +84,13 @@ export class EmployeeService {
 
   createEmployee(input: CreateEmployeeRequest): Observable<EmployeeApiResponse> {
     return this.http.post<EmployeeApiResponse>(EMPLOYEES_API, input);
+  }
+
+  updateEmployee(id: number, input: UpdateEmployeeRequest): Observable<EmployeeApiResponse> {
+    return this.http.patch<EmployeeApiResponse>(`${EMPLOYEES_API}/${id}`, input);
+  }
+
+  deleteEmployee(id: number): Observable<void> {
+    return this.http.delete<void>(`${EMPLOYEES_API}/${id}`);
   }
 }

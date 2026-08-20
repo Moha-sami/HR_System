@@ -1,10 +1,7 @@
 {
   "LAYOUT": {
     "LOGOUT": "تسجيل الخروج",
-    "LANGUAGE": {
-      "ENGLISH": "الإنجليزية",
-      "ARABIC": "العربية"
-    },
+    "LANGUAGE": { "ENGLISH": "الإنجليزية", "ARABIC": "العربية" },
     "NAV": {
       "DASHBOARD": "لوحة التحكم",
       "EMPLOYEE_MANAGEMENT": "إدارة الموظفين",
@@ -26,7 +23,7 @@
     "FILTER_BY": "تصفية حسب",
     "TRIGGERED_BY": "تم التشغيل بواسطة",
     "TYPE": "النوع",
-    "SEARCH_PLACEHOLDER": "البحث باسم الموظف أو الرقم التعريفي",
+    "SEARCH_PLACEHOLDER": "ابحث باسم الموظف أو الرقم التعريفي",
     "ADD_TRANSACTION": "إضافة معاملة",
     "NO_TRANSACTIONS": "لا توجد معاملات نقاط",
     "TABLE": {
@@ -39,14 +36,15 @@
       "COMMENTS": "التعليقات"
     }
   },
-  "EMPLOYEE_CREATE": {
-    "CREATE_FAILED": "تعذر إضافة الموظف. يرجى المحاولة مرة أخرى.",
-    "SUCCESS_TITLE": "تمهّل قليلًا!",
-    "SUCCESS_MESSAGE": "تمت إضافة الموظف بنجاح.",
-    "SUCCESS_ACTION": "حسنًا"
-  },
   "EMPLOYEE_MANAGEMENT": {
     "ADD_EMPLOYEE": "إضافة موظف",
+    "EDIT_EMPLOYEE": "تعديل الموظف",
+    "DELETE_EMPLOYEE": "حذف الموظف",
+    "UPDATE": "تحديث",
+    "CANCEL": "إلغاء",
+    "DELETE": "حذف",
+    "DELETE_CONFIRMATION_TITLE": "حذف الموظف؟",
+    "DELETE_CONFIRMATION_MESSAGE": "هل أنت متأكد من حذف {{name}}؟ لا يمكن التراجع عن هذا الإجراء.",
     "FIRST_NAME": "الاسم الأول",
     "LAST_NAME": "اسم العائلة",
     "PHONE_NUMBER": "رقم الهاتف",
@@ -64,12 +62,17 @@
     "FORM_OPTIONS_FAILED": "تعذر تحميل خيارات نموذج الموظف. يرجى المحاولة مرة أخرى.",
     "LIST_LOAD_FAILED": "تعذر تحميل الموظفين. يرجى المحاولة مرة أخرى.",
     "CREATE_FAILED": "تعذر إضافة الموظف. يرجى المحاولة مرة أخرى.",
+    "UPDATE_FAILED": "تعذر تحديث الموظف. يرجى المحاولة مرة أخرى.",
+    "DELETE_FAILED": "تعذر حذف الموظف. يرجى المحاولة مرة أخرى.",
     "SUCCESS_TITLE": "تمهّل قليلًا!",
     "SUCCESS_MESSAGE": "تمت إضافة الموظف بنجاح.",
+    "CREATE_SUCCESS_MESSAGE": "تمت إضافة الموظف بنجاح.",
+    "UPDATE_SUCCESS_MESSAGE": "تم تحديث الموظف بنجاح.",
+    "DELETE_SUCCESS_MESSAGE": "تم حذف الموظف بنجاح.",
     "SUCCESS_ACTION": "حسنًا",
     "TITLE": "إدارة الموظفين",
     "ADD_EMPLOYEES": "إضافة موظفين",
-    "EMPLOYEE_ID": "معرف الموظف",
+    "EMPLOYEE_ID": "رقم الموظف",
     "EMPLOYEE_NAME": "اسم الموظف",
     "JOIN_DATE": "تاريخ الانضمام",
     "JOB_TITLE": "المسمى الوظيفي",

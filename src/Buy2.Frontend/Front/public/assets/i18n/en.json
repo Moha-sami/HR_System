@@ -39,14 +39,15 @@
       "COMMENTS": "Comments"
     }
   },
-  "EMPLOYEE_CREATE": {
-    "CREATE_FAILED": "Unable to add the employee. Please try again.",
-    "SUCCESS_TITLE": "Hold on tight!",
-    "SUCCESS_MESSAGE": "The employee has been added successfully.",
-    "SUCCESS_ACTION": "Got it"
-  },
   "EMPLOYEE_MANAGEMENT": {
     "ADD_EMPLOYEE": "Add Employee",
+    "EDIT_EMPLOYEE": "Edit Employee",
+    "DELETE_EMPLOYEE": "Delete Employee",
+    "UPDATE": "Update",
+    "CANCEL": "Cancel",
+    "DELETE": "Delete",
+    "DELETE_CONFIRMATION_TITLE": "Delete Employee?",
+    "DELETE_CONFIRMATION_MESSAGE": "Are you sure you want to delete {{name}}? This action cannot be undone.",
     "FIRST_NAME": "First Name",
     "LAST_NAME": "Last Name",
     "PHONE_NUMBER": "Phone Number",
@@ -64,8 +65,13 @@
     "FORM_OPTIONS_FAILED": "Employee form options could not be loaded. Please try again.",
     "LIST_LOAD_FAILED": "Employees could not be loaded. Please try again.",
     "CREATE_FAILED": "Unable to add the employee. Please try again.",
+    "UPDATE_FAILED": "Unable to update the employee. Please try again.",
+    "DELETE_FAILED": "Unable to delete the employee. Please try again.",
     "SUCCESS_TITLE": "Hold on tight!",
     "SUCCESS_MESSAGE": "The employee has been added successfully.",
+    "CREATE_SUCCESS_MESSAGE": "The employee has been added successfully.",
+    "UPDATE_SUCCESS_MESSAGE": "The employee has been updated successfully.",
+    "DELETE_SUCCESS_MESSAGE": "The employee has been deleted successfully.",
     "SUCCESS_ACTION": "Got it",
     "TITLE": "Employee Management",
     "ADD_EMPLOYEES": "Add Employees",

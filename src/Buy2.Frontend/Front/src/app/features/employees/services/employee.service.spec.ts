@@ -89,6 +89,26 @@ describe('EmployeeService', () => {
     sitesRequest.flush([]);
   });
 
+  it('should PATCH an existing employee through JSON Server', () => {
+    const input = createEmployeeRequest();
+    const response: EmployeeApiResponse = { id: 1, ...input };
+
+    service.updateEmployee(1, input).subscribe();
+
+    const req = httpMock.expectOne(`${EMPLOYEES_URL}/1`);
+    expect(req.request.method).toBe('PATCH');
+    expect(req.request.body).toEqual(input);
+    req.flush(response);
+  });
+
+  it('should DELETE an existing employee through JSON Server', () => {
+    service.deleteEmployee(1).subscribe();
+
+    const req = httpMock.expectOne(`${EMPLOYEES_URL}/1`);
+    expect(req.request.method).toBe('DELETE');
+    req.flush(null);
+  });
+
   it('should propagate JSON Server errors when creating an employee', () => {
     let error: unknown;
 

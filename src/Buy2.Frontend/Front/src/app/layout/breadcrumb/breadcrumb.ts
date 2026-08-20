@@ -12,7 +12,6 @@ interface BreadcrumbItem {
 const routeLabels: Record<string, string> = {
   dashboard: 'Dashboard',
   employees: 'Employee Management',
-  'employees/add': 'Add Employee',
   'employees/edit': 'Edit Employee',
   jobs: 'Job Management',
   'jobs/create': 'Create Job',
