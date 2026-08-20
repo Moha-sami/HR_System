@@ -1,5 +1,6 @@
 using Buy2.Application.DTOs.Employees;
 using Buy2.Application.Features.Employees.ExportEmployees;
+using Buy2.Application.Features.Employees.GetEmployee;
 using Buy2.Application.Features.Employees.GetEmployees;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -23,6 +24,20 @@ public class EmployeeDirectoryController : ControllerBase
     public async Task<ActionResult<PaginatedEmployeeListDto>> GetEmployees([FromQuery] GetEmployeesQuery query)
     {
         var result = await _mediator.Send(query);
+        return Ok(result);
+    }
+
+    [HttpGet("{id:int}")]
+    [ProducesResponseType(typeof(EmployeeProfileDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult<EmployeeProfileDto>> GetEmployeeProfile(int id, CancellationToken cancellationToken)
+    {
+        var result = await _mediator.Send(new GetEmployeeProfileQuery(id), cancellationToken);
+        if (result == null)
+        {
+            return NotFound();
+        }
         return Ok(result);
     }
 
