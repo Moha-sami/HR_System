@@ -6,7 +6,6 @@ obj/
 *.suo
 *.userosscache
 *.sln.docstates
-Migrations
 .vscode
 
 ## Node / Angular

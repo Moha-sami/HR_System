@@ -10,10 +10,7 @@ public static class DatabaseSeeder
 
     public static async Task SeedAsync(Buy2DbContext context)
     {
-        // 1. Ensure Database Created
-        await context.Database.EnsureCreatedAsync();
-
-        // 2. Ensure Default Roles Exist
+        // 1. Ensure Default Roles Exist
         if (!await context.Set<Role>().AnyAsync())
         {
             context.Set<Role>().AddRange(

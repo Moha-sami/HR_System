@@ -91,5 +91,7 @@ public class EmployeeConfiguration : IEntityTypeConfiguration<Employee>
             .WithOne(p => p.Employee)
             .HasForeignKey<PayrollProfile>(p => p.EmployeeId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Ignore(e => e.WorkSites);
     }
 }

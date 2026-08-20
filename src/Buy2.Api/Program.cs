@@ -97,6 +97,9 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
+// Add Health Checks
+builder.Services.AddHealthChecks();
+
 // Add Application Layer Services (MediatR Handlers)
 builder.Services.AddApplicationServices();
 
@@ -108,6 +111,7 @@ var app = builder.Build();
 // Auto-Seed Database on Startup
 using (var scope = app.Services.CreateScope())
 {
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
     try
     {
         var dbContext = scope.ServiceProvider.GetRequiredService<Buy2DbContext>();
@@ -115,8 +119,11 @@ using (var scope = app.Services.CreateScope())
     }
     catch (Exception ex)
     {
-        var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "An error occurred while seeding the database.");
+        logger.LogCritical(ex, "FATAL: Database seeding or startup check failed: {Message}", ex.Message);
+        if (app.Environment.IsDevelopment())
+        {
+            throw;
+        }
     }
 }
 
@@ -137,6 +144,7 @@ app.UseCors("AllowFrontend");
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.MapHealthChecks("/health");
 app.MapControllers();
 
 app.Run();
