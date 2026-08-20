@@ -21,3 +21,6 @@ docs/assets
 /publish_out
 /docs/jira
 /publish.zip
+/.agents/agents
+/GEMINI.md
+/docs/migrations/20260818_AddNewEntities.sql
