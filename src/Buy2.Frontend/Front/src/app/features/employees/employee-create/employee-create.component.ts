@@ -1,10 +1,11 @@
-import { Component, inject, output, signal } from '@angular/core';
+import { Component, computed, effect, inject, input, output, signal } from '@angular/core';
 import { AbstractControl, FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TranslatePipe } from '@ngx-translate/core';
 import { forkJoin } from 'rxjs';
 import {
   type CreateEmployeeRequest,
   EmployeeService,
+  type EmployeeApiResponse,
   type JobRoleApiResponse,
   type RoleApiResponse,
   type SiteApiResponse,
@@ -27,7 +28,8 @@ export class EmployeeCreateComponent {
   private readonly formBuilder = inject(FormBuilder);
   private readonly employeeService = inject(EmployeeService);
 
-  readonly created = output<void>();
+  readonly employee = input<EmployeeApiResponse | null>(null);
+  readonly saved = output<void>();
   readonly jobRoles = signal<readonly JobRoleApiResponse[]>([]);
   readonly roles = signal<readonly RoleApiResponse[]>([]);
   readonly sites = signal<readonly SiteApiResponse[]>([]);
@@ -36,6 +38,7 @@ export class EmployeeCreateComponent {
   readonly preparedPayload = signal<CreateEmployeeRequest | null>(null);
   readonly isSubmitting = signal(false);
   readonly submitError = signal<string | null>(null);
+  readonly isEditMode = computed(() => this.employee() !== null);
 
   readonly employeeForm = this.formBuilder.group({
     firstName: this.formBuilder.nonNullable.control('', [
@@ -64,6 +67,23 @@ export class EmployeeCreateComponent {
 
   constructor() {
     this.loadOptions();
+    effect(() => {
+      const employee = this.employee();
+      if (!employee) {
+        this.employeeForm.reset();
+        return;
+      }
+
+      this.employeeForm.reset({
+        firstName: employee.firstName,
+        lastName: employee.lastName,
+        email: employee.email,
+        phoneNumber: employee.phoneNumber,
+        jobRoleId: employee.jobRoleId,
+        roleId: employee.roleId,
+        siteId: employee.siteId,
+      });
+    });
   }
 
   isInvalid(control: AbstractControl): boolean {
@@ -82,14 +102,26 @@ export class EmployeeCreateComponent {
     }
 
     this.isSubmitting.set(true);
-    this.employeeService.createEmployee(payload).subscribe({
+    const employee = this.employee();
+    const request = employee
+      ? this.employeeService.updateEmployee(employee.id, {
+          ...payload,
+          createdAt: employee.createdAt,
+        })
+      : this.employeeService.createEmployee(payload);
+
+    request.subscribe({
       next: () => {
         this.isSubmitting.set(false);
-        this.created.emit();
+        this.saved.emit();
       },
       error: () => {
         this.isSubmitting.set(false);
-        this.submitError.set('EMPLOYEE_MANAGEMENT.CREATE_FAILED');
+        this.submitError.set(
+          employee
+            ? 'EMPLOYEE_MANAGEMENT.UPDATE_FAILED'
+            : 'EMPLOYEE_MANAGEMENT.CREATE_FAILED',
+        );
       },
     });
   }

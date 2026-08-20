@@ -24,7 +24,11 @@ import {
 } from '@app/shared/components/table/table.component';
 import { EmployeeCreateComponent } from '../employee-create/employee-create.component';
 import { type Employee } from '../models/employee';
-import { EmployeeService } from '../services/employee.service';
+import { type EmployeeApiResponse, EmployeeService } from '../services/employee.service';
+
+interface EmployeeListRow extends Employee {
+  readonly apiEmployee: EmployeeApiResponse;
+}
 
 @Component({
   selector: 'app-employee-list',
@@ -53,12 +57,21 @@ export class EmployeeListComponent implements AfterViewInit {
   @ViewChild(EmployeeCreateComponent) employeeCreateComponent?: EmployeeCreateComponent;
 
   readonly pageSize = 5;
-  readonly employees = signal<readonly Employee[]>([]);
+  readonly employees = signal<readonly EmployeeListRow[]>([]);
   readonly currentPage = signal(1);
   readonly loading = signal(false);
   readonly loadError = signal(false);
   readonly showCreateModal = signal(false);
+  readonly showEditModal = signal(false);
+  readonly showDeleteModal = signal(false);
   readonly showSuccessModal = signal(false);
+  readonly editingEmployee = signal<EmployeeApiResponse | null>(null);
+  readonly deletingEmployee = signal<EmployeeApiResponse | null>(null);
+  readonly isDeleting = signal(false);
+  readonly deleteError = signal<string | null>(null);
+  readonly successMessage = signal<'CREATE_SUCCESS_MESSAGE' | 'UPDATE_SUCCESS_MESSAGE' | 'DELETE_SUCCESS_MESSAGE'>(
+    'CREATE_SUCCESS_MESSAGE',
+  );
   readonly cellTemplates = signal<Map<string, TemplateRef<CellContext>>>(new Map());
   readonly totalPages = computed(() => Math.max(1, Math.ceil(this.employees().length / this.pageSize)));
 
@@ -110,6 +123,34 @@ export class EmployeeListComponent implements AfterViewInit {
     this.showCreateModal.set(false);
   }
 
+  openEditModal(employee: EmployeeListRow): void {
+    this.editingEmployee.set(employee.apiEmployee);
+    this.showEditModal.set(true);
+  }
+
+  closeEditModal(): void {
+    if (this.showSuccessModal() || this.isSubmittingEmployee()) {
+      return;
+    }
+    this.showEditModal.set(false);
+    this.editingEmployee.set(null);
+  }
+
+  openDeleteModal(employee: EmployeeListRow): void {
+    this.deletingEmployee.set(employee.apiEmployee);
+    this.deleteError.set(null);
+    this.showDeleteModal.set(true);
+  }
+
+  closeDeleteModal(): void {
+    if (this.isDeleting() || this.showSuccessModal()) {
+      return;
+    }
+    this.showDeleteModal.set(false);
+    this.deletingEmployee.set(null);
+    this.deleteError.set(null);
+  }
+
   submitEmployeeForm(): void {
     this.employeeCreateComponent?.submit();
   }
@@ -125,12 +166,38 @@ export class EmployeeListComponent implements AfterViewInit {
   }
 
   onEmployeeCreated(): void {
+    this.successMessage.set(this.showEditModal() ? 'UPDATE_SUCCESS_MESSAGE' : 'CREATE_SUCCESS_MESSAGE');
     this.showSuccessModal.set(true);
+  }
+
+  confirmDelete(): void {
+    const employee = this.deletingEmployee();
+    if (!employee || this.isDeleting()) {
+      return;
+    }
+
+    this.isDeleting.set(true);
+    this.deleteError.set(null);
+    this.employeeService.deleteEmployee(employee.id).subscribe({
+      next: () => {
+        this.isDeleting.set(false);
+        this.successMessage.set('DELETE_SUCCESS_MESSAGE');
+        this.showSuccessModal.set(true);
+      },
+      error: () => {
+        this.isDeleting.set(false);
+        this.deleteError.set('EMPLOYEE_MANAGEMENT.DELETE_FAILED');
+      },
+    });
   }
 
   confirmSuccess(): void {
     this.showSuccessModal.set(false);
     this.showCreateModal.set(false);
+    this.showEditModal.set(false);
+    this.showDeleteModal.set(false);
+    this.editingEmployee.set(null);
+    this.deletingEmployee.set(null);
     this.loadEmployees(true);
   }
 
@@ -155,6 +222,7 @@ export class EmployeeListComponent implements AfterViewInit {
             jobTitle: jobTitles.get(employee.jobRoleId) ?? '',
             email: employee.email,
             adminAccess: roleNames.get(employee.roleId) === 'SuperAdmin' ? 'Full' : 'Limited',
+            apiEmployee: employee,
           })),
         );
         this.currentPage.set(showNewest ? this.totalPages() : 1);
