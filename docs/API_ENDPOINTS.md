@@ -46,3 +46,18 @@ This document outlines the REST API endpoints provided by the Buy2 HRMS backend 
   - `Site`
   - `Join Date` (`yyyy-MM-dd`)
   - `Admin Access` (`true`/`false`)
+
+### `GET /api/v1/employees/{id}`
+- **Authorization**: Authenticated users (`[Authorize]`)
+- **Path Parameters**:
+  - `id` (int, required) - Unique ID of the employee
+- **Description**: Retrieves full employee profile details including personal info, job role details, qualifications, and live calculated stats.
+- **Computed Header Stats**:
+  - `TotalPoints` - Sum of points from the points wallet ledger
+  - `TotalTasks` - Total number of assigned tasks
+  - `TotalGifts` - Total number of redeemed rewards/gifts
+- **Response**:
+  - `200 OK` with `EmployeeProfileDto`:
+    - `Id`, `FirstName`, `LastName`, `EmployeeCode`, `Email`, `Phone`, `BirthDate`, `Gender`, `JobTitle`, `Department`, `SeniorityLevel`, `ExperienceYears`, `DirectManagerName`, `JobType`, `SiteName`, `RoleName`, `Qualifications` (array of strings), `TotalPoints`, `TotalTasks`, `TotalGifts`
+  - `404 Not Found` if employee with specified `id` does not exist.
+
