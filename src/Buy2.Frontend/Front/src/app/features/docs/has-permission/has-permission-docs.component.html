@@ -1,0 +1,301 @@
+<div class="min-h-screen bg-neutral-50">
+  <div class="max-w-6xl mx-auto px-8 py-12">
+    <a routerLink="/docs" class="text-primary-600 hover:text-primary-700 text-sm mb-4 inline-block"
+      >← Back to Docs</a
+    >
+    <h1 class="text-3xl font-bold text-neutral-900 mb-2">*hasPermission Directive</h1>
+    <p class="text-neutral-500 mb-8">
+      Structural directive for controlling element visibility based on user permissions.
+    </p>
+
+    <div class="bg-white rounded-lg border border-neutral-200 p-4 mb-6">
+      <p class="text-xs text-neutral-500 mb-1">Selector</p>
+      <code class="text-sm text-neutral-600"
+        ><span class="text-primary-600">*hasPermission</span>="<span class="text-green-600"
+          >'employee.add'</span
+        >"</code
+      >
+    </div>
+
+    <section class="bg-white rounded-lg border border-neutral-200 p-6 mb-6">
+      <h2 class="text-lg font-semibold text-neutral-800 mb-4">Live Demo — Switch Role</h2>
+      <div class="mb-6 flex gap-3 flex-wrap">
+        <app-button
+          variant="primary"
+          [variant]="demoUserRole === 'Super Admin' ? 'primary' : 'secondary'"
+          (clicked)="setDemoRole('Super Admin')"
+          >Super Admin</app-button
+        >
+        <app-button
+          variant="primary"
+          [variant]="demoUserRole === 'Facilitator' ? 'primary' : 'secondary'"
+          (clicked)="setDemoRole('Facilitator')"
+          >Facilitator</app-button
+        >
+        <app-button
+          variant="primary"
+          [variant]="demoUserRole === 'Manager' ? 'primary' : 'secondary'"
+          (clicked)="setDemoRole('Manager')"
+          >Manager</app-button
+        >
+      </div>
+      <div class="bg-neutral-50 rounded-lg p-4 mb-4">
+        <p class="text-sm text-neutral-700 mb-2">
+          <strong>Current Role:</strong> {{ demoUserRole }}
+          <span class="ml-3 text-xs bg-primary-100 text-primary-700 px-2 py-1 rounded"
+            >{{ demoPermissions.length }} permissions</span
+          >
+        </p>
+        <div class="flex flex-wrap gap-1">
+          @for (perm of demoPermissions; track perm) {
+            <span class="text-xs bg-primary-50 text-primary-700 px-2 py-1 rounded">{{ perm }}</span>
+          }
+        </div>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div class="bg-white border border-neutral-200 rounded-lg p-4">
+          <h4 class="font-medium text-neutral-800 mb-3">
+            Single: <code class="text-primary-600">'employee.add'</code>
+          </h4>
+          <div class="h-16 flex items-center justify-center">
+            <span *hasPermission="['employee.add']" class="text-green-600 font-medium">Visible</span
+            ><span
+              *hasPermission="['employee.add']; else noAccess1"
+              class="text-red-600 font-medium"
+              >Hidden</span
+            ><ng-template #noAccess1
+              ><span class="text-red-600 font-medium">Hidden</span></ng-template
+            >
+          </div>
+        </div>
+        <div class="bg-white border border-neutral-200 rounded-lg p-4">
+          <h4 class="font-medium text-neutral-800 mb-3">
+            Any (OR): <code class="text-primary-600">['site.delete', 'rewards.inventory']</code>
+          </h4>
+          <div class="h-16 flex items-center justify-center">
+            <span
+              *hasPermission="['site.delete', 'rewards.inventory']"
+              class="text-green-600 font-medium"
+              >Visible</span
+            ><span
+              *hasPermission="['site.delete', 'rewards.inventory']; else noAccess2"
+              class="text-red-600 font-medium"
+              >Hidden</span
+            ><ng-template #noAccess2
+              ><span class="text-red-600 font-medium">Hidden</span></ng-template
+            >
+          </div>
+        </div>
+        <div class="bg-white border border-neutral-200 rounded-lg p-4">
+          <h4 class="font-medium text-neutral-800 mb-3">
+            All (AND): <code class="text-primary-600">all: ['employee.add', 'employee.edit']</code>
+          </h4>
+          <div class="h-16 flex items-center justify-center">
+            <span
+              *hasPermission="{ all: ['employee.add', 'employee.edit'] }"
+              class="text-green-600 font-medium"
+              >Visible</span
+            ><span
+              *hasPermission="{ all: ['employee.add', 'employee.edit'] }; else noAccess3"
+              class="text-red-600 font-medium"
+              >Hidden</span
+            ><ng-template #noAccess3
+              ><span class="text-red-600 font-medium">Hidden</span></ng-template
+            >
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="bg-white rounded-lg border border-neutral-200 p-6 mb-6">
+      <h2 class="text-lg font-semibold text-neutral-800 mb-4">Usage Patterns</h2>
+      <div class="space-y-4 text-sm">
+        <div><strong>1. Single Permission (String)</strong></div>
+        <div><strong>2. Any Permission — OR Logic (Array)</strong></div>
+        <div><strong>3. All Permissions — AND Logic (Object)</strong></div>
+        <div><strong>4. Any Permission — OR Logic (Explicit Object)</strong></div>
+        <div><strong>5. With Else Template (Fallback UI)</strong></div>
+        <div><strong>6. On Any Element / Component</strong></div>
+      </div>
+    </section>
+
+    <section class="bg-white rounded-lg border border-neutral-200 p-6 mb-6">
+      <h2 class="text-lg font-semibold text-neutral-800 mb-4">Common Permission Keys</h2>
+      <p class="text-sm text-neutral-500 mb-4">
+        Based on Figma designs (6 permission groups). Keys follow pattern: group.action
+      </p>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="border-b border-neutral-200">
+              <th class="text-left py-2 pr-4 text-neutral-500">Group</th>
+              <th class="text-left py-2 text-neutral-500">Permissions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="border-b border-neutral-100">
+              <td class="py-2 pr-4 font-mono text-primary-600">employee</td>
+              <td class="py-2 text-neutral-600">
+                <code>add</code>, <code>edit</code>, <code>delete</code>, <code>suspend</code>,
+                <code>admin_access</code>
+              </td>
+            </tr>
+            <tr class="border-b border-neutral-100">
+              <td class="py-2 pr-4 font-mono text-primary-600">job</td>
+              <td class="py-2 text-neutral-600">
+                <code>add</code>, <code>edit</code>, <code>delete</code>
+              </td>
+            </tr>
+            <tr class="border-b border-neutral-100">
+              <td class="py-2 pr-4 font-mono text-primary-600">site</td>
+              <td class="py-2 text-neutral-600">
+                <code>add</code>, <code>edit</code>, <code>delete</code>, <code>shifts</code>
+              </td>
+            </tr>
+            <tr class="border-b border-neutral-100">
+              <td class="py-2 pr-4 font-mono text-primary-600">points</td>
+              <td class="py-2 text-neutral-600">
+                <code>add_transaction</code>, <code>automation</code>,
+                <code>view_transactions</code>
+              </td>
+            </tr>
+            <tr class="border-b border-neutral-100">
+              <td class="py-2 pr-4 font-mono text-primary-600">notifications</td>
+              <td class="py-2 text-neutral-600"><code>send</code></td>
+            </tr>
+            <tr>
+              <td class="py-2 pr-4 font-mono text-primary-600">rewards</td>
+              <td class="py-2 text-neutral-600">
+                <code>add</code>, <code>edit</code>, <code>delete</code>, <code>inventory</code>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="mt-4 p-4 bg-neutral-50 rounded-lg">
+        <p class="text-sm text-neutral-600">
+          <strong>Full key format:</strong> <code class="text-primary-600">employee.add</code>,
+          <code class="text-primary-600">site.shifts</code>,
+          <code class="text-primary-600">notifications.send</code>
+        </p>
+      </div>
+    </section>
+
+    <section class="bg-white rounded-lg border border-neutral-200 p-6 mb-6">
+      <h2 class="text-lg font-semibold text-neutral-800 mb-4">How It Works</h2>
+      <ol class="space-y-3 text-sm text-neutral-600 list-decimal list-inside">
+        <li>JWT token contains role</li>
+        <li>
+          <code>PermissionService</code> reads role from <code>TokenService.user().role</code>
+        </li>
+        <li>Calls <code>GET /api/v1/roles/by-name/Facilitator</code> to fetch permissions</li>
+        <li>Caches role.permissions in signal map; directive reacts via <code>effect()</code></li>
+        <li>Directive shows/hides element based on <code>hasPermission()</code> result</li>
+      </ol>
+      <div class="mt-4 p-4 bg-warning-50 border border-warning-200 rounded-lg">
+        <p class="text-sm text-warning-800">
+          <strong>Backend Requirement:</strong> <code>GET /api/v1/roles/by-name/:name</code> must
+          exist.
+        </p>
+      </div>
+    </section>
+
+    <section class="bg-white rounded-lg border border-neutral-200 p-6 mb-6">
+      <h2 class="text-lg font-semibold text-neutral-800 mb-4">API Reference</h2>
+      <div class="space-y-4">
+        <div><strong>Input: hasPermission</strong></div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="border-b border-neutral-200">
+                <th class="text-left py-2 pr-4 text-neutral-500">Type</th>
+                <th class="text-left py-2 pr-4 text-neutral-500">Example</th>
+                <th class="text-left py-2 text-neutral-500">Logic</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="border-b border-neutral-100">
+                <td class="py-2 pr-4 font-mono text-primary-600">string</td>
+                <td class="py-2 pr-4"><code>'employee.add'</code></td>
+                <td class="py-2 text-neutral-600">Exact match</td>
+              </tr>
+              <tr class="border-b border-neutral-100">
+                <td class="py-2 pr-4 font-mono text-primary-600">string[]</td>
+                <td class="py-2 pr-4"><code>['add', 'edit', 'delete']</code></td>
+                <td class="py-2 text-neutral-600">OR (any)</td>
+              </tr>
+              <tr class="border-b border-neutral-100">
+                <td class="py-2 pr-4 font-mono text-primary-600">all: string[]</td>
+                <td class="py-2 pr-4"><code>all: ['add', 'edit']</code></td>
+                <td class="py-2 text-neutral-600">AND (all)</td>
+              </tr>
+              <tr>
+                <td class="py-2 pr-4 font-mono text-primary-600">any: string[]</td>
+                <td class="py-2 pr-4"><code>any: ['add', 'edit']</code></td>
+                <td class="py-2 text-neutral-600">OR (any) — explicit</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div>
+          <strong>Input: hasPermissionElse</strong><br />TemplateRef | null — Template to render
+          when permission check fails
+        </div>
+        <div><strong>PermissionService Methods (Injectable)</strong></div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="border-b border-neutral-200">
+                <th class="text-left py-2 pr-4 text-neutral-500">Method</th>
+                <th class="text-left py-2 pr-4 text-neutral-500">Returns</th>
+                <th class="text-left py-2 text-neutral-500">Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="border-b border-neutral-100">
+                <td class="py-2 pr-4 font-mono text-primary-600">hasPermission(perm)</td>
+                <td class="py-2 pr-4 text-neutral-600">boolean</td>
+                <td class="py-2 text-neutral-600">Check single permission</td>
+              </tr>
+              <tr class="border-b border-neutral-100">
+                <td class="py-2 pr-4 font-mono text-primary-600">hasAnyPermission(perms[])</td>
+                <td class="py-2 pr-4 text-neutral-600">boolean</td>
+                <td class="py-2 text-neutral-600">Check if user has any of the permissions (OR)</td>
+              </tr>
+              <tr class="border-b border-neutral-100">
+                <td class="py-2 pr-4 font-mono text-primary-600">hasAllPermissions(perms[])</td>
+                <td class="py-2 pr-4 text-neutral-600">boolean</td>
+                <td class="py-2 text-neutral-600">Check if user has all permissions (AND)</td>
+              </tr>
+              <tr class="border-b border-neutral-100">
+                <td class="py-2 pr-4 font-mono text-primary-600">refresh()</td>
+                <td class="py-2 pr-4 text-neutral-600">Promise</td>
+                <td class="py-2 text-neutral-600">Force reload permissions for current role</td>
+              </tr>
+              <tr class="border-b border-neutral-100">
+                <td class="py-2 pr-4 font-mono text-primary-600">clear()</td>
+                <td class="py-2 pr-4 text-neutral-600">void</td>
+                <td class="py-2 text-neutral-600">Clear all cached permissions (on logout)</td>
+              </tr>
+              <tr>
+                <td class="py-2 pr-4 font-mono text-primary-600">invalidateRole(role)</td>
+                <td class="py-2 pr-4 text-neutral-600">void</td>
+                <td class="py-2 text-neutral-600">Remove specific role from cache</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="bg-white rounded-lg border border-neutral-200 p-6 mb-6">
+      <h2 class="text-lg font-semibold text-neutral-800 mb-4">Integration</h2>
+      <div class="space-y-4">
+        <div><strong>Import</strong></div>
+        <div><strong>Add to Component Imports</strong></div>
+        <div><strong>Auto-refresh on Login</strong></div>
+        <div><strong>Clear on Logout</strong></div>
+      </div>
+    </section>
+  </div>
+</div>
