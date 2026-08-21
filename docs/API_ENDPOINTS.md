@@ -107,7 +107,7 @@ This document outlines the REST API endpoints provided by the Buy2 HRMS backend 
 - **Responses**:
   - `204 No Content` on successful payroll profile update/upsert.
   - `400 Bad Request` if one or more specified `workSiteIds` do not exist.
-  - `404 Not Found` if employee with specified `id` does not exist or has been soft-deleted.
+  - `404 Not Found` if employee with specified `id` does not exist, is inactive, or has been soft-deleted.
   - `401 Unauthorized` if the request is unauthenticated.
   - `403 Forbidden` if authenticated user does not have `Admin` or `Manager` role.
 

@@ -89,7 +89,7 @@ public class GetEmployeePayrollProfileQueryHandler : IRequestHandler<GetEmployee
             workSiteIds = ParseJsonList<int>(payroll.WorkSiteIdsJson);
         }
 
-        if (workSiteIds.Count == 0 && employee.SiteId > 0)
+        if (workSiteIds.Count == 0 && payroll is null && employee.SiteId > 0)
         {
             workSiteIds.Add(employee.SiteId);
         }
