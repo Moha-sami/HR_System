@@ -89,9 +89,10 @@ public class GetPerformanceOverviewQueryHandler : IRequestHandler<GetPerformance
         }
         else if (request.Days.HasValue && request.Days.Value > 0)
         {
-            fromDate = nowUtc.AddDays(-request.Days.Value);
+            var clampedDays = Math.Min(request.Days.Value, 3650);
+            fromDate = nowUtc.AddDays(-clampedDays);
             toDate = nowUtc;
-            periodResolved = $"{request.Days.Value}days";
+            periodResolved = $"{clampedDays}days";
         }
         else if (request.From.HasValue || request.To.HasValue)
         {
@@ -174,14 +175,19 @@ public class GetPerformanceOverviewQueryHandler : IRequestHandler<GetPerformance
         var overdueCount = tasks.Count(t => t.Status == EmployeeTaskStatus.Overdue ||
             (t.Status != EmployeeTaskStatus.Completed && t.DueDate.HasValue && t.DueDate.Value < DateTime.UtcNow));
 
-        var completedWithDueDate = tasks.Count(t => t.Status == EmployeeTaskStatus.Completed && t.DueDate.HasValue);
-        var overdueWithDueDate = tasks.Count(t => (t.Status == EmployeeTaskStatus.Overdue ||
-            (t.Status != EmployeeTaskStatus.Completed && t.DueDate.HasValue && t.DueDate.Value < DateTime.UtcNow)));
+        var tasksWithDueDate = tasks.Where(t => t.DueDate.HasValue).ToList();
+        var completedWithDueDate = tasksWithDueDate.Count(t => t.Status == EmployeeTaskStatus.Completed);
+        var overdueWithDueDate = tasksWithDueDate.Count(t => t.Status == EmployeeTaskStatus.Overdue ||
+            (t.Status != EmployeeTaskStatus.Completed && t.DueDate!.Value < DateTime.UtcNow));
 
-        decimal deadlineCompliancePercentage = 100m;
+        decimal deadlineCompliancePercentage = 0m;
         if (completedWithDueDate + overdueWithDueDate > 0)
         {
             deadlineCompliancePercentage = Math.Round((decimal)completedWithDueDate / (completedWithDueDate + overdueWithDueDate) * 100m, 2);
+        }
+        else if (totalTasks > 0 && overdueCount == 0)
+        {
+            deadlineCompliancePercentage = 100m;
         }
 
         var tasksSummary = new TasksSummaryDto(

@@ -184,6 +184,7 @@ This document outlines the REST API endpoints provided by the Buy2 HRMS backend 
     - `achievements` (array of `AchievementBadgeDto`: `id`, `title`, `description`, `earnedAt`, `badgeIcon`)
     - `chartTrendPoints` (array of `ChartPointDto`: `date`, `score`)
     - `submissionsDetail` (array of `SubmissionDetailDto`: `id`, `metricName`, `score`, `weight`, `submittedAt`, `notes`)
+  - `400 Bad Request` if `days` query parameter is outside the valid range (1 to 3650).
   - `404 Not Found` if employee with specified `id` does not exist or has been soft-deleted.
   - `401 Unauthorized` if the request is unauthenticated.
 
