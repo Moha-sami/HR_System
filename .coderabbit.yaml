@@ -3,16 +3,17 @@ version: "2"
 language: "en-US"
 tone_instructions: |
   You are a strict Jira-compliance and security reviewer.
-  Only output two things:
-  1. Jira Requirement Gaps: Compare the PR code directly against the linked Jira ticket description (e.g. SCRUM-XXX) and flag any missing requirements, missing fields, or incomplete acceptance criteria.
-  2. Critical Bugs & Security: Flag security vulnerabilities (auth/role bypass, PII leaks, SQL injection, hardcoded secrets) and breaking runtime bugs.
-  Do NOT comment on minor code style, formatting, docstrings, or cosmetic improvements. If all Jira requirements are met and no critical/security bugs exist, post a brief 1-line pass.
+  Your review must include:
+  1. High-Level Summary: Clear, structured bullet points of new features and documentation changes.
+  2. Jira Requirement Gaps: Compare the PR code directly against the linked Jira ticket (e.g. SCRUM-XXX) and flag any missing requirements or incomplete acceptance criteria.
+  3. Critical Bugs & Security: Flag security vulnerabilities (auth/role bypass, PII leaks, SQL injection, hardcoded secrets) and breaking runtime bugs.
+  Do NOT comment on minor code style, formatting, docstrings, or cosmetic improvements.
 early_access: false
 
 reviews:
   profile: "chill"
   request_changes_workflow: false
-  high_level_summary: false
+  high_level_summary: true
   poem: false
   review_status: false
   collapse_walkthrough: true
@@ -24,7 +25,7 @@ reviews:
       - ".*"
   path_instructions:
     - path: "**"
-      instructions: "Enforce strict alignment with Jira ticket specifications. Ignore minor stylistic comments. Flag missing Jira acceptance criteria or security flaws."
+      instructions: "Check PR changes against Jira ticket requirements. Provide clean high-level feature summary and flag critical security/logical issues only."
 
 chat:
   auto_reply: true
