@@ -184,8 +184,38 @@ This document outlines the REST API endpoints provided by the Buy2 HRMS backend 
     - `achievements` (array of `AchievementBadgeDto`: `id`, `title`, `description`, `earnedAt`, `badgeIcon`)
     - `chartTrendPoints` (array of `ChartPointDto`: `date`, `score`)
     - `submissionsDetail` (array of `SubmissionDetailDto`: `id`, `metricName`, `score`, `weight`, `submittedAt`, `notes`)
-  - `400 Bad Request` if `days` query parameter is outside the valid range (1 to 3650).
+  - `400 BadRequest` if `period` is invalid, `days` is outside valid bounds (1 to 3650), or `from`/`to` span exceeds 3650 days.
   - `404 Not Found` if employee with specified `id` does not exist or has been soft-deleted.
+  - `401 Unauthorized` if the request is unauthenticated.
+
+### `GET /api/v1/employees/{id}/performance/metrics/{metricId}`
+- **Authorization**: Authenticated users (`[Authorize]`)
+- **Path Parameters**:
+  - `id` (int, required) - Unique ID of the employee
+  - `metricId` (int, required) - Unique ID of the performance metric
+- **Query Parameters**:
+  - `period` (string, optional) - Predefined time period filter (`today`, `thisWeek`, `thisMonth`, `thisYear`)
+  - `days` (int, optional) - Number of trailing days for rolling window calculation (1 to 3650)
+  - `from` (DateTimeOffset/ISO 8601, optional) - Custom range start date
+  - `to` (DateTimeOffset/ISO 8601, optional) - Custom range end date
+- **Description**: Returns detailed performance metric evaluation, all-time score, period-filtered score and rating, chronological monthly trend aggregation, and historical submission items with notes and evaluator name (direct manager).
+- **Responses**:
+  - `200 OK` with `MetricDetailDto`:
+    - `employeeId` (int)
+    - `metricId` (int)
+    - `metricName` (string)
+    - `metricDescription` (string)
+    - `weight` (decimal)
+    - `targetScore` (decimal)
+    - `unit` (string, e.g. `%`)
+    - `allTimeAverageScore` (decimal)
+    - `periodAverageScore` (decimal)
+    - `periodRatingLabel` (string: `Needs Improvement`, `Satisfactory`, `Good Performance`, `Excellent`)
+    - `dateRangeResolved` (`DateRangeResolvedDto`: `from`, `to`, `period`)
+    - `monthlyTrends` (array of `MonthlyTrendPointDto`: `year`, `month`, `yearMonthLabel`, `averageScore`, `submissionCount`)
+    - `submissions` (array of `MetricSubmissionItemDto`: `id`, `score`, `submittedAt`, `notes`, `evaluatorName`)
+  - `400 Bad Request` if `period` is invalid, `days` is outside valid bounds (1 to 3650), or `from`/`to` span exceeds 3650 days.
+  - `404 Not Found` if employee with specified `id` does not exist or has been soft-deleted, or if metric with specified `metricId` does not exist.
   - `401 Unauthorized` if the request is unauthenticated.
 
 
