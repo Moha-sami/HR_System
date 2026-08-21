@@ -81,6 +81,8 @@ builder.Services.AddSwaggerGen(options =>
         Description = "Enter your JWT token directly."
     });
 
+    options.CustomSchemaIds(type => type.FullName?.Replace("+", "."));
+
     options.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
         {

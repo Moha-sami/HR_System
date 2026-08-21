@@ -1,10 +1,6 @@
-namespace Buy2.Application.Features.Employees.GetMetricDetail;
+using Buy2.Application.Features.Employees.GetPerformanceOverview;
 
-public record DateRangeResolvedDto(
-    DateTimeOffset From,
-    DateTimeOffset To,
-    string? Period = null
-);
+namespace Buy2.Application.Features.Employees.GetMetricDetail;
 
 public record MonthlyTrendPointDto(
     int Year,
