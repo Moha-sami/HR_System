@@ -41,7 +41,7 @@ public class UpdatePayrollProfileCommandHandler : IRequestHandler<UpdatePayrollP
             .Include(e => e.PayrollProfile)
             .FirstOrDefaultAsync(e => e.Id == request.EmployeeId, cancellationToken);
 
-        if (employee is null || employee.IsDeleted)
+        if (employee is null || employee.IsDeleted || !employee.IsActive)
         {
             return UpdatePayrollProfileResult.NotFound($"Employee with ID {request.EmployeeId} was not found.");
         }

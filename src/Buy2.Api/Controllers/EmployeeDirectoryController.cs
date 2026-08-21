@@ -63,7 +63,7 @@ public class EmployeeDirectoryController : ControllerBase
     }
 
     [HttpPut("{id:int}/payroll")]
-    [Authorize(Roles = "Admin,Manager,HR,SuperAdmin")]
+    [Authorize(Roles = "Admin,Manager")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]

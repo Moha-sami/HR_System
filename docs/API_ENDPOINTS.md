@@ -87,7 +87,7 @@ This document outlines the REST API endpoints provided by the Buy2 HRMS backend 
   - `403 Forbidden` if authenticated user lacks required administrative role (`Admin`, `Manager`, `HR`, `SuperAdmin`).
 
 ### `PUT /api/v1/employees/{id}/payroll`
-- **Authorization**: `[Authorize(Roles = "Admin,Manager,HR,SuperAdmin")]`
+- **Authorization**: `[Authorize(Roles = "Admin,Manager")]`
 - **Path Parameters**:
   - `id` (int, required) - Unique ID of the employee
 - **Request Body** (`application/json`, `UpdatePayrollProfileDto`):
@@ -109,7 +109,7 @@ This document outlines the REST API endpoints provided by the Buy2 HRMS backend 
   - `400 Bad Request` if one or more specified `workSiteIds` do not exist.
   - `404 Not Found` if employee with specified `id` does not exist or has been soft-deleted.
   - `401 Unauthorized` if the request is unauthenticated.
-  - `403 Forbidden` if authenticated user does not have `Admin`, `Manager`, `HR`, or `SuperAdmin` role.
+  - `403 Forbidden` if authenticated user does not have `Admin` or `Manager` role.
 
 
 ### `DELETE /api/v1/employees/{id}`
