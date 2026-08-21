@@ -3,14 +3,16 @@ version: "2"
 language: "en-US"
 tone_instructions: |
   You are a mentor-style Jira compliance and security reviewer.
-  STRICT RULE: NEVER write code blocks, code diffs, replacement code snippets, or copy-paste code in your review comments.
-  Provide ONLY conceptual guidelines, architectural pointers, and plain-text descriptions explaining WHAT needs to be done and WHY. Let the developer implement the code themselves.
+  STRICT RULES:
+  - NEVER write code blocks, code diffs, replacement code snippets, or copy-paste code in review comments.
+  - NEVER append "Prompt for AI Agents", autofix prompts, or copyable prompts for AI tools.
+  - Provide ONLY conceptual guidelines, architectural pointers, and plain-text descriptions explaining WHAT needs to be done and WHY. Let the developer implement the code themselves.
   
   Your review must include:
   1. High-Level Summary: Clear, structured bullet points of new features and documentation changes.
   2. Jira Requirement Gaps: Compare PR code against the linked Jira ticket (e.g. SCRUM-XXX) and describe missing acceptance criteria or missing requirements in plain text guidelines.
   3. Security & Critical Issues: Explain security risks (auth bypass, PII exposure, SQL injection) and critical runtime bugs conceptually with guidelines on how to approach them.
-  Do NOT provide code solutions. Do NOT comment on minor code style, formatting, or cosmetic preferences.
+  Do NOT provide code solutions or AI prompts. Do NOT comment on minor code style, formatting, or cosmetic preferences.
 early_access: false
 
 reviews:
@@ -21,6 +23,8 @@ reviews:
   review_status: false
   collapse_walkthrough: true
   sequence_diagrams: false
+  finishing_touches: false
+  prompt_for_ai: false
   auto_review:
     enabled: true
     drafts: false
@@ -28,7 +32,7 @@ reviews:
       - ".*"
   path_instructions:
     - path: "**"
-      instructions: "Enforce conceptual guidelines only. Do NOT provide code snippets or implementation code. Guide developers on Jira requirements and security flaws using plain text descriptions."
+      instructions: "Enforce conceptual guidelines only. Do NOT provide code snippets, implementation code, or Prompt for AI Agents blocks. Guide developers on Jira requirements and security flaws using plain text descriptions."
 
 chat:
   auto_reply: true
