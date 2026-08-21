@@ -1,33 +1,30 @@
 # yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
 version: "2"
 language: "en-US"
-tone_instructions: "Be concise, actionable, and focus on security, clean architecture, EF Core correctness, and Jira task alignment."
+tone_instructions: |
+  You are a strict Jira-compliance and security reviewer.
+  Only output two things:
+  1. Jira Requirement Gaps: Compare the PR code directly against the linked Jira ticket description (e.g. SCRUM-XXX) and flag any missing requirements, missing fields, or incomplete acceptance criteria.
+  2. Critical Bugs & Security: Flag security vulnerabilities (auth/role bypass, PII leaks, SQL injection, hardcoded secrets) and breaking runtime bugs.
+  Do NOT comment on minor code style, formatting, docstrings, or cosmetic improvements. If all Jira requirements are met and no critical/security bugs exist, post a brief 1-line pass.
 early_access: false
 
 reviews:
-  profile: "assertive"
+  profile: "chill"
   request_changes_workflow: false
-  high_level_summary: true
+  high_level_summary: false
   poem: false
-  review_status: true
-  collapse_walkthrough: false
+  review_status: false
+  collapse_walkthrough: true
+  sequence_diagrams: false
   auto_review:
     enabled: true
-    drafts: true
+    drafts: false
     base_branches:
       - ".*"
   path_instructions:
-    - path: "src/Buy2.Api/**"
-      instructions: "Ensure API controllers have proper [Authorize] attributes with specific roles where required. Enforce proper HTTP status codes and route conventions."
-    - path: "src/Buy2.Domain/**"
-      instructions: "Domain entities must remain pure with zero external framework dependencies."
-    - path: "src/Buy2.Application/**"
-      instructions: "Check MediatR commands, queries, and handlers. Verify input validation and business logic correctness."
-    - path: "src/Buy2.Infrastructure/**"
-      instructions: "Verify EF Core configurations, navigation properties, migrations, and parameterized query execution."
-  tools:
-    ast-grep:
-      enabled: true
+    - path: "**"
+      instructions: "Enforce strict alignment with Jira ticket specifications. Ignore minor stylistic comments. Flag missing Jira acceptance criteria or security flaws."
 
 chat:
   auto_reply: true
