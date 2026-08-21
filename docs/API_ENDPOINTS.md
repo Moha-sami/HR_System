@@ -164,5 +164,28 @@ This document outlines the REST API endpoints provided by the Buy2 HRMS backend 
   - `401 Unauthorized` if the request is unauthenticated.
   - `403 Forbidden` if authenticated user does not have `Admin` or `Manager` role.
 
+### `GET /api/v1/employees/{id}/performance/overview`
+- **Authorization**: Authenticated users (`[Authorize]`)
+- **Path Parameters**:
+  - `id` (int, required) - Unique ID of the employee
+- **Query Parameters**:
+  - `period` (string, optional) - Predefined time period filter (`today`, `thisWeek`, `thisMonth`, `thisYear`)
+  - `days` (int, optional) - Number of trailing days for rolling window calculation
+  - `from` (DateTimeOffset/ISO 8601, optional) - Custom range start date
+  - `to` (DateTimeOffset/ISO 8601, optional) - Custom range end date
+- **Description**: Returns employee performance analytics and summary metrics over the specified time range. Computes weighted performance scores, descriptive rating labels (`Needs Improvement`, `Satisfactory`, `Good Performance`, `Excellent`), task tracking & deadline compliance percentage, awarded achievement badges, chronological daily score trend points, and detailed individual submission records. Soft-deleted or non-existent employees return `404 Not Found`.
+- **Responses**:
+  - `200 OK` with `PerformanceOverviewDto`:
+    - `employeeId` (int)
+    - `dateRangeResolved` (`DateRangeResolvedDto`: `from`, `to`, `period`)
+    - `overallWeightedScore` (decimal)
+    - `ratingLabel` (string: `Needs Improvement`, `Satisfactory`, `Good Performance`, `Excellent`)
+    - `tasksSummary` (`TasksSummaryDto`: `totalTasks`, `todoCount`, `inProgressCount`, `completedCount`, `overdueCount`, `deadlineCompliancePercentage`)
+    - `achievements` (array of `AchievementBadgeDto`: `id`, `title`, `description`, `earnedAt`, `badgeIcon`)
+    - `chartTrendPoints` (array of `ChartPointDto`: `date`, `score`)
+    - `submissionsDetail` (array of `SubmissionDetailDto`: `id`, `metricName`, `score`, `weight`, `submittedAt`, `notes`)
+  - `404 Not Found` if employee with specified `id` does not exist or has been soft-deleted.
+  - `401 Unauthorized` if the request is unauthenticated.
+
 
 

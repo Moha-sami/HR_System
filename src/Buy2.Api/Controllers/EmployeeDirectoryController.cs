@@ -4,12 +4,14 @@ using Buy2.Application.Features.Employees.ExportEmployees;
 using Buy2.Application.Features.Employees.GetEmployee;
 using Buy2.Application.Features.Employees.GetEmployeePayroll;
 using Buy2.Application.Features.Employees.GetEmployees;
+using Buy2.Application.Features.Employees.GetPerformanceOverview;
 using Buy2.Application.Features.Employees.UpdateJobDetails;
 using Buy2.Application.Features.Employees.UpdatePayrollProfile;
 using Buy2.Application.Features.Employees.UpdatePersonalInfo;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using PerformanceOverviewDto = Buy2.Application.Features.Employees.GetPerformanceOverview.PerformanceOverviewDto;
 
 namespace Buy2.Api.Controllers;
 
@@ -145,6 +147,27 @@ public class EmployeeDirectoryController : ControllerBase
             return BadRequest(result.ErrorMessage);
         }
         return NoContent();
+    }
+
+    [HttpGet("{id:int}/performance/overview")]
+    [Authorize]
+    [ProducesResponseType(typeof(PerformanceOverviewDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult<PerformanceOverviewDto>> GetPerformanceOverview(
+        [FromRoute] int id,
+        [FromQuery] string? period,
+        [FromQuery] int? days,
+        [FromQuery] DateTimeOffset? from,
+        [FromQuery] DateTimeOffset? to,
+        CancellationToken cancellationToken)
+    {
+        var result = await _mediator.Send(new GetPerformanceOverviewQuery(id, period, days, from, to), cancellationToken);
+        if (result == null)
+        {
+            return NotFound();
+        }
+        return Ok(result);
     }
 }
 
