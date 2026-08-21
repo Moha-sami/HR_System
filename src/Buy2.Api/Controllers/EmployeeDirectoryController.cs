@@ -3,6 +3,7 @@ using Buy2.Application.Features.Employees.DeleteEmployee;
 using Buy2.Application.Features.Employees.ExportEmployees;
 using Buy2.Application.Features.Employees.GetEmployee;
 using Buy2.Application.Features.Employees.GetEmployeePayroll;
+using Buy2.Application.Features.Employees.GetEmployeeTasks;
 using Buy2.Application.Features.Employees.GetEmployees;
 using Buy2.Application.Features.Employees.GetMetricDetail;
 using Buy2.Application.Features.Employees.GetPerformanceOverview;
@@ -224,6 +225,24 @@ public class EmployeeDirectoryController : ControllerBase
         }
 
         var result = await _mediator.Send(new GetMetricDetailQuery(id, metricId, period, days, from, to), cancellationToken);
+        if (result == null)
+        {
+            return NotFound();
+        }
+        return Ok(result);
+    }
+
+    [HttpGet("{id:int}/tasks")]
+    [Authorize]
+    [ProducesResponseType(typeof(List<EmployeeTaskDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult<List<EmployeeTaskDto>>> GetEmployeeTasks(
+        [FromRoute] int id,
+        [FromQuery] string? status,
+        CancellationToken cancellationToken)
+    {
+        var result = await _mediator.Send(new GetEmployeeTasksQuery(id, status), cancellationToken);
         if (result == null)
         {
             return NotFound();

@@ -218,5 +218,26 @@ This document outlines the REST API endpoints provided by the Buy2 HRMS backend 
   - `404 Not Found` if employee with specified `id` does not exist or has been soft-deleted, or if metric with specified `metricId` does not exist.
   - `401 Unauthorized` if the request is unauthenticated.
 
+### `GET /api/v1/employees/{id}/tasks`
+- **Authorization**: Authenticated users (`[Authorize]`)
+- **Path Parameters**:
+  - `id` (int, required) - Unique ID of the employee
+- **Query Parameters**:
+  - `status` (string, optional) - Filter by task status (`Todo`, `InProgress`, `InReview`, `Completed`, `Overdue`)
+- **Description**: Returns all tasks assigned to the specified employee, ordered by due date (ascending) and creation timestamp (descending). Supports optional filtering by task status.
+- **Responses**:
+  - `200 OK` with array of `EmployeeTaskDto`:
+    - `id` (int)
+    - `employeeId` (int)
+    - `title` (string)
+    - `description` (string)
+    - `status` (string)
+    - `priority` (string, null)
+    - `dueDate` (string/DateTimeOffset, null)
+    - `completedAt` (string/DateTimeOffset, null)
+    - `createdAt` (string/DateTimeOffset)
+  - `404 Not Found` if employee with specified `id` does not exist or has been soft-deleted.
+  - `401 Unauthorized` if the request is unauthenticated.
+
 
 
