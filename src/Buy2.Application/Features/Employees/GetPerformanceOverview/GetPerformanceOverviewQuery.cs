@@ -83,7 +83,7 @@ public class GetPerformanceOverviewQueryHandler : IRequestHandler<GetPerformance
                 default:
                     fromDate = new DateTimeOffset(nowUtc.Year, nowUtc.Month, 1, 0, 0, 0, TimeSpan.Zero);
                     toDate = nowUtc;
-                    periodResolved = request.Period;
+                    periodResolved = "thisMonth";
                     break;
             }
         }
@@ -98,6 +98,10 @@ public class GetPerformanceOverviewQueryHandler : IRequestHandler<GetPerformance
         {
             fromDate = request.From ?? new DateTimeOffset(nowUtc.Year, nowUtc.Month, 1, 0, 0, 0, TimeSpan.Zero);
             toDate = request.To ?? nowUtc;
+            if (Math.Abs((toDate - fromDate).TotalDays) > 3650)
+            {
+                fromDate = toDate.AddDays(-3650);
+            }
             periodResolved = "custom";
         }
         else
@@ -163,9 +167,11 @@ public class GetPerformanceOverviewQueryHandler : IRequestHandler<GetPerformance
             ratingLabel = "Excellent";
         }
 
-        // 5. Query Tasks and Calculate Task Statistics
+        // 5. Query Tasks and Calculate Task Statistics within Range
         var tasks = await _taskRepository.Query()
-            .Where(t => t.EmployeeId == request.EmployeeId)
+            .Where(t => t.EmployeeId == request.EmployeeId &&
+                        t.CreatedAt <= toUtcDateTime &&
+                        (t.DueDate == null || t.DueDate >= fromUtcDateTime))
             .ToListAsync(cancellationToken);
 
         var totalTasks = tasks.Count;
@@ -223,15 +229,17 @@ public class GetPerformanceOverviewQueryHandler : IRequestHandler<GetPerformance
             ))
             .ToList();
 
-        // 8. Map Submissions Detail
-        var submissionsDetail = submissions.Select(s => new SubmissionDetailDto(
-            Id: s.Id,
-            MetricName: s.PerformanceMetric?.Name ?? $"Metric #{s.MetricId}",
-            Score: s.Score,
-            Weight: s.PerformanceMetric?.Weight ?? 1m,
-            SubmittedAt: new DateTimeOffset(DateTime.SpecifyKind(s.SubmissionDate, DateTimeKind.Utc)),
-            Notes: s.Feedback ?? string.Empty
-        )).ToList();
+        // 8. Individual Submissions Details (capped at 200)
+        var submissionsDetail = submissions
+            .Take(200)
+            .Select(s => new SubmissionDetailDto(
+                Id: s.Id,
+                MetricName: s.PerformanceMetric?.Name ?? $"Metric #{s.MetricId}",
+                Score: s.Score,
+                Weight: s.PerformanceMetric?.Weight ?? 1m,
+                SubmittedAt: new DateTimeOffset(DateTime.SpecifyKind(s.SubmissionDate, DateTimeKind.Utc)),
+                Notes: s.Feedback ?? string.Empty
+            )).ToList();
 
         // 9. Assemble and return full PerformanceOverviewDto
         return new PerformanceOverviewDto(

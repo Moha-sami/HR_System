@@ -149,6 +149,11 @@ public class EmployeeDirectoryController : ControllerBase
         return NoContent();
     }
 
+    private static readonly HashSet<string> ValidPeriods = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "today", "thisweek", "week", "thismonth", "month", "thisyear", "year"
+    };
+
     [HttpGet("{id:int}/performance/overview")]
     [Authorize]
     [ProducesResponseType(typeof(PerformanceOverviewDto), StatusCodes.Status200OK)]
@@ -163,9 +168,19 @@ public class EmployeeDirectoryController : ControllerBase
         [FromQuery] DateTimeOffset? to,
         CancellationToken cancellationToken)
     {
+        if (!string.IsNullOrWhiteSpace(period) && !ValidPeriods.Contains(period.Trim()))
+        {
+            return BadRequest($"Invalid period '{period}'. Supported values: today, thisWeek, thisMonth, thisYear.");
+        }
+
         if (days.HasValue && (days.Value <= 0 || days.Value > 3650))
         {
             return BadRequest("Days parameter must be between 1 and 3650.");
+        }
+
+        if (from.HasValue && to.HasValue && Math.Abs((to.Value - from.Value).TotalDays) > 3650)
+        {
+            return BadRequest("Date range cannot exceed 3650 days (10 years).");
         }
 
         var result = await _mediator.Send(new GetPerformanceOverviewQuery(id, period, days, from, to), cancellationToken);
