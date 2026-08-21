@@ -3,6 +3,7 @@ using Buy2.Application.Features.Employees.DeleteEmployee;
 using Buy2.Application.Features.Employees.ExportEmployees;
 using Buy2.Application.Features.Employees.GetEmployee;
 using Buy2.Application.Features.Employees.GetEmployees;
+using Buy2.Application.Features.Employees.UpdatePersonalInfo;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -63,6 +64,22 @@ public class EmployeeDirectoryController : ControllerBase
     {
         var deleted = await _mediator.Send(new DeleteEmployeeCommand(id), cancellationToken);
         if (!deleted)
+        {
+            return NotFound();
+        }
+        return NoContent();
+    }
+
+    [HttpPut("{id:int}/personal")]
+    [Authorize(Roles = "Admin,Manager")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> UpdateEmployeePersonalInfo(int id, [FromBody] UpdateEmployeePersonalInfoDto dto, CancellationToken cancellationToken)
+    {
+        var updated = await _mediator.Send(new UpdateEmployeePersonalInfoCommand(id, dto), cancellationToken);
+        if (!updated)
         {
             return NotFound();
         }

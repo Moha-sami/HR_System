@@ -106,6 +106,9 @@ erDiagram
         string LastName
         string Email
         string PhoneNumber
+        string Address
+        string EmergencyContact
+        string NationalId
         int JobRoleId FK
         int RoleId FK
         int SiteId FK
