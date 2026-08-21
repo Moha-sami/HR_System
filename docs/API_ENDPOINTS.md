@@ -86,6 +86,31 @@ This document outlines the REST API endpoints provided by the Buy2 HRMS backend 
   - `401 Unauthorized` if unauthenticated.
   - `403 Forbidden` if authenticated user lacks required administrative role (`Admin`, `Manager`, `HR`, `SuperAdmin`).
 
+### `PUT /api/v1/employees/{id}/payroll`
+- **Authorization**: `[Authorize(Roles = "Admin,Manager")]`
+- **Path Parameters**:
+  - `id` (int, required) - Unique ID of the employee
+- **Request Body** (`application/json`, `UpdatePayrollProfileDto`):
+  - `salaryType` (SalaryType enum / string: `Fixed`, `Hourly`, optional) - Compensation model
+  - `payoutPeriod` (string, optional) - Payout schedule period (e.g., `Monthly`, `Bi-Weekly`)
+  - `payoutDay` (int, optional) - Payout day of the month/cycle
+  - `workWeekStart` (DayOfWeek enum: `Sunday`, `Monday`, etc., optional) - Starting day of work week
+  - `workWeekEnd` (DayOfWeek enum: `Thursday`, `Friday`, etc., optional) - Ending day of work week
+  - `paymentAmount` (decimal, optional) - Base salary or hourly wage amount
+  - `overtimeThresholdHours` (decimal, optional) - Overtime threshold in hours
+  - `overtimeHourlyRate` (decimal, optional) - Overtime hourly compensation rate
+  - `attendanceType` (string, optional) - Attendance arrangement (e.g., `On-Site`, `Remote`, `Hybrid`)
+  - `workSiteIds` (array of int, optional) - List of assigned work site IDs (synchronizes `EmployeeSite` join table)
+  - `onlineWorkdays` (array of strings, optional) - Days designated for remote / online work
+  - `offlineWorkdays` (array of strings, optional) - Days designated for on-site / offline work
+- **Description**: Updates or upserts the employee's payroll profile and work schedule settings. Synchronizes the employee's assigned work sites in the `EmployeeSite` join table and validates that all specified site IDs exist. Serializes online and offline workdays to JSON across both `Employee` and `PayrollProfile` records. All changes are committed atomically via `IUnitOfWork`.
+- **Responses**:
+  - `204 No Content` on successful payroll profile update/upsert.
+  - `400 Bad Request` if one or more specified `workSiteIds` do not exist.
+  - `404 Not Found` if employee with specified `id` does not exist, is inactive, or has been soft-deleted.
+  - `401 Unauthorized` if the request is unauthenticated.
+  - `403 Forbidden` if authenticated user does not have `Admin` or `Manager` role.
+
 
 ### `DELETE /api/v1/employees/{id}`
 - **Authorization**: `[Authorize(Roles = "Admin,SuperAdmin")]`

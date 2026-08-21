@@ -5,6 +5,7 @@ using Buy2.Application.Features.Employees.GetEmployee;
 using Buy2.Application.Features.Employees.GetEmployeePayroll;
 using Buy2.Application.Features.Employees.GetEmployees;
 using Buy2.Application.Features.Employees.UpdateJobDetails;
+using Buy2.Application.Features.Employees.UpdatePayrollProfile;
 using Buy2.Application.Features.Employees.UpdatePersonalInfo;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -59,6 +60,27 @@ public class EmployeeDirectoryController : ControllerBase
             return NotFound();
         }
         return Ok(result);
+    }
+
+    [HttpPut("{id:int}/payroll")]
+    [Authorize(Roles = "Admin,Manager")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> UpdateEmployeePayrollProfile(int id, [FromBody] UpdatePayrollProfileDto dto, CancellationToken cancellationToken)
+    {
+        var result = await _mediator.Send(new UpdatePayrollProfileCommand(id, dto), cancellationToken);
+        if (result.IsNotFound)
+        {
+            return NotFound();
+        }
+        if (!result.IsSuccess)
+        {
+            return BadRequest(result.ErrorMessage);
+        }
+        return NoContent();
     }
 
     [HttpGet("export")]
