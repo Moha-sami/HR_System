@@ -9,8 +9,11 @@ namespace Buy2.Infrastructure.Persistence.Configurations
         public void Configure(EntityTypeBuilder<Site> builder)
         {
             builder.Property(s => s.SiteName)
-            .IsRequired()
+                .IsRequired()
             .HasColumnType("nvarchar(100)");
+            builder.HasIndex(s => s.SiteName)
+                .IsUnique();
+
             builder.Property(s => s.Latitude)
                 .IsRequired()
                 .HasPrecision(9, 6);
