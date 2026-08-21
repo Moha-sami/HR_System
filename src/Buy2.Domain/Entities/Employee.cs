@@ -12,6 +12,9 @@ public class Employee : BaseEntity
     public DateTime? Birthdate { get; set; }
     public Gender Gender { get; set; }
     public string? ProfilePhotoUrl { get; set; }
+    public string? Address { get; set; }
+    public string? EmergencyContact { get; set; }
+    public string? NationalId { get; set; }
     public DateTime JoinDate { get; set; } = DateTime.UtcNow;
     public string SeniorityLevel { get; set; } = string.Empty;
     public int ExperienceYears { get; set; }

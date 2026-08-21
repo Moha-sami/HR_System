@@ -72,4 +72,24 @@ This document outlines the REST API endpoints provided by the Buy2 HRMS backend 
   - `401 Unauthorized` if the request is unauthenticated.
   - `403 Forbidden` if authenticated user does not have `Admin` or `SuperAdmin` role.
 
+### `PUT /api/v1/employees/{id}/personal`
+- **Authorization**: `[Authorize(Roles = "Admin,Manager")]`
+- **Path Parameters**:
+  - `id` (int, required) - Unique ID of the employee
+- **Request Body** (`application/json`, `UpdateEmployeePersonalInfoDto`):
+  - `firstName` (string, optional) - Employee first name
+  - `lastName` (string, optional) - Employee last name
+  - `phoneNumber` (string, optional) - Contact phone number
+  - `dateOfBirth` (string/DateTimeOffset, optional) - Date of birth (ISO 8601)
+  - `address` (string, optional) - Residential address (max 250 chars)
+  - `emergencyContact` (string, optional) - Emergency contact info (max 100 chars)
+  - `nationalId` (string, optional) - National identification number (max 50 chars)
+- **Description**: Performs a partial update on the employee's personal info. Only non-null fields provided in the request payload are updated on the target record.
+- **Responses**:
+  - `204 No Content` on successful personal info update.
+  - `404 Not Found` if employee with specified `id` does not exist or has been soft-deleted.
+  - `401 Unauthorized` if the request is unauthenticated.
+  - `403 Forbidden` if authenticated user does not have `Admin` or `Manager` role.
+
+
 

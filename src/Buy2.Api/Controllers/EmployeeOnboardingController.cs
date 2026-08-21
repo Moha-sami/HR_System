@@ -30,7 +30,6 @@ public class EmployeeOnboardingController : ControllerBase
     }
 
     [HttpPost("/api/v1/employees/bulk-onboard")]
-    [HttpPost("bulk")]
     [ProducesResponseType(typeof(BulkOnboardResultDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
