@@ -4,6 +4,7 @@ using Buy2.Application.Features.Employees.ExportEmployees;
 using Buy2.Application.Features.Employees.GetEmployee;
 using Buy2.Application.Features.Employees.GetEmployeePayroll;
 using Buy2.Application.Features.Employees.GetEmployees;
+using Buy2.Application.Features.Employees.GetMetricDetail;
 using Buy2.Application.Features.Employees.GetPerformanceOverview;
 using Buy2.Application.Features.Employees.UpdateJobDetails;
 using Buy2.Application.Features.Employees.UpdatePayrollProfile;
@@ -11,6 +12,7 @@ using Buy2.Application.Features.Employees.UpdatePersonalInfo;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using MetricDetailDto = Buy2.Application.Features.Employees.GetMetricDetail.MetricDetailDto;
 using PerformanceOverviewDto = Buy2.Application.Features.Employees.GetPerformanceOverview.PerformanceOverviewDto;
 
 namespace Buy2.Api.Controllers;
@@ -184,6 +186,44 @@ public class EmployeeDirectoryController : ControllerBase
         }
 
         var result = await _mediator.Send(new GetPerformanceOverviewQuery(id, period, days, from, to), cancellationToken);
+        if (result == null)
+        {
+            return NotFound();
+        }
+        return Ok(result);
+    }
+
+    [HttpGet("{id:int}/performance/metrics/{metricId:int}")]
+    [Authorize]
+    [ProducesResponseType(typeof(MetricDetailDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult<MetricDetailDto>> GetMetricDetail(
+        [FromRoute] int id,
+        [FromRoute] int metricId,
+        [FromQuery] string? period,
+        [FromQuery] int? days,
+        [FromQuery] DateTimeOffset? from,
+        [FromQuery] DateTimeOffset? to,
+        CancellationToken cancellationToken)
+    {
+        if (!string.IsNullOrWhiteSpace(period) && !ValidPeriods.Contains(period.Trim()))
+        {
+            return BadRequest($"Invalid period '{period}'. Supported values: today, thisWeek, thisMonth, thisYear.");
+        }
+
+        if (days.HasValue && (days.Value <= 0 || days.Value > 3650))
+        {
+            return BadRequest("Days parameter must be between 1 and 3650.");
+        }
+
+        if (from.HasValue && to.HasValue && Math.Abs((to.Value - from.Value).TotalDays) > 3650)
+        {
+            return BadRequest("Date range cannot exceed 3650 days (10 years).");
+        }
+
+        var result = await _mediator.Send(new GetMetricDetailQuery(id, metricId, period, days, from, to), cancellationToken);
         if (result == null)
         {
             return NotFound();
