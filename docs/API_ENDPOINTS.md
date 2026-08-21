@@ -61,6 +61,32 @@ This document outlines the REST API endpoints provided by the Buy2 HRMS backend 
     - `Id`, `FirstName`, `LastName`, `EmployeeCode`, `Email`, `Phone`, `BirthDate`, `Gender`, `JobTitle`, `Department`, `SeniorityLevel`, `ExperienceYears`, `DirectManagerName`, `JobType`, `SiteName`, `RoleName`, `Qualifications` (array of strings), `TotalPoints`, `TotalTasks`, `TotalGifts`
   - `404 Not Found` if employee with specified `id` does not exist.
 
+### `GET /api/v1/employees/{id}/payroll`
+- **Authorization**: `[Authorize(Roles = "Admin,Manager,HR,SuperAdmin")]`
+- **Path Parameters**:
+  - `id` (int, required) - Unique ID of the employee
+- **Description**: Retrieves employee payroll profile, compensation model, payment amount, overtime rates, work week schedules, assigned work site IDs, attendance type, and parsed online/offline workdays. If an employee does not yet have a configured payroll record, default unconfigured values (`IsConfigured = false`) are returned.
+- **Response**:
+  - `200 OK` with `EmployeePayrollProfileDto`:
+    - `employeeId` (int)
+    - `isConfigured` (bool)
+    - `salaryType` (SalaryType enum / string: `Fixed`, `Hourly`)
+    - `payoutPeriod` (string)
+    - `payoutDay` (int)
+    - `workWeekStart` (DayOfWeek enum: `Sunday`, `Monday`, etc.)
+    - `workWeekEnd` (DayOfWeek enum: `Thursday`, `Friday`, etc.)
+    - `paymentAmount` (decimal)
+    - `overtimeThresholdHours` (decimal)
+    - `overtimeHourlyRate` (decimal)
+    - `attendanceType` (string)
+    - `workSiteIds` (array of int)
+    - `onlineWorkdays` (array of strings)
+    - `offlineWorkdays` (array of strings)
+  - `404 Not Found` if employee with specified `id` does not exist or has been soft-deleted.
+  - `401 Unauthorized` if unauthenticated.
+  - `403 Forbidden` if authenticated user lacks required administrative role (`Admin`, `Manager`, `HR`, `SuperAdmin`).
+
+
 ### `DELETE /api/v1/employees/{id}`
 - **Authorization**: `[Authorize(Roles = "Admin,SuperAdmin")]`
 - **Path Parameters**:

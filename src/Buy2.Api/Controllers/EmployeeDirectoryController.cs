@@ -2,6 +2,7 @@ using Buy2.Application.DTOs.Employees;
 using Buy2.Application.Features.Employees.DeleteEmployee;
 using Buy2.Application.Features.Employees.ExportEmployees;
 using Buy2.Application.Features.Employees.GetEmployee;
+using Buy2.Application.Features.Employees.GetEmployeePayroll;
 using Buy2.Application.Features.Employees.GetEmployees;
 using Buy2.Application.Features.Employees.UpdateJobDetails;
 using Buy2.Application.Features.Employees.UpdatePersonalInfo;
@@ -37,6 +38,22 @@ public class EmployeeDirectoryController : ControllerBase
     public async Task<ActionResult<EmployeeProfileDto>> GetEmployeeProfile(int id, CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(new GetEmployeeProfileQuery(id), cancellationToken);
+        if (result == null)
+        {
+            return NotFound();
+        }
+        return Ok(result);
+    }
+
+    [HttpGet("{id:int}/payroll")]
+    [Authorize(Roles = "Admin,Manager,HR,SuperAdmin")]
+    [ProducesResponseType(typeof(EmployeePayrollProfileDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<ActionResult<EmployeePayrollProfileDto>> GetEmployeePayrollProfile(int id, CancellationToken cancellationToken)
+    {
+        var result = await _mediator.Send(new GetEmployeePayrollProfileQuery(id), cancellationToken);
         if (result == null)
         {
             return NotFound();
@@ -108,4 +125,5 @@ public class EmployeeDirectoryController : ControllerBase
         return NoContent();
     }
 }
+
 
