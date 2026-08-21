@@ -17,6 +17,23 @@ public record PayrollProfileDto(
     List<string> OfflineWorkdays
 );
 
+public record EmployeePayrollProfileDto(
+    int EmployeeId,
+    bool IsConfigured,
+    SalaryType SalaryType,
+    string PayoutPeriod,
+    int PayoutDay,
+    DayOfWeek WorkWeekStart,
+    DayOfWeek WorkWeekEnd,
+    decimal PaymentAmount,
+    decimal OvertimeThresholdHours,
+    decimal OvertimeHourlyRate,
+    string AttendanceType,
+    List<int> WorkSiteIds,
+    List<string> OnlineWorkdays,
+    List<string> OfflineWorkdays
+);
+
 public record UpdatePayrollProfileDto(
     SalaryType SalaryType,
     string PayoutPeriod,
