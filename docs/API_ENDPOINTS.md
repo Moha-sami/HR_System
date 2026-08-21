@@ -91,5 +91,27 @@ This document outlines the REST API endpoints provided by the Buy2 HRMS backend 
   - `401 Unauthorized` if the request is unauthenticated.
   - `403 Forbidden` if authenticated user does not have `Admin` or `Manager` role.
 
+### `PUT /api/v1/employees/{id}/job`
+- **Authorization**: `[Authorize(Roles = "Admin,Manager")]`
+- **Path Parameters**:
+  - `id` (int, required) - Unique ID of the employee
+- **Request Body** (`application/json`, `UpdateJobDetailsDto`):
+  - `jobRoleId` (int, optional) - Job role ID
+  - `roleId` (int, optional) - System security role ID
+  - `siteId` (int, optional) - Work site / branch ID
+  - `directManagerId` (int, optional) - Direct manager employee ID (cannot be the employee themselves)
+  - `seniorityLevel` (string, optional) - Seniority level designation (e.g., Junior, Mid, Senior, Lead)
+  - `experienceYears` (int, optional) - Years of experience
+  - `jobType` (string, optional) - Employment type (e.g., Full-Time, Part-Time, Contract)
+  - `attendanceType` (string, optional) - Work arrangement / attendance model (e.g., On-Site, Remote, Hybrid)
+  - `joinDate` (string/DateTimeOffset, optional) - Date employee joined (ISO 8601)
+- **Description**: Performs a partial update on the employee's job and role details. Validates referenced foreign keys (`JobRole`, `Role`, `Site`, `DirectManager`) and prevents self-manager assignment. Only non-null fields provided in the request payload are updated.
+- **Responses**:
+  - `204 No Content` on successful job details update.
+  - `400 Bad Request` if any referenced foreign entity ID (`JobRole`, `Role`, `Site`, `DirectManager`) does not exist or if `directManagerId` matches `id`.
+  - `404 Not Found` if employee with specified `id` does not exist or has been soft-deleted.
+  - `401 Unauthorized` if the request is unauthenticated.
+  - `403 Forbidden` if authenticated user does not have `Admin` or `Manager` role.
+
 
 
