@@ -11,6 +11,18 @@ namespace Buy2.Infrastructure.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropForeignKey(
+                name: "FK_Employees_Sites_SiteId1",
+                table: "Employees");
+
+            migrationBuilder.DropIndex(
+                name: "IX_Employees_SiteId1",
+                table: "Employees");
+
+            migrationBuilder.DropColumn(
+                name: "SiteId1",
+                table: "Employees");
+
             migrationBuilder.AddColumn<string>(
                 name: "Address",
                 table: "Sites",
@@ -240,6 +252,24 @@ namespace Buy2.Infrastructure.Migrations
             migrationBuilder.DropColumn(
                 name: "RegionId",
                 table: "Sites");
+
+            migrationBuilder.AddColumn<int>(
+                name: "SiteId1",
+                table: "Employees",
+                type: "int",
+                nullable: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Employees_SiteId1",
+                table: "Employees",
+                column: "SiteId1");
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_Employees_Sites_SiteId1",
+                table: "Employees",
+                column: "SiteId1",
+                principalTable: "Sites",
+                principalColumn: "Id");
         }
     }
 }

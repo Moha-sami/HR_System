@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Buy2.Infrastructure.Migrations
 {
     [DbContext(typeof(Buy2DbContext))]
-    [Migration("20260822023614_AddSiteAndRegionEntities")]
+    [Migration("20260822024550_AddSiteAndRegionEntities")]
     partial class AddSiteAndRegionEntities
     {
         /// <inheritdoc />
@@ -233,9 +233,6 @@ namespace Buy2.Infrastructure.Migrations
                     b.Property<int>("SiteId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("SiteId1")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
 
                     b.HasIndex("DirectManagerId");
@@ -248,8 +245,6 @@ namespace Buy2.Infrastructure.Migrations
                     b.HasIndex("RoleId");
 
                     b.HasIndex("SiteId");
-
-                    b.HasIndex("SiteId1");
 
                     b.ToTable("Employees");
                 });
@@ -981,15 +976,11 @@ namespace Buy2.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Buy2.Domain.Entities.Site", null)
+                    b.HasOne("Buy2.Domain.Entities.Site", "Site")
                         .WithMany()
                         .HasForeignKey("SiteId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
-
-                    b.HasOne("Buy2.Domain.Entities.Site", "Site")
-                        .WithMany()
-                        .HasForeignKey("SiteId1");
 
                     b.Navigation("DirectManager");
 

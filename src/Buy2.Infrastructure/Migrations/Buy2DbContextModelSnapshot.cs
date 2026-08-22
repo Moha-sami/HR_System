@@ -230,9 +230,6 @@ namespace Buy2.Infrastructure.Migrations
                     b.Property<int>("SiteId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("SiteId1")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
 
                     b.HasIndex("DirectManagerId");
@@ -245,8 +242,6 @@ namespace Buy2.Infrastructure.Migrations
                     b.HasIndex("RoleId");
 
                     b.HasIndex("SiteId");
-
-                    b.HasIndex("SiteId1");
 
                     b.ToTable("Employees");
                 });
@@ -604,6 +599,32 @@ namespace Buy2.Infrastructure.Migrations
                     b.ToTable("PointsTransactions");
                 });
 
+            modelBuilder.Entity("Buy2.Domain.Entities.Region", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("Regions");
+                });
+
             modelBuilder.Entity("Buy2.Domain.Entities.RewardItem", b =>
                 {
                     b.Property<int>("Id")
@@ -775,8 +796,16 @@ namespace Buy2.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("Address")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("Instructions")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<double>("Latitude")
                         .HasPrecision(9, 6)
@@ -786,8 +815,25 @@ namespace Buy2.Infrastructure.Migrations
                         .HasPrecision(9, 6)
                         .HasColumnType("float(9)");
 
+                    b.Property<string>("MacAddress")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("MacAddressWhitelistJson")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("MapUrl")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("MaxCapacity")
+                        .HasColumnType("int");
+
+                    b.Property<string>("PhoneNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("RegionId")
+                        .HasColumnType("int");
 
                     b.Property<string>("SiteName")
                         .IsRequired()
@@ -795,7 +841,92 @@ namespace Buy2.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("RegionId");
+
+                    b.HasIndex("SiteName")
+                        .IsUnique();
+
                     b.ToTable("Sites");
+                });
+
+            modelBuilder.Entity("Buy2.Domain.Entities.SiteDocument", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("FileName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("FilePath")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("SiteId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset>("UploadedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SiteId");
+
+                    b.ToTable("SiteDocuments");
+                });
+
+            modelBuilder.Entity("Buy2.Domain.Entities.SiteOperationalHour", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<TimeOnly>("CloseTime")
+                        .HasColumnType("time");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("DayOfWeek")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsOpen")
+                        .HasColumnType("bit");
+
+                    b.Property<TimeOnly>("OpenTime")
+                        .HasColumnType("time");
+
+                    b.Property<int>("SiteId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SiteId");
+
+                    b.ToTable("SiteOperationalHours");
+                });
+
+            modelBuilder.Entity("Buy2.Domain.Entities.SitePreferredEmployee", b =>
+                {
+                    b.Property<int>("SiteId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("EmployeeId")
+                        .HasColumnType("int");
+
+                    b.HasKey("SiteId", "EmployeeId");
+
+                    b.HasIndex("EmployeeId");
+
+                    b.ToTable("SitePreferredEmployees");
                 });
 
             modelBuilder.Entity("Buy2.Domain.Entities.DisciplinaryViolation", b =>
@@ -842,15 +973,11 @@ namespace Buy2.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Buy2.Domain.Entities.Site", null)
+                    b.HasOne("Buy2.Domain.Entities.Site", "Site")
                         .WithMany()
                         .HasForeignKey("SiteId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
-
-                    b.HasOne("Buy2.Domain.Entities.Site", "Site")
-                        .WithMany()
-                        .HasForeignKey("SiteId1");
 
                     b.Navigation("DirectManager");
 
@@ -1009,10 +1136,62 @@ namespace Buy2.Infrastructure.Migrations
                         .IsRequired();
 
                     b.HasOne("Buy2.Domain.Entities.Site", null)
-                        .WithMany()
+                        .WithMany("Shifts")
                         .HasForeignKey("SiteId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("Buy2.Domain.Entities.Site", b =>
+                {
+                    b.HasOne("Buy2.Domain.Entities.Region", "Region")
+                        .WithMany("Sites")
+                        .HasForeignKey("RegionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Region");
+                });
+
+            modelBuilder.Entity("Buy2.Domain.Entities.SiteDocument", b =>
+                {
+                    b.HasOne("Buy2.Domain.Entities.Site", "Site")
+                        .WithMany("Documents")
+                        .HasForeignKey("SiteId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Site");
+                });
+
+            modelBuilder.Entity("Buy2.Domain.Entities.SiteOperationalHour", b =>
+                {
+                    b.HasOne("Buy2.Domain.Entities.Site", "Site")
+                        .WithMany("OperationalHours")
+                        .HasForeignKey("SiteId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Site");
+                });
+
+            modelBuilder.Entity("Buy2.Domain.Entities.SitePreferredEmployee", b =>
+                {
+                    b.HasOne("Buy2.Domain.Entities.Employee", "Employee")
+                        .WithMany()
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Buy2.Domain.Entities.Site", "Site")
+                        .WithMany("PreferredEmployees")
+                        .HasForeignKey("SiteId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Employee");
+
+                    b.Navigation("Site");
                 });
 
             modelBuilder.Entity("Buy2.Domain.Entities.Employee", b =>
@@ -1031,9 +1210,22 @@ namespace Buy2.Infrastructure.Migrations
                     b.Navigation("PerformanceSubmissions");
                 });
 
+            modelBuilder.Entity("Buy2.Domain.Entities.Region", b =>
+                {
+                    b.Navigation("Sites");
+                });
+
             modelBuilder.Entity("Buy2.Domain.Entities.Site", b =>
                 {
+                    b.Navigation("Documents");
+
                     b.Navigation("EmployeeSites");
+
+                    b.Navigation("OperationalHours");
+
+                    b.Navigation("PreferredEmployees");
+
+                    b.Navigation("Shifts");
                 });
 #pragma warning restore 612, 618
         }
