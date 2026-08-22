@@ -11,6 +11,7 @@ public class Buy2DbContext : DbContext
     }
 
     public DbSet<AttendanceProfile> AttendanceProfiles => Set<AttendanceProfile>();
+    public DbSet<AttendanceRecord> AttendanceRecords => Set<AttendanceRecord>();
     public DbSet<DisciplinaryViolation> DisciplinaryViolations => Set<DisciplinaryViolation>();
     public DbSet<Employee> Employees => Set<Employee>();
     public DbSet<EmployeeDocument> EmployeeDocuments => Set<EmployeeDocument>();
