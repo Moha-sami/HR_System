@@ -239,5 +239,33 @@ This document outlines the REST API endpoints provided by the Buy2 HRMS backend 
   - `404 Not Found` if employee with specified `id` does not exist or has been soft-deleted.
   - `401 Unauthorized` if the request is unauthenticated.
 
+### `GET /api/v1/employees/{id}/attendance/calendar`
+- **Authorization**: Authenticated users (`[Authorize]`)
+- **Path Parameters**:
+  - `id` (int, required) - Unique ID of the employee
+- **Query Parameters**:
+  - `month` (int, optional) - Calendar month (1 to 12, defaults to current UTC month)
+  - `year` (int, optional) - Calendar year (1900 to 2100, defaults to current UTC year)
+- **Description**: Returns a full monthly attendance calendar breakdown for the specified employee and month/year, including overall summary metrics (`AttendanceRate`, `PunctualityScore`, `AverageLatenessMinutes`, `RecordedHours`, `TargetHours`) and daily cell details (`Date`, `Status`, `LeaveType`, `HoursWorked`, `HoursLeft`, `OtHours`, `BreakTime`, `LatenessMinutes`). Non-existent or soft-deleted employees return `404 Not Found`.
+- **Responses**:
+  - `200 OK` with `AttendanceCalendarDto`:
+    - `summary` (`AttendanceSummaryDto`):
+      - `attendanceRate` (decimal) - Percentage of attended workdays
+      - `punctualityScore` (decimal) - Percentage of on-time days among attended days
+      - `averageLatenessMinutes` (decimal) - Average minutes late for late days
+      - `recordedHours` (decimal) - Total recorded hours worked in the month
+      - `targetHours` (decimal) - Total expected hours based on standard workdays (8h/day)
+    - `days` (array of `AttendanceDayDto`):
+      - `date` (DateTime/ISO 8601) - UTC date of the day
+      - `status` (`AttendanceDayStatus` enum: `OnTime` = 1, `Late` = 2, `ApprovedLeave` = 3, `UnapprovedLeave` = 4, `PartialLeave` = 5, `NoAttendance` = 6, `PublicHoliday` = 7, `AttendanceNotRequired` = 8)
+      - `leaveType` (string, optional/nullable)
+      - `hoursWorked` (decimal) - Hours worked on the day
+      - `hoursLeft` (decimal) - Remaining hours to meet daily target (8h)
+      - `otHours` (decimal) - Overtime hours worked
+      - `breakTime` (decimal) - Break time in minutes
+      - `latenessMinutes` (int, optional/nullable) - Minutes late relative to scheduled start
+  - `404 Not Found` if employee with specified `id` does not exist or has been soft-deleted.
+  - `401 Unauthorized` if the request is unauthenticated.
+
 
 
