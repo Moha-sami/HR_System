@@ -267,5 +267,16 @@ This document outlines the REST API endpoints provided by the Buy2 HRMS backend 
   - `404 Not Found` if employee with specified `id` does not exist or has been soft-deleted.
   - `401 Unauthorized` if the request is unauthenticated.
 
-
-
+### `GET /api/v1/employees/{id}/points/summary`
+- **Authorization**: Authenticated users (`[Authorize]`)
+- **Path Parameters**:
+  - `id` (int, required) - Unique ID of the employee
+- **Description**: Returns employee gamification points summary including current point balance, total points redeemed, total rewards redeemed count, and total rewards cost in points. Non-existent or soft-deleted employees return `404 Not Found`.
+- **Responses**:
+  - `200 OK` with `PointsSummaryDto`:
+    - `currentBalance` (int) - Current balance of points (earned positive, spent/deducted negative)
+    - `totalPointsRedeemed` (int) - Total points redeemed across all redemption transactions
+    - `totalRewardsRedeemed` (int) - Total count of rewards redeemed
+    - `totalRewardsCostPoints` (int) - Total cost in points for all redeemed rewards
+  - `404 Not Found` if employee with specified `id` does not exist or has been soft-deleted.
+  - `401 Unauthorized` if the request is unauthenticated.
