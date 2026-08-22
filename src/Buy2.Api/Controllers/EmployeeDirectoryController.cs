@@ -8,6 +8,7 @@ using Buy2.Application.Features.Employees.GetEmployeeTasks;
 using Buy2.Application.Features.Employees.GetEmployees;
 using Buy2.Application.Features.Employees.GetMetricDetail;
 using Buy2.Application.Features.Employees.GetPerformanceOverview;
+using Buy2.Application.Features.Employees.GetPointsSummary;
 using Buy2.Application.Features.Employees.UpdateJobDetails;
 using Buy2.Application.Features.Employees.UpdatePayrollProfile;
 using Buy2.Application.Features.Employees.UpdatePersonalInfo;
@@ -263,6 +264,23 @@ public class EmployeeDirectoryController : ControllerBase
         CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(new GetAttendanceCalendarQuery(id, month, year), cancellationToken);
+        if (result == null)
+        {
+            return NotFound();
+        }
+        return Ok(result);
+    }
+
+    [HttpGet("{id:int}/points/summary")]
+    [Authorize]
+    [ProducesResponseType(typeof(PointsSummaryDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult<PointsSummaryDto>> GetPointsSummary(
+        [FromRoute] int id,
+        CancellationToken cancellationToken)
+    {
+        var result = await _mediator.Send(new GetPointsSummaryQuery(id), cancellationToken);
         if (result == null)
         {
             return NotFound();
