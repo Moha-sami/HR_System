@@ -23,8 +23,8 @@ import {
   TableComponent,
 } from '@app/shared/components/table/table.component';
 import { EmployeeCreateComponent } from '../employee-create/employee-create.component';
-import { type Employee } from '../models/employee';
-import { type EmployeeApiResponse, EmployeeService } from '../services/employee.service';
+import { type Employee } from '../../models/employee';
+import { type EmployeeApiResponse, EmployeeService } from '../../services/employee.service';
 
 interface EmployeeListRow extends Employee {
   readonly apiEmployee: EmployeeApiResponse;
