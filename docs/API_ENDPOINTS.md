@@ -280,3 +280,32 @@ This document outlines the REST API endpoints provided by the Buy2 HRMS backend 
     - `totalRewardsCostPoints` (int) - Total cost in points for all redeemed rewards
   - `404 Not Found` if employee with specified `id` does not exist or has been soft-deleted.
   - `401 Unauthorized` if the request is unauthenticated.
+
+### `GET /api/v1/employees/{id}/points/transactions`
+- **Authorization**: Authenticated users (`[Authorize]`)
+- **Path Parameters**:
+  - `id` (int, required) - Unique ID of the employee
+- **Query Parameters**:
+  - `page` (int, default: 1) - Page number (minimum 1)
+  - `pageSize` (int, default: 10) - Items per page (clamped between 1 and 100)
+  - `type` (string, optional) - Filter by transaction type (`Earned`, `Redeemed`, or exact transaction type string)
+  - `triggeredBy` (string, optional) - Filter text matching rule key, event type, or transaction type
+  - `dateFrom` (DateTimeOffset/ISO 8601, optional) - Filter transactions created on or after this timestamp
+  - `dateTo` (DateTimeOffset/ISO 8601, optional) - Filter transactions created on or before this timestamp
+- **Description**: Returns paginated points ledger transaction history for the specified employee, ordered by creation date descending. Supports filtering by transaction type, triggering reason/rule, and date bounds. Non-existent or soft-deleted employees return `404 Not Found`.
+- **Responses**:
+  - `200 OK` with `PaginatedPointsTransactionsDto`:
+    - `items` (array of `PointsTransactionDto`):
+      - `id` (int) - Transaction ID
+      - `date` (DateTimeOffset/ISO 8601) - Timestamp when transaction was recorded (UTC)
+      - `amount` (int) - Points amount (positive for earned/awarded, negative for spent/deducted)
+      - `type` (string) - Transaction category (`Earned`, `Redeemed`, or specific type)
+      - `triggeredBy` (string, nullable) - Rule key or triggering event description
+      - `comments` (string, nullable) - Additional event context or comments
+    - `totalCount` (int) - Total number of matching transactions
+    - `page` (int) - Current page number
+    - `pageSize` (int) - Page size
+    - `totalPages` (int) - Total calculated page count
+  - `404 Not Found` if employee with specified `id` does not exist or has been soft-deleted.
+  - `401 Unauthorized` if the request is unauthenticated.
+
