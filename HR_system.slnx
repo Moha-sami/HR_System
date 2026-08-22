@@ -8,4 +8,7 @@
     <Project Path="src/Buy2.Domain/Buy2.Domain.csproj" />
     <Project Path="src/Buy2.Infrastructure/Buy2.Infrastructure.csproj" />
   </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Buy2.Domain.Tests/Buy2.Domain.Tests.csproj" />
+  </Folder>
 </Solution>
