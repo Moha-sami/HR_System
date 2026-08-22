@@ -1,4 +1,4 @@
-﻿using Buy2.Domain.Entities;
+using Buy2.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -17,8 +17,8 @@ public class SiteDocumentConfiguration : IEntityTypeConfiguration<SiteDocument>
         builder.Property(d => d.UploadedAt)
             .IsRequired();
 
-        builder.HasOne<Site>()
-            .WithMany()
+        builder.HasOne(d => d.Site)
+            .WithMany(s => s.Documents)
             .HasForeignKey(d => d.SiteId)
             .OnDelete(DeleteBehavior.Cascade);
     }

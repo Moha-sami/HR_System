@@ -1,4 +1,4 @@
-﻿using Buy2.Domain.Entities;
+using Buy2.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -16,8 +16,8 @@ public class RegionConfiguration : IEntityTypeConfiguration<Region>
           .IsRequired(false)
           .HasColumnType("nvarchar(500)");
 
-        builder.HasMany<Site>()
-            .WithOne()
+        builder.HasMany(r => r.Sites)
+            .WithOne(s => s.Region)
             .HasForeignKey(s => s.RegionId)
             .OnDelete(DeleteBehavior.Restrict);
     }

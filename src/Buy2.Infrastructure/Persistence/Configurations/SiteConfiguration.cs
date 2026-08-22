@@ -1,4 +1,4 @@
-﻿using Buy2.Domain.Entities;
+using Buy2.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -44,32 +44,32 @@ namespace Buy2.Infrastructure.Persistence.Configurations
                 .HasColumnType("int");
 
             builder.HasMany<Employee>()
-                .WithOne()
+                .WithOne(e => e.Site)
                 .HasForeignKey(e => e.SiteId)
                 .OnDelete(DeleteBehavior.Restrict);
-            builder.HasMany<ShiftEntity>()
+            builder.HasMany(s => s.Shifts)
                 .WithOne()
                 .HasForeignKey(s => s.SiteId)
                 .OnDelete(DeleteBehavior.Restrict);
-            builder.HasOne<Region>()
-                .WithMany()
+            builder.HasOne(s => s.Region)
+                .WithMany(r => r.Sites)
                 .HasForeignKey(s => s.RegionId)
                 .OnDelete(DeleteBehavior.Restrict);
-            builder.HasMany<SiteOperationalHour>()
-                .WithOne()
-                .HasForeignKey(s => s.SiteId)
+            builder.HasMany(s => s.OperationalHours)
+                .WithOne(o => o.Site)
+                .HasForeignKey(o => o.SiteId)
                 .OnDelete(DeleteBehavior.Cascade);
-            builder.HasMany<SitePreferredEmployee>()
-                .WithOne()
-                .HasForeignKey(s => s.SiteId)
+            builder.HasMany(s => s.PreferredEmployees)
+                .WithOne(pe => pe.Site)
+                .HasForeignKey(pe => pe.SiteId)
                 .OnDelete(DeleteBehavior.Cascade);
-            builder.HasMany<SiteDocument>()
-                .WithOne()
-                .HasForeignKey(s => s.SiteId)
+            builder.HasMany(s => s.Documents)
+                .WithOne(d => d.Site)
+                .HasForeignKey(d => d.SiteId)
                 .OnDelete(DeleteBehavior.Cascade);
-            builder.HasMany<EmployeeSite>()
-                .WithOne()
-                .HasForeignKey(s => s.SiteId)
+            builder.HasMany(s => s.EmployeeSites)
+                .WithOne(es => es.Site!)
+                .HasForeignKey(es => es.SiteId)
                 .OnDelete(DeleteBehavior.Cascade);
         }
     }

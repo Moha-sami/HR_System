@@ -1,4 +1,4 @@
-﻿using Buy2.Domain.Entities;
+using Buy2.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -14,11 +14,11 @@ public class SitePreferredEmployeeConfiguration : IEntityTypeConfiguration<SiteP
             x.EmployeeId
         });
 
-        builder.HasOne<Site>()
-            .WithMany()
+        builder.HasOne(x => x.Site)
+            .WithMany(s => s.PreferredEmployees)
             .HasForeignKey(x => x.SiteId)
             .OnDelete(DeleteBehavior.Cascade);
-        builder.HasOne<Employee>()
+        builder.HasOne(x => x.Employee)
             .WithMany()
             .HasForeignKey(x => x.EmployeeId)
             .OnDelete(DeleteBehavior.Restrict);

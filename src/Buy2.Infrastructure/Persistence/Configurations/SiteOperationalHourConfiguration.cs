@@ -1,4 +1,4 @@
-﻿using Buy2.Domain.Entities;
+using Buy2.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -17,8 +17,8 @@ public class SiteOperationalHourConfiguration : IEntityTypeConfiguration<SiteOpe
         builder.Property(s => s.CloseTime)
             .IsRequired();
 
-        builder.HasOne<Site>()
-           .WithMany()
+        builder.HasOne(s => s.Site)
+           .WithMany(s => s.OperationalHours)
            .HasForeignKey(s => s.SiteId)
            .OnDelete(DeleteBehavior.Cascade);
     }
