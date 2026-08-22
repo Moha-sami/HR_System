@@ -83,7 +83,7 @@ public class EmployeeConfiguration : IEntityTypeConfiguration<Employee>
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasOne(e => e.Role)
-            .WithMany()
+            .WithMany(r => r.Employees)
             .HasForeignKey(e => e.RoleId)
             .OnDelete(DeleteBehavior.Restrict);
 
