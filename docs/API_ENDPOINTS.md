@@ -335,3 +335,30 @@ This document outlines the REST API endpoints provided by the Buy2 HRMS backend 
   - `404 Not Found` if employee with specified `id` does not exist or has been soft-deleted.
   - `401 Unauthorized` if the request is unauthenticated.
 
+### `GET /api/v1/employees/{id}/violations/{violationId}`
+- **Authorization**: Authenticated users (`[Authorize]`)
+- **Path Parameters**:
+  - `id` (int, required) - Unique ID of the employee
+  - `violationId` (int, required) - Unique ID of the disciplinary violation
+- **Description**: Retrieves detailed disciplinary violation record for the specified employee and violation ID. Eagerly loads reporter (`ReportedBy`) and action taker (`ActionTakenBy`) navigations. Safely parses `WitnessesJson` into a string list and conditionally provides `ActionDetail` (null if status is `Pending` or no action recorded). Returns `404 Not Found` if employee or violation does not exist, if employee is soft-deleted, or if violation belongs to a different employee.
+- **Responses**:
+  - `200 OK` with `ViolationDetailDto`:
+    - `id` (int) - Violation ID
+    - `employeeId` (int) - Employee ID
+    - `violationType` (string) - Type of violation
+    - `severity` (string) - Severity level description
+    - `description` (string) - Incident description
+    - `status` (string) - Violation status (`Pending`, `UnderInvestigation`, `Resolved`)
+    - `reportedByName` (string) - Reporter full name or `"System"` fallback
+    - `witnesses` (array of strings) - Witness names/descriptions parsed from JSON
+    - `documentUrl` (string, nullable) - Supporting document URL
+    - `createdAt` (DateTimeOffset/ISO 8601) - Timestamp when violation was recorded (UTC)
+    - `actionDetail` (`ViolationActionDetailDto`, nullable):
+      - `actionType` (string, nullable) - Corrective or disciplinary action type
+      - `actionDate` (DateTime/ISO 8601, nullable) - Date action was taken
+      - `actionTakenByName` (string, nullable) - Full name of supervisor/manager who took action
+      - `actionDescription` (string, nullable) - Description of the action taken
+  - `404 Not Found` if employee or violation is not found, employee is soft-deleted, or violation does not belong to the employee.
+  - `401 Unauthorized` if the request is unauthenticated.
+
+
