@@ -309,3 +309,29 @@ This document outlines the REST API endpoints provided by the Buy2 HRMS backend 
   - `404 Not Found` if employee with specified `id` does not exist or has been soft-deleted.
   - `401 Unauthorized` if the request is unauthenticated.
 
+### `GET /api/v1/employees/{id}/violations`
+- **Authorization**: Authenticated users (`[Authorize]`)
+- **Path Parameters**:
+  - `id` (int, required) - Unique ID of the employee
+- **Query Parameters**:
+  - `type` (string, optional) - Filter by violation type (e.g., `Attendance`, `Behavioral`, `Performance`, `PolicyViolation`, etc.)
+  - `severityLevel` (string, optional) - Filter by severity level (e.g., `Low`, `Medium`, `High`, `Critical`)
+  - `dateFrom` (DateTimeOffset/ISO 8601, optional) - Filter violations created on or after this timestamp
+  - `dateTo` (DateTimeOffset/ISO 8601, optional) - Filter violations created on or before this timestamp
+- **Description**: Returns disciplinary violation history records for the specified employee, ordered by creation date descending. Supports optional filtering by violation type enum, severity level string, and date range bounds. Eagerly loads reporting supervisor details (`ReportedBy`) with fallback formatting. Non-existent or soft-deleted employees return `404 Not Found`.
+- **Responses**:
+  - `200 OK` with array of `ViolationDto`:
+    - `id` (int) - Disciplinary violation ID
+    - `employeeId` (int) - Target employee ID
+    - `type` (string) - Violation type name
+    - `severity` (string) - Severity level description/string
+    - `description` (string) - Violation incident details / explanation
+    - `status` (string) - Status name (e.g., `Pending`, `Approved`, `Rejected`, `Resolved`)
+    - `reportedByName` (string) - Full name of the reporter or `"System"` fallback
+    - `createdAt` (DateTimeOffset/ISO 8601) - Timestamp when violation was recorded (UTC)
+    - `actionType` (string, nullable) - Disciplinary or corrective action applied
+    - `actionDate` (DateTime/ISO 8601, nullable) - Date when corrective action took effect
+    - `documentUrl` (string, nullable) - URL/path to supporting documentation/attachment
+  - `404 Not Found` if employee with specified `id` does not exist or has been soft-deleted.
+  - `401 Unauthorized` if the request is unauthenticated.
+

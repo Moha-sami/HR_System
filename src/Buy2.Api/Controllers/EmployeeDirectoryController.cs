@@ -10,6 +10,7 @@ using Buy2.Application.Features.Employees.GetMetricDetail;
 using Buy2.Application.Features.Employees.GetPerformanceOverview;
 using Buy2.Application.Features.Employees.GetPointsSummary;
 using Buy2.Application.Features.Employees.GetPointsTransactions;
+using Buy2.Application.Features.Employees.GetViolations;
 using Buy2.Application.Features.Employees.UpdateJobDetails;
 using Buy2.Application.Features.Employees.UpdatePayrollProfile;
 using Buy2.Application.Features.Employees.UpdatePersonalInfo;
@@ -310,6 +311,36 @@ public class EmployeeDirectoryController : ControllerBase
             PageSize: pageSize,
             Type: type,
             TriggeredBy: triggeredBy,
+            DateFrom: dateFrom,
+            DateTo: dateTo
+        );
+
+        var result = await _mediator.Send(query, cancellationToken);
+        if (result == null)
+        {
+            return NotFound();
+        }
+
+        return Ok(result);
+    }
+
+    [HttpGet("{id:int}/violations")]
+    [Authorize]
+    [ProducesResponseType(typeof(List<ViolationDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult<List<ViolationDto>>> GetViolations(
+        [FromRoute] int id,
+        [FromQuery] string? type,
+        [FromQuery] string? severityLevel,
+        [FromQuery] DateTimeOffset? dateFrom,
+        [FromQuery] DateTimeOffset? dateTo,
+        CancellationToken cancellationToken)
+    {
+        var query = new GetViolationsQuery(
+            EmployeeId: id,
+            Type: type,
+            SeverityLevel: severityLevel,
             DateFrom: dateFrom,
             DateTo: dateTo
         );
