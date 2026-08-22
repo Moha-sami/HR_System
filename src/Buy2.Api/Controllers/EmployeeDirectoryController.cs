@@ -9,6 +9,7 @@ using Buy2.Application.Features.Employees.GetEmployees;
 using Buy2.Application.Features.Employees.GetMetricDetail;
 using Buy2.Application.Features.Employees.GetPerformanceOverview;
 using Buy2.Application.Features.Employees.GetPointsSummary;
+using Buy2.Application.Features.Employees.GetPointsTransactions;
 using Buy2.Application.Features.Employees.UpdateJobDetails;
 using Buy2.Application.Features.Employees.UpdatePayrollProfile;
 using Buy2.Application.Features.Employees.UpdatePersonalInfo;
@@ -285,6 +286,40 @@ public class EmployeeDirectoryController : ControllerBase
         {
             return NotFound();
         }
+        return Ok(result);
+    }
+
+    [HttpGet("{id:int}/points/transactions")]
+    [Authorize]
+    [ProducesResponseType(typeof(PaginatedPointsTransactionsDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult<PaginatedPointsTransactionsDto>> GetPointsTransactions(
+        [FromRoute] int id,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 10,
+        [FromQuery] string? type = null,
+        [FromQuery] string? triggeredBy = null,
+        [FromQuery] DateTimeOffset? dateFrom = null,
+        [FromQuery] DateTimeOffset? dateTo = null,
+        CancellationToken cancellationToken = default)
+    {
+        var query = new GetPointsTransactionsQuery(
+            EmployeeId: id,
+            Page: page,
+            PageSize: pageSize,
+            Type: type,
+            TriggeredBy: triggeredBy,
+            DateFrom: dateFrom,
+            DateTo: dateTo
+        );
+
+        var result = await _mediator.Send(query, cancellationToken);
+        if (result == null)
+        {
+            return NotFound();
+        }
+
         return Ok(result);
     }
 }
