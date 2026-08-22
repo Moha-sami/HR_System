@@ -12,6 +12,7 @@ using Buy2.Application.Features.Employees.GetPointsSummary;
 using Buy2.Application.Features.Employees.GetPointsTransactions;
 using Buy2.Application.Features.Employees.GetViolations;
 using Buy2.Application.Features.Employees.GetViolationDetail;
+using Buy2.Application.Features.Employees.ResolveViolation;
 using Buy2.Application.Features.Employees.UpdateJobDetails;
 using Buy2.Application.Features.Employees.UpdatePayrollProfile;
 using Buy2.Application.Features.Employees.UpdatePersonalInfo;
@@ -374,6 +375,34 @@ public class EmployeeDirectoryController : ControllerBase
 
         return Ok(result);
     }
+
+    [HttpPatch("{id:int}/violations/{violationId:int}/resolve")]
+    [Authorize(Roles = "Admin,Manager,HR,SuperAdmin")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> ResolveViolation(
+        [FromRoute] int id,
+        [FromRoute] int violationId,
+        [FromBody] ResolveViolationDto dto,
+        CancellationToken cancellationToken)
+    {
+        var result = await _mediator.Send(new ResolveViolationCommand(id, violationId, dto), cancellationToken);
+        if (result.IsNotFound)
+        {
+            return NotFound();
+        }
+
+        if (!result.IsSuccess)
+        {
+            return BadRequest(result.ErrorMessage);
+        }
+
+        return NoContent();
+    }
 }
+
 
 

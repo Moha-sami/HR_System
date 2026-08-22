@@ -361,4 +361,23 @@ This document outlines the REST API endpoints provided by the Buy2 HRMS backend 
   - `404 Not Found` if employee or violation is not found, employee is soft-deleted, or violation does not belong to the employee.
   - `401 Unauthorized` if the request is unauthenticated.
 
+### `PATCH /api/v1/employees/{id}/violations/{violationId}/resolve`
+- **Authorization**: `[Authorize(Roles = "Admin,Manager,HR,SuperAdmin")]`
+- **Path Parameters**:
+  - `id` (int, required) - Unique ID of the employee
+  - `violationId` (int, required) - Unique ID of the disciplinary violation
+- **Request Body** (`application/json`, `ResolveViolationDto`):
+  - `actionType` (string, required) - Type of disciplinary/corrective action taken
+  - `actionDescription` (string, required) - Description of the corrective action taken
+  - `actionDate` (DateTime/ISO 8601, optional) - Date and time when the action was taken (defaults to UTC now if omitted)
+  - `actionTakenById` (int, optional) - Employee ID of the supervisor or manager who took the action
+- **Description**: Resolves an employee disciplinary violation by updating its status to `Resolved` and recording action metadata (`ActionType`, `ActionDescription`, `ActionDate`, `ActionTakenById`). Returns `400 Bad Request` if the violation is already resolved. Returns `404 Not Found` if the employee does not exist, is soft-deleted, or if the violation is not found for the employee.
+- **Responses**:
+  - `204 No Content` on successful resolution of the violation.
+  - `400 Bad Request` if the violation is already marked as resolved.
+  - `404 Not Found` if employee or violation is not found, or employee is soft-deleted.
+  - `401 Unauthorized` if the request is unauthenticated.
+  - `403 Forbidden` if authenticated user lacks required administrative role (`Admin`, `Manager`, `HR`, `SuperAdmin`).
+
+
 
