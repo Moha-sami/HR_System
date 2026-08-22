@@ -1,6 +1,6 @@
 # HR Management System (HRMS)
 
-[![CI/CD Build Status](https://github.com/Moha-sami/HR_system/actions/workflows/ci.yml/badge.svg)](https://github.com/Moha-sami/HR_system/actions)
+[![CI/CD Build Status](https://github.com/Moha-sami/HR_system/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Moha-sami/HR_system/actions)
 [![Architecture](https://img.shields.io/badge/Architecture-Clean%20Architecture-blue.svg)](https://github.com/Moha-sami/HR_system)
 [![Backend](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
 [![Frontend](https://img.shields.io/badge/Angular-18+-red.svg)](https://angular.dev/)
