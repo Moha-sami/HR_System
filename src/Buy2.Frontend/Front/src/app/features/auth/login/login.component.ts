@@ -1,15 +1,14 @@
 import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, type NgForm } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
-import { firstValueFrom } from 'rxjs';
 import { AuthService } from '../../../core/auth/auth.service';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslatePipe, RouterLink],
+  imports: [CommonModule, FormsModule, TranslatePipe],
   templateUrl: './login.component.html',
 })
 export class LoginComponent {
@@ -21,8 +20,8 @@ export class LoginComponent {
   readonly showPassword = signal(false);
   readonly remember = signal(false);
 
-  email = '';
-  password = '';
+  email = signal('');
+  password = signal('');
 
   async onSubmit(form: NgForm): Promise<void> {
     if (form.invalid) {
@@ -33,11 +32,11 @@ export class LoginComponent {
     this.error.set(null);
 
     try {
-      await firstValueFrom(this.authService.login({ email: this.email, password: this.password }));
+      await this.authService.login({ email: this.email(), password: this.password() }).toPromise();
       this.router.navigate(['/']);
-    } catch (err: any) {
-      const message = err?.error?.message || err?.error || err?.message || 'Login failed. Please try again.';
-      this.error.set(typeof message === 'string' ? message : 'Login failed. Please try again.');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Login failed. Please try again.';
+      this.error.set(message);
     } finally {
       this.loading.set(false);
     }
