@@ -379,5 +379,34 @@ This document outlines the REST API endpoints provided by the Buy2 HRMS backend 
   - `401 Unauthorized` if the request is unauthenticated.
   - `403 Forbidden` if authenticated user lacks required administrative role (`Admin`, `Manager`, `HR`, `SuperAdmin`).
 
+### `GET /api/v1/employees/{id}/violations/export`
+- **Authorization**: `[Authorize(Roles = "Admin,Manager,HR,SuperAdmin")]`
+- **Path Parameters**:
+  - `id` (int, required) - Unique ID of the employee
+- **Query Parameters**:
+  - `type` (string, optional) - Filter by violation type (e.g., `Attendance`, `Behavioral`, `Performance`, `PolicyViolation`, etc.)
+  - `severityLevel` (string, optional) - Filter by severity level (e.g., `Low`, `Medium`, `High`, `Critical`)
+  - `dateFrom` (DateTimeOffset/ISO 8601, optional) - Filter violations created on or after this timestamp
+  - `dateTo` (DateTimeOffset/ISO 8601, optional) - Filter violations created on or before this timestamp
+- **Description**: Generates and downloads an RFC-4180-compliant CSV export (`employee_{id}_violations.csv`) containing disciplinary violation records for the specified employee with UTF-8 BOM preamble for Microsoft Excel compatibility. Supports filtering by violation type, severity level, and date range bounds. Eagerly loads reporter (`ReportedBy`) and action taker (`ActionTakenBy`) details. Non-existent or soft-deleted employees return `404 Not Found`.
+- **Responses**:
+  - `200 OK` with `text/csv` binary file download (`employee_{id}_violations.csv`).
+  - `404 Not Found` if employee with specified `id` does not exist or has been soft-deleted.
+  - `401 Unauthorized` if the request is unauthenticated.
+  - `403 Forbidden` if authenticated user lacks required administrative role (`Admin`, `Manager`, `HR`, `SuperAdmin`).
+- **CSV Columns**:
+  - `Violation ID`
+  - `Violation Type`
+  - `Severity`
+  - `Status`
+  - `Description`
+  - `Reported By`
+  - `Action Type`
+  - `Action Date`
+  - `Action Taken By`
+  - `Action Description`
+  - `Created At`
+
+
 
 

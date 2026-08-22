@@ -1,6 +1,7 @@
 using Buy2.Application.DTOs.Employees;
 using Buy2.Application.Features.Employees.DeleteEmployee;
 using Buy2.Application.Features.Employees.ExportEmployees;
+using Buy2.Application.Features.Employees.ExportViolations;
 using Buy2.Application.Features.Employees.GetAttendanceCalendar;
 using Buy2.Application.Features.Employees.GetEmployee;
 using Buy2.Application.Features.Employees.GetEmployeePayroll;
@@ -401,6 +402,37 @@ public class EmployeeDirectoryController : ControllerBase
         }
 
         return NoContent();
+    }
+
+    [HttpGet("{id:int}/violations/export")]
+    [Authorize(Roles = "Admin,Manager,HR,SuperAdmin")]
+    [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> ExportViolations(
+        [FromRoute] int id,
+        [FromQuery] string? type,
+        [FromQuery] string? severityLevel,
+        [FromQuery] DateTimeOffset? dateFrom,
+        [FromQuery] DateTimeOffset? dateTo,
+        CancellationToken cancellationToken)
+    {
+        var query = new ExportViolationsQuery(
+            EmployeeId: id,
+            Type: type,
+            SeverityLevel: severityLevel,
+            DateFrom: dateFrom,
+            DateTo: dateTo
+        );
+
+        var result = await _mediator.Send(query, cancellationToken);
+        if (result == null)
+        {
+            return NotFound();
+        }
+
+        return File(result, "text/csv", $"employee_{id}_violations.csv");
     }
 }
 
