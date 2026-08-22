@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -85,6 +85,9 @@ namespace Buy2.Infrastructure.Migrations
                 {
                     table.PrimaryKey("PK_Regions", x => x.Id);
                 });
+
+            migrationBuilder.Sql("IF NOT EXISTS (SELECT 1 FROM Regions) INSERT INTO Regions (Name, Description, CreatedAt) VALUES ('Cairo Region', 'Default Region', GETUTCDATE());");
+            migrationBuilder.Sql("UPDATE Sites SET RegionId = (SELECT TOP 1 Id FROM Regions) WHERE RegionId = 0 OR RegionId NOT IN (SELECT Id FROM Regions);");
 
             migrationBuilder.CreateTable(
                 name: "SiteDocuments",
