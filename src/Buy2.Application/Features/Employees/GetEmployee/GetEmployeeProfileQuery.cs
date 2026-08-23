@@ -36,9 +36,11 @@ public class GetEmployeeProfileQueryHandler : IRequestHandler<GetEmployeeProfile
             .Include(e => e.Site)
             .Include(e => e.DirectManager)
             .Include(e => e.Role)
+            .Include(e => e.PayrollProfile)
+            .Include(e => e.EmployeeSites)
             .FirstOrDefaultAsync(e => e.Id == request.Id, cancellationToken);
 
-        if (employee == null)
+        if (employee == null || employee.IsDeleted)
         {
             return null;
         }
@@ -62,62 +64,144 @@ public class GetEmployeeProfileQueryHandler : IRequestHandler<GetEmployeeProfile
             TotalGifts: totalGifts
         );
 
-        // 3. Extract Qualifications
-        var qualifications = new List<string>();
-        if (!string.IsNullOrWhiteSpace(employee.JobRole?.RequiredQualificationsJson))
-        {
-            try
-            {
-                qualifications = JsonSerializer.Deserialize<List<string>>(employee.JobRole.RequiredQualificationsJson)
-                    ?? new List<string>();
-            }
-            catch
-            {
-                qualifications = new List<string>();
-            }
-        }
-
-        // 4. Map Personal Info
+        // 3. Map Personal Info
         var personalInfo = new EmployeePersonalInfoDto(
             Birthdate: employee.Birthdate,
-            Gender: employee.Gender
+            Gender: employee.Gender,
+            Address: employee.Address,
+            EmergencyContact: employee.EmergencyContact,
+            NationalId: employee.NationalId
         );
 
-        // 5. Map Job Details
-        var managerName = employee.DirectManager != null
-            ? $"{employee.DirectManager.FirstName} {employee.DirectManager.LastName}".Trim()
-            : null;
+        // 4. Map Job Details
+        var directManagerName = (string?)null;
+        if (employee.DirectManager != null)
+        {
+            var fullName = $"{employee.DirectManager.FirstName} {employee.DirectManager.LastName}".Trim();
+            if (!string.IsNullOrWhiteSpace(fullName))
+            {
+                directManagerName = fullName;
+            }
+        }
 
         var department = employee.JobRole != null
             ? (employee.JobRole.DepartmentId > 0 ? $"Department #{employee.JobRole.DepartmentId}" : "N/A")
             : "N/A";
+
+        var qualifications = ParseJsonList(employee.JobRole?.RequiredQualificationsJson);
+        var onlineWorkdays = ParseJsonList(employee.OnlineWorkdaysJson);
+        if (onlineWorkdays.Count == 0 && employee.PayrollProfile != null)
+        {
+            onlineWorkdays = ParseJsonList(employee.PayrollProfile.OnlineWorkdaysJson);
+        }
+
+        var offlineWorkdays = ParseJsonList(employee.OfflineWorkdaysJson);
+        if (offlineWorkdays.Count == 0 && employee.PayrollProfile != null)
+        {
+            offlineWorkdays = ParseJsonList(employee.PayrollProfile.OfflineWorkdaysJson);
+        }
+
+        var attendanceType = employee.AttendanceType;
+        if (string.IsNullOrWhiteSpace(attendanceType) && employee.PayrollProfile != null)
+        {
+            attendanceType = employee.PayrollProfile.AttendanceType;
+        }
+        if (string.IsNullOrWhiteSpace(attendanceType))
+        {
+            attendanceType = "OnSite";
+        }
 
         var jobDetails = new EmployeeJobDetailsDto(
             Title: employee.JobRole?.Title ?? "N/A",
             Department: department,
             SeniorityLevel: employee.SeniorityLevel ?? string.Empty,
             ExperienceYears: employee.ExperienceYears,
-            DirectManagerName: managerName,
+            DirectManagerName: directManagerName,
             JobType: employee.JobType ?? string.Empty,
-            Qualifications: qualifications
+            Qualifications: qualifications,
+            AttendanceType: attendanceType,
+            OnlineWorkdays: onlineWorkdays,
+            OfflineWorkdays: offlineWorkdays
         );
 
+        // 5. Map Payroll Summary
+        EmployeePayrollSummaryDto? payrollSummary = null;
+        if (employee.PayrollProfile != null)
+        {
+            var payroll = employee.PayrollProfile;
+            var assignedWorkSiteIds = employee.EmployeeSites != null && employee.EmployeeSites.Count > 0
+                ? employee.EmployeeSites.Select(es => es.SiteId).Distinct().ToList()
+                : new List<int>();
+
+            if (assignedWorkSiteIds.Count == 0 && !string.IsNullOrWhiteSpace(payroll.WorkSiteIdsJson))
+            {
+                try
+                {
+                    assignedWorkSiteIds = JsonSerializer.Deserialize<List<int>>(payroll.WorkSiteIdsJson) ?? new List<int>();
+                }
+                catch
+                {
+                    assignedWorkSiteIds = new List<int>();
+                }
+            }
+
+            if (assignedWorkSiteIds.Count == 0 && employee.SiteId > 0)
+            {
+                assignedWorkSiteIds.Add(employee.SiteId);
+            }
+
+            var overtimeEnabled = payroll.OvertimeThresholdHours > 0 || payroll.OvertimeHourlyRate > 0;
+            var overtimeThresholdHours = payroll.OvertimeThresholdHours > 0 ? payroll.OvertimeThresholdHours : (decimal?)null;
+            var overtimeRateMultiplier = payroll.OvertimeHourlyRate > 0 ? payroll.OvertimeHourlyRate : (decimal?)null;
+
+            payrollSummary = new EmployeePayrollSummaryDto(
+                SalaryType: payroll.SalaryType ?? string.Empty,
+                PaymentAmount: payroll.PaymentAmount,
+                PayoutPeriod: payroll.PayoutPeriod ?? string.Empty,
+                PayoutDay: payroll.PayoutDay > 0 ? payroll.PayoutDay : (int?)null,
+                WorkWeekStartDay: payroll.WorkWeekStart,
+                WorkWeekEndDay: payroll.WorkWeekEnd,
+                OvertimeEnabled: overtimeEnabled,
+                OvertimeThresholdHours: overtimeThresholdHours,
+                OvertimeRateMultiplier: overtimeRateMultiplier,
+                AssignedWorkSiteIds: assignedWorkSiteIds
+            );
+        }
+
         // 6. Assemble Full Profile DTO
-        var fullName = $"{employee.FirstName} {employee.LastName}".Trim();
+        var employeeFullName = $"{employee.FirstName} {employee.LastName}".Trim();
         var employeeCode = string.IsNullOrEmpty(employee.EmployeeCode) ? $"EMP-{employee.Id:D4}" : employee.EmployeeCode;
         var location = employee.Site?.SiteName ?? "N/A";
 
         return new EmployeeProfileDto(
             Id: employee.Id,
             EmployeeCode: employeeCode,
-            FullName: fullName,
+            FullName: employeeFullName,
             Phone: employee.PhoneNumber ?? string.Empty,
             Email: employee.Email ?? string.Empty,
             Location: location,
             ProfilePhotoUrl: employee.ProfilePhotoUrl,
             Stats: stats,
             PersonalInfo: personalInfo,
-            JobDetails: jobDetails
+            JobDetails: jobDetails,
+            Payroll: payrollSummary
         );
+    }
+
+    private static List<string> ParseJsonList(string? json)
+    {
+        if (string.IsNullOrWhiteSpace(json))
+        {
+            return new List<string>();
+        }
+
+        try
+        {
+            return JsonSerializer.Deserialize<List<string>>(json) ?? new List<string>();
+        }
+        catch
+        {
+            return new List<string>();
+        }
     }
 }
