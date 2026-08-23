@@ -48,6 +48,40 @@
       "createdAt": "2026-01-01T08:00:00Z"
     }
   ],
+  "qualifications": [
+    {
+      "id": "1",
+      "name": "Management"
+    },
+    {
+      "id": "2",
+      "name": "POS"
+    },
+    {
+      "id": "3",
+      "name": "Development"
+    },
+    {
+      "id": "4",
+      "name": "C++"
+    },
+    {
+      "id": "5",
+      "name": "UI/UX Design"
+    },
+    {
+      "id": "6",
+      "name": "Figma"
+    },
+    {
+      "id": "7",
+      "name": "Angular"
+    },
+    {
+      "id": "8",
+      "name": ".NET"
+    }
+  ],
   "sites": [
     {
       "id": "1",
@@ -204,6 +238,16 @@
       "jobName": "DevOps Engineer",
       "jobDescription": "Lorem Ipsum is simply dummy text of the printing and",
       "numberOfEmployees": 5
+    },
+    {
+      "id": "a25e",
+      "jobName": "ttt",
+      "jobDescription": "ttt",
+      "department": "",
+      "qualifications": [
+        "Development"
+      ],
+      "numberOfEmployees": 0
     }
   ],
   "employees": [

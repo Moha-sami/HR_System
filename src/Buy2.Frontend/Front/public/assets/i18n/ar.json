@@ -216,6 +216,33 @@
       "SUCCESS_ATTENDANCE": "تم إعداد أتمتة الوقت والحضور\nبنجاح!"
     }
   },
+  "JOB_MANAGEMENT": {
+    "TITLE": "إدارة الوظائف",
+    "ADD_JOB": "إضافة وظيفة جديدة",
+    "JOB_ROLE": "المسمى الوظيفي",
+    "JOB_ROLE_PLACEHOLDER": "أدخل المسمى الوظيفي",
+    "DEPARTMENT": "القسم",
+    "SELECT_DEPARTMENT": "اختر قسماً",
+    "QUALIFICATIONS": "المؤهلات",
+    "QUALIFICATION_PLACEHOLDER": "اكتب مؤهلاً واضغط Enter",
+    "CANCEL": "إلغاء",
+    "SAVE": "حفظ",
+    "JOB_CREATED": "تم إنشاء الوظيفة",
+    "SUCCESS_MESSAGE": "تم إنشاء الوظيفة بنجاح.",
+    "SORT": "ترتيب",
+    "EXPORT": "تصدير",
+    "SEARCH_PLACEHOLDER": "اكتب هنا...",
+    "NO_JOBS": "لا توجد وظائف",
+    "EDIT": "تعديل الوظيفة",
+    "DELETE": "حذف الوظيفة",
+    "VIEW": "عرض الوظيفة",
+    "TABLE": {
+      "JOB_NAME": "اسم الوظيفة",
+      "JOB_DESCRIPTION": "الوصف الوظيفي",
+      "NUMBER_OF_EMPLOYEES": "عدد الموظفين",
+      "ACTIONS": "الإجراءات"
+    }
+  },
   "EMPLOYEE_MANAGEMENT": {
     "ADD_EMPLOYEE": "إضافة موظف",
     "EDIT_EMPLOYEE": "تعديل الموظف",
