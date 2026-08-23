@@ -499,6 +499,75 @@ This document outlines the REST API endpoints provided by the Buy2 HRMS backend 
   - `Action Description`
   - `Created At`
 
+---
 
+## 3. Role Management (`/api/v1/roles`)
 
+### `GET /api/v1/roles`
+- **Authorization**: `[Authorize(Roles = "Admin,Manager,HR,SuperAdmin")]`
+- **Controller**: `RolesController`
+- **Query Parameters**:
+  - `searchTerm` (string, optional) - Filters roles by `Name` or `Description` (case-insensitive substring match)
+  - `isActive` (bool, optional) - Filters roles by active status (`true` / `false`)
+  - `pageNumber` (int, default: `1`, min: `1`) - Page number for pagination
+  - `pageSize` (int, default: `10`, range: `1..100`) - Items per page
+- **Description**: Retrieves a paginated list of system roles with assigned active employee count metrics and summary list of permission modules. Results are ordered by system roles first (`IsSystemRole` descending), then alphabetically by name (`Name` ascending). Ignores EF Core global query filters to retrieve complete role definitions.
+- **Responses**:
+  - `200 OK` with `RolePaginatedResponseDto`:
+    - `items` (array of `RoleListItemDto`):
+      - `id` (int) - Unique role ID
+      - `name` (string) - Role display name
+      - `description` (string, nullable) - Role description
+      - `assignedEmployeesCount` (int) - Count of active, non-deleted assigned employees (`!IsDeleted`)
+      - `isSystemRole` (bool) - Flag indicating whether the role is a built-in system role
+      - `isActive` (bool) - Role active status flag
+      - `createdAt` (DateTimeOffset/ISO 8601) - Role creation timestamp (UTC)
+      - `permissionsSummary` (array of strings) - Summary list of permission modules/actions parsed from JSON
+    - `totalCount` (int) - Total count of matching roles across all pages
+    - `pageNumber` (int) - Current page number
+    - `pageSize` (int) - Page size
+    - `totalPages` (int) - Total calculated page count
+  - `401 Unauthorized` if the request is unauthenticated.
+  - `403 Forbidden` if authenticated user lacks required administrative role (`Admin`, `Manager`, `HR`, `SuperAdmin`).
 
+**Example Response**:
+```json
+{
+  "items": [
+    {
+      "id": 1,
+      "name": "SuperAdmin",
+      "description": "System administrator with full permissions",
+      "assignedEmployeesCount": 3,
+      "isSystemRole": true,
+      "isActive": true,
+      "createdAt": "2026-01-01T00:00:00Z",
+      "permissionsSummary": [
+        "EmployeeManagement",
+        "JobManagement",
+        "SiteManagement",
+        "PointsManagement",
+        "NotificationsManagement",
+        "RewardManagement"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "HR Manager",
+      "description": "Human resources management role",
+      "assignedEmployeesCount": 12,
+      "isSystemRole": false,
+      "isActive": true,
+      "createdAt": "2026-02-15T10:30:00Z",
+      "permissionsSummary": [
+        "EmployeeManagement",
+        "JobManagement"
+      ]
+    }
+  ],
+  "totalCount": 2,
+  "pageNumber": 1,
+  "pageSize": 10,
+  "totalPages": 1
+}
+```

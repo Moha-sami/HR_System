@@ -12,6 +12,7 @@
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
     <PackageReference Include="xunit" Version="2.9.3" />
     <PackageReference Include="xunit.runner.visualstudio" Version="3.1.4" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="10.0.10" />
   </ItemGroup>
 
   <ItemGroup>
@@ -21,6 +22,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Buy2.Domain\Buy2.Domain.csproj" />
     <ProjectReference Include="..\..\src\Buy2.Application\Buy2.Application.csproj" />
+    <ProjectReference Include="..\..\src\Buy2.Infrastructure\Buy2.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>
