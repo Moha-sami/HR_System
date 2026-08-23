@@ -73,9 +73,6 @@ export class JobManagementComponent implements AfterViewInit {
       new Map()
     );
 
-  @ViewChild('qualificationsTemplate')
-  qualificationsTemplate!: TemplateRef<CellContext>;
-
 
   // =========================================================
   // TABLE COLUMNS
@@ -87,15 +84,14 @@ export class JobManagementComponent implements AfterViewInit {
       label: this.translate.instant('JOB_MANAGEMENT.TABLE.JOB_NAME'),
     },
     {
-      key: 'department',
-      label: this.translate.instant('JOB_MANAGEMENT.TABLE.DEPARTMENT'),
+      key: 'jobDescription',
+      label: this.translate.instant('JOB_MANAGEMENT.TABLE.JOB_DESCRIPTION'),
       sortable: true,
     },
     {
-      key: 'qualifications',
-      label: this.translate.instant('JOB_MANAGEMENT.TABLE.QUALIFICATIONS'),
-      template: 'qualificationsTemplate',
-      width: '200px',
+      key: 'numberOfEmployees',
+      label: this.translate.instant('JOB_MANAGEMENT.TABLE.NUMBER_OF_EMPLOYEES'),
+      sortable: true,
     },
     {
       key: 'actions',
@@ -123,10 +119,6 @@ export class JobManagementComponent implements AfterViewInit {
         [
           'actionsTemplate',
           this.actionsTemplate,
-        ],
-        [
-          'qualificationsTemplate',
-          this.qualificationsTemplate,
         ],
       ])
     );
@@ -156,11 +148,9 @@ export class JobManagementComponent implements AfterViewInit {
         .toLowerCase()
         .includes(search)
       ||
-      (job.department ?? '')
+      (job.jobDescription ?? '')
         .toLowerCase()
         .includes(search)
-      ||
-      (job.qualifications ?? []).some(q => q.toLowerCase().includes(search))
     );
 
   });

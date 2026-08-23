@@ -44,7 +44,15 @@ export class JobService {
     return this.http.get<any[]>('http://localhost:3000/departments');
   }
 
+  createDepartment(department: any): Observable<any> {
+    return this.http.post<any>('http://localhost:3000/departments', department);
+  }
+
   getQualifications(): Observable<any[]> {
     return this.http.get<any[]>('http://localhost:3000/qualifications');
+  }
+
+  createQualification(qualification: any): Observable<any> {
+    return this.http.post<any>('http://localhost:3000/qualifications', qualification);
   }
 }

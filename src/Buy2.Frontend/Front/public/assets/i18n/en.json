@@ -61,8 +61,8 @@
     "VIEW": "View Job",
     "TABLE": {
       "JOB_NAME": "Job Name",
-      "DEPARTMENT": "Department",
-      "QUALIFICATIONS": "Qualifications",
+      "JOB_DESCRIPTION": "Job Description",
+      "NUMBER_OF_EMPLOYEES": "Number of Employees",
       "ACTIONS": "Actions"
     }
   },

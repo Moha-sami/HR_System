@@ -3,23 +3,42 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { JobService, Job } from '../../services/job.service';
 
+interface PerformanceMetric {
+  name: string;
+  description: string;
+  measure: string;
+  target: string;
+  weight: string;
+}
+
+interface FixedTask {
+  name: string;
+  description: string;
+  steps: string[];
+  repeat: string;
+  submissionTime: string;
+  submissionTimeAmPm: string;
+}
+
 interface JobForm {
   jobTitle: string;
-  roleName: string;
   jobDescription: string;
   department: string;
   qualifications: string[];
   experienceLevel: string;
   reportingManager: string;
-  workDays: string;
-  shiftType: string;
-  startTime: string;
-  endTime: string;
-  isRemote: boolean;
-  kpis: string[];
-  evaluationPeriod: string;
-  performanceGoals: string;
-  fixedTasks: string[];
+  scheduleType: string;
+  checkInFrom: string;
+  checkInFromAmPm: string;
+  checkInTo: string;
+  checkInToAmPm: string;
+  checkOutFrom: string;
+  checkOutFromAmPm: string;
+  checkOutTo: string;
+  checkOutToAmPm: string;
+  hoursPerDay: string;
+  metrics: PerformanceMetric[];
+  fixedTasks: FixedTask[];
 }
 
 @Component({
@@ -42,31 +61,52 @@ export class JobCreateComponent implements OnInit {
 
   form: JobForm = {
     jobTitle: '',
-    roleName: '',
     jobDescription: '',
     department: '',
     qualifications: [],
     experienceLevel: '',
     reportingManager: '',
-    workDays: '',
-    shiftType: '',
-    startTime: '',
-    endTime: '',
-    isRemote: false,
-    kpis: [],
-    evaluationPeriod: '',
-    performanceGoals: '',
+    scheduleType: 'fixed',
+    checkInFrom: '',
+    checkInFromAmPm: 'AM',
+    checkInTo: '',
+    checkInToAmPm: 'AM',
+    checkOutFrom: '',
+    checkOutFromAmPm: 'AM',
+    checkOutTo: '',
+    checkOutToAmPm: 'AM',
+    hoursPerDay: '',
+    metrics: [],
     fixedTasks: [],
   };
 
-  qualificationInput = '';
+  metricForm: PerformanceMetric = {
+    name: '',
+    description: '',
+    measure: '',
+    target: '',
+    weight: ''
+  };
+
   searchQualification = '';
   showQualificationsDropdown = false;
+  showDepartmentDropdown = false;
+  searchDepartment = '';
   kpiInput = '';
-  fixedTaskInput = '';
+  taskForm: FixedTask = {
+    name: '',
+    description: '',
+    steps: [],
+    repeat: 'Daily',
+    submissionTime: '',
+    submissionTimeAmPm: 'AM'
+  };
+
+  taskStepInput = '';
 
   departments: any[] = [];
   availableQualifications: any[] = [];
+  filteredDepartments: any[] = [];
 
   readonly managers = [
     'Ahmed Hassan',
@@ -85,9 +125,12 @@ export class JobCreateComponent implements OnInit {
       this.isEditMode = true;
       this.loadJob(Number(id));
     }
-    
+
     this.jobService.getDepartments().subscribe({
-      next: (data) => this.departments = data,
+      next: (data) => {
+        this.departments = data;
+        this.filteredDepartments = data;
+      },
       error: (err) => console.error('Failed to load departments', err)
     });
 
@@ -104,21 +147,13 @@ export class JobCreateComponent implements OnInit {
         this.form.jobDescription = job.jobDescription;
         this.form.department = job.department || '';
         this.form.qualifications = job.qualifications || [];
-        // Note: roleName, experienceLevel, reportingManager are not in the Job interface
-        // You can add them to the Job interface if needed
       },
       error: (err) => console.error('Failed to load job:', err)
     });
   }
 
   isFormValid(): boolean {
-    const info = this.form;
-    return !!(
-      info.jobTitle &&
-      info.roleName &&
-      info.department &&
-      info.experienceLevel
-    );
+    return !!this.form.jobTitle;
   }
 
   nextTab(): void {
@@ -134,6 +169,47 @@ export class JobCreateComponent implements OnInit {
     const currentIndex = tabs.indexOf(this.activeTab);
     if (currentIndex > 0) {
       this.activeTab = tabs[currentIndex - 1] as any;
+    }
+  }
+
+  // ===== Department Dropdown =====
+  toggleDepartmentDropdown(): void {
+    this.showDepartmentDropdown = !this.showDepartmentDropdown;
+    if (this.showDepartmentDropdown) {
+      this.filteredDepartments = this.departments;
+      this.searchDepartment = '';
+    }
+  }
+
+  filterDepartments(search: string): void {
+    const term = search.toLowerCase().trim();
+    if (!term) {
+      this.filteredDepartments = this.departments;
+    } else {
+      this.filteredDepartments = this.departments.filter(d =>
+        (d.name || d).toLowerCase().includes(term)
+      );
+    }
+  }
+
+  selectDepartment(dept: any): void {
+    this.form.department = dept.name || dept;
+    this.showDepartmentDropdown = false;
+  }
+
+  createNewDepartment(): void {
+    const name = this.searchDepartment.trim();
+    if (name) {
+      this.jobService.createDepartment({ name }).subscribe({
+        next: (newDept) => {
+          this.departments.push(newDept);
+          this.filteredDepartments = this.departments;
+          this.form.department = newDept.name;
+          this.showDepartmentDropdown = false;
+          this.searchDepartment = '';
+        },
+        error: (err) => console.error('Failed to create department', err)
+      });
     }
   }
 
@@ -160,44 +236,91 @@ export class JobCreateComponent implements OnInit {
     });
   }
 
-  addQualification(event: Event): void {
-    const select = event.target as HTMLSelectElement;
-    const value = select.value;
-    if (value && !this.form.qualifications.includes(value)) {
-      this.form.qualifications.push(value);
+  createNewQualification(): void {
+    const name = this.searchQualification.trim();
+    if (name) {
+      // Check if already exists
+      const exists = this.availableQualifications.some(q =>
+        (q.name || q).toLowerCase() === name.toLowerCase()
+      );
+
+      if (!exists) {
+        this.jobService.createQualification({ name }).subscribe({
+          next: (newQual) => {
+            this.availableQualifications.push(newQual);
+            this.form.qualifications.push(newQual.name);
+            this.searchQualification = '';
+            this.showQualificationsDropdown = false;
+          },
+          error: (err) => console.error('Failed to create qualification', err)
+        });
+      } else {
+        // If exists, just select it
+        const existing = this.availableQualifications.find(q =>
+          (q.name || q).toLowerCase() === name.toLowerCase()
+        );
+        if (existing) {
+          const existingName = existing.name || existing;
+          if (!this.form.qualifications.includes(existingName)) {
+            this.form.qualifications.push(existingName);
+          }
+          this.searchQualification = '';
+          this.showQualificationsDropdown = false;
+        }
+      }
     }
-    // Reset select to default
-    select.value = '';
   }
 
   removeQualification(qual: string): void {
     this.form.qualifications = this.form.qualifications.filter(q => q !== qual);
   }
 
-  // ===== KPIs =====
-  addKpi(): void {
-    const value = this.kpiInput.trim();
-    if (value && !this.form.kpis.includes(value)) {
-      this.form.kpis.push(value);
+  // ===== Metrics =====
+  addPerformanceMetric(): void {
+    if (this.metricForm.name) {
+      this.form.metrics.push({ ...this.metricForm });
+      this.metricForm = {
+        name: '',
+        description: '',
+        measure: '',
+        target: '',
+        weight: ''
+      };
     }
-    this.kpiInput = '';
   }
 
-  removeKpi(kpi: string): void {
-    this.form.kpis = this.form.kpis.filter(k => k !== kpi);
+  removePerformanceMetric(index: number): void {
+    this.form.metrics.splice(index, 1);
   }
 
   // ===== Fixed Tasks =====
-  addFixedTask(): void {
-    const value = this.fixedTaskInput.trim();
-    if (value && !this.form.fixedTasks.includes(value)) {
-      this.form.fixedTasks.push(value);
+  addTaskStep(): void {
+    const value = this.taskStepInput.trim();
+    if (value) {
+      this.taskForm.steps.push(value);
+      this.taskStepInput = '';
     }
-    this.fixedTaskInput = '';
   }
 
-  removeFixedTask(task: string): void {
-    this.form.fixedTasks = this.form.fixedTasks.filter(t => t !== task);
+  addFixedTask(): void {
+    if (this.taskForm.name) {
+      this.form.fixedTasks.push({
+        ...this.taskForm,
+        steps: [...this.taskForm.steps]
+      });
+      this.taskForm = {
+        name: '',
+        description: '',
+        steps: [],
+        repeat: 'Daily',
+        submissionTime: '',
+        submissionTimeAmPm: 'AM'
+      };
+    }
+  }
+
+  removeFixedTask(index: number): void {
+    this.form.fixedTasks.splice(index, 1);
   }
 
   // ===== Submit =====

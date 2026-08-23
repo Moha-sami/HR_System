@@ -61,8 +61,8 @@
     "VIEW": "عرض الوظيفة",
     "TABLE": {
       "JOB_NAME": "اسم الوظيفة",
-      "DEPARTMENT": "القسم",
-      "QUALIFICATIONS": "المؤهلات",
+      "JOB_DESCRIPTION": "الوصف الوظيفي",
+      "NUMBER_OF_EMPLOYEES": "عدد الموظفين",
       "ACTIONS": "الإجراءات"
     }
   },
