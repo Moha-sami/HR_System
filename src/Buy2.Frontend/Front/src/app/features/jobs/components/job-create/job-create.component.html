@@ -7,7 +7,7 @@
     <div class="header">
     <h2 class="header-title">
       <span style="color: #8e8e93; font-weight: 500;">Job Management &nbsp;&nbsp;</span>
-      Add new job
+      {{ isEditMode ? 'Update job' : 'Add new job' }}
     </h2>
     </div>
     <button
@@ -528,7 +528,7 @@
           </svg>
         </button>
       }
-      @if (activeTab === 'tasks') {
+      @if (activeTab === 'tasks' || isEditMode) {
         <button
           type="button"
           (click)="onSubmit()"
@@ -553,8 +553,8 @@
           <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
         </svg>
       </div>
-      <h3 class="modal-title">Job Created</h3>
-      <p class="modal-text">The job has been created successfully.</p>
+      <h3 class="modal-title">{{ isEditMode ? 'Job Updated' : 'Job Created' }}</h3>
+      <p class="modal-text">The job has been {{ isEditMode ? 'updated' : 'created' }} successfully.</p>
       <button type="button" (click)="onSuccessClose()" class="modal-btn">OK</button>
     </div>
   </div>
