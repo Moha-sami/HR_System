@@ -1,6 +1,7 @@
 import { inject, Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import type { Observable } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
 import { environment } from '../../../../environments/environment';
 import type {
   EmployeeProfileDto,
@@ -8,71 +9,19 @@ import type {
   UpdatePersonalInfoWrapperDto,
   UpdateJobDetailsRequestDto,
   UpdateJobDetailsWrapperDto,
-} from '../models/employee-profile';
+} from '../models/view-employee/employee-profile';
 import type {
   EmployeePayrollProfileDto,
   UpdatePayrollProfileDto,
-} from '../models/employee-payroll';
+} from '../models/view-employee/employee-payroll';
+import type { PaginatedEmployeeListDto, EmployeeFilterDto } from '../models/employee-list/employee-list';
+import { buildEmployeeQueryParams } from '../models/employee-list/employee-list';
+import { Job } from '@app/core/models/job';
+import { Role } from '@app/core/models/role.models';
+import { Site } from '@app/core/models/site.models';
+import { InsertEmployee } from '../models/insert-employee/insert-employee.models';
 
-const JSON_SERVER_API = `${environment.jsonServerUrl}/employees`;
-const JOB_ROLES_API = `${environment.jsonServerUrl}/jobRoles`;
-const ROLES_API = `${environment.jsonServerUrl}/roles`;
-const SITES_API = `${environment.jsonServerUrl}/sites`;
 const API_BASE = environment.baseUrl;
-
-/** Employee resource as persisted by the JSON Server API. */
-export interface EmployeeApiResponse {
-  readonly id: number;
-  readonly firstName: string;
-  readonly lastName: string;
-  readonly email: string;
-  readonly phoneNumber: string;
-  readonly jobRoleId: number;
-  readonly roleId: number;
-  readonly siteId: number;
-  readonly createdAt: string;
-}
-
-/** Data required to create an employee in the JSON Server employees collection. */
-export interface CreateEmployeeRequest {
-  readonly firstName: string;
-  readonly lastName: string;
-  readonly email: string;
-  readonly phoneNumber: string;
-  readonly jobRoleId: number;
-  readonly roleId: number;
-  readonly siteId: number;
-  readonly createdAt: string;
-}
-
-export type UpdateEmployeeRequest = CreateEmployeeRequest;
-
-/** Job-role option returned by the JSON Server jobRoles resource. */
-export interface JobRoleApiResponse {
-  readonly id: number;
-  readonly title: string;
-  readonly departmentId: number;
-  readonly requiredQualificationsJson: string;
-  readonly createdAt: string;
-}
-
-/** System-role option returned by the JSON Server roles resource. */
-export interface RoleApiResponse {
-  readonly id: number;
-  readonly name: string;
-  readonly permissionsJson: string;
-  readonly createdAt: string;
-}
-
-/** Site option returned by the JSON Server sites resource. */
-export interface SiteApiResponse {
-  readonly id: number;
-  readonly siteName: string;
-  readonly latitude: number;
-  readonly longitude: number;
-  readonly macAddressWhitelistJson: string;
-  readonly createdAt: string;
-}
 
 @Injectable({ providedIn: 'root' })
 export class EmployeeService {
@@ -83,34 +32,6 @@ export class EmployeeService {
   readonly detailLoading = signal(false);
   readonly detailError = signal<string | null>(null);
 
-  // JSON Server methods (existing)
-  getEmployees(): Observable<readonly EmployeeApiResponse[]> {
-    return this.http.get<readonly EmployeeApiResponse[]>(JSON_SERVER_API);
-  }
-
-  getJobRoles(): Observable<readonly JobRoleApiResponse[]> {
-    return this.http.get<readonly JobRoleApiResponse[]>(JOB_ROLES_API);
-  }
-
-  getRoles(): Observable<readonly RoleApiResponse[]> {
-    return this.http.get<readonly RoleApiResponse[]>(ROLES_API);
-  }
-
-  getSites(): Observable<readonly SiteApiResponse[]> {
-    return this.http.get<readonly SiteApiResponse[]>(SITES_API);
-  }
-
-  createEmployee(input: CreateEmployeeRequest): Observable<EmployeeApiResponse> {
-    return this.http.post<EmployeeApiResponse>(JSON_SERVER_API, input);
-  }
-
-  updateEmployee(id: number, input: UpdateEmployeeRequest): Observable<EmployeeApiResponse> {
-    return this.http.patch<EmployeeApiResponse>(`${JSON_SERVER_API}/${id}`, input);
-  }
-
-  deleteEmployee(id: number): Observable<void> {
-    return this.http.delete<void>(`${API_BASE}/employees/${id}`);
-  }
 
   // Real API methods
   getEmployeeProfile(id: number): Observable<EmployeeProfileDto> {
@@ -133,6 +54,70 @@ export class EmployeeService {
 
   updatePayrollProfile(id: number, dto: UpdatePayrollProfileDto): Observable<void> {
     return this.http.put<void>(`${API_BASE}/employees/${id}/payroll`, dto);
+  }
+
+  // Dropdown options for create/edit forms
+  getJobRoles(): Observable<readonly Job[]> {
+    return this.http.get<readonly Job[]>(`${API_BASE}/job-roles`);
+  }
+
+  getRoles(): Observable<readonly Role[]> {
+    return this.http.get<readonly Role[]>(`${API_BASE}/roles`);
+  }
+
+  getSites(): Observable<readonly Site[]> {
+    return this.http.get<readonly Site[]>(`${API_BASE}/sites`);
+  }
+
+  // Create/Update employee using real API endpoints
+  createEmployee(input: InsertEmployee): Observable<{ id: number }> {
+    const command = {
+      firstName: input.firstName,
+      lastName: input.lastName,
+      email: input.email,
+      phoneNumber: input.phoneNumber,
+      jobRoleId: input.jobRoleId,
+      roleId: input.roleId,
+      siteId: input.siteId,
+      // Defaults for optional fields
+      gender: 'Male' as const,
+      jobType: 'FullTime',
+      attendanceType: 'OnSite',
+      defaultPassword: 'Welcome@123',
+    };
+    return this.http.post<{ id: number }>(`${API_BASE}/employees/onboard`, command);
+  }
+
+  updateEmployee(id: number, input: InsertEmployee): Observable<EmployeeProfileDto> {
+    // Backend has separate endpoints for personal, job, and payroll updates
+    // Update personal info first, then fetch updated employee
+    const personalDto = {
+      firstName: input.firstName,
+      lastName: input.lastName,
+      phoneNumber: input.phoneNumber,
+      dateOfBirth: input.createdAt, // Using createdAt as fallback for dateOfBirth
+      address: '',
+      emergencyContact: '',
+      nationalId: '',
+    };
+    return this.updatePersonalInfo(id, personalDto).pipe(
+      switchMap(() => this.getEmployeeProfile(id))
+    );
+  }
+
+  // Paginated list API
+  getEmployeesPaginated(filter: EmployeeFilterDto): Observable<PaginatedEmployeeListDto> {
+    const params = buildEmployeeQueryParams(filter);
+    return this.http.get<PaginatedEmployeeListDto>(`${API_BASE}/employees?${params}`);
+  }
+
+  exportEmployees(filter: EmployeeFilterDto): Observable<Blob> {
+    const params = buildEmployeeQueryParams(filter);
+    return this.http.get(`${API_BASE}/employees/export?${params}`, { responseType: 'blob' });
+  }
+
+  deleteEmployee(id: number): Observable<void> {
+    return this.http.delete<void>(`${API_BASE}/employees/${id}`);
   }
 
   // Detail view store methods
@@ -161,13 +146,9 @@ export class EmployeeService {
     this.detailLoading.set(false);
     this.detailError.set(null);
   }
-
+  
   updateDetailEmployee(partial: Partial<EmployeeProfileDto>): void {
     this.detailEmployee.update((current) => (current ? { ...current, ...partial } : null));
   }
-
-  // Store signals (readonly for consumers)
-  readonly detailEmployeeSignal = this.detailEmployee.asReadonly();
-  readonly detailLoadingSignal = this.detailLoading.asReadonly();
-  readonly detailErrorSignal = this.detailError.asReadonly();
+  
 }

@@ -262,7 +262,15 @@
     "EMAIL": "Email",
     "ADMIN_ACCESS": "Admin Access",
     "ACTIONS": "Actions",
-    "NO_EMPLOYEES": "No employees available"
+    "NO_EMPLOYEES": "No employees available",
+    "SEARCH_PLACEHOLDER": "Search by name, email, or code...",
+    "EXPORT_CSV": "Export CSV",
+    "FILTER_REGION": "Filter by Region",
+    "FILTER_DEPARTMENT": "Filter by Department",
+    "VIEW": "View",
+    "FULL_ACCESS": "Full Access",
+    "LIMITED_ACCESS": "Limited Access",
+    "EMPLOYEE_CODE": "Employee Code"
   },
   "EMPLOYEE_DETAIL": {
     "TABS": {

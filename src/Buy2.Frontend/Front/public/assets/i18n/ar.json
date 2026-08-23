@@ -259,7 +259,15 @@
     "EMAIL": "البريد الإلكتروني",
     "ADMIN_ACCESS": "صلاحية المسؤول",
     "ACTIONS": "الإجراءات",
-    "NO_EMPLOYEES": "لا يوجد موظفون"
+    "NO_EMPLOYEES": "لا يوجد موظفون",
+    "SEARCH_PLACEHOLDER": "ابحث بالاسم، البريد الإلكتروني، أو الكود...",
+    "EXPORT_CSV": "تصدير CSV",
+    "FILTER_REGION": "تصفية حسب المنطقة",
+    "FILTER_DEPARTMENT": "تصفية حسب القسم",
+    "VIEW": "عرض",
+    "FULL_ACCESS": "وصول كامل",
+    "LIMITED_ACCESS": "وصول محدود",
+    "EMPLOYEE_CODE": "كود الموظف"
   },
   "EMPLOYEE_DETAIL": {
     "TABS": {

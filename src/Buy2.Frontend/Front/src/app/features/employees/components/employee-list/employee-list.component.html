@@ -1,113 +1,281 @@
 <div class="employee-list p-6">
-  <div class="mb-6 flex items-center justify-between">
-    <h1 class="text-2xl font-semibold text-neutral-900">{{ 'EMPLOYEE_MANAGEMENT.TITLE' | translate }}</h1>
-    <app-button variant="primary" (clicked)="openCreateModal()">
-      {{ 'EMPLOYEE_MANAGEMENT.ADD_EMPLOYEE' | translate }}
-    </app-button>
+  <!-- Header with title and actions -->
+  <div class="mb-6 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+    <div class="flex items-center gap-4">
+      <h1 class="text-2xl font-semibold text-gray-900">
+        {{ 'EMPLOYEE_MANAGEMENT.TITLE' | translate }}
+      </h1>
+    </div>
+
+    <div class="flex flex-col lg:flex-row gap-3 w-full lg:w-auto">
+      <!-- Search input -->
+      <div class="relative w-full lg:w-64">
+        <input
+          type="text"
+          [value]="search()"
+          (input)="onSearchChange($event)"
+          placeholder="{{ 'EMPLOYEE_MANAGEMENT.SEARCH_PLACEHOLDER' | translate }}"
+          class="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+        />
+        <svg
+          class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+          ></path>
+        </svg>
+      </div>
+
+      <!-- Region filter -->
+      <select
+        [value]="region()"
+        (change)="onRegionChange($event)"
+        class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 bg-white"
+      >
+        <option value="">{{ 'EMPLOYEE_MANAGEMENT.FILTER_REGION' | translate }}</option>
+      </select>
+
+      <!-- Department filter -->
+      <select
+        [value]="department()"
+        (change)="onDepartmentChange($event)"
+        class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 bg-white"
+      >
+        <option value="">{{ 'EMPLOYEE_MANAGEMENT.FILTER_DEPARTMENT' | translate }}</option>
+      </select>
+
+      <!-- Export button -->
+      <app-button variant="danger" size="md" (clicked)="exportCSV()">
+        {{ 'EMPLOYEE_MANAGEMENT.EXPORT_CSV' | translate }}
+      </app-button>
+
+      <!-- Add Employee button -->
+      <app-button variant="primary" size="md" (clicked)="navigateToCreate()">
+        <svg iconLeft class="inline w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M12 4v16m8-8H4"
+          ></path>
+        </svg>
+        {{ 'EMPLOYEE_MANAGEMENT.ADD_EMPLOYEE' | translate }}
+      </app-button>
+    </div>
   </div>
 
   @if (loadError()) {
-    <p class="mb-4 rounded-lg bg-error-50 p-4 text-sm text-error-700" role="alert">
+    <div class="mb-4 rounded-lg bg-red-50 p-4 text-sm text-red-700" role="alert">
       {{ 'EMPLOYEE_MANAGEMENT.LIST_LOAD_FAILED' | translate }}
-    </p>
+    </div>
   }
 
-  <app-table [columns]="columns()" [rows]="displayedEmployees()" [cellTemplates]="cellTemplates()" [emptyMessage]="'EMPLOYEE_MANAGEMENT.NO_EMPLOYEES' | translate" />
+  <!-- Table -->
+  <app-table
+    [columns]="columns()"
+    [rows]="employees()"
+    [cellTemplates]="cellTemplates()"
+    [emptyMessage]="'EMPLOYEE_MANAGEMENT.NO_EMPLOYEES' | translate"
+    [variant]="'bordered'"
+    [size]="'md'"
+    (sortChange)="onSortChange($event)"
+    (rowClick)="navigateToDetail($event)"
+  />
 
+  <!-- Pagination -->
   <div class="mt-4 flex justify-center">
-    <app-pagination [totalPages]="totalPages()" [initialPage]="1" (pageChanged)="onPageChanged($event)" />
+    <app-pagination
+      [totalPages]="totalPages()"
+      [initialPage]="1"
+      (pageChanged)="onPageChanged($event)"
+    />
   </div>
 
+  <!-- Employee Name Template -->
   <ng-template #employeeNameTemplate let-employee>
-    <span>{{ employee.firstName }} {{ employee.lastName }}</span>
-  </ng-template>
-
-  <ng-template #actionsTemplate let-employee>
-    <div class="flex items-center justify-center gap-2">
-      <button type="button" class="rounded p-1 text-primary-600 transition-colors hover:bg-primary-50 focus:outline-none focus:ring-2 focus:ring-primary-400" [attr.aria-label]="'EMPLOYEE_MANAGEMENT.EDIT_EMPLOYEE' | translate" (click)="openEditModal(employee); $event.stopPropagation()">
-        <svg aria-hidden="true" class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 2.651 2.651M4 20l4.35-.87L19.513 7.967a1.875 1.875 0 0 0-2.651-2.651L5.7 16.479 4 20Z" /></svg>
-      </button>
-      <button type="button" class="rounded p-1 text-error-700 transition-colors hover:bg-error-50 focus:outline-none focus:ring-2 focus:ring-error-500" [attr.aria-label]="'EMPLOYEE_MANAGEMENT.DELETE_EMPLOYEE' | translate" (click)="openDeleteModal(employee); $event.stopPropagation()">
-        <svg aria-hidden="true" class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 7h16M10 11v6m4-6v6M6 7l1 13h10l1-13M9 7V4h6v3" /></svg>
-      </button>
+    <div class="flex items-center gap-3">
+      <div
+        class="w-10 h-10 rounded-full bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center text-white text-sm font-bold"
+      >
+        {{ employee.employeeName?.charAt(0) || '?' }}
+      </div>
+      <div>
+        <p class="font-medium text-gray-900">{{ employee.employeeName }}</p>
+        <p class="text-xs text-gray-500">{{ employee.employeeCode }}</p>
+      </div>
     </div>
   </ng-template>
+
+  <!-- Admin Access Template -->
+  <ng-template #adminAccessTemplate let-employee>
+    <span [class]="getAdminAccessBadgeClass(employee.adminAccess)">
+      {{ getAdminAccessLabel(employee.adminAccess) }}
+    </span>
+  </ng-template>
+
+  <!-- Actions Template -->
+  <ng-template #actionsTemplate let-employee>
+    <div class="flex items-center justify-center gap-2">
+      <app-button
+        variant="ghost"
+        size="sm"
+        shape="circle"
+        [attr.aria-label]="'EMPLOYEE_MANAGEMENT.VIEW' | translate"
+        (clicked)="navigateToDetail(employee)"
+      >
+        <svg
+          aria-hidden="true"
+          class="size-4"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+          ></path>
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+          ></path>
+        </svg>
+      </app-button>
+      <app-button
+        variant="ghost"
+        size="sm"
+        shape="circle"
+        [attr.aria-label]="'EMPLOYEE_MANAGEMENT.DELETE' | translate"
+        (clicked)="openDeleteModal(employee)"
+      >
+        <svg
+          aria-hidden="true"
+          class="size-4"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M4 7h16M10 11v6m4-6v6M6 7l1 13h10l1-13M9 7V4h6v3"
+          ></path>
+        </svg>
+      </app-button>
+    </div>
+  </ng-template>
+
+  <!-- Delete Modal -->
+  @if (showDeleteModal() && deletingEmployee(); as employee) {
+    <app-modal
+      size="small"
+      [showCloseButton]="false"
+      [closeOnBackdrop]="false"
+      [closeOnEscape]="false"
+    >
+      <app-modal-body>
+        <div class="text-center">
+          <div
+            class="mx-auto mb-4 flex size-12 items-center justify-center rounded-full bg-error-50 text-error-700"
+          >
+            <svg
+              aria-hidden="true"
+              class="size-6"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M4 7h16M10 11v6m4-6v6M6 7l1 13h10l1-13M9 7V4h6v3"
+              ></path>
+            </svg>
+          </div>
+          <h2 class="text-lg font-semibold text-gray-900">
+            {{ 'EMPLOYEE_MANAGEMENT.DELETE_CONFIRMATION_TITLE' | translate }}
+          </h2>
+          <p class="mt-2 text-sm text-gray-600">
+            {{
+              'EMPLOYEE_MANAGEMENT.DELETE_CONFIRMATION_MESSAGE'
+                | translate: { name: employee.employeeName }
+            }}
+          </p>
+          @if (deleteError(); as errorKey) {
+            <p class="mt-4 text-sm text-error-700" role="alert">{{ errorKey | translate }}</p>
+          }
+        </div>
+      </app-modal-body>
+      <app-modal-footer>
+        <div class="flex w-full flex-col-reverse gap-3 sm:flex-row sm:justify-center">
+          <app-button
+            variant="secondary"
+            [disabled]="isDeleting()"
+            (clicked)="closeDeleteModal()"
+            >{{ 'EMPLOYEE_MANAGEMENT.CANCEL' | translate }}</app-button
+          >
+          <app-button
+            variant="danger"
+            [loading]="isDeleting()"
+            [disabled]="isDeleting()"
+            (clicked)="confirmDelete()"
+            >{{ 'EMPLOYEE_MANAGEMENT.DELETE' | translate }}</app-button
+          >
+        </div>
+      </app-modal-footer>
+    </app-modal>
+  }
+
+  <!-- Success Modal -->
+  @if (showSuccessModal()) {
+    <app-modal
+      size="small"
+      [showCloseButton]="false"
+      [closeOnBackdrop]="false"
+      [closeOnEscape]="false"
+    >
+      <app-modal-body>
+        <div class="text-center">
+          <div
+            class="mx-auto mb-4 flex size-12 items-center justify-center rounded-full bg-green-100"
+          >
+            <svg
+              class="size-6 text-green-600"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="m5 13 4 4L19 7"
+              ></path>
+            </svg>
+          </div>
+          <h2 class="text-lg font-semibold text-gray-900">
+            {{ 'EMPLOYEE_MANAGEMENT.SUCCESS_TITLE' | translate }}
+          </h2>
+          <p class="mt-2 text-gray-600">
+            {{ 'EMPLOYEE_MANAGEMENT.' + successMessage() | translate }}
+          </p>
+        </div>
+      </app-modal-body>
+      <app-modal-footer>
+        <app-button variant="primary" (clicked)="confirmSuccess()">{{
+          'EMPLOYEE_MANAGEMENT.SUCCESS_ACTION' | translate
+        }}</app-button>
+      </app-modal-footer>
+    </app-modal>
+  }
 </div>
-
-@if (showCreateModal()) {
-  <app-modal size="large" [closeOnBackdrop]="false" (closed)="closeCreateModal()">
-    <app-modal-header>
-      <h2 class="w-full text-left text-xl font-semibold leading-7 text-neutral-900">
-        {{ 'EMPLOYEE_MANAGEMENT.ADD_EMPLOYEE' | translate }}
-      </h2>
-    </app-modal-header>
-    <app-modal-body>
-      <app-employee-create (saved)="onEmployeeCreated()" />
-    </app-modal-body>
-    <app-modal-footer>
-      <div class="flex w-full flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-        <app-button variant="secondary" (clicked)="closeCreateModal()">
-          {{ 'EMPLOYEE_MANAGEMENT.DISCARD' | translate }}
-        </app-button>
-        <app-button variant="primary" [disabled]="isEmployeeFormUnavailable()" [loading]="isSubmittingEmployee()" (clicked)="submitEmployeeForm()">
-          {{ 'EMPLOYEE_MANAGEMENT.SAVE' | translate }}
-        </app-button>
-      </div>
-    </app-modal-footer>
-  </app-modal>
-}
-
-@if (showEditModal() && editingEmployee(); as employee) {
-  <app-modal size="large" [closeOnBackdrop]="false" (closed)="closeEditModal()">
-    <app-modal-header>
-      <h2 class="w-full text-left text-xl font-semibold leading-7 text-neutral-900">
-        {{ 'EMPLOYEE_MANAGEMENT.EDIT_EMPLOYEE' | translate }}
-      </h2>
-    </app-modal-header>
-    <app-modal-body>
-      <app-employee-create [employee]="employee" (saved)="onEmployeeCreated()" />
-    </app-modal-body>
-    <app-modal-footer>
-      <div class="flex w-full flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-        <app-button variant="secondary" (clicked)="closeEditModal()">{{ 'EMPLOYEE_MANAGEMENT.CANCEL' | translate }}</app-button>
-        <app-button variant="primary" [disabled]="isEmployeeFormUnavailable()" [loading]="isSubmittingEmployee()" (clicked)="submitEmployeeForm()">{{ 'EMPLOYEE_MANAGEMENT.UPDATE' | translate }}</app-button>
-      </div>
-    </app-modal-footer>
-  </app-modal>
-}
-
-@if (showDeleteModal() && deletingEmployee(); as employee) {
-  <app-modal size="small" [showCloseButton]="false" [closeOnBackdrop]="false" [closeOnEscape]="false">
-    <app-modal-body>
-      <div class="text-center">
-        <div class="mx-auto mb-4 flex size-12 items-center justify-center rounded-full bg-error-50 text-error-700">
-          <svg aria-hidden="true" class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 7h16M10 11v6m4-6v6M6 7l1 13h10l1-13M9 7V4h6v3" /></svg>
-        </div>
-        <h2 class="text-lg font-semibold text-neutral-900">{{ 'EMPLOYEE_MANAGEMENT.DELETE_CONFIRMATION_TITLE' | translate }}</h2>
-        <p class="mt-2 text-sm text-neutral-600">{{ 'EMPLOYEE_MANAGEMENT.DELETE_CONFIRMATION_MESSAGE' | translate:{ name: employee.firstName + ' ' + employee.lastName } }}</p>
-        @if (deleteError(); as errorKey) { <p class="mt-4 text-sm text-error-700" role="alert">{{ errorKey | translate }}</p> }
-      </div>
-    </app-modal-body>
-    <app-modal-footer>
-      <div class="flex w-full flex-col-reverse gap-3 sm:flex-row sm:justify-center">
-        <app-button variant="secondary" [disabled]="isDeleting()" (clicked)="closeDeleteModal()">{{ 'EMPLOYEE_MANAGEMENT.CANCEL' | translate }}</app-button>
-        <app-button variant="danger" [loading]="isDeleting()" [disabled]="isDeleting()" (clicked)="confirmDelete()">{{ 'EMPLOYEE_MANAGEMENT.DELETE' | translate }}</app-button>
-      </div>
-    </app-modal-footer>
-  </app-modal>
-}
-
-@if (showSuccessModal()) {
-  <app-modal size="small" [showCloseButton]="false" [closeOnBackdrop]="false" [closeOnEscape]="false">
-    <app-modal-body>
-      <div class="text-center">
-        <div class="mx-auto mb-4 flex size-12 items-center justify-center rounded-full bg-green-100">
-          <svg class="size-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m5 13 4 4L19 7" /></svg>
-        </div>
-        <h2 class="text-lg font-semibold text-neutral-900">{{ 'EMPLOYEE_MANAGEMENT.SUCCESS_TITLE' | translate }}</h2>
-        <p class="mt-2 text-neutral-600">{{ ('EMPLOYEE_MANAGEMENT.' + successMessage()) | translate }}</p>
-      </div>
-    </app-modal-body>
-    <app-modal-footer><app-button variant="primary" (clicked)="confirmSuccess()">{{ 'EMPLOYEE_MANAGEMENT.SUCCESS_ACTION' | translate }}</app-button></app-modal-footer>
-  </app-modal>
-}

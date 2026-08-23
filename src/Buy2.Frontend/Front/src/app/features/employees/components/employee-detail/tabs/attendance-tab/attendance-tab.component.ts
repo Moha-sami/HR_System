@@ -12,6 +12,6 @@ import { EmployeeService } from '../../../../services/employee.service';
 export class AttendanceTabComponent {
   private readonly employeeService = inject(EmployeeService);
 
-  readonly employee = this.employeeService.detailEmployeeSignal;
+  readonly employee = this.employeeService.detailEmployee;
   readonly comingSoon = true;
 }

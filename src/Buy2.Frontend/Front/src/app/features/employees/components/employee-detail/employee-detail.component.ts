@@ -15,9 +15,9 @@ export class EmployeeDetailComponent {
   private readonly employeeService = inject(EmployeeService);
 
   readonly employeeId = signal<number>(0);
-  readonly employee = this.employeeService.detailEmployeeSignal;
-  readonly loading = this.employeeService.detailLoadingSignal;
-  readonly loadError = this.employeeService.detailErrorSignal;
+  readonly employee = this.employeeService.detailEmployee;
+  readonly loading = this.employeeService.detailLoading;
+  readonly loadError = this.employeeService.detailError;
 
   readonly activeTab = signal<
     'information' | 'payroll' | 'attendance' | 'documents' | 'violations'

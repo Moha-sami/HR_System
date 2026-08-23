@@ -6,7 +6,7 @@ import { EmployeeService } from '../../../../services/employee.service';
 import type {
   UpdatePersonalInfoRequestDto,
   UpdateJobDetailsRequestDto,
-} from '../../../../models/employee-profile';
+} from '../../../../models/view-employee/employee-profile';
 
 @Component({
   selector: 'app-information-tab',
@@ -52,7 +52,7 @@ export class InformationTabComponent {
   readonly newQualification = signal('');
 
   // Computed getters for employee data
-  readonly employee = this.employeeService.detailEmployeeSignal;
+  readonly employee = this.employeeService.detailEmployee;
 
   // Form data loading
   loadFormData(): void {
