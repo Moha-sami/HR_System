@@ -571,3 +571,73 @@ This document outlines the REST API endpoints provided by the Buy2 HRMS backend 
   "totalPages": 1
 }
 ```
+
+### `GET /api/v1/roles/{id}`
+- **Authorization**: `[Authorize(Roles = "Admin,Manager,HR,SuperAdmin")]`
+- **Controller**: `RolesController`
+- **Path Parameters**:
+  - `id` (int, required) - Unique ID of the role
+- **Description**: Retrieves full role details by ID, including system role flag (`isSystemRole`), active status (`isActive`), count of active assigned employees (`assignedEmployeesCount`, filtering soft-deleted records `!e.IsDeleted`), creation and update timestamps (`createdAt`, `updatedAt`), and detailed list of module permissions with granted actions and access scopes (`permissions`). Queries the repository with `.IgnoreQueryFilters().AsNoTracking().Include(r => r.Employees)` and utilizes resilient multi-strategy permissions JSON parsing.
+- **Responses**:
+  - `200 OK` with `RoleDetailsDto`:
+    - `id` (int) - Unique role ID
+    - `name` (string) - Role display name
+    - `description` (string, nullable) - Role description
+    - `isSystemRole` (bool) - Flag indicating whether the role is a built-in system role
+    - `isActive` (bool) - Role active status flag
+    - `assignedEmployeesCount` (int) - Count of active, non-deleted assigned employees (`!e.IsDeleted`)
+    - `createdAt` (DateTimeOffset/ISO 8601) - Role creation timestamp (UTC)
+    - `updatedAt` (DateTimeOffset/ISO 8601, nullable) - Role last update timestamp (UTC)
+    - `permissions` (array of `ModulePermissionDto`):
+      - `module` (string) - Permission module name (e.g. `EmployeeManagement`)
+      - `actions` (array of strings, nullable) - Granted actions list (e.g. `["Create", "Read", "Update", "Delete"]`)
+      - `scope` (`PermissionScopeDto`, nullable):
+        - `scopeType` (string) - Permission access scope type (e.g. `All`, `Department`, `Site`, `Self`)
+        - `targetIds` (array of int, nullable) - Target entity IDs when scope is entity-restricted
+  - `404 Not Found` if role with specified `id` does not exist.
+  - `401 Unauthorized` if the request is unauthenticated.
+  - `403 Forbidden` if authenticated user lacks required administrative role (`Admin`, `Manager`, `HR`, `SuperAdmin`).
+
+**Example Response**:
+```json
+{
+  "id": 2,
+  "name": "HR Manager",
+  "description": "Human resources management role",
+  "isSystemRole": false,
+  "isActive": true,
+  "assignedEmployeesCount": 12,
+  "createdAt": "2026-02-15T10:30:00Z",
+  "updatedAt": "2026-08-20T14:20:00Z",
+  "permissions": [
+    {
+      "module": "EmployeeManagement",
+      "actions": [
+        "Create",
+        "Read",
+        "Update",
+        "Delete"
+      ],
+      "scope": {
+        "scopeType": "All",
+        "targetIds": []
+      }
+    },
+    {
+      "module": "JobManagement",
+      "actions": [
+        "Read",
+        "Update"
+      ],
+      "scope": {
+        "scopeType": "Department",
+        "targetIds": [
+          1,
+          2
+        ]
+      }
+    }
+  ]
+}
+```
+
