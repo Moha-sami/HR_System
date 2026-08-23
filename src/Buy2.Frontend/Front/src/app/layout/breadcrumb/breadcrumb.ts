@@ -52,7 +52,7 @@ export class BreadcrumbComponent {
     const url = this.router.url;
     const segments = url.split('/').filter(Boolean);
 
-    if (segments.length === 0 || url.startsWith('/jobs')) {
+    if (segments.length === 0) {
       this.items.set([]);
       return;
     }

@@ -29,7 +29,7 @@ import { TranslateService } from '@ngx-translate/core';
     ButtonComponent,
     Pagination,
     TableComponent,
-    RouterLink,
+    // RouterLink,
     RouterOutlet,
   ],
   templateUrl: './job-management.component.html',
