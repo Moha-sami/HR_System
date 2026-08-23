@@ -34,6 +34,21 @@ public class Buy2DbContext : DbContext
     public DbSet<SitePreferredEmployee> SitePreferredEmployees => Set<SitePreferredEmployee>();
     public DbSet<SiteOperationalHour> SiteOperationalHours => Set<SiteOperationalHour>();
     public DbSet<SiteDocument> SiteDocuments => Set<SiteDocument>();
+    public DbSet<User> Users => Set<User>();
+    public DbSet<Organization> Organizations => Set<Organization>();
+    public DbSet<Department> Departments => Set<Department>();
+    public DbSet<Badge> Badges => Set<Badge>();
+    public DbSet<Post> Posts => Set<Post>();
+    public DbSet<Comment> Comments => Set<Comment>();
+    public DbSet<Reaction> Reactions => Set<Reaction>();
+    public DbSet<SupportTicket> SupportTickets => Set<SupportTicket>();
+    public DbSet<Notification> Notifications => Set<Notification>();
+    public DbSet<ShiftTemplate> ShiftTemplates => Set<ShiftTemplate>();
+    public DbSet<RequestType> RequestTypes => Set<RequestType>();
+    public DbSet<Request> Requests => Set<Request>();
+    public DbSet<TaskList> TaskLists => Set<TaskList>();
+    public DbSet<TaskAssignment> TaskAssignments => Set<TaskAssignment>();
+    public DbSet<PayrollRecord> PayrollRecords => Set<PayrollRecord>();
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
