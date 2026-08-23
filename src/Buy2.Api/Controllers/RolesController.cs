@@ -1,4 +1,5 @@
 using Buy2.Application.DTOs.Roles;
+using Buy2.Application.Features.Roles.CreateRole;
 using Buy2.Application.Features.Roles.GetRoleById;
 using Buy2.Application.Features.Roles.GetRoles;
 using MediatR;
@@ -44,5 +45,21 @@ public class RolesController : ControllerBase
         }
 
         return Ok(result);
+    }
+
+    [HttpPost]
+    [Authorize(Roles = "Admin,Manager,HR,SuperAdmin")]
+    [ProducesResponseType(typeof(RoleDetailsDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<IActionResult> CreateRole([FromBody] CreateRoleDto dto, CancellationToken cancellationToken)
+    {
+        var result = await _mediator.Send(new CreateRoleCommand(dto), cancellationToken);
+        if (result.IsConflict)
+        {
+            return Conflict(new { message = result.ErrorMessage });
+        }
+
+        return Created($"/api/v1/roles/{result.CreatedRole!.Id}", result.CreatedRole);
     }
 }

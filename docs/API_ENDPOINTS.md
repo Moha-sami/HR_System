@@ -642,3 +642,79 @@ This document outlines the REST API endpoints provided by the Buy2 HRMS backend 
 }
 ```
 
+### `POST /api/v1/roles`
+- **Authorization**: `[Authorize(Roles = "Admin,Manager,HR,SuperAdmin")]`
+- **Controller**: `RolesController`
+- **Request Body** (`application/json`, `CreateRoleDto`):
+  - `name` (string, required) - Role display name (trimmed, 2-100 characters, case-insensitive uniqueness validation)
+  - `description` (string, optional) - Role description (max 500 characters)
+  - `permissions` (array of `ModulePermissionDto`, required) - Granted permission modules list
+    - `module` (string, required) - Permission module name (`EmployeeManagement`, `JobManagement`, `SiteManagement`, `PointsManagement`, `NotificationsManagement`, `RewardManagement`)
+    - `actions` (array of strings, optional) - Granted action names list
+    - `scope` (`PermissionScopeDto`, optional) - Access scope details (`scopeType`, `targetIds`)
+- **Description**: Creates a new custom non-system role with case-insensitive uniqueness validation against existing role names (ignoring EF Core query filters). Forces `isSystemRole = false` and `isActive = true`. Trims name and description strings, serializes permissions to JSON, and maps the created role entity to `RoleDetailsDto`.
+- **Responses**:
+  - `201 Created` with `RoleDetailsDto` (and `Location` header pointing to `/api/v1/roles/{id}`):
+    - `id` (int) - Assigned unique role ID
+    - `name` (string) - Role display name
+    - `description` (string, nullable) - Role description
+    - `isSystemRole` (bool) - Always `false` for custom created roles
+    - `isActive` (bool) - Always `true` for newly created roles
+    - `assignedEmployeesCount` (int) - Initial assigned employee count (always `0`)
+    - `createdAt` (DateTimeOffset/ISO 8601) - Role creation timestamp (UTC)
+    - `updatedAt` (DateTimeOffset/ISO 8601, nullable) - Role last update timestamp (UTC)
+    - `permissions` (array of `ModulePermissionDto`) - Granted permissions list
+  - `400 Bad Request` on payload validation error (e.g. invalid name length, empty module list, unsupported action or scope).
+  - `409 Conflict` if a role with the specified name already exists (case-insensitive check ignoring query filters).
+  - `401 Unauthorized` if the request is unauthenticated.
+  - `403 Forbidden` if authenticated user lacks required administrative role (`Admin`, `Manager`, `HR`, `SuperAdmin`).
+
+**Example Request**:
+```json
+{
+  "name": "Payroll Specialist",
+  "description": "Custom role for managing payroll profiles and employee compensation records",
+  "permissions": [
+    {
+      "module": "EmployeeManagement",
+      "actions": [
+        "Read",
+        "Update"
+      ],
+      "scope": {
+        "scopeType": "All",
+        "targetIds": []
+      }
+    }
+  ]
+}
+```
+
+**Example Response**:
+```json
+{
+  "id": 15,
+  "name": "Payroll Specialist",
+  "description": "Custom role for managing payroll profiles and employee compensation records",
+  "isSystemRole": false,
+  "isActive": true,
+  "assignedEmployeesCount": 0,
+  "createdAt": "2026-08-23T19:41:00Z",
+  "updatedAt": null,
+  "permissions": [
+    {
+      "module": "EmployeeManagement",
+      "actions": [
+        "Read",
+        "Update"
+      ],
+      "scope": {
+        "scopeType": "All",
+        "targetIds": []
+      }
+    }
+  ]
+}
+```
+
+
