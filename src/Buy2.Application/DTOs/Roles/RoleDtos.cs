@@ -1,12 +1,5 @@
 namespace Buy2.Application.DTOs.Roles;
 
-public record ModulePermissionDto(
-    string Module,
-    List<string> Actions,
-    string Scope,
-    List<int> ScopeTargetIds
-);
-
 public record RoleListItemDto(
     int Id,
     string Name,
