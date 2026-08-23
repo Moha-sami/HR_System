@@ -23,5 +23,6 @@ docs/assets
 /publish.zip
 /.agents/agents
 /GEMINI.md
-/docs/migrations/20260818_AddNewEntities.sql
 /CHANGELOG.md
+/docs/AGENT_GUIDELINES.md
+*AGENT_GUIDELINES*
