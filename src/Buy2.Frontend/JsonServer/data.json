@@ -675,5 +675,100 @@
       "redeemedAt": "2026-06-08T09:00:00Z",
       "createdAt": "2026-06-08T09:00:00Z"
     }
+  ],
+  "pointsAutomation": [
+    {
+      "id": "1",
+      "activeCategory": "attendance",
+      "performance": {
+        "enabled": false,
+        "period": "daily",
+        "ranges": [
+          {
+            "id": 1,
+            "type": "Deduction",
+            "from": 0,
+            "to": 60,
+            "value": 500
+          },
+          {
+            "id": 2,
+            "type": "Reward",
+            "from": 80,
+            "to": 90,
+            "value": 1000
+          },
+          {
+            "id": 3,
+            "type": "Reward",
+            "from": 91,
+            "to": 100,
+            "value": 2000
+          }
+        ]
+      },
+      "tasks": {
+        "enabled": false,
+        "period": "daily",
+        "completionRanges": [
+          {
+            "id": 1,
+            "type": "Reward",
+            "from": 80,
+            "to": 90,
+            "value": 1000
+          },
+          {
+            "id": 2,
+            "type": "Deduction",
+            "from": 0,
+            "to": 60,
+            "value": 500
+          }
+        ],
+        "deadlineRules": [
+          {
+            "id": 1,
+            "priority": "Urgent",
+            "pointsPerDayDelay": 1000
+          }
+        ]
+      },
+      "attendance": {
+        "enabled": true,
+        "period": "daily",
+        "attendanceRanges": [
+          {
+            "id": 1,
+            "type": "Reward",
+            "from": 80,
+            "to": 90,
+            "value": 1000
+          },
+          {
+            "id": 2,
+            "type": "Deduction",
+            "from": 0,
+            "to": 60,
+            "value": 500
+          }
+        ],
+        "latenessRanges": [
+          {
+            "id": 1,
+            "fromMinutes": 5,
+            "toMinutes": 15,
+            "pointsDeduction": 500
+          },
+          {
+            "id": 2,
+            "fromMinutes": 16,
+            "toMinutes": 60,
+            "pointsDeduction": 1000
+          }
+        ],
+        "onTimeBonus": 1000
+      }
+    }
   ]
 }

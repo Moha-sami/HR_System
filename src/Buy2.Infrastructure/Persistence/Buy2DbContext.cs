@@ -11,6 +11,7 @@ public class Buy2DbContext : DbContext
     }
 
     public DbSet<AttendanceProfile> AttendanceProfiles => Set<AttendanceProfile>();
+    public DbSet<AttendanceRecord> AttendanceRecords => Set<AttendanceRecord>();
     public DbSet<DisciplinaryViolation> DisciplinaryViolations => Set<DisciplinaryViolation>();
     public DbSet<Employee> Employees => Set<Employee>();
     public DbSet<EmployeeDocument> EmployeeDocuments => Set<EmployeeDocument>();
@@ -29,6 +30,31 @@ public class Buy2DbContext : DbContext
     public DbSet<PerformanceSubmission> PerformanceSubmissions => Set<PerformanceSubmission>();
     public DbSet<EmployeeAchievement> EmployeeAchievements => Set<EmployeeAchievement>();
     public DbSet<EmployeeTask> EmployeeTasks => Set<EmployeeTask>();
+    public DbSet<Region> Regions => Set<Region>();
+    public DbSet<SitePreferredEmployee> SitePreferredEmployees => Set<SitePreferredEmployee>();
+    public DbSet<SiteOperationalHour> SiteOperationalHours => Set<SiteOperationalHour>();
+    public DbSet<SiteDocument> SiteDocuments => Set<SiteDocument>();
+    public DbSet<User> Users => Set<User>();
+    public DbSet<Organization> Organizations => Set<Organization>();
+    public DbSet<Department> Departments => Set<Department>();
+    public DbSet<Badge> Badges => Set<Badge>();
+    public DbSet<Post> Posts => Set<Post>();
+    public DbSet<Comment> Comments => Set<Comment>();
+    public DbSet<Reaction> Reactions => Set<Reaction>();
+    public DbSet<SupportTicket> SupportTickets => Set<SupportTicket>();
+    public DbSet<Notification> Notifications => Set<Notification>();
+    public DbSet<ShiftTemplate> ShiftTemplates => Set<ShiftTemplate>();
+    public DbSet<RequestType> RequestTypes => Set<RequestType>();
+    public DbSet<Request> Requests => Set<Request>();
+    public DbSet<TaskList> TaskLists => Set<TaskList>();
+    public DbSet<TaskAssignment> TaskAssignments => Set<TaskAssignment>();
+    public DbSet<PayrollRecord> PayrollRecords => Set<PayrollRecord>();
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        base.OnConfiguring(optionsBuilder);
+        optionsBuilder.ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
+    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -37,6 +63,7 @@ public class Buy2DbContext : DbContext
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(Buy2DbContext).Assembly);
 
         modelBuilder.Entity<Role>().HasQueryFilter(r => r.IsActive);
+        modelBuilder.Entity<Employee>().HasQueryFilter(e => !e.IsDeleted);
 
         modelBuilder.Entity<EmployeeSite>()
             .HasKey(es => new { es.EmployeeId, es.SiteId });

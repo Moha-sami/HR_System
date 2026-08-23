@@ -28,6 +28,29 @@ jobs:
       if: github.ref == 'refs/heads/main' && github.event_name == 'push'
       run: dotnet publish src/Buy2.Api/Buy2.Api.csproj -c Release -o publish_out
 
+    - name: Inject Production Database Password
+      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      env:
+        DB_PASS: ${{ secrets.MONSTERASP_DB_PASSWORD }}
+      run: |
+        if [ -z "$DB_PASS" ]; then
+          echo "::error::MONSTERASP_DB_PASSWORD secret is not set"
+          exit 1
+        fi
+        sed -i "s|YOUR_MONSTERASP_DB_PASSWORD|${DB_PASS}|g" publish_out/appsettings.json
+
+    - name: Apply EF Core Migrations
+      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      env:
+        ConnectionStrings__DefaultConnection: ${{ secrets.MONSTERASP_DB_CONNECTION_STRING }}
+      run: |
+        if [ -z "$ConnectionStrings__DefaultConnection" ]; then
+          echo "::error::MONSTERASP_DB_CONNECTION_STRING secret is not set"
+          exit 1
+        fi
+        dotnet tool install --global dotnet-ef || dotnet tool update --global dotnet-ef
+        dotnet ef database update --project src/Buy2.Infrastructure --startup-project src/Buy2.Api
+
     - name: Take Site Offline via FTP
       if: github.ref == 'refs/heads/main' && github.event_name == 'push'
       run: |

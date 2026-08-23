@@ -12,6 +12,9 @@ public class Employee : BaseEntity
     public DateTime? Birthdate { get; set; }
     public Gender Gender { get; set; }
     public string? ProfilePhotoUrl { get; set; }
+    public string? Address { get; set; }
+    public string? EmergencyContact { get; set; }
+    public string? NationalId { get; set; }
     public DateTime JoinDate { get; set; } = DateTime.UtcNow;
     public string SeniorityLevel { get; set; } = string.Empty;
     public int ExperienceYears { get; set; }
@@ -20,6 +23,9 @@ public class Employee : BaseEntity
     public string? OnlineWorkdaysJson { get; set; }
     public string? OfflineWorkdaysJson { get; set; }
     public string PasswordHash { get; set; } = string.Empty;
+    public bool IsActive { get; set; } = true;
+    public bool IsDeleted { get; set; } = false;
+    public DateTimeOffset? DeletedAt { get; set; }
 
     // Foreign Keys
     public int JobRoleId { get; set; }

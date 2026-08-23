@@ -43,6 +43,18 @@ public class EmployeeConfiguration : IEntityTypeConfiguration<Employee>
             .HasMaxLength(500)
             .HasColumnType("varchar(500)");
 
+        builder.Property(e => e.Address)
+            .HasMaxLength(250)
+            .HasColumnType("nvarchar(250)");
+
+        builder.Property(e => e.EmergencyContact)
+            .HasMaxLength(100)
+            .HasColumnType("nvarchar(100)");
+
+        builder.Property(e => e.NationalId)
+            .HasMaxLength(50)
+            .HasColumnType("nvarchar(50)");
+
         builder.Property(e => e.SeniorityLevel)
             .HasMaxLength(50)
             .HasColumnType("nvarchar(50)");
@@ -71,7 +83,7 @@ public class EmployeeConfiguration : IEntityTypeConfiguration<Employee>
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasOne(e => e.Role)
-            .WithMany()
+            .WithMany(r => r.Employees)
             .HasForeignKey(e => e.RoleId)
             .OnDelete(DeleteBehavior.Restrict);
 
@@ -91,5 +103,7 @@ public class EmployeeConfiguration : IEntityTypeConfiguration<Employee>
             .WithOne(p => p.Employee)
             .HasForeignKey<PayrollProfile>(p => p.EmployeeId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Ignore(e => e.WorkSites);
     }
 }

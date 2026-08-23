@@ -1,9 +1,9 @@
 <main class="login-main w-full max-w-[420px] mx-auto p-6 md:p-8">
   <h1 class="login-title text-2xl md:text-3xl font-semibold text-black mb-2 text-center">
-    Welcome Back
+    {{ 'AUTH.LOGIN.TITLE' | translate }}
   </h1>
   <p class="login-subtitle text-base text-gray-500 mb-8 text-center">
-    Sign in to your account to continue
+    {{ 'AUTH.LOGIN.SUBTITLE' | translate }}
   </p>
 
   <form
@@ -22,7 +22,9 @@
     }
 
     <div class="form-group flex flex-col gap-1.5">
-      <label for="email" class="form-label text-sm font-medium text-gray-700">Email Address</label>
+      <label for="email" class="form-label text-sm font-medium text-gray-700">
+        {{ 'AUTH.LOGIN.EMAIL_LABEL' | translate }}
+      </label>
       <input
         id="email"
         type="email"
@@ -37,22 +39,24 @@
         [class.focus:ring-red-200]="
           loginForm.controls['email']?.invalid && loginForm.controls['email']?.touched
         "
-        placeholder="Enter your email"
+        [placeholder]="'AUTH.LOGIN.EMAIL_PLACEHOLDER' | translate"
         autocomplete="email"
       />
       @if (loginForm.controls['email']?.invalid && loginForm.controls['email']?.touched) {
         <span class="form-error text-xs text-red-600">
           @if (loginForm.controls['email']?.errors?.['required']) {
-            Email is required
+            {{ 'AUTH.LOGIN.EMAIL_REQUIRED' | translate }}
           } @else if (loginForm.controls['email']?.errors?.['email']) {
-            Enter a valid email address
+            {{ 'AUTH.LOGIN.EMAIL_INVALID' | translate }}
           }
         </span>
       }
     </div>
 
     <div class="form-group flex flex-col gap-1.5">
-      <label for="password" class="form-label text-sm font-medium text-gray-700">Password</label>
+      <label for="password" class="form-label text-sm font-medium text-gray-700">
+        {{ 'AUTH.LOGIN.PASSWORD_LABEL' | translate }}
+      </label>
       <div class="password-wrapper relative">
         <input
           id="password"
@@ -68,7 +72,7 @@
           [class.focus:ring-red-200]="
             loginForm.controls['password']?.invalid && loginForm.controls['password']?.touched
           "
-          placeholder="Enter your password"
+          [placeholder]="'AUTH.LOGIN.PASSWORD_PLACEHOLDER' | translate"
           autocomplete="current-password"
         />
         <button
@@ -107,9 +111,9 @@
       @if (loginForm.controls['password']?.invalid && loginForm.controls['password']?.touched) {
         <span class="form-error text-xs text-red-600">
           @if (loginForm.controls['password']?.errors?.['required']) {
-            Password is required
+            {{ 'AUTH.LOGIN.PASSWORD_REQUIRED' | translate }}
           } @else if (loginForm.controls['password']?.errors?.['minlength']) {
-            Password must be at least 6 characters
+            {{ 'AUTH.LOGIN.PASSWORD_MINLENGTH' | translate }}
           }
         </span>
       }
@@ -123,12 +127,14 @@
           class="checkbox w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
           [(ngModel)]="remember"
         />
-        <span class="checkbox-label text-sm text-gray-700">Remember me</span>
+        <span class="checkbox-label text-sm text-gray-700">
+          {{ 'AUTH.LOGIN.REMEMBER_ME' | translate }}
+        </span>
       </label>
       <a
         routerLink="/auth/reset-password"
         class="forgot-password-link text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors"
-        >Forgot Password?</a
+        >{{ 'AUTH.LOGIN.FORGOT_PASSWORD' | translate }}</a
       >
     </div>
 
@@ -144,9 +150,9 @@
         <span
           class="btn-spinner w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"
         ></span>
-        <span>Signing in...</span>
+        <span>{{ 'AUTH.LOGIN.SIGNING_IN' | translate }}</span>
       } @else {
-        <span>Sign In</span>
+        <span>{{ 'AUTH.LOGIN.SIGN_IN' | translate }}</span>
       }
     </button>
   </form>

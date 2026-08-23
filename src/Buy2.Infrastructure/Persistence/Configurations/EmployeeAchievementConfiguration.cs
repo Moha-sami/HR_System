@@ -17,5 +17,10 @@ public class EmployeeAchievementConfiguration : IEntityTypeConfiguration<Employe
             .WithMany(e => e.Achievements)
             .HasForeignKey(ea => ea.EmployeeId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasOne(ea => ea.Badge)
+            .WithMany()
+            .HasForeignKey(ea => ea.BadgeId)
+            .OnDelete(DeleteBehavior.SetNull);
     }
 }

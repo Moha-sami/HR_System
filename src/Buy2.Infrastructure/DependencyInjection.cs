@@ -18,11 +18,14 @@ public static class DependencyInjection
             ?? "Server=.;Database=HrSystemDb;Trusted_Connection=True;TrustServerCertificate=True";
 
         services.AddDbContext<Buy2DbContext>(options =>
+        {
             options.UseSqlServer(connectionString, sqlOptions =>
                 sqlOptions.EnableRetryOnFailure(
                     maxRetryCount: 5,
                     maxRetryDelay: TimeSpan.FromSeconds(10),
-                    errorNumbersToAdd: null)));
+                    errorNumbersToAdd: null));
+            options.ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
+        });
         services.AddScoped(typeof(IRepository<>), typeof(GenericRepository<>));
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();

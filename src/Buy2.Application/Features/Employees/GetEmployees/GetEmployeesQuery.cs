@@ -28,9 +28,11 @@ public class GetEmployeesQueryHandler : IRequestHandler<GetEmployeesQuery, Pagin
     public async Task<PaginatedEmployeeListDto> Handle(GetEmployeesQuery request, CancellationToken cancellationToken)
     {
         // 1. Start from IQueryable<Employee> with Eager Loaded Navigations
-        IQueryable<Employee> query = _employeeRepository.Query()
+        IQueryable<Employee> query = _employeeRepository.Query(asNoTracking: true)
             .Include(e => e.JobRole)
+                .ThenInclude(jr => jr!.Department)
             .Include(e => e.Site)
+                .ThenInclude(s => s!.Region)
             .Include(e => e.Role);
 
         // 2. Search Filter (translated to SQL)
@@ -45,21 +47,31 @@ public class GetEmployeesQueryHandler : IRequestHandler<GetEmployeesQuery, Pagin
         }
 
         // 3. Department Filter (translated to SQL)
-        // Note: Domain currently models departments via JobRole.DepartmentId (no dedicated Department entity exists yet).
-        // Numeric input filters strictly by DepartmentId; text input matches against JobRole.Title.
         if (!string.IsNullOrWhiteSpace(request.Department))
         {
             var department = request.Department.Trim();
-            query = int.TryParse(department, out var deptId)
-                ? query.Where(e => e.JobRole != null && e.JobRole.DepartmentId == deptId)
-                : query.Where(e => e.JobRole != null && e.JobRole.Title.Contains(department));
+            if (int.TryParse(department, out var deptId))
+            {
+                query = query.Where(e => e.JobRole != null && e.JobRole.DepartmentId == deptId);
+            }
+            else
+            {
+                query = query.Where(e => e.JobRole != null && e.JobRole.Department != null && e.JobRole.Department.Name.Contains(department));
+            }
         }
 
         // 4. Region Filter (translated to SQL)
         if (!string.IsNullOrWhiteSpace(request.Region))
         {
             var region = request.Region.Trim();
-            query = query.Where(e => e.Site != null && e.Site.SiteName.Contains(region));
+            if (int.TryParse(region, out var regionId))
+            {
+                query = query.Where(e => e.Site != null && e.Site.RegionId == regionId);
+            }
+            else
+            {
+                query = query.Where(e => e.Site != null && e.Site.Region != null && e.Site.Region.Name.Contains(region));
+            }
         }
 
         // 5. Sorting (translated to SQL)

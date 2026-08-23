@@ -1,0 +1,58 @@
+@if (optionsLoadFailed()) {
+  <p class="employee-form-alert" role="alert">
+    {{ 'EMPLOYEE_MANAGEMENT.FORM_OPTIONS_FAILED' | translate }}
+  </p>
+}
+
+@if (submitError(); as errorKey) {
+  <p class="employee-form-alert" role="alert">{{ errorKey | translate }}</p>
+}
+
+<form [formGroup]="employeeForm" (ngSubmit)="submit()" class="employee-create-form" novalidate>
+  <div class="employee-form-grid">
+    <div class="employee-form-field">
+      <label for="firstName">{{ 'EMPLOYEE_MANAGEMENT.FIRST_NAME' | translate }}</label>
+      <input id="firstName" type="text" formControlName="firstName" autocomplete="given-name" [class.employee-form-control--invalid]="isInvalid(employeeForm.controls.firstName)" />
+      @if (isInvalid(employeeForm.controls.firstName)) { <p class="employee-form-error">{{ 'EMPLOYEE_MANAGEMENT.REQUIRED' | translate }}</p> }
+    </div>
+    <div class="employee-form-field">
+      <label for="lastName">{{ 'EMPLOYEE_MANAGEMENT.LAST_NAME' | translate }}</label>
+      <input id="lastName" type="text" formControlName="lastName" autocomplete="family-name" [class.employee-form-control--invalid]="isInvalid(employeeForm.controls.lastName)" />
+      @if (isInvalid(employeeForm.controls.lastName)) { <p class="employee-form-error">{{ 'EMPLOYEE_MANAGEMENT.REQUIRED' | translate }}</p> }
+    </div>
+    <div class="employee-form-field">
+      <label for="email">{{ 'EMPLOYEE_MANAGEMENT.EMAIL' | translate }}</label>
+      <input id="email" type="email" formControlName="email" autocomplete="email" [class.employee-form-control--invalid]="isInvalid(employeeForm.controls.email)" />
+      @if (isInvalid(employeeForm.controls.email)) { <p class="employee-form-error">{{ 'EMPLOYEE_MANAGEMENT.INVALID_EMAIL' | translate }}</p> }
+    </div>
+    <div class="employee-form-field">
+      <label for="phoneNumber">{{ 'EMPLOYEE_MANAGEMENT.PHONE_NUMBER' | translate }}</label>
+      <input id="phoneNumber" type="tel" formControlName="phoneNumber" autocomplete="tel" [class.employee-form-control--invalid]="isInvalid(employeeForm.controls.phoneNumber)" />
+      @if (isInvalid(employeeForm.controls.phoneNumber)) { <p class="employee-form-error">{{ 'EMPLOYEE_MANAGEMENT.INVALID_PHONE' | translate }}</p> }
+    </div>
+    <div class="employee-form-field">
+      <label for="jobRoleId">{{ 'EMPLOYEE_MANAGEMENT.JOB_ROLE' | translate }}</label>
+      <select id="jobRoleId" formControlName="jobRoleId" [class.employee-form-control--invalid]="isInvalid(employeeForm.controls.jobRoleId)">
+        <option [ngValue]="null" disabled>{{ 'EMPLOYEE_MANAGEMENT.SELECT_JOB_ROLE' | translate }}</option>
+        @for (jobRole of jobRoles(); track jobRole.id) { <option [ngValue]="jobRole.id">{{ jobRole.title }}</option> }
+      </select>
+      @if (isInvalid(employeeForm.controls.jobRoleId)) { <p class="employee-form-error">{{ 'EMPLOYEE_MANAGEMENT.REQUIRED' | translate }}</p> }
+    </div>
+    <div class="employee-form-field">
+      <label for="roleId">{{ 'EMPLOYEE_MANAGEMENT.SYSTEM_ROLE' | translate }}</label>
+      <select id="roleId" formControlName="roleId" [class.employee-form-control--invalid]="isInvalid(employeeForm.controls.roleId)">
+        <option [ngValue]="null" disabled>{{ 'EMPLOYEE_MANAGEMENT.SELECT_SYSTEM_ROLE' | translate }}</option>
+        @for (role of roles(); track role.id) { <option [ngValue]="role.id">{{ role.name }}</option> }
+      </select>
+      @if (isInvalid(employeeForm.controls.roleId)) { <p class="employee-form-error">{{ 'EMPLOYEE_MANAGEMENT.REQUIRED' | translate }}</p> }
+    </div>
+    <div class="employee-form-field">
+      <label for="siteId">{{ 'EMPLOYEE_MANAGEMENT.SITE' | translate }}</label>
+      <select id="siteId" formControlName="siteId" [class.employee-form-control--invalid]="isInvalid(employeeForm.controls.siteId)">
+        <option [ngValue]="null" disabled>{{ 'EMPLOYEE_MANAGEMENT.SELECT_SITE' | translate }}</option>
+        @for (site of sites(); track site.id) { <option [ngValue]="site.id">{{ site.siteName }}</option> }
+      </select>
+      @if (isInvalid(employeeForm.controls.siteId)) { <p class="employee-form-error">{{ 'EMPLOYEE_MANAGEMENT.REQUIRED' | translate }}</p> }
+    </div>
+  </div>
+</form>

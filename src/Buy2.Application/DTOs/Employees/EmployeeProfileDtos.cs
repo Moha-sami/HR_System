@@ -37,7 +37,10 @@ public record EmployeeStatsDto(
 
 // 4. Personal Info DTO
 public record EmployeePersonalInfoDto(
+    string Name,
     DateTime? Birthdate,
+    string Email,
+    string PhoneNumber,
     Gender Gender
 );
 
@@ -49,10 +52,27 @@ public record EmployeeJobDetailsDto(
     int ExperienceYears,
     string? DirectManagerName,
     string JobType,
-    List<string> Qualifications
+    List<string> Qualifications,
+    string AttendanceType,
+    List<string> OnlineWorkdays,
+    List<string> OfflineWorkdays
 );
 
-// 6. Full Employee Profile DTO (Information Tab)
+// 6. Payroll Summary DTO
+public record EmployeePayrollSummaryDto(
+    string SalaryType,
+    decimal PaymentAmount,
+    string PayoutPeriod,
+    int? PayoutDay,
+    string? WorkWeekStartDay,
+    string? WorkWeekEndDay,
+    bool OvertimeEnabled,
+    decimal? OvertimeThresholdHours,
+    decimal? OvertimeRateMultiplier,
+    List<int> AssignedWorkSiteIds
+);
+
+// 7. Full Employee Profile DTO (Information Tab)
 public record EmployeeProfileDto(
     int Id,
     string EmployeeCode,
@@ -63,7 +83,8 @@ public record EmployeeProfileDto(
     string? ProfilePhotoUrl,
     EmployeeStatsDto Stats,
     EmployeePersonalInfoDto PersonalInfo,
-    EmployeeJobDetailsDto JobDetails
+    EmployeeJobDetailsDto JobDetails,
+    EmployeePayrollSummaryDto? Payroll = null
 );
 
 // 7. Update Partial Input DTOs
@@ -80,26 +101,3 @@ public record UpdateJobDetailsRequestDto(
     string? JobType
 );
 
-// 8. Bulk Onboard DTOs
-public record BulkOnboardEmployeeRowDto(
-    string FirstName,
-    string LastName,
-    string Email,
-    string? PhoneNumber,
-    int JobRoleId,
-    int SiteId,
-    int RoleId,
-    Gender? Gender = null,
-    DateTime? Birthdate = null
-);
-
-public record BulkOnboardFailedRowDto(
-    int RowIndex,
-    string ErrorMessage
-);
-
-public record BulkOnboardResultDto(
-    int CreatedCount,
-    int FailedCount,
-    List<BulkOnboardFailedRowDto> FailedRows
-);

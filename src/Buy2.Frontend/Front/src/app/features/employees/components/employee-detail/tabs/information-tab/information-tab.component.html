@@ -1,0 +1,611 @@
+@if (employee(); as emp) {
+  <section class="information-tab p-6">
+    <!-- Personal Information Section -->
+    <div class="mb-10">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-xl font-semibold text-gray-900 flex items-center gap-2">
+          <svg
+            class="w-5 h-5 text-primary-600"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+            ></path>
+          </svg>
+          {{ 'EMPLOYEE_DETAIL.PERSONAL_INFO.TITLE' | translate }}
+        </h2>
+        @if (!personalEditing()) {
+          <button
+            type="button"
+            (click)="togglePersonalEdit()"
+            class="px-4 py-2 text-sm font-medium text-primary-600 bg-primary-50 border border-primary-200 rounded-lg hover:bg-primary-100 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500"
+          >
+            {{ 'EMPLOYEE_DETAIL.ACTIONS.EDIT' | translate }}
+          </button>
+        }
+      </div>
+
+      @if (personalSaveError(); as errorKey) {
+        <div
+          class="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm"
+          role="alert"
+        >
+          {{ errorKey | translate }}
+        </div>
+      }
+
+      @if (personalEditing()) {
+        <!-- Personal Info Edit Mode -->
+        <form (ngSubmit)="onPersonalSave()" class="space-y-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">
+                {{ 'EMPLOYEE_DETAIL.PERSONAL_INFO.FULL_NAME' | translate }}
+                <span class="text-red-500">*</span>
+              </label>
+              <div class="flex gap-2">
+                <input
+                  type="text"
+                  [(ngModel)]="personalForm().firstName"
+                  name="firstName"
+                  class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  placeholder="{{ 'EMPLOYEE_MANAGEMENT.FIRST_NAME' | translate }}"
+                  required
+                />
+                <input
+                  type="text"
+                  [(ngModel)]="personalForm().lastName"
+                  name="lastName"
+                  class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  placeholder="{{ 'EMPLOYEE_MANAGEMENT.LAST_NAME' | translate }}"
+                  required
+                />
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">
+                {{ 'EMPLOYEE_DETAIL.PERSONAL_INFO.PHONE' | translate }}
+                <span class="text-red-500">*</span>
+              </label>
+              <input
+                type="tel"
+                [(ngModel)]="personalForm().phoneNumber"
+                name="phoneNumber"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                placeholder="+1 234 567 8900"
+                required
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">
+                {{ 'EMPLOYEE_DETAIL.PERSONAL_INFO.EMAIL' | translate }}
+              </label>
+              <input
+                type="email"
+                [value]="emp.email"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-500"
+                readonly
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">
+                {{ 'EMPLOYEE_DETAIL.PERSONAL_INFO.LOCATION' | translate }}
+              </label>
+              <input
+                type="text"
+                [value]="emp.location"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-500"
+                readonly
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">
+                {{ 'EMPLOYEE_DETAIL.PERSONAL_INFO.BIRTHDATE' | translate }}
+              </label>
+              <input
+                type="date"
+                [(ngModel)]="personalForm().dateOfBirth"
+                name="dateOfBirth"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">
+                {{ 'EMPLOYEE_DETAIL.PERSONAL_INFO.GENDER' | translate }}
+              </label>
+              <select
+                [(ngModel)]="emp.personalInfo.gender"
+                name="gender"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              >
+                <option [ngValue]="null">{{ 'COMMON.SELECT' | translate }}</option>
+                <option [ngValue]="1">{{ 'Male' }}</option>
+                <option [ngValue]="2">{{ 'Female' }}</option>
+              </select>
+            </div>
+            <div class="md:col-span-2">
+              <label class="block text-sm font-medium text-gray-700 mb-1">
+                {{ 'EMPLOYEE_DETAIL.PERSONAL_INFO.ADDRESS' | translate }}
+              </label>
+              <textarea
+                [(ngModel)]="personalForm().address"
+                name="address"
+                rows="2"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                placeholder="{{ 'EMPLOYEE_DETAIL.PERSONAL_INFO.ADDRESS' | translate }}"
+              ></textarea>
+            </div>
+            <div class="md:col-span-2">
+              <label class="block text-sm font-medium text-gray-700 mb-1">
+                {{ 'EMPLOYEE_DETAIL.PERSONAL_INFO.EMERGENCY_CONTACT' | translate }}
+              </label>
+              <input
+                type="text"
+                [(ngModel)]="personalForm().emergencyContact"
+                name="emergencyContact"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                placeholder="{{ 'EMPLOYEE_DETAIL.PERSONAL_INFO.EMERGENCY_CONTACT' | translate }}"
+              />
+            </div>
+            <div class="md:col-span-2">
+              <label class="block text-sm font-medium text-gray-700 mb-1">
+                {{ 'EMPLOYEE_DETAIL.PERSONAL_INFO.NATIONAL_ID' | translate }}
+              </label>
+              <input
+                type="text"
+                [(ngModel)]="personalForm().nationalId"
+                name="nationalId"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                placeholder="{{ 'EMPLOYEE_DETAIL.PERSONAL_INFO.NATIONAL_ID' | translate }}"
+              />
+            </div>
+          </div>
+
+          <div class="mt-6 flex justify-end gap-3">
+            <button
+              type="button"
+              (click)="cancelPersonalEdit()"
+              [disabled]="personalSaving()"
+              class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500"
+            >
+              {{ 'EMPLOYEE_DETAIL.ACTIONS.CANCEL' | translate }}
+            </button>
+            <button
+              type="submit"
+              [disabled]="personalSaving()"
+              class="px-4 py-2 text-sm font-medium text-white bg-primary-600 border border-primary-600 rounded-lg hover:bg-primary-700 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              @if (personalSaving()) {
+                <span class="flex items-center gap-2">
+                  <svg class="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                    <circle
+                      class="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      stroke-width="4"
+                      fill="none"
+                    ></circle>
+                    <path
+                      class="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
+                  </svg>
+                  {{ 'COMMON.LOADING' | translate }}
+                </span>
+              } @else {
+                {{ 'EMPLOYEE_DETAIL.ACTIONS.SAVE' | translate }}
+              }
+            </button>
+          </div>
+        </form>
+      } @else {
+        <!-- Personal Info View Mode -->
+        <dl class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="md:col-span-2">
+            <dt class="text-sm font-medium text-gray-500">
+              {{ 'EMPLOYEE_DETAIL.PERSONAL_INFO.EMPLOYEE_CODE' | translate }}
+            </dt>
+            <dd class="mt-1 text-gray-900 font-medium">{{ emp.employeeCode }}</dd>
+          </div>
+          <div>
+            <dt class="text-sm font-medium text-gray-500">
+              {{ 'EMPLOYEE_DETAIL.PERSONAL_INFO.FULL_NAME' | translate }}
+            </dt>
+            <dd class="mt-1 text-gray-900">{{ emp.fullName }}</dd>
+          </div>
+          <div>
+            <dt class="text-sm font-medium text-gray-500">
+              {{ 'EMPLOYEE_DETAIL.PERSONAL_INFO.PHONE' | translate }}
+            </dt>
+            <dd class="mt-1 text-gray-900">{{ emp.phone }}</dd>
+          </div>
+          <div>
+            <dt class="text-sm font-medium text-gray-500">
+              {{ 'EMPLOYEE_DETAIL.PERSONAL_INFO.EMAIL' | translate }}
+            </dt>
+            <dd class="mt-1 text-gray-900">{{ emp.email }}</dd>
+          </div>
+          <div>
+            <dt class="text-sm font-medium text-gray-500">
+              {{ 'EMPLOYEE_DETAIL.PERSONAL_INFO.LOCATION' | translate }}
+            </dt>
+            <dd class="mt-1 text-gray-900">{{ emp.location }}</dd>
+          </div>
+          <div>
+            <dt class="text-sm font-medium text-gray-500">
+              {{ 'EMPLOYEE_DETAIL.PERSONAL_INFO.BIRTHDATE' | translate }}
+            </dt>
+            <dd class="mt-1 text-gray-900">
+              @if (emp.personalInfo.birthdate) {
+                {{ emp.personalInfo.birthdate.split('T')[0] }}
+              } @else {
+                <span class="text-gray-400">—</span>
+              }
+            </dd>
+          </div>
+          <div>
+            <dt class="text-sm font-medium text-gray-500">
+              {{ 'EMPLOYEE_DETAIL.PERSONAL_INFO.GENDER' | translate }}
+            </dt>
+            <dd class="mt-1 text-gray-900">{{ formatGender(emp.personalInfo.gender) }}</dd>
+          </div>
+          <div class="md:col-span-2">
+            <dt class="text-sm font-medium text-gray-500">
+              {{ 'EMPLOYEE_DETAIL.PERSONAL_INFO.ADDRESS' | translate }}
+            </dt>
+            <dd class="mt-1 text-gray-900"><span class="text-gray-400">—</span></dd>
+          </div>
+          <div class="md:col-span-2">
+            <dt class="text-sm font-medium text-gray-500">
+              {{ 'EMPLOYEE_DETAIL.PERSONAL_INFO.EMERGENCY_CONTACT' | translate }}
+            </dt>
+            <dd class="mt-1 text-gray-900"><span class="text-gray-400">—</span></dd>
+          </div>
+          <div class="md:col-span-2">
+            <dt class="text-sm font-medium text-gray-500">
+              {{ 'EMPLOYEE_DETAIL.PERSONAL_INFO.NATIONAL_ID' | translate }}
+            </dt>
+            <dd class="mt-1 text-gray-900"><span class="text-gray-400">—</span></dd>
+          </div>
+        </dl>
+      }
+    </div>
+
+    <hr class="border-gray-200 my-6" />
+
+    <!-- Job Details Section -->
+    <div class="mb-6">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-xl font-semibold text-gray-900 flex items-center gap-2">
+          <svg
+            class="w-5 h-5 text-primary-600"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+            ></path>
+          </svg>
+          {{ 'EMPLOYEE_DETAIL.JOB_DETAILS.TITLE' | translate }}
+        </h2>
+        @if (!jobEditing()) {
+          <button
+            type="button"
+            (click)="toggleJobEdit()"
+            class="px-4 py-2 text-sm font-medium text-primary-600 bg-primary-50 border border-primary-200 rounded-lg hover:bg-primary-100 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500"
+          >
+            {{ 'EMPLOYEE_DETAIL.ACTIONS.EDIT' | translate }}
+          </button>
+        }
+      </div>
+
+      @if (jobSaveError(); as errorKey) {
+        <div
+          class="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm"
+          role="alert"
+        >
+          {{ errorKey | translate }}
+        </div>
+      }
+
+      @if (jobEditing()) {
+        <!-- Job Details Edit Mode -->
+        <form (ngSubmit)="onJobSave()" class="space-y-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">
+                {{ 'EMPLOYEE_DETAIL.JOB_DETAILS.JOB_TITLE' | translate }}
+                <span class="text-red-500">*</span>
+              </label>
+              <select
+                [(ngModel)]="jobForm().jobRoleId"
+                name="jobRoleId"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                required
+              >
+                <option [ngValue]="0">
+                  {{ 'EMPLOYEE_MANAGEMENT.SELECT_JOB_ROLE' | translate }}
+                </option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">
+                {{ 'EMPLOYEE_MANAGEMENT.SYSTEM_ROLE' | translate }}
+                <span class="text-red-500">*</span>
+              </label>
+              <select
+                [(ngModel)]="jobForm().roleId"
+                name="roleId"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                required
+              >
+                <option [ngValue]="0">
+                  {{ 'EMPLOYEE_MANAGEMENT.SELECT_SYSTEM_ROLE' | translate }}
+                </option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">
+                {{ 'EMPLOYEE_MANAGEMENT.SITE' | translate }} <span class="text-red-500">*</span>
+              </label>
+              <select
+                [(ngModel)]="jobForm().siteId"
+                name="siteId"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                required
+              >
+                <option [ngValue]="0">{{ 'EMPLOYEE_MANAGEMENT.SELECT_SITE' | translate }}</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">
+                {{ 'EMPLOYEE_DETAIL.JOB_DETAILS.DIRECT_MANAGER' | translate }}
+              </label>
+              <select
+                [(ngModel)]="jobForm().directManagerId"
+                name="directManagerId"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              >
+                <option [ngValue]="0">
+                  {{ 'EMPLOYEE_DETAIL.JOB_DETAILS.SELECT_MANAGER' | translate }}
+                </option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">
+                {{ 'EMPLOYEE_DETAIL.JOB_DETAILS.SENIORITY_LEVEL' | translate }}
+              </label>
+              <input
+                type="text"
+                [(ngModel)]="jobForm().seniorityLevel"
+                name="seniorityLevel"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                placeholder="{{ 'EMPLOYEE_DETAIL.JOB_DETAILS.SENIORITY_LEVEL' | translate }}"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">
+                {{ 'EMPLOYEE_DETAIL.JOB_DETAILS.EXPERIENCE_YEARS' | translate }}
+              </label>
+              <input
+                type="number"
+                [(ngModel)]="jobForm().experienceYears"
+                name="experienceYears"
+                min="0"
+                max="50"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">
+                {{ 'EMPLOYEE_DETAIL.JOB_DETAILS.JOB_TYPE' | translate }}
+              </label>
+              <input
+                type="text"
+                [(ngModel)]="jobForm().jobType"
+                name="jobType"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                placeholder="{{ 'EMPLOYEE_DETAIL.JOB_DETAILS.JOB_TYPE' | translate }}"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">
+                {{ 'EMPLOYEE_DETAIL.JOB_DETAILS.ATTENDANCE_TYPE' | translate }}
+              </label>
+              <input
+                type="text"
+                [(ngModel)]="jobForm().attendanceType"
+                name="attendanceType"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                placeholder="{{ 'EMPLOYEE_DETAIL.JOB_DETAILS.ATTENDANCE_TYPE' | translate }}"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">
+                {{ 'EMPLOYEE_DETAIL.JOB_DETAILS.JOIN_DATE' | translate }}
+              </label>
+              <input
+                type="date"
+                [(ngModel)]="jobForm().joinDate"
+                name="joinDate"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              />
+            </div>
+            <div class="md:col-span-2">
+              <label class="block text-sm font-medium text-gray-700 mb-1">
+                {{ 'EMPLOYEE_DETAIL.JOB_DETAILS.QUALIFICATIONS' | translate }}
+              </label>
+              <div class="space-y-2">
+                @for (qual of emp.jobDetails.qualifications; track qual) {
+                  <div class="flex items-center gap-2">
+                    <input
+                      type="text"
+                      [value]="qual"
+                      class="flex-1 px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-500"
+                      readonly
+                    />
+                    <button
+                      type="button"
+                      class="p-1 text-red-500 hover:bg-red-50 rounded focus:outline-none focus:ring-2 focus:ring-red-500"
+                    >
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M6 18L18 6M6 6l12 12"
+                        ></path>
+                      </svg>
+                    </button>
+                  </div>
+                }
+                <div class="flex items-center gap-2">
+                  <input
+                    type="text"
+                    [(ngModel)]="newQualification"
+                    name="newQualification"
+                    class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                    placeholder="{{ 'EMPLOYEE_DETAIL.JOB_DETAILS.ADD_QUALIFICATION' | translate }}"
+                  />
+                  <button
+                    type="button"
+                    (click)="addQualification()"
+                    class="px-3 py-2 text-sm font-medium text-white bg-primary-600 border border-primary-600 rounded-lg hover:bg-primary-700 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  >
+                    {{ 'COMMON.ADD' | translate }}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-6 flex justify-end gap-3">
+            <button
+              type="button"
+              (click)="cancelJobEdit()"
+              [disabled]="jobSaving()"
+              class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500"
+            >
+              {{ 'EMPLOYEE_DETAIL.ACTIONS.CANCEL' | translate }}
+            </button>
+            <button
+              type="submit"
+              [disabled]="jobSaving()"
+              class="px-4 py-2 text-sm font-medium text-white bg-primary-600 border border-primary-600 rounded-lg hover:bg-primary-700 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              @if (jobSaving()) {
+                <span class="flex items-center gap-2">
+                  <svg class="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                    <circle
+                      class="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      stroke-width="4"
+                      fill="none"
+                    ></circle>
+                    <path
+                      class="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
+                  </svg>
+                  {{ 'COMMON.LOADING' | translate }}
+                </span>
+              } @else {
+                {{ 'EMPLOYEE_DETAIL.ACTIONS.SAVE' | translate }}
+              }
+            </button>
+          </div>
+        </form>
+      } @else {
+        <!-- Job Details View Mode -->
+        <dl class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <dt class="text-sm font-medium text-gray-500">
+              {{ 'EMPLOYEE_DETAIL.JOB_DETAILS.JOB_TITLE' | translate }}
+            </dt>
+            <dd class="mt-1 text-gray-900">{{ emp.jobDetails.title }}</dd>
+          </div>
+          <div>
+            <dt class="text-sm font-medium text-gray-500">
+              {{ 'EMPLOYEE_DETAIL.JOB_DETAILS.DEPARTMENT' | translate }}
+            </dt>
+            <dd class="mt-1 text-gray-900">{{ emp.jobDetails.department }}</dd>
+          </div>
+          <div>
+            <dt class="text-sm font-medium text-gray-500">
+              {{ 'EMPLOYEE_DETAIL.JOB_DETAILS.SENIORITY_LEVEL' | translate }}
+            </dt>
+            <dd class="mt-1 text-gray-900">{{ emp.jobDetails.seniorityLevel || '—' }}</dd>
+          </div>
+          <div>
+            <dt class="text-sm font-medium text-gray-500">
+              {{ 'EMPLOYEE_DETAIL.JOB_DETAILS.EXPERIENCE_YEARS' | translate }}
+            </dt>
+            <dd class="mt-1 text-gray-900">{{ emp.jobDetails.experienceYears || 0 }} years</dd>
+          </div>
+          <div>
+            <dt class="text-sm font-medium text-gray-500">
+              {{ 'EMPLOYEE_DETAIL.JOB_DETAILS.DIRECT_MANAGER' | translate }}
+            </dt>
+            <dd class="mt-1 text-gray-900">{{ emp.jobDetails.directManagerName || '—' }}</dd>
+          </div>
+          <div>
+            <dt class="text-sm font-medium text-gray-500">
+              {{ 'EMPLOYEE_DETAIL.JOB_DETAILS.JOB_TYPE' | translate }}
+            </dt>
+            <dd class="mt-1 text-gray-900">{{ emp.jobDetails.jobType || '—' }}</dd>
+          </div>
+          <div>
+            <dt class="text-sm font-medium text-gray-500">
+              {{ 'EMPLOYEE_DETAIL.JOB_DETAILS.ATTENDANCE_TYPE' | translate }}
+            </dt>
+            <dd class="mt-1 text-gray-900">
+              @if (emp.jobDetails.attendanceType) {
+                {{ emp.jobDetails.attendanceType }}
+              } @else {
+                <span class="text-gray-400 italic">{{ 'COMMON.NOT_AVAILABLE' | translate }}</span>
+              }
+            </dd>
+          </div>
+          <div>
+            <dt class="text-sm font-medium text-gray-500">
+              {{ 'EMPLOYEE_DETAIL.JOB_DETAILS.JOIN_DATE' | translate }}
+            </dt>
+            <dd class="mt-1 text-gray-900"><span class="text-gray-400">—</span></dd>
+          </div>
+          <div class="md:col-span-2">
+            <dt class="text-sm font-medium text-gray-500">
+              {{ 'EMPLOYEE_DETAIL.JOB_DETAILS.QUALIFICATIONS' | translate }}
+            </dt>
+            <dd class="mt-1 text-gray-900">
+              @if (emp.jobDetails.qualifications.length > 0) {
+                <ul class="list-disc list-inside space-y-1">
+                  @for (qual of emp.jobDetails.qualifications; track qual) {
+                    <li>{{ qual }}</li>
+                  }
+                </ul>
+              } @else {
+                <span class="text-gray-400">—</span>
+              }
+            </dd>
+          </div>
+        </dl>
+      }
+    </div>
+  </section>
+}

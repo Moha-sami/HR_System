@@ -80,5 +80,12 @@ export class DocsHomeComponent {
         'Dialog overlay with header, body, and actions. Supports sizes, backdrop close, and escape key.',
       tags: ['dialog', 'overlay', 'form', 'confirm'],
     },
+    {
+      name: '*hasPermission Directive',
+      route: 'has-permission',
+      description:
+        'Structural directive for controlling element visibility based on user permissions.',
+      tags: ['rbac', 'permissions', 'security', 'directive'],
+    },
   ];
 }

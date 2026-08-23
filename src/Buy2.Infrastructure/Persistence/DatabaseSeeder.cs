@@ -10,10 +10,7 @@ public static class DatabaseSeeder
 
     public static async Task SeedAsync(Buy2DbContext context)
     {
-        // 1. Ensure Database Created
-        await context.Database.EnsureCreatedAsync();
-
-        // 2. Ensure Default Roles Exist
+        // 1. Ensure Default Roles Exist
         if (!await context.Set<Role>().AnyAsync())
         {
             context.Set<Role>().AddRange(
@@ -37,7 +34,6 @@ public static class DatabaseSeeder
         // 4. Ensure Default JobRoles Exist
         if (!await context.Set<JobRole>().AnyAsync())
         {
-            var defaultSite = await context.Set<Site>().FirstAsync();
             context.Set<JobRole>().AddRange(
                 new JobRole { Title = "Software Engineer", DepartmentId = 1, RequiredQualificationsJson = "[\"C#\", \".NET\"]" },
                 new JobRole { Title = "HR Specialist", DepartmentId = 2, RequiredQualificationsJson = "[\"Communication\"]" },
@@ -46,15 +42,10 @@ public static class DatabaseSeeder
             await context.SaveChangesAsync();
         }
 
-        // 5. Seed 100,000 Employees in Fast Batches of 5,000
+        // 5. Check Existing Count (Target 100,000 records for performance testing)
         int existingCount = await context.Set<Employee>().CountAsync();
         int targetTotal = 100000;
         int remainingToSeed = targetTotal - existingCount;
-
-        // Ensure exact role distribution (2 Admins, 4 Managers, rest Employees)
-        await context.Database.ExecuteSqlRawAsync("UPDATE Employees SET RoleId = 3;");
-        await context.Database.ExecuteSqlRawAsync("UPDATE Employees SET RoleId = 1 WHERE Id IN (1, 2);");
-        await context.Database.ExecuteSqlRawAsync("UPDATE Employees SET RoleId = 2 WHERE Id IN (3, 4, 5, 6);");
 
         if (remainingToSeed <= 0)
         {
@@ -66,8 +57,9 @@ public static class DatabaseSeeder
         var jobRoles = await context.Set<JobRole>().ToListAsync();
 
         int defaultRoleId = roles.First().Id;
-        int defaultSiteId = sites.First().Id;
-        int defaultJobRoleId = jobRoles.First().Id;
+        int adminRoleId = roles.FirstOrDefault(r => r.Name == "Admin")?.Id ?? defaultRoleId;
+        int managerRoleId = roles.FirstOrDefault(r => r.Name == "Manager")?.Id ?? defaultRoleId;
+        int employeeRoleId = roles.FirstOrDefault(r => r.Name == "Employee")?.Id ?? defaultRoleId;
 
         int batchSize = 5000;
         int seededSoFar = 0;
@@ -85,29 +77,24 @@ public static class DatabaseSeeder
                 string fname = FirstNames[globalIndex % FirstNames.Length];
                 string lname = LastNames[globalIndex % LastNames.Length];
 
-                int assignedRoleId;
-                if (globalIndex <= 2)
+                int assignedRoleId = globalIndex switch
                 {
-                    assignedRoleId = roles.FirstOrDefault(r => r.Name == "Admin")?.Id ?? defaultRoleId;
-                }
-                else if (globalIndex <= 6)
-                {
-                    assignedRoleId = roles.FirstOrDefault(r => r.Name == "Manager")?.Id ?? defaultRoleId;
-                }
-                else
-                {
-                    assignedRoleId = roles.FirstOrDefault(r => r.Name == "Employee")?.Id ?? defaultRoleId;
-                }
+                    <= 2 => adminRoleId,
+                    <= 6 => managerRoleId,
+                    _ => employeeRoleId
+                };
 
                 batchEmployees.Add(new Employee
                 {
                     FirstName = fname,
                     LastName = lname,
                     Email = $"employee_{globalIndex}@buy2hrms.com",
+                    EmployeeCode = $"EMP-{globalIndex:D4}",
                     PhoneNumber = $"+2010{10000000 + (globalIndex % 90000000)}",
                     RoleId = assignedRoleId,
                     SiteId = sites[globalIndex % sites.Count].Id,
-                    JobRoleId = jobRoles[globalIndex % jobRoles.Count].Id
+                    JobRoleId = jobRoles[globalIndex % jobRoles.Count].Id,
+                    PasswordHash = "string"
                 });
             }
 

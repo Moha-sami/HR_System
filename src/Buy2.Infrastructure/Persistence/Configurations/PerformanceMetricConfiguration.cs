@@ -23,6 +23,12 @@ public class PerformanceMetricConfiguration : IEntityTypeConfiguration<Performan
         builder.Property(pm => pm.Weight)
             .HasColumnType("decimal(18,2)");
 
+        builder.Property(pm => pm.CurrentScore)
+            .HasColumnType("decimal(18,2)");
+
+        builder.Property(pm => pm.AllTimeAverage)
+            .HasColumnType("decimal(18,2)");
+
         builder.HasMany(pm => pm.PerformanceSubmissions)
             .WithOne(ps => ps.PerformanceMetric)
             .HasForeignKey(ps => ps.MetricId)
