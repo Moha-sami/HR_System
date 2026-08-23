@@ -70,11 +70,11 @@ This document outlines the REST API endpoints provided by the Buy2 HRMS backend 
       - `totalTasks` (int) - Total tasks assigned
       - `totalGifts` (int) - Total gifts/rewards redeemed
     - `personalInfo` (`EmployeePersonalInfoDto`):
+      - `name` (string) - Full name
       - `birthdate` (DateTime/ISO 8601, nullable) - Date of birth
+      - `email` (string) - Email address
+      - `phoneNumber` (string) - Contact phone number
       - `gender` (`Gender` enum: `Male` = 1, `Female` = 2)
-      - `address` (string, nullable) - Home/residential address
-      - `emergencyContact` (string, nullable) - Emergency contact info
-      - `nationalId` (string, nullable) - National identification number
     - `jobDetails` (`EmployeeJobDetailsDto`):
       - `title` (string) - Job role title
       - `department` (string) - Department name or identifier
@@ -117,11 +117,11 @@ This document outlines the REST API endpoints provided by the Buy2 HRMS backend 
     "totalGifts": 3
   },
   "personalInfo": {
+    "name": "Sarah Jenkins",
     "birthdate": "1992-05-14T00:00:00Z",
-    "gender": 1,
-    "address": "742 Evergreen Terrace, Springfield",
-    "emergencyContact": "John Jenkins (+1-555-0188)",
-    "nationalId": "NAT-987654321"
+    "email": "sarah.jenkins@buy2.com",
+    "phoneNumber": "+1-555-0199",
+    "gender": 1
   },
   "jobDetails": {
     "title": "Senior Store Associate",

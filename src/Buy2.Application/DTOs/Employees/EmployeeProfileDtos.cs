@@ -37,11 +37,11 @@ public record EmployeeStatsDto(
 
 // 4. Personal Info DTO
 public record EmployeePersonalInfoDto(
+    string Name,
     DateTime? Birthdate,
-    Gender Gender,
-    string? Address = null,
-    string? EmergencyContact = null,
-    string? NationalId = null
+    string Email,
+    string PhoneNumber,
+    Gender Gender
 );
 
 // 5. Job Details DTO

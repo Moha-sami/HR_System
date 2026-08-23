@@ -12,33 +12,36 @@ public class EmployeeProfileTests
     {
         var birthdate = new DateTime(1995, 6, 15, 0, 0, 0, DateTimeKind.Utc);
         var dto = new EmployeePersonalInfoDto(
+            Name: "Jane Doe",
             Birthdate: birthdate,
-            Gender: Gender.Female,
-            Address: "123 Main St, Springfield",
-            EmergencyContact: "Jane Doe (+1-555-0123)",
-            NationalId: "NAT-123456"
+            Email: "jane.doe@buy2.com",
+            PhoneNumber: "+1-555-0123",
+            Gender: Gender.Female
         );
 
+        Assert.Equal("Jane Doe", dto.Name);
         Assert.Equal(birthdate, dto.Birthdate);
+        Assert.Equal("jane.doe@buy2.com", dto.Email);
+        Assert.Equal("+1-555-0123", dto.PhoneNumber);
         Assert.Equal(Gender.Female, dto.Gender);
-        Assert.Equal("123 Main St, Springfield", dto.Address);
-        Assert.Equal("Jane Doe (+1-555-0123)", dto.EmergencyContact);
-        Assert.Equal("NAT-123456", dto.NationalId);
     }
 
     [Fact]
-    public void EmployeePersonalInfoDto_OptionalFieldsDefaultToNull()
+    public void EmployeePersonalInfoDto_NullableBirthdateSupported()
     {
         var dto = new EmployeePersonalInfoDto(
+            Name: "John Smith",
             Birthdate: null,
+            Email: "john.smith@buy2.com",
+            PhoneNumber: "+1-555-0199",
             Gender: Gender.Male
         );
 
+        Assert.Equal("John Smith", dto.Name);
         Assert.Null(dto.Birthdate);
+        Assert.Equal("john.smith@buy2.com", dto.Email);
+        Assert.Equal("+1-555-0199", dto.PhoneNumber);
         Assert.Equal(Gender.Male, dto.Gender);
-        Assert.Null(dto.Address);
-        Assert.Null(dto.EmergencyContact);
-        Assert.Null(dto.NationalId);
     }
 
     [Fact]
@@ -108,11 +111,11 @@ public class EmployeeProfileTests
     {
         var stats = new EmployeeStatsDto(TotalPoints: 100, TotalTasks: 5, TotalGifts: 2);
         var personalInfo = new EmployeePersonalInfoDto(
+            Name: "John Connor",
             Birthdate: new DateTime(1990, 1, 1, 0, 0, 0, DateTimeKind.Utc),
-            Gender: Gender.Male,
-            Address: "456 Elm St",
-            EmergencyContact: "Bob Doe (+1-555-0987)",
-            NationalId: "NAT-999999"
+            Email: "john.connor@buy2.com",
+            PhoneNumber: "+1-555-0042",
+            Gender: Gender.Male
         );
         var jobDetails = new EmployeeJobDetailsDto(
             Title: "Tech Lead",
@@ -157,8 +160,7 @@ public class EmployeeProfileTests
         Assert.NotNull(json);
         Assert.Contains("EMP-0042", json);
         Assert.Contains("John Connor", json);
-        Assert.Contains("456 Elm St", json);
-        Assert.Contains("NAT-999999", json);
+        Assert.Contains("john.connor@buy2.com", json);
         Assert.Contains("Tech Lead", json);
         Assert.Contains("8000", json);
     }

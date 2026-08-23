@@ -65,22 +65,23 @@ public class GetEmployeeProfileQueryHandler : IRequestHandler<GetEmployeeProfile
         );
 
         // 3. Map Personal Info
+        var fullName = $"{employee.FirstName} {employee.LastName}".Trim();
         var personalInfo = new EmployeePersonalInfoDto(
+            Name: fullName,
             Birthdate: employee.Birthdate,
-            Gender: employee.Gender,
-            Address: employee.Address,
-            EmergencyContact: employee.EmergencyContact,
-            NationalId: employee.NationalId
+            Email: employee.Email ?? string.Empty,
+            PhoneNumber: employee.PhoneNumber ?? string.Empty,
+            Gender: employee.Gender
         );
 
         // 4. Map Job Details
         var directManagerName = (string?)null;
         if (employee.DirectManager != null)
         {
-            var fullName = $"{employee.DirectManager.FirstName} {employee.DirectManager.LastName}".Trim();
-            if (!string.IsNullOrWhiteSpace(fullName))
+            var managerFullName = $"{employee.DirectManager.FirstName} {employee.DirectManager.LastName}".Trim();
+            if (!string.IsNullOrWhiteSpace(managerFullName))
             {
-                directManagerName = fullName;
+                directManagerName = managerFullName;
             }
         }
 
@@ -169,14 +170,13 @@ public class GetEmployeeProfileQueryHandler : IRequestHandler<GetEmployeeProfile
         }
 
         // 6. Assemble Full Profile DTO
-        var employeeFullName = $"{employee.FirstName} {employee.LastName}".Trim();
         var employeeCode = string.IsNullOrEmpty(employee.EmployeeCode) ? $"EMP-{employee.Id:D4}" : employee.EmployeeCode;
         var location = employee.Site?.SiteName ?? "N/A";
 
         return new EmployeeProfileDto(
             Id: employee.Id,
             EmployeeCode: employeeCode,
-            FullName: employeeFullName,
+            FullName: fullName,
             Phone: employee.PhoneNumber ?? string.Empty,
             Email: employee.Email ?? string.Empty,
             Location: location,
