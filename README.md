@@ -6,6 +6,7 @@
 [![Frontend](https://img.shields.io/badge/Angular-18+-red.svg)](https://angular.dev/)
 [![Jira Space](https://img.shields.io/badge/Jira-SCRUM-0052CC.svg)](https://buy2-hrms.atlassian.net)
 [![GitHub Contributors](https://img.shields.io/github/contributors/Moha-sami/HR_system.svg?style=flat-square)](https://github.com/Moha-sami/HR_system/graphs/contributors)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](./LICENSE)
 
 An enterprise-grade open-source HR Management System built with **.NET 10 Clean Architecture** and **Angular 18+**. Buy2 HRMS features advanced shift scheduling engines, geofenced clock-in attendance, gamification points ledgers, and digital reward voucher stores.
 
@@ -200,6 +201,37 @@ ng serve
 - **Figma UI/UX Design**: [BUY2 HRMS Figma Design](https://www.figma.com/design/JQ67DCkObzVjER8Safb5sw/BUY2-Junk-File?node-id=882-3040&p=f&t=GxfjGebSZZA9X7B0-0)
 - **Jira Board**: `buy2-hrms.atlassian.net` (Key: `SCRUM`)
 - **API Endpoints Docs**: [`docs/API_ENDPOINTS.md`](./docs/API_ENDPOINTS.md)
+
+---
+
+## 📄 License
+
+This project is licensed under the **Apache License 2.0**.
+
+```
+Copyright 2026 Moha-sami & Buy2 HRMS Contributors
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+```
+
+**What this means for contributors and users:**
+- ✅ Free to use, modify, and distribute — commercially or privately
+- ✅ **Patent protection**: Contributors grant you a royalty-free patent license — and lose it if they sue you for patent infringement
+- ✅ You can include this code in closed-source products
+- ⚠️ Must keep the copyright notice and license file
+- ⚠️ Must document any significant changes you make to the source files
+
+See the full license text in [`LICENSE`](./LICENSE).
 
 ---
 
