@@ -48,18 +48,110 @@ This document outlines the REST API endpoints provided by the Buy2 HRMS backend 
   - `Admin Access` (`true`/`false`)
 
 ### `GET /api/v1/employees/{id}`
-- **Authorization**: Authenticated users (`[Authorize]`)
+- **Authorization**: `[Authorize(Roles = "Admin,Manager,HR,SuperAdmin")]`
 - **Path Parameters**:
   - `id` (int, required) - Unique ID of the employee
-- **Description**: Retrieves full employee profile details including personal info, job role details, qualifications, and live calculated stats.
+- **Description**: Retrieves full employee profile details for the Figma Information Tab, including personal information, job details, qualifications, attendance/workdays breakdown, live gamification/task stats, and optional payroll summary.
 - **Computed Header Stats**:
-  - `TotalPoints` - Sum of points from the points wallet ledger
-  - `TotalTasks` - Total number of assigned tasks
-  - `TotalGifts` - Total number of redeemed rewards/gifts
+  - `totalPoints` - Sum of points from the points wallet ledger
+  - `totalTasks` - Total number of assigned tasks
+  - `totalGifts` - Total number of redeemed rewards/gifts
 - **Response**:
   - `200 OK` with `EmployeeProfileDto`:
-    - `Id`, `FirstName`, `LastName`, `EmployeeCode`, `Email`, `Phone`, `BirthDate`, `Gender`, `JobTitle`, `Department`, `SeniorityLevel`, `ExperienceYears`, `DirectManagerName`, `JobType`, `SiteName`, `RoleName`, `Qualifications` (array of strings), `TotalPoints`, `TotalTasks`, `TotalGifts`
-  - `404 Not Found` if employee with specified `id` does not exist.
+    - `id` (int) - Employee ID
+    - `employeeCode` (string) - Unique employee code (e.g., `EMP-0001`)
+    - `fullName` (string) - Formatted full name
+    - `phone` (string) - Contact phone number
+    - `email` (string) - Email address
+    - `location` (string) - Primary work site name
+    - `profilePhotoUrl` (string, nullable) - Profile avatar URL
+    - `stats` (`EmployeeStatsDto`):
+      - `totalPoints` (int) - Total reward points earned
+      - `totalTasks` (int) - Total tasks assigned
+      - `totalGifts` (int) - Total gifts/rewards redeemed
+    - `personalInfo` (`EmployeePersonalInfoDto`):
+      - `birthdate` (DateTime/ISO 8601, nullable) - Date of birth
+      - `gender` (`Gender` enum: `Male` = 1, `Female` = 2)
+      - `address` (string, nullable) - Home/residential address
+      - `emergencyContact` (string, nullable) - Emergency contact info
+      - `nationalId` (string, nullable) - National identification number
+    - `jobDetails` (`EmployeeJobDetailsDto`):
+      - `title` (string) - Job role title
+      - `department` (string) - Department name or identifier
+      - `seniorityLevel` (string) - Seniority level designation
+      - `experienceYears` (int) - Years of professional experience
+      - `directManagerName` (string, nullable) - Direct manager full name
+      - `jobType` (string) - Employment type (e.g. `FullTime`, `PartTime`)
+      - `qualifications` (array of strings) - Required and verified qualifications
+      - `attendanceType` (string) - Work model (e.g. `OnSite`, `Remote`, `Hybrid`)
+      - `onlineWorkdays` (array of strings) - Days assigned for remote work
+      - `offlineWorkdays` (array of strings) - Days assigned for on-site work
+    - `payroll` (`EmployeePayrollSummaryDto`, nullable):
+      - `salaryType` (string) - Compensation structure (`Fixed`, `Hourly`)
+      - `paymentAmount` (decimal) - Base salary or hourly rate
+      - `payoutPeriod` (string) - Payout frequency (e.g. `Monthly`, `Bi-Weekly`)
+      - `payoutDay` (int, nullable) - Scheduled payout day of month
+      - `workWeekStartDay` (string, nullable) - Work week start day
+      - `workWeekEndDay` (string, nullable) - Work week end day
+      - `overtimeEnabled` (bool) - Whether overtime compensation is enabled
+      - `overtimeThresholdHours` (decimal, nullable) - Overtime threshold in hours
+      - `overtimeRateMultiplier` (decimal, nullable) - Overtime rate multiplier / hourly rate
+      - `assignedWorkSiteIds` (array of int) - Work site IDs assigned to employee
+  - `404 Not Found` if employee with specified `id` does not exist or has been soft-deleted.
+  - `401 Unauthorized` if the request is unauthenticated.
+  - `403 Forbidden` if authenticated user lacks required administrative role (`Admin`, `Manager`, `HR`, `SuperAdmin`).
+
+**Example Response**:
+```json
+{
+  "id": 1,
+  "employeeCode": "EMP-0001",
+  "fullName": "Sarah Jenkins",
+  "phone": "+1-555-0199",
+  "email": "sarah.jenkins@buy2.com",
+  "location": "Main Campus",
+  "profilePhotoUrl": "https://storage.buy2.com/photos/emp-0001.jpg",
+  "stats": {
+    "totalPoints": 350,
+    "totalTasks": 12,
+    "totalGifts": 3
+  },
+  "personalInfo": {
+    "birthdate": "1992-05-14T00:00:00Z",
+    "gender": 1,
+    "address": "742 Evergreen Terrace, Springfield",
+    "emergencyContact": "John Jenkins (+1-555-0188)",
+    "nationalId": "NAT-987654321"
+  },
+  "jobDetails": {
+    "title": "Senior Store Associate",
+    "department": "Department #2",
+    "seniorityLevel": "Senior",
+    "experienceYears": 5,
+    "directManagerName": "Michael Scott",
+    "jobType": "FullTime",
+    "qualifications": [
+      "Customer Service Excellence",
+      "Inventory Management"
+    ],
+    "attendanceType": "Hybrid",
+    "onlineWorkdays": ["Monday", "Wednesday"],
+    "offlineWorkdays": ["Tuesday", "Thursday", "Friday"]
+  },
+  "payroll": {
+    "salaryType": "Fixed",
+    "paymentAmount": 4500.00,
+    "payoutPeriod": "Monthly",
+    "payoutDay": 25,
+    "workWeekStartDay": "Sunday",
+    "workWeekEndDay": "Thursday",
+    "overtimeEnabled": true,
+    "overtimeThresholdHours": 40.0,
+    "overtimeRateMultiplier": 1.5,
+    "assignedWorkSiteIds": [1, 2]
+  }
+}
+```
 
 ### `GET /api/v1/employees/{id}/payroll`
 - **Authorization**: `[Authorize(Roles = "Admin,Manager,HR,SuperAdmin")]`
