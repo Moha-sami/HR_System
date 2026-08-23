@@ -46,7 +46,7 @@ export const routes: Routes = [
   {
     path: '',
     component: Layout,
-    // canActivate: [authGuard], // ← uncomment when auth is ready
+    canActivate: [authGuard], // ← uncomment when auth is ready
     children: [
       // Default redirect → docs (temporary until dashboard is built)
       { path: '', redirectTo: 'docs', pathMatch: 'full' },

@@ -259,6 +259,71 @@
     "EMAIL": "البريد الإلكتروني",
     "ADMIN_ACCESS": "صلاحية المسؤول",
     "ACTIONS": "الإجراءات",
-    "NO_EMPLOYEES": "لا يوجد موظفون"
+    "NO_EMPLOYEES": "لا يوجد موظفون",
+    "SEARCH_PLACEHOLDER": "ابحث بالاسم، البريد الإلكتروني، أو الكود...",
+    "EXPORT_CSV": "تصدير CSV",
+    "FILTER_REGION": "تصفية حسب المنطقة",
+    "FILTER_DEPARTMENT": "تصفية حسب القسم",
+    "VIEW": "عرض",
+    "FULL_ACCESS": "وصول كامل",
+    "LIMITED_ACCESS": "وصول محدود",
+    "EMPLOYEE_CODE": "كود الموظف"
+  },
+  "EMPLOYEE_DETAIL": {
+    "TABS": {
+      "INFORMATION": "المعلومات",
+      "PAYROLL": "تفاصيل الراتب",
+      "ATTENDANCE": "الوقت والحضور",
+      "DOCUMENTS": "المستندات",
+      "VIOLATIONS": "المخالفات"
+    },
+    "HEADER": {
+      "EMPLOYEE_CODE": "كود الموظف",
+      "FULL_NAME": "الاسم الكامل",
+      "LOCATION": "الموقع",
+      "PHONE": "الهاتف",
+      "EMAIL": "البريد الإلكتروني"
+    },
+    "STATS": {
+      "TOTAL_POINTS": "إجمالي النقاط",
+      "TOTAL_TASKS": "إجمالي المهام",
+      "TOTAL_GIFTS": "إجمالي الهدايا"
+    },
+    "PERSONAL_INFO": {
+      "TITLE": "المعلومات الشخصية",
+      "EMPLOYEE_CODE": "كود الموظف",
+      "FULL_NAME": "الاسم الكامل",
+      "PHONE": "الهاتف",
+      "EMAIL": "البريد الإلكتروني",
+      "LOCATION": "الموقع",
+      "BIRTHDATE": "تاريخ الميلاد",
+      "GENDER": "الجنس",
+      "ADDRESS": "العنوان",
+      "EMERGENCY_CONTACT": "جهة الاتصال في الطوارئ",
+      "NATIONAL_ID": "الرقم القومي"
+    },
+    "JOB_DETAILS": {
+      "TITLE": "تفاصيل الوظيفة",
+      "JOB_TITLE": "المسمى الوظيفي",
+      "DEPARTMENT": "القسم",
+      "SENIORITY_LEVEL": "مستوى الأقدمية",
+      "EXPERIENCE_YEARS": "سنوات الخبرة",
+      "DIRECT_MANAGER": "المدير المباشر",
+      "JOB_TYPE": "نوع الوظيفة",
+      "ATTENDANCE_TYPE": "نوع الحضور",
+      "JOIN_DATE": "تاريخ الانضمام",
+      "QUALIFICATIONS": "المؤهلات"
+    },
+    "ACTIONS": {
+      "EDIT": "تعديل",
+      "SAVE": "حفظ",
+      "CANCEL": "إلغاء"
+    },
+    "MESSAGES": {
+      "SAVE_SUCCESS": "تم حفظ التغييرات بنجاح.",
+      "SAVE_ERROR": "فشل في حفظ التغييرات. يرجى المحاولة مرة أخرى."
+    },
+    "COMING_SOON": "قريباً",
+    "NOT_AVAILABLE": "غير متاح"
   }
 }

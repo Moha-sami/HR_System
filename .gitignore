@@ -25,3 +25,4 @@ docs/assets
 /GEMINI.md
 /docs/migrations/20260818_AddNewEntities.sql
 /CHANGELOG.md
+.context

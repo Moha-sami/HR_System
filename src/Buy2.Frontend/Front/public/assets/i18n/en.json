@@ -262,6 +262,71 @@
     "EMAIL": "Email",
     "ADMIN_ACCESS": "Admin Access",
     "ACTIONS": "Actions",
-    "NO_EMPLOYEES": "No employees available"
+    "NO_EMPLOYEES": "No employees available",
+    "SEARCH_PLACEHOLDER": "Search by name, email, or code...",
+    "EXPORT_CSV": "Export CSV",
+    "FILTER_REGION": "Filter by Region",
+    "FILTER_DEPARTMENT": "Filter by Department",
+    "VIEW": "View",
+    "FULL_ACCESS": "Full Access",
+    "LIMITED_ACCESS": "Limited Access",
+    "EMPLOYEE_CODE": "Employee Code"
+  },
+  "EMPLOYEE_DETAIL": {
+    "TABS": {
+      "INFORMATION": "Information",
+      "PAYROLL": "Payroll Details",
+      "ATTENDANCE": "Time & Attendance",
+      "DOCUMENTS": "Documents",
+      "VIOLATIONS": "Violations"
+    },
+    "HEADER": {
+      "EMPLOYEE_CODE": "Employee Code",
+      "FULL_NAME": "Full Name",
+      "LOCATION": "Location",
+      "PHONE": "Phone",
+      "EMAIL": "Email"
+    },
+    "STATS": {
+      "TOTAL_POINTS": "Total Points",
+      "TOTAL_TASKS": "Total Tasks",
+      "TOTAL_GIFTS": "Total Gifts"
+    },
+    "PERSONAL_INFO": {
+      "TITLE": "Personal Information",
+      "EMPLOYEE_CODE": "Employee Code",
+      "FULL_NAME": "Full Name",
+      "PHONE": "Phone",
+      "EMAIL": "Email",
+      "LOCATION": "Location",
+      "BIRTHDATE": "Date of Birth",
+      "GENDER": "Gender",
+      "ADDRESS": "Address",
+      "EMERGENCY_CONTACT": "Emergency Contact",
+      "NATIONAL_ID": "National ID"
+    },
+    "JOB_DETAILS": {
+      "TITLE": "Job Details",
+      "JOB_TITLE": "Job Title",
+      "DEPARTMENT": "Department",
+      "SENIORITY_LEVEL": "Seniority Level",
+      "EXPERIENCE_YEARS": "Experience (Years)",
+      "DIRECT_MANAGER": "Direct Manager",
+      "JOB_TYPE": "Job Type",
+      "ATTENDANCE_TYPE": "Attendance Type",
+      "JOIN_DATE": "Join Date",
+      "QUALIFICATIONS": "Qualifications"
+    },
+    "ACTIONS": {
+      "EDIT": "Edit",
+      "SAVE": "Save",
+      "CANCEL": "Cancel"
+    },
+    "MESSAGES": {
+      "SAVE_SUCCESS": "Changes saved successfully.",
+      "SAVE_ERROR": "Failed to save changes. Please try again."
+    },
+    "COMING_SOON": "Coming Soon",
+    "NOT_AVAILABLE": "Not Available"
   }
 }
