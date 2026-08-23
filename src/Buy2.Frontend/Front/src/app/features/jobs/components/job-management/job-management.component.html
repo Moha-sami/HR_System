@@ -1,4 +1,4 @@
-<div class="job-management p-6">
+<div class="job-management p-6 relative h-full">
 
   <!-- ===================================================== -->
   <!-- TOP HEADER -->
@@ -160,7 +160,7 @@
   <!-- ===================================================== -->
 
   <app-table
-    [columns]="columns"
+    [columns]="columns()"
     [rows]="displayedJobs()"
     [cellTemplates]="cellTemplates()"
     emptyMessage="No jobs available"
@@ -301,4 +301,5 @@
 
   </ng-template>
 
+  <router-outlet></router-outlet>
 </div>

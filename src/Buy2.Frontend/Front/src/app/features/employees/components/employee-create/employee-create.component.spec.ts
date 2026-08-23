@@ -1,8 +1,8 @@
 import { type ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideTranslateService } from '@ngx-translate/core';
 import { of, Subject } from 'rxjs';
-import type { EmployeeApiResponse } from '../services/employee.service';
-import { EmployeeService } from '../services/employee.service';
+import type { EmployeeApiResponse } from '../../services/employee.service';
+import { EmployeeService } from '../../services/employee.service';
 import { EmployeeCreateComponent } from './employee-create.component';
 
 describe('EmployeeCreateComponent', () => {

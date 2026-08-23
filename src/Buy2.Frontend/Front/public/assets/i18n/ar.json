@@ -216,6 +216,33 @@
       "SUCCESS_ATTENDANCE": "تم إعداد أتمتة الوقت والحضور\nبنجاح!"
     }
   },
+  "JOB_MANAGEMENT": {
+    "TITLE": "إدارة الوظائف",
+    "ADD_JOB": "إضافة وظيفة جديدة",
+    "JOB_ROLE": "المسمى الوظيفي",
+    "JOB_ROLE_PLACEHOLDER": "أدخل المسمى الوظيفي",
+    "DEPARTMENT": "القسم",
+    "SELECT_DEPARTMENT": "اختر قسماً",
+    "QUALIFICATIONS": "المؤهلات",
+    "QUALIFICATION_PLACEHOLDER": "اكتب مؤهلاً واضغط Enter",
+    "CANCEL": "إلغاء",
+    "SAVE": "حفظ",
+    "JOB_CREATED": "تم إنشاء الوظيفة",
+    "SUCCESS_MESSAGE": "تم إنشاء الوظيفة بنجاح.",
+    "SORT": "ترتيب",
+    "EXPORT": "تصدير",
+    "SEARCH_PLACEHOLDER": "اكتب هنا...",
+    "NO_JOBS": "لا توجد وظائف",
+    "EDIT": "تعديل الوظيفة",
+    "DELETE": "حذف الوظيفة",
+    "VIEW": "عرض الوظيفة",
+    "TABLE": {
+      "JOB_NAME": "اسم الوظيفة",
+      "JOB_DESCRIPTION": "الوصف الوظيفي",
+      "NUMBER_OF_EMPLOYEES": "عدد الموظفين",
+      "ACTIONS": "الإجراءات"
+    }
+  },
   "EMPLOYEE_MANAGEMENT": {
     "ADD_EMPLOYEE": "إضافة موظف",
     "EDIT_EMPLOYEE": "تعديل الموظف",
@@ -259,6 +286,71 @@
     "EMAIL": "البريد الإلكتروني",
     "ADMIN_ACCESS": "صلاحية المسؤول",
     "ACTIONS": "الإجراءات",
-    "NO_EMPLOYEES": "لا يوجد موظفون"
+    "NO_EMPLOYEES": "لا يوجد موظفون",
+    "SEARCH_PLACEHOLDER": "ابحث بالاسم، البريد الإلكتروني، أو الكود...",
+    "EXPORT_CSV": "تصدير CSV",
+    "FILTER_REGION": "تصفية حسب المنطقة",
+    "FILTER_DEPARTMENT": "تصفية حسب القسم",
+    "VIEW": "عرض",
+    "FULL_ACCESS": "وصول كامل",
+    "LIMITED_ACCESS": "وصول محدود",
+    "EMPLOYEE_CODE": "كود الموظف"
+  },
+  "EMPLOYEE_DETAIL": {
+    "TABS": {
+      "INFORMATION": "المعلومات",
+      "PAYROLL": "تفاصيل الراتب",
+      "ATTENDANCE": "الوقت والحضور",
+      "DOCUMENTS": "المستندات",
+      "VIOLATIONS": "المخالفات"
+    },
+    "HEADER": {
+      "EMPLOYEE_CODE": "كود الموظف",
+      "FULL_NAME": "الاسم الكامل",
+      "LOCATION": "الموقع",
+      "PHONE": "الهاتف",
+      "EMAIL": "البريد الإلكتروني"
+    },
+    "STATS": {
+      "TOTAL_POINTS": "إجمالي النقاط",
+      "TOTAL_TASKS": "إجمالي المهام",
+      "TOTAL_GIFTS": "إجمالي الهدايا"
+    },
+    "PERSONAL_INFO": {
+      "TITLE": "المعلومات الشخصية",
+      "EMPLOYEE_CODE": "كود الموظف",
+      "FULL_NAME": "الاسم الكامل",
+      "PHONE": "الهاتف",
+      "EMAIL": "البريد الإلكتروني",
+      "LOCATION": "الموقع",
+      "BIRTHDATE": "تاريخ الميلاد",
+      "GENDER": "الجنس",
+      "ADDRESS": "العنوان",
+      "EMERGENCY_CONTACT": "جهة الاتصال في الطوارئ",
+      "NATIONAL_ID": "الرقم القومي"
+    },
+    "JOB_DETAILS": {
+      "TITLE": "تفاصيل الوظيفة",
+      "JOB_TITLE": "المسمى الوظيفي",
+      "DEPARTMENT": "القسم",
+      "SENIORITY_LEVEL": "مستوى الأقدمية",
+      "EXPERIENCE_YEARS": "سنوات الخبرة",
+      "DIRECT_MANAGER": "المدير المباشر",
+      "JOB_TYPE": "نوع الوظيفة",
+      "ATTENDANCE_TYPE": "نوع الحضور",
+      "JOIN_DATE": "تاريخ الانضمام",
+      "QUALIFICATIONS": "المؤهلات"
+    },
+    "ACTIONS": {
+      "EDIT": "تعديل",
+      "SAVE": "حفظ",
+      "CANCEL": "إلغاء"
+    },
+    "MESSAGES": {
+      "SAVE_SUCCESS": "تم حفظ التغييرات بنجاح.",
+      "SAVE_ERROR": "فشل في حفظ التغييرات. يرجى المحاولة مرة أخرى."
+    },
+    "COMING_SOON": "قريباً",
+    "NOT_AVAILABLE": "غير متاح"
   }
 }

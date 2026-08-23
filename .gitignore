@@ -23,7 +23,8 @@ docs/assets
 /publish.zip
 /.agents/agents
 /GEMINI.md
-/CHANGELOG.md
 /docs/AGENT_GUIDELINES.md
 *AGENT_GUIDELINES*
 .agent_artifacts/
+.context
+

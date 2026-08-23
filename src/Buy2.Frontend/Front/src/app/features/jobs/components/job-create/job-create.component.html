@@ -1,0 +1,561 @@
+<div class="job-create-container">
+
+  <!-- ===================================================== -->
+  <!-- HEADER -->
+  <!-- ===================================================== -->
+  <div class="header">
+    <div class="header">
+    <h2 class="header-title">
+      <span style="color: #8e8e93; font-weight: 500;">Job Management &nbsp;&nbsp;</span>
+      Add new job
+    </h2>
+    </div>
+    <button
+      type="button"
+      (click)="closePanel()"
+      class="close-btn"
+      title="Close"
+    >
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    </button>
+  </div>
+
+  <!-- ===================================================== -->
+  <!-- STEPPER -->
+  <!-- ===================================================== -->
+  <div class="stepper-container">
+    <div class="stepper-wrapper">
+      <div class="step-item" (click)="activeTab = 'information'">
+        <div class="step-circle active">1</div>
+        <div class="step-label" [class.active-text]="activeTab === 'information'">Job Information</div>
+      </div>
+      <div class="step-dots">
+        <span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span>
+      </div>
+      <div class="step-item" (click)="activeTab = 'schedule'">
+        <div class="step-circle" [class.active]="activeTab === 'schedule' || activeTab === 'metrics' || activeTab === 'tasks'">2</div>
+        <div class="step-label" [class.active-text]="activeTab === 'schedule'">Job Schedule</div>
+      </div>
+      <div class="step-dots">
+        <span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span>
+      </div>
+      <div class="step-item" (click)="activeTab = 'metrics'">
+        <div class="step-circle" [class.active]="activeTab === 'metrics' || activeTab === 'tasks'">3</div>
+        <div class="step-label" [class.active-text]="activeTab === 'metrics'">Performance Metrics <span class="optional-text">(Optional)</span></div>
+      </div>
+      <div class="step-dots">
+        <span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span>
+      </div>
+      <div class="step-item" (click)="activeTab = 'tasks'">
+        <div class="step-circle" [class.active]="activeTab === 'tasks'">4</div>
+        <div class="step-label" [class.active-text]="activeTab === 'tasks'">Fixed Tasks <span class="optional-text">(Optional)</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================== -->
+  <!-- FORM BODY -->
+  <!-- ===================================================== -->
+  <div class="form-body">
+
+    <!-- ===================================================== -->
+    <!-- TAB 1: JOB INFORMATION -->
+    <!-- ===================================================== -->
+    @if (activeTab === 'information') {
+      <div class="form-section">
+
+        <!-- Job Title -->
+        <div class="form-row">
+          <label class="form-label">Job Title</label>
+          <div class="form-field">
+            <input
+              type="text"
+              [(ngModel)]="form.jobTitle"
+              placeholder="Role Name"
+              class="form-input"
+            />
+          </div>
+        </div>
+
+        <!-- Job Description -->
+        <div class="form-row">
+          <label class="form-label">Job Description</label>
+          <div class="form-field">
+            <input
+              type="text"
+              [(ngModel)]="form.jobDescription"
+              placeholder="Write description here"
+              class="form-input"
+            />
+          </div>
+        </div>
+
+        <!-- Department -->
+        <div class="form-row">
+          <label class="form-label">Department</label>
+          <div class="form-field">
+            <div class="dropdown-wrapper">
+              <button
+                type="button"
+                (click)="toggleDepartmentDropdown()"
+                class="dropdown-toggle"
+                [class.open]="showDepartmentDropdown"
+              >
+                <span class="dropdown-value">
+                  {{ form.department || 'Department' }}
+                </span>
+                <svg class="dropdown-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+
+              @if (showDepartmentDropdown) {
+                <div class="dropdown-menu">
+                  <div class="dropdown-search">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="11" cy="11" r="7" />
+                      <path stroke-linecap="round" stroke-linejoin="round" d="m20 20-4-4" />
+                    </svg>
+                    <input
+                      type="text"
+                      [(ngModel)]="searchDepartment"
+                      (input)="filterDepartments(searchDepartment)"
+                      placeholder="Search for department or create new ..."
+                      class="dropdown-search-input"
+                    />
+                  </div>
+                  <div class="dropdown-options">
+                    @for (dept of filteredDepartments; track dept.id || dept) {
+                      <div
+                        class="dropdown-option"
+                        [class.selected]="form.department === (dept.name || dept)"
+                        (click)="selectDepartment(dept)"
+                      >
+                        {{ dept.name || dept }}
+                      </div>
+                    }
+                    @if (filteredDepartments.length === 0 && searchDepartment.trim()) {
+                      <div class="dropdown-option create-new" (click)="createNewDepartment()">
+                        + Create "{{ searchDepartment }}"
+                      </div>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+
+        <!-- Required Qualifications -->
+        <div class="form-row">
+          <label class="form-label">Required Qualifications</label>
+          <div class="form-field">
+            <div class="dropdown-wrapper">
+              <button
+                type="button"
+                (click)="toggleQualificationsDropdown()"
+                class="dropdown-toggle"
+                [class.open]="showQualificationsDropdown"
+              >
+                <span class="dropdown-value">
+                  @if (form.qualifications.length === 0) {
+                    Required Qualifications
+                  } @else {
+                    {{ form.qualifications.join(', ') }}
+                  }
+                </span>
+                <svg class="dropdown-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+
+              @if (showQualificationsDropdown) {
+                <div class="dropdown-menu qualification-menu">
+                  <div class="dropdown-search">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="11" cy="11" r="7" />
+                      <path stroke-linecap="round" stroke-linejoin="round" d="m20 20-4-4" />
+                    </svg>
+                    <input
+                      type="text"
+                      [(ngModel)]="searchQualification"
+                      placeholder="Search for qualifications or create new ..."
+                      class="dropdown-search-input"
+                    />
+                  </div>
+                  <div class="dropdown-options">
+                    @for (qual of filteredQualifications; track qual.id || qual) {
+                      <label class="dropdown-option checkbox-option">
+                        <input
+                          type="checkbox"
+                          [checked]="form.qualifications.includes(qual.name || qual)"
+                          (change)="toggleQualification(qual)"
+                        />
+                        <span>{{ qual.name || qual }}</span>
+                      </label>
+                    }
+                    @if (filteredQualifications.length === 0 && searchQualification.trim()) {
+                      <div class="dropdown-option create-new" (click)="createNewQualification()">
+                        + Create "{{ searchQualification }}"
+                      </div>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+
+        <!-- Experience Level -->
+        <div class="form-row">
+          <label class="form-label">Experience Level</label>
+          <div class="form-field">
+            <div class="select-wrapper">
+              <select
+                [(ngModel)]="form.experienceLevel"
+                class="form-select"
+              >
+                <option value="">Choose Experience Level</option>
+                <option value="entry">Entry Level (0-2 years)</option>
+                <option value="junior">Junior (2-4 years)</option>
+                <option value="mid">Mid Level (4-7 years)</option>
+                <option value="senior">Senior (7-10 years)</option>
+                <option value="lead">Lead (10+ years)</option>
+              </select>
+              <svg class="select-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- Reporting Manager -->
+        <div class="form-row">
+          <label class="form-label">Reporting Manager</label>
+          <div class="form-field">
+            <div class="select-wrapper">
+              <select
+                [(ngModel)]="form.reportingManager"
+                class="form-select"
+              >
+                <option value="">Manager title</option>
+                @for (manager of managers; track manager) {
+                  <option [value]="manager">{{ manager }}</option>
+                }
+              </select>
+              <svg class="select-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    }
+
+    <!-- ===================================================== -->
+    <!-- TAB 2: JOB SCHEDULE -->
+    <!-- ===================================================== -->
+    @if (activeTab === 'schedule') {
+      <div class="form-section">
+        <div class="form-row">
+          <label class="form-label">Schedule Type</label>
+          <div class="form-field flex-radio-group">
+            <label class="radio-label">
+              <input type="radio" name="scheduleType" [(ngModel)]="form.scheduleType" value="fixed" class="form-radio" />
+              Fixed
+            </label>
+            <label class="radio-label">
+              <input type="radio" name="scheduleType" [(ngModel)]="form.scheduleType" value="shifts" class="form-radio" />
+              Shifts
+            </label>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <label class="form-label">Check in</label>
+          <div class="form-field schedule-time-row">
+            <span class="time-label">From</span>
+            <input type="text" [(ngModel)]="form.checkInFrom" placeholder="e.g. 09:00" class="form-input time-input" />
+            <div class="select-wrapper time-am-pm-wrapper">
+              <select [(ngModel)]="form.checkInFromAmPm" class="form-select time-am-pm">
+                <option value="AM">AM</option>
+                <option value="PM">PM</option>
+              </select>
+              <svg class="select-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
+            <span class="time-label">to</span>
+            <input type="text" [(ngModel)]="form.checkInTo" placeholder="e.g. 09:00" class="form-input time-input" />
+            <div class="select-wrapper time-am-pm-wrapper">
+              <select [(ngModel)]="form.checkInToAmPm" class="form-select time-am-pm">
+                <option value="AM">AM</option>
+                <option value="PM">PM</option>
+              </select>
+              <svg class="select-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <label class="form-label">Check out</label>
+          <div class="form-field schedule-time-row">
+            <span class="time-label">From</span>
+            <input type="text" [(ngModel)]="form.checkOutFrom" placeholder="e.g. 09:00" class="form-input time-input" />
+            <div class="select-wrapper time-am-pm-wrapper">
+              <select [(ngModel)]="form.checkOutFromAmPm" class="form-select time-am-pm">
+                <option value="AM">AM</option>
+                <option value="PM">PM</option>
+              </select>
+              <svg class="select-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
+            <span class="time-label">to</span>
+            <input type="text" [(ngModel)]="form.checkOutTo" placeholder="e.g. 09:00" class="form-input time-input" />
+            <div class="select-wrapper time-am-pm-wrapper">
+              <select [(ngModel)]="form.checkOutToAmPm" class="form-select time-am-pm">
+                <option value="AM">AM</option>
+                <option value="PM">PM</option>
+              </select>
+              <svg class="select-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <label class="form-label">Hours per day</label>
+          <div class="form-field">
+            <input type="text" [(ngModel)]="form.hoursPerDay" placeholder="Hours here ..." class="form-input short-input" />
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ===================================================== -->
+    <!-- TAB 3: PERFORMANCE METRICS -->
+    <!-- ===================================================== -->
+    @if (activeTab === 'metrics') {
+      <div class="form-section">
+        <!-- Display added metrics (optional: for visual feedback) -->
+        @for (metric of form.metrics; track metric.name) {
+          <div class="metric-card">
+            <div class="metric-header">
+              <span class="metric-title">{{ metric.name }}</span>
+              <button type="button" class="chip-remove" (click)="removePerformanceMetric($index)">×</button>
+            </div>
+            <div class="metric-details">
+              <span>Target: {{ metric.target }}</span>
+              <span>Weight: {{ metric.weight }}</span>
+            </div>
+          </div>
+        }
+
+        <div class="form-row">
+          <label class="form-label">Metric Name</label>
+          <div class="form-field">
+            <input type="text" [(ngModel)]="metricForm.name" placeholder="Metric Name" class="form-input" />
+          </div>
+        </div>
+        <div class="form-row">
+          <label class="form-label">Description</label>
+          <div class="form-field">
+            <textarea [(ngModel)]="metricForm.description" rows="3" placeholder="Write description here" class="form-textarea"></textarea>
+          </div>
+        </div>
+        <div class="form-row">
+          <label class="form-label">Measure</label>
+          <div class="form-field">
+            <input type="text" [(ngModel)]="metricForm.measure" placeholder="Measure" class="form-input" />
+          </div>
+        </div>
+        <div class="form-row">
+          <label class="form-label">Target</label>
+          <div class="form-field">
+            <input type="text" [(ngModel)]="metricForm.target" placeholder="Target" class="form-input" />
+          </div>
+        </div>
+        <div class="form-row">
+          <label class="form-label">Weight</label>
+          <div class="form-field">
+            <input type="text" [(ngModel)]="metricForm.weight" placeholder="Weight" class="form-input" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-label"></div>
+          <div class="form-field" style="display: flex; justify-content: flex-end;">
+            <button type="button" class="btn-discard" style="color: #2b3990; border-color: #eef1f4; background: #ffffff;" (click)="addPerformanceMetric()">
+              + Add Metric
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ===================================================== -->
+    <!-- TAB 4: FIXED TASKS -->
+    <!-- ===================================================== -->
+    @if (activeTab === 'tasks') {
+      <div class="form-section">
+        <!-- Display added tasks (optional: for visual feedback) -->
+        @for (task of form.fixedTasks; track task.name) {
+          <div class="metric-card">
+            <div class="metric-header">
+              <span class="metric-title">{{ task.name }}</span>
+              <button type="button" class="chip-remove" (click)="removeFixedTask($index)">×</button>
+            </div>
+            <div class="metric-details">
+              <span>Repeat: {{ task.repeat }}</span>
+              <span>Time: {{ task.submissionTime }} {{ task.submissionTimeAmPm }}</span>
+            </div>
+          </div>
+        }
+
+        <div class="form-row">
+          <label class="form-label">Task Name</label>
+          <div class="form-field">
+            <input type="text" [(ngModel)]="taskForm.name" placeholder="Task Name" class="form-input" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <label class="form-label">Description</label>
+          <div class="form-field">
+            <textarea [(ngModel)]="taskForm.description" rows="3" placeholder="Write description here" class="form-textarea"></textarea>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <label class="form-label">Steps to complete task</label>
+          <div class="form-field">
+            <div class="input-with-btn">
+              <input type="text" [(ngModel)]="taskStepInput" placeholder="Type step here ..." class="form-input" (keydown.enter)="addTaskStep()" />
+              <button type="button" class="btn-add" (click)="addTaskStep()">+ Add Step</button>
+            </div>
+            @if (taskForm.steps.length > 0) {
+              <div class="steps-list mt-3" style="margin-top: 12px; font-size: 14px; color: #1a1a2e;">
+                @for (step of taskForm.steps; track step; let i = $index) {
+                  <div class="step-line" style="margin-bottom: 8px;">{{ i + 1 }}. {{ step }}</div>
+                }
+              </div>
+            }
+          </div>
+        </div>
+
+        <div class="form-row">
+          <label class="form-label">Attach files</label>
+          <div class="form-field">
+            <div class="file-upload-wrapper">
+              <input type="text" disabled placeholder="Attach files" class="form-input" />
+              <button type="button" class="btn-browse">Browse</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <label class="form-label">Repeat</label>
+          <div class="form-field flex-radio-group">
+            <label class="radio-label">
+              <input type="radio" name="repeat" [(ngModel)]="taskForm.repeat" value="Daily" class="form-radio" />
+              Daily
+            </label>
+            <label class="radio-label">
+              <input type="radio" name="repeat" [(ngModel)]="taskForm.repeat" value="Weekly" class="form-radio" />
+              Weekly
+            </label>
+            <label class="radio-label">
+              <input type="radio" name="repeat" [(ngModel)]="taskForm.repeat" value="Multiple days" class="form-radio" />
+              Multiple days
+            </label>
+            <label class="radio-label">
+              <input type="radio" name="repeat" [(ngModel)]="taskForm.repeat" value="Monthly" class="form-radio" />
+              Monthly
+            </label>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <label class="form-label">Submission Time</label>
+          <div class="form-field schedule-time-row">
+            <input type="text" [(ngModel)]="taskForm.submissionTime" placeholder="ex. 2:30" class="form-input time-input" />
+            <div class="am-pm-toggle">
+              <button type="button" [class.active]="taskForm.submissionTimeAmPm === 'AM'" (click)="taskForm.submissionTimeAmPm = 'AM'">AM</button>
+              <button type="button" [class.active]="taskForm.submissionTimeAmPm === 'PM'" (click)="taskForm.submissionTimeAmPm = 'PM'">PM</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-label"></div>
+          <div class="form-field" style="display: flex; justify-content: flex-end;">
+            <button type="button" class="btn-discard" style="color: #2b3990; border-color: #eef1f4; background: #ffffff;" (click)="addFixedTask()">
+              + Add Task
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+
+  <!-- ===================================================== -->
+  <!-- FOOTER -->
+  <!-- ===================================================== -->
+  <div class="footer">
+    <button type="button" (click)="closePanel()" class="btn-discard">
+      Discard
+    </button>
+    <div class="footer-actions">
+      @if (activeTab !== 'information') {
+        <button type="button" (click)="prevTab()" class="btn-back">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+          </svg>
+          Back
+        </button>
+      }
+      @if (activeTab !== 'tasks') {
+        <button type="button" (click)="nextTab()" class="btn-next">
+          Next
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
+      }
+      @if (activeTab === 'tasks') {
+        <button
+          type="button"
+          (click)="onSubmit()"
+          [disabled]="!isFormValid()"
+          class="btn-submit"
+        >
+          {{ isEditMode ? 'Update' : 'Create' }}
+        </button>
+      }
+    </div>
+  </div>
+</div>
+
+<!-- ===================================================== -->
+<!-- SUCCESS MODAL -->
+<!-- ===================================================== -->
+@if (showSuccessModal()) {
+  <div class="modal-overlay">
+    <div class="modal">
+      <div class="modal-icon">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+        </svg>
+      </div>
+      <h3 class="modal-title">Job Created</h3>
+      <p class="modal-text">The job has been created successfully.</p>
+      <button type="button" (click)="onSuccessClose()" class="modal-btn">OK</button>
+    </div>
+  </div>
+}
