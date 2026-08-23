@@ -37,6 +37,7 @@ public class GetPerformanceOverviewQueryHandler : IRequestHandler<GetPerformance
     {
         // 1. Validate employee existence and active status (not soft-deleted)
         var employee = await _employeeRepository.Query()
+            .AsNoTracking()
             .FirstOrDefaultAsync(e => e.Id == request.EmployeeId, cancellationToken);
 
         if (employee == null || employee.IsDeleted)
@@ -121,6 +122,7 @@ public class GetPerformanceOverviewQueryHandler : IRequestHandler<GetPerformance
 
         // 3. Query Performance Submissions with Metric details
         var submissions = await _submissionRepository.Query()
+            .AsNoTracking()
             .Include(s => s.PerformanceMetric)
             .Where(s => s.EmployeeId == request.EmployeeId &&
                         s.SubmissionDate >= fromUtcDateTime &&
@@ -169,6 +171,7 @@ public class GetPerformanceOverviewQueryHandler : IRequestHandler<GetPerformance
 
         // 5. Query Tasks and Calculate Task Statistics within Range
         var tasks = await _taskRepository.Query()
+            .AsNoTracking()
             .Where(t => t.EmployeeId == request.EmployeeId &&
                         t.CreatedAt <= toUtcDateTime &&
                         (t.DueDate == null || t.DueDate >= fromUtcDateTime))
@@ -205,19 +208,17 @@ public class GetPerformanceOverviewQueryHandler : IRequestHandler<GetPerformance
             DeadlineCompliancePercentage: deadlineCompliancePercentage
         );
 
-        // 6. Query Employee Achievements
+        // 6. Query Employee Achievements including Badge navigation
         var achievements = await _achievementRepository.Query()
+            .AsNoTracking()
+            .Include(a => a.Badge)
             .Where(a => a.EmployeeId == request.EmployeeId)
             .OrderByDescending(a => a.AwardedAt)
             .ToListAsync(cancellationToken);
 
-        var achievementBadges = achievements.Select(a => new AchievementBadgeDto(
-            Id: a.Id,
-            Title: string.IsNullOrWhiteSpace(a.BadgeType) ? "Achievement" : a.BadgeType,
-            Description: $"Awarded badge: {a.BadgeType}",
-            EarnedAt: new DateTimeOffset(DateTime.SpecifyKind(a.AwardedAt, DateTimeKind.Utc)),
-            BadgeIcon: string.IsNullOrWhiteSpace(a.BadgeType) ? "default_badge" : a.BadgeType.ToLowerInvariant().Replace(" ", "_")
-        )).ToList();
+        var achievementBadges = achievements
+            .Select(MapAchievementToDto)
+            .ToList();
 
         // 7. Calculate Chart Trend Points (Submissions grouped by date)
         var chartTrendPoints = submissions
@@ -251,6 +252,36 @@ public class GetPerformanceOverviewQueryHandler : IRequestHandler<GetPerformance
             Achievements: achievementBadges,
             ChartTrendPoints: chartTrendPoints,
             SubmissionsDetail: submissionsDetail
+        );
+    }
+
+    private static AchievementBadgeDto MapAchievementToDto(EmployeeAchievement achievement)
+    {
+        var badge = achievement.Badge;
+        var id = badge?.Id ?? achievement.Id;
+
+        var title = !string.IsNullOrWhiteSpace(badge?.Name)
+            ? badge.Name
+            : (!string.IsNullOrWhiteSpace(achievement.BadgeType) ? achievement.BadgeType : "Achievement");
+
+        var description = !string.IsNullOrWhiteSpace(badge?.Description)
+            ? badge.Description
+            : (!string.IsNullOrWhiteSpace(achievement.BadgeType) ? $"Awarded badge: {achievement.BadgeType}" : "Achievement awarded");
+
+        var iconUrl = badge?.IconUrl;
+        var pointsAwarded = achievement.PointsAwarded != 0
+            ? achievement.PointsAwarded
+            : (badge?.PointsAwarded ?? 0);
+
+        var earnedAt = new DateTimeOffset(DateTime.SpecifyKind(achievement.AwardedAt, DateTimeKind.Utc));
+
+        return new AchievementBadgeDto(
+            Id: id,
+            Title: title,
+            Description: description,
+            IconUrl: iconUrl,
+            PointsAwarded: pointsAwarded,
+            EarnedAt: earnedAt
         );
     }
 }

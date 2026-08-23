@@ -7,4 +7,5 @@ public class Badge : BaseEntity
     public string? Description { get; set; }
     public string TriggerType { get; set; } = string.Empty;
     public decimal TriggerThreshold { get; set; }
+    public int PointsAwarded { get; set; }
 }

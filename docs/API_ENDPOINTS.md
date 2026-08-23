@@ -20,8 +20,8 @@ This document outlines the REST API endpoints provided by the Buy2 HRMS backend 
 - **Query Parameters**:
   - `page` (int, default: 1)
   - `pageSize` (int, default: 20)
-  - `department` (string, optional) - Department ID or name filter
-  - `region` (string, optional) - Site region name filter
+  - `department` (string, optional) - Department ID or name filter (eager loads `JobRole.Department` and filters by integer ID or case-insensitive name substring)
+  - `region` (string, optional) - Region ID or name filter (eager loads `Site.Region` and filters by integer ID or case-insensitive name substring)
   - `search` (string, optional) - Search text matching first/last name, email, or employee code
   - `sort` (string, optional) - Column to sort on (`name`, `employeecode`, `email`, `jobtitle`, `joindate`)
   - `sortDir` (string, optional) - Sort direction (`asc`, `desc`, default: `desc`)
@@ -30,8 +30,8 @@ This document outlines the REST API endpoints provided by the Buy2 HRMS backend 
 ### `GET /api/v1/employees/export`
 - **Authorization**: `[Authorize(Roles = "Admin,Manager")]`
 - **Query Parameters**:
-  - `department` (string, optional) - Filter by department ID or title
-  - `region` (string, optional) - Filter by site / region name
+  - `department` (string, optional) - Filter by department ID or title (eager loads `JobRole.Department`)
+  - `region` (string, optional) - Filter by site / region name (eager loads `Site.Region`)
   - `search` (string, optional) - Search text matching first/last name, email, or employee code
   - `sort` (string, optional) - Column to sort by (`name`, `employeecode`, `email`, `jobtitle`, `joindate`)
   - `sortDir` (string, optional) - Sort direction (`asc`, `desc`, default: `desc`)
@@ -51,7 +51,7 @@ This document outlines the REST API endpoints provided by the Buy2 HRMS backend 
 - **Authorization**: `[Authorize(Roles = "Admin,Manager,HR,SuperAdmin")]`
 - **Path Parameters**:
   - `id` (int, required) - Unique ID of the employee
-- **Description**: Retrieves full employee profile details for the Figma Information Tab, including personal information, job details, qualifications, attendance/workdays breakdown, live gamification/task stats, and optional payroll summary.
+- **Description**: Retrieves full employee profile details for the Figma Information Tab, including personal information, job details (with eager-loaded `JobRole.Department`), qualifications, attendance/workdays breakdown, live gamification/task stats, and optional payroll summary.
 - **Computed Header Stats**:
   - `totalPoints` - Sum of points from the points wallet ledger
   - `totalTasks` - Total number of assigned tasks
@@ -77,7 +77,7 @@ This document outlines the REST API endpoints provided by the Buy2 HRMS backend 
       - `gender` (`Gender` enum: `Male` = 1, `Female` = 2)
     - `jobDetails` (`EmployeeJobDetailsDto`):
       - `title` (string) - Job role title
-      - `department` (string) - Department name or identifier
+      - `department` (string) - Department name mapped from `JobRole.Department.Name` (defaults to `"N/A"` if unassigned)
       - `seniorityLevel` (string) - Seniority level designation
       - `experienceYears` (int) - Years of professional experience
       - `directManagerName` (string, nullable) - Direct manager full name
@@ -174,6 +174,7 @@ This document outlines the REST API endpoints provided by the Buy2 HRMS backend 
     - `workSiteIds` (array of int)
     - `onlineWorkdays` (array of strings)
     - `offlineWorkdays` (array of strings)
+    - `payrollRecords` (array of `PayrollRecordDto` objects with fields: `id`, `employeeId`, `baseSalary`, `overtimePay`, `bonusPay`, `deductions`, `netPay`, `periodStartDate`, `periodEndDate`, `paymentStatus`, `paidAt`)
   - `404 Not Found` if employee with specified `id` does not exist or has been soft-deleted.
   - `401 Unauthorized` if unauthenticated.
   - `403 Forbidden` if authenticated user lacks required administrative role (`Admin`, `Manager`, `HR`, `SuperAdmin`).
@@ -265,7 +266,7 @@ This document outlines the REST API endpoints provided by the Buy2 HRMS backend 
   - `days` (int, optional) - Number of trailing days for rolling window calculation
   - `from` (DateTimeOffset/ISO 8601, optional) - Custom range start date
   - `to` (DateTimeOffset/ISO 8601, optional) - Custom range end date
-- **Description**: Returns employee performance analytics and summary metrics over the specified time range. Computes weighted performance scores, descriptive rating labels (`Needs Improvement`, `Satisfactory`, `Good Performance`, `Excellent`), task tracking & deadline compliance percentage, awarded achievement badges, chronological daily score trend points, and detailed individual submission records. Soft-deleted or non-existent employees return `404 Not Found`.
+- **Description**: Returns employee performance analytics and summary metrics over the specified time range. Computes weighted performance scores, descriptive rating labels (`Needs Improvement`, `Satisfactory`, `Good Performance`, `Excellent`), task tracking & deadline compliance percentage, awarded achievement badges with rich metadata (eager loading `Badge` entity with legacy `BadgeType` string record fallback), chronological daily score trend points, and detailed individual submission records. Uses `.AsNoTracking()` for EF queries. Soft-deleted or non-existent employees return `404 Not Found`.
 - **Responses**:
   - `200 OK` with `PerformanceOverviewDto`:
     - `employeeId` (int)
@@ -273,7 +274,7 @@ This document outlines the REST API endpoints provided by the Buy2 HRMS backend 
     - `overallWeightedScore` (decimal)
     - `ratingLabel` (string: `Needs Improvement`, `Satisfactory`, `Good Performance`, `Excellent`)
     - `tasksSummary` (`TasksSummaryDto`: `totalTasks`, `todoCount`, `inProgressCount`, `completedCount`, `overdueCount`, `deadlineCompliancePercentage`)
-    - `achievements` (array of `AchievementBadgeDto`: `id`, `title`, `description`, `earnedAt`, `badgeIcon`)
+    - `achievements` (array of `AchievementBadgeDto`: `id`, `title`, `description`, `iconUrl`, `pointsAwarded`, `earnedAt`)
     - `chartTrendPoints` (array of `ChartPointDto`: `date`, `score`)
     - `submissionsDetail` (array of `SubmissionDetailDto`: `id`, `metricName`, `score`, `weight`, `submittedAt`, `notes`)
   - `400 BadRequest` if `period` is invalid, `days` is outside valid bounds (1 to 3650), or `from`/`to` span exceeds 3650 days.
@@ -338,7 +339,7 @@ This document outlines the REST API endpoints provided by the Buy2 HRMS backend 
 - **Query Parameters**:
   - `month` (int, optional) - Calendar month (1 to 12, defaults to current UTC month)
   - `year` (int, optional) - Calendar year (1900 to 2100, defaults to current UTC year)
-- **Description**: Returns a full monthly attendance calendar breakdown for the specified employee and month/year, including overall summary metrics (`AttendanceRate`, `PunctualityScore`, `AverageLatenessMinutes`, `RecordedHours`, `TargetHours`) and daily cell details (`Date`, `Status`, `LeaveType`, `HoursWorked`, `HoursLeft`, `OtHours`, `BreakTime`, `LatenessMinutes`). Non-existent or soft-deleted employees return `404 Not Found`.
+- **Description**: Returns a full monthly attendance calendar breakdown for the specified employee and month/year, including overall summary metrics (`AttendanceRate`, `PunctualityScore`, `AverageLatenessMinutes`, `RecordedHours`, `TargetHours`) and daily cell details (`Date`, `Status`, `LeaveType`, `HoursWorked`, `HoursLeft`, `OtHours`, `BreakTime`, `LatenessMinutes`). Eagerly loads `ScheduledShift` on `AttendanceRecord` and queries `ShiftEntity` to dynamically compute scheduled shift hours and target break times (e.g. 60m break for >=8h shifts, 30m for >=4h shifts). Queries approved `Request` / `RequestType` records for the employee during the requested month and maps approved leave requests (e.g. Sick Leave, Approved Leave, Remote Work) directly onto calendar days where attendance records are absent or marked as leave. Uses `.AsNoTracking()` for EF queries. Non-existent or soft-deleted employees return `404 Not Found`.
 - **Responses**:
   - `200 OK` with `AttendanceCalendarDto`:
     - `summary` (`AttendanceSummaryDto`):

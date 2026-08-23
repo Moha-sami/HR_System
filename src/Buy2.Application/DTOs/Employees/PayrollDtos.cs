@@ -17,6 +17,20 @@ public record PayrollProfileDto(
     List<string> OfflineWorkdays
 );
 
+public record PayrollRecordDto(
+    int Id,
+    int EmployeeId,
+    decimal BaseSalary,
+    decimal OvertimePay,
+    decimal BonusPay,
+    decimal Deductions,
+    decimal NetPay,
+    DateTime PeriodStartDate,
+    DateTime PeriodEndDate,
+    string PaymentStatus,
+    DateTime? PaidAt
+);
+
 public record EmployeePayrollProfileDto(
     int EmployeeId,
     bool IsConfigured,
@@ -31,6 +45,7 @@ public record EmployeePayrollProfileDto(
     string AttendanceType,
     List<int> WorkSiteIds,
     List<string> OnlineWorkdays,
-    List<string> OfflineWorkdays
+    List<string> OfflineWorkdays,
+    List<PayrollRecordDto> PayrollRecords
 );
 

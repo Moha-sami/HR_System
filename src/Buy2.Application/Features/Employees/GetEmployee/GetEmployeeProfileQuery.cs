@@ -31,9 +31,11 @@ public class GetEmployeeProfileQueryHandler : IRequestHandler<GetEmployeeProfile
     public async Task<EmployeeProfileDto?> Handle(GetEmployeeProfileQuery request, CancellationToken cancellationToken)
     {
         // 1. Fetch Employee with eager loaded navigations
-        var employee = await _employeeRepository.Query()
+        var employee = await _employeeRepository.Query(asNoTracking: true)
             .Include(e => e.JobRole)
+                .ThenInclude(jr => jr!.Department)
             .Include(e => e.Site)
+                .ThenInclude(s => s!.Region)
             .Include(e => e.DirectManager)
             .Include(e => e.Role)
             .Include(e => e.PayrollProfile)
@@ -46,15 +48,15 @@ public class GetEmployeeProfileQueryHandler : IRequestHandler<GetEmployeeProfile
         }
 
         // 2. Calculate live stats
-        var totalPoints = await _pointsRepository.Query()
+        var totalPoints = await _pointsRepository.Query(asNoTracking: true)
             .Where(p => p.EmployeeId == request.Id)
             .SumAsync(p => (int?)p.Amount, cancellationToken) ?? 0;
 
-        var totalTasks = await _tasksRepository.Query()
+        var totalTasks = await _tasksRepository.Query(asNoTracking: true)
             .Where(t => t.EmployeeId == request.Id)
             .CountAsync(cancellationToken);
 
-        var totalGifts = await _redemptionRepository.Query()
+        var totalGifts = await _redemptionRepository.Query(asNoTracking: true)
             .Where(r => r.EmployeeId == request.Id)
             .CountAsync(cancellationToken);
 
@@ -85,9 +87,7 @@ public class GetEmployeeProfileQueryHandler : IRequestHandler<GetEmployeeProfile
             }
         }
 
-        var department = employee.JobRole != null
-            ? (employee.JobRole.DepartmentId > 0 ? $"Department #{employee.JobRole.DepartmentId}" : "N/A")
-            : "N/A";
+        var department = employee.JobRole?.Department?.Name ?? "N/A";
 
         var qualifications = ParseJsonList(employee.JobRole?.RequiredQualificationsJson);
         var onlineWorkdays = ParseJsonList(employee.OnlineWorkdaysJson);

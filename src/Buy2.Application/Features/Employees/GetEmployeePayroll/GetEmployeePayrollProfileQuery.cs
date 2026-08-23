@@ -14,13 +14,16 @@ public class GetEmployeePayrollProfileQueryHandler : IRequestHandler<GetEmployee
 {
     private readonly IRepository<Employee> _employeeRepository;
     private readonly IRepository<PayrollProfile> _payrollProfileRepository;
+    private readonly IRepository<PayrollRecord> _payrollRecordRepository;
 
     public GetEmployeePayrollProfileQueryHandler(
         IRepository<Employee> employeeRepository,
-        IRepository<PayrollProfile> payrollProfileRepository)
+        IRepository<PayrollProfile> payrollProfileRepository,
+        IRepository<PayrollRecord> payrollRecordRepository)
     {
         _employeeRepository = employeeRepository;
         _payrollProfileRepository = payrollProfileRepository;
+        _payrollRecordRepository = payrollRecordRepository;
     }
 
     public async Task<EmployeePayrollProfileDto?> Handle(GetEmployeePayrollProfileQuery request, CancellationToken cancellationToken)
@@ -74,6 +77,20 @@ public class GetEmployeePayrollProfileQueryHandler : IRequestHandler<GetEmployee
             return defaultValue;
         }
 
+        static (DateTime StartDate, DateTime EndDate) GetPeriodDates(int year, int month)
+        {
+            if (year <= 0 || month is < 1 or > 12)
+            {
+                var defaultDate = DateTime.MinValue;
+                return (defaultDate, defaultDate);
+            }
+
+            var startDate = new DateTime(year, month, 1, 0, 0, 0, DateTimeKind.Utc);
+            var daysInMonth = DateTime.DaysInMonth(year, month);
+            var endDate = new DateTime(year, month, daysInMonth, 23, 59, 59, DateTimeKind.Utc);
+            return (startDate, endDate);
+        }
+
         // 4. Resolve WorkSiteIds
         var workSiteIds = new List<int>();
         if (employee.EmployeeSites != null)
@@ -125,7 +142,35 @@ public class GetEmployeePayrollProfileQueryHandler : IRequestHandler<GetEmployee
         var overtimeThresholdHours = payroll?.OvertimeThresholdHours ?? 0m;
         var overtimeHourlyRate = payroll?.OvertimeHourlyRate ?? 0m;
 
-        // 7. Assemble and return DTO
+        // 8. Fetch Payroll History Records
+        var payrollRecords = await _payrollRecordRepository.Query()
+            .AsNoTracking()
+            .Where(pr => pr.EmployeeId == request.EmployeeId)
+            .OrderByDescending(pr => pr.PeriodYear)
+            .ThenByDescending(pr => pr.PeriodMonth)
+            .ToListAsync(cancellationToken);
+
+        var mappedPayrollRecords = payrollRecords
+            .Select(pr =>
+            {
+                var (startDate, endDate) = GetPeriodDates(pr.PeriodYear, pr.PeriodMonth);
+                return new PayrollRecordDto(
+                    Id: pr.Id,
+                    EmployeeId: pr.EmployeeId,
+                    BaseSalary: pr.BaseSalary,
+                    OvertimePay: pr.OvertimePay,
+                    BonusPay: pr.Bonuses,
+                    Deductions: pr.Deductions,
+                    NetPay: pr.NetSalary,
+                    PeriodStartDate: startDate,
+                    PeriodEndDate: endDate,
+                    PaymentStatus: string.IsNullOrWhiteSpace(pr.Status) ? "Pending" : pr.Status,
+                    PaidAt: pr.PayDate
+                );
+            })
+            .ToList();
+
+        // 9. Assemble and return DTO
         return new EmployeePayrollProfileDto(
             EmployeeId: employee.Id,
             IsConfigured: isConfigured,
@@ -140,7 +185,8 @@ public class GetEmployeePayrollProfileQueryHandler : IRequestHandler<GetEmployee
             AttendanceType: attendanceType,
             WorkSiteIds: workSiteIds,
             OnlineWorkdays: onlineWorkdays,
-            OfflineWorkdays: offlineWorkdays
+            OfflineWorkdays: offlineWorkdays,
+            PayrollRecords: mappedPayrollRecords
         );
     }
 }

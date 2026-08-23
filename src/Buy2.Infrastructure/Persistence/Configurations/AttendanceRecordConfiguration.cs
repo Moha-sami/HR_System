@@ -33,5 +33,10 @@ public class AttendanceRecordConfiguration : IEntityTypeConfiguration<Attendance
             .WithMany()
             .HasForeignKey(a => a.EmployeeId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasOne(a => a.ScheduledShift)
+            .WithMany()
+            .HasForeignKey(a => a.ScheduledShiftId)
+            .OnDelete(DeleteBehavior.SetNull);
     }
 }

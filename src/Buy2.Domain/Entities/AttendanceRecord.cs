@@ -19,4 +19,5 @@ public class AttendanceRecord : BaseEntity
 
     // Navigation Property
     public Employee? Employee { get; set; }
+    public ShiftEntity? ScheduledShift { get; set; }
 }

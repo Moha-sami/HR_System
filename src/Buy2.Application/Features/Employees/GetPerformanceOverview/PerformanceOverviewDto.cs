@@ -19,8 +19,9 @@ public record AchievementBadgeDto(
     int Id,
     string Title,
     string Description,
-    DateTimeOffset EarnedAt,
-    string BadgeIcon
+    string? IconUrl,
+    int PointsAwarded,
+    DateTimeOffset EarnedAt
 );
 
 public record ChartPointDto(
