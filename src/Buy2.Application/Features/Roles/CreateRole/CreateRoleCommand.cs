@@ -1,13 +1,17 @@
 using Buy2.Application.Common.Interfaces;
+using Buy2.Application.DTOs.Roles;
 using Buy2.Domain.Entities;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
 
 namespace Buy2.Application.Features.Roles.CreateRole;
 
-public record CreateRoleCommand(string RoleName, List<string> Permissions) : IRequest<int>;
+public record CreateRoleResult(bool Success, bool IsConflict, RoleDetailsDto? CreatedRole, string? ErrorMessage);
 
-public class CreateRoleCommandHandler : IRequestHandler<CreateRoleCommand, int>
+public record CreateRoleCommand(CreateRoleDto Dto) : IRequest<CreateRoleResult>;
+
+public class CreateRoleCommandHandler : IRequestHandler<CreateRoleCommand, CreateRoleResult>
 {
     private readonly IRepository<Role> _roleRepository;
     private readonly IUnitOfWork _unitOfWork;
@@ -18,24 +22,49 @@ public class CreateRoleCommandHandler : IRequestHandler<CreateRoleCommand, int>
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<int> Handle(CreateRoleCommand request, CancellationToken cancellationToken)
+    public async Task<CreateRoleResult> Handle(CreateRoleCommand request, CancellationToken cancellationToken)
     {
-        var roleExists = await _roleRepository.AnyAsync(r => r.Name == request.RoleName, cancellationToken);
+        var trimmedName = request.Dto.Name.Trim();
+        var normalizedName = trimmedName.ToLower();
+
+        var roleExists = await _roleRepository.Query()
+            .IgnoreQueryFilters()
+            .AnyAsync(r => r.Name.ToLower() == normalizedName, cancellationToken);
 
         if (roleExists)
         {
-            throw new InvalidOperationException($"Role '{request.RoleName}' already exists.");
+            return new CreateRoleResult(false, true, null, $"Role with name '{request.Dto.Name}' already exists.");
         }
+
+        var description = request.Dto.Description?.Trim();
+        var permissions = request.Dto.Permissions ?? new List<ModulePermissionDto>();
+        var permissionsJson = JsonSerializer.Serialize(permissions);
 
         var role = new Role
         {
-            Name = request.RoleName,
-            PermissionsJson = JsonSerializer.Serialize(request.Permissions)
+            Name = trimmedName,
+            Description = description,
+            IsSystemRole = false,
+            IsActive = true,
+            PermissionsJson = permissionsJson,
+            CreatedAt = DateTime.UtcNow
         };
 
         await _roleRepository.AddAsync(role);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return role.Id;
+        var roleDetailsDto = new RoleDetailsDto(
+            role.Id,
+            role.Name,
+            role.Description,
+            role.IsSystemRole,
+            role.IsActive,
+            0,
+            role.CreatedAt,
+            role.UpdatedAt,
+            permissions
+        );
+
+        return new CreateRoleResult(true, false, roleDetailsDto, null);
     }
 }
