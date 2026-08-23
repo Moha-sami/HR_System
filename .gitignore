@@ -27,4 +27,6 @@ docs/assets
 *AGENT_GUIDELINES*
 .agent_artifacts/
 .context
+.env
+
 

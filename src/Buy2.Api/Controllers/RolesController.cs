@@ -2,6 +2,7 @@ using Buy2.Application.DTOs.Roles;
 using Buy2.Application.Features.Roles.CreateRole;
 using Buy2.Application.Features.Roles.GetRoleById;
 using Buy2.Application.Features.Roles.GetRoles;
+using Buy2.Application.Features.Roles.UpdateRole;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -61,5 +62,33 @@ public class RolesController : ControllerBase
         }
 
         return Created($"/api/v1/roles/{result.CreatedRole!.Id}", result.CreatedRole);
+    }
+
+    [HttpPut("{id:int}")]
+    [Authorize(Roles = "Admin,Manager,HR,SuperAdmin")]
+    [ProducesResponseType(typeof(RoleDetailsDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<IActionResult> UpdateRole([FromRoute] int id, [FromBody] UpdateRoleDto dto, CancellationToken cancellationToken)
+    {
+        var result = await _mediator.Send(new UpdateRoleCommand(id, dto), cancellationToken);
+
+        if (result.IsNotFound)
+        {
+            return NotFound(new { message = result.ErrorMessage });
+        }
+
+        if (result.IsForbidden)
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, new { message = result.ErrorMessage });
+        }
+
+        if (result.IsConflict)
+        {
+            return Conflict(new { message = result.ErrorMessage });
+        }
+
+        return Ok(result.UpdatedRole);
     }
 }

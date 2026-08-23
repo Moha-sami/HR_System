@@ -182,14 +182,110 @@ def transition_issue(key, target_status):
     else:
         print(f"[JIRA WARN] Transition '{target_status}' not found. Available: {[t.get('name') for t in transitions]}", file=sys.stderr)
 
+def fetch_issue(key):
+    os.makedirs(ARTIFACTS_DIR, exist_ok=True)
+    artifact_path = os.path.join(ARTIFACTS_DIR, "00_jira_task.json")
+    
+    try:
+        issue = make_request(f"/rest/api/3/issue/{key}")
+        fields = issue.get("fields", {})
+        summary = fields.get("summary", "")
+        raw_desc = fields.get("description", "")
+        description = extract_text_from_description(raw_desc)
+    except Exception as e:
+        print(f"[JIRA FATAL ERROR] Could not fetch issue {key} from Jira API: {e}", file=sys.stderr)
+        sys.exit(1)
+
+    print(f"[JIRA] Fetched task {key}: {summary}")
+    
+    try:
+        acc_id = get_account_id(EMAIL)
+        make_request(f"/rest/api/3/issue/{key}/assignee", method="PUT", payload={"accountId": acc_id})
+        print(f"[JIRA] Successfully assigned {key} to account {acc_id} ({EMAIL})")
+        jira_assigned = True
+    except Exception as e:
+        print(f"[JIRA FATAL ERROR] Failed to assign issue {key}: {e}", file=sys.stderr)
+        sys.exit(1)
+
+    try:
+        trans_res = make_request(f"/rest/api/3/issue/{key}/transitions")
+        transitions = trans_res.get("transitions", [])
+        in_prog_trans = next((t for t in transitions if t.get("name", "").lower() == "in progress" or t.get("to", {}).get("name", "").lower() == "in progress"), None)
+        if not in_prog_trans:
+            print(f"[JIRA FATAL ERROR] Transition 'In Progress' not available for {key}. Available: {[t.get('name') for t in transitions]}", file=sys.stderr)
+            sys.exit(1)
+            
+        make_request(f"/rest/api/3/issue/{key}/transitions", method="POST", payload={"transition": {"id": in_prog_trans["id"]}})
+        print(f"[JIRA] Successfully transitioned {key} to 'In Progress'")
+        jira_status_updated = True
+    except Exception as e:
+        print(f"[JIRA FATAL ERROR] Failed to transition issue {key}: {e}", file=sys.stderr)
+        sys.exit(1)
+
+    slug = slugify(summary)
+    branch_name = f"feature/{key}-{slug}"
+    
+    result = {
+        "status": "FETCHED",
+        "key": key,
+        "summary": summary,
+        "description": description,
+        "branch": branch_name,
+        "jira_assigned": jira_assigned,
+        "jira_status_updated": jira_status_updated,
+        "jira_url": f"{BASE_URL}/browse/{key}"
+    }
+    
+    with open(artifact_path, "w", encoding="utf-8") as f:
+        json.dump(result, f, indent=2)
+
+    print(f"[JIRA] Task artifact written to {artifact_path}")
+    print(f"[JIRA] Branch: {branch_name}")
+    return result
+
+def comment_pr(key, pr_url):
+    comment_body = {
+        "body": {
+            "type": "doc",
+            "version": 1,
+            "content": [
+                {
+                    "type": "paragraph",
+                    "content": [
+                        {"type": "text", "text": "Pull Request created for this task: "},
+                        {
+                            "type": "text",
+                            "text": pr_url,
+                            "marks": [{"type": "link", "attrs": {"href": pr_url}}]
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+    make_request(f"/rest/api/3/issue/{key}/comment", method="POST", payload=comment_body)
+    print(f"[JIRA] Posted PR comment to {key}")
+
+def transition_issue(key, target_status):
+    trans_res = make_request(f"/rest/api/3/issue/{key}/transitions")
+    transitions = trans_res.get("transitions", [])
+    t_match = next((t for t in transitions if t.get("name", "").lower() == target_status.lower() or t.get("to", {}).get("name", "").lower() == target_status.lower()), None)
+    if t_match:
+        make_request(f"/rest/api/3/issue/{key}/transitions", method="POST", payload={"transition": {"id": t_match["id"]}})
+        print(f"[JIRA] Transitioned {key} to '{target_status}'")
+    else:
+        print(f"[JIRA WARN] Transition '{target_status}' not found. Available: {[t.get('name') for t in transitions]}", file=sys.stderr)
+
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        print("Usage: python jira_helper.py [fetch_next | comment_pr <key> <pr_url> | transition <key> <status>]")
+        print("Usage: python jira_helper.py [fetch_next | fetch <KEY> | comment_pr <key> <pr_url> | transition <key> <status>]")
         sys.exit(1)
 
     cmd = sys.argv[1]
     if cmd == "fetch_next":
         fetch_next()
+    elif cmd == "fetch" and len(sys.argv) >= 3:
+        fetch_issue(sys.argv[2])
     elif cmd == "comment_pr" and len(sys.argv) >= 4:
         comment_pr(sys.argv[2], sys.argv[3])
     elif cmd == "transition" and len(sys.argv) >= 4:
@@ -197,3 +293,4 @@ if __name__ == "__main__":
     else:
         print(f"Unknown command or invalid args: {cmd}")
         sys.exit(1)
+
