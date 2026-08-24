@@ -717,4 +717,49 @@ This document outlines the REST API endpoints provided by the Buy2 HRMS backend 
 }
 ```
 
+### `POST /api/v1/roles/{id}/reassign-and-delete`
+- **Authorization**: `[Authorize(Roles = "Admin,Manager,HR,SuperAdmin")]`
+- **Controller**: `RolesController`
+- **Path Parameters**:
+  - `id` (int, required) - Unique ID of the role to delete/decommission
+- **Request Body** (`application/json`, `ReassignUsersAndDeleteRoleDto`):
+  - `defaultNewRoleId` (int, optional/nullable) - Default replacement role ID to assign to all unmapped active employees
+  - `reassignments` (array of `EmployeeReassignmentDto`, optional/nullable):
+    - `employeeId` (int, required) - ID of the assigned employee
+    - `newRoleId` (int, required) - Target replacement role ID for this employee
+- **Description**: Atomically reassigns all active non-deleted employees assigned to role `id` to their respective replacement roles (`reassignments` map or fallback `defaultNewRoleId`) and soft-deletes/decommissions the target role (`IsActive = false`, `UpdatedAt = UtcNow`) within an explicit database transaction (`BeginTransactionAsync`). Rejects deletion if the target role is a built-in system role (`IsSystemRole == true`), if unmapped employees exist, or if any replacement role ID is invalid, inactive, or equal to the target role `id`.
+- **Responses**:
+  - `200 OK` with `RoleDeletionResultDto`:
+    - `success` (bool) - `true` upon successful atomic reassignment and role deletion
+    - `deletedRoleId` (int) - ID of the deleted role
+    - `reassignedEmployeesCount` (int) - Total count of employees reassigned to replacement roles
+    - `message` (string) - Operation confirmation message
+  - `400 Bad Request` if payload validation fails (e.g. unmapped employees remaining, invalid/inactive replacement role ID, or self-reassignment to target role).
+  - `401 Unauthorized` if the request is unauthenticated.
+  - `403 Forbidden` if authenticated user lacks required administrative role or attempts to delete a protected system role (`IsSystemRole == true`).
+  - `404 Not Found` if role with specified `id` does not exist.
+
+**Example Request**:
+```json
+{
+  "defaultNewRoleId": 2,
+  "reassignments": [
+    {
+      "employeeId": 101,
+      "newRoleId": 3
+    }
+  ]
+}
+```
+
+**Example Response**:
+```json
+{
+  "success": true,
+  "deletedRoleId": 15,
+  "reassignedEmployeesCount": 5,
+  "message": "Role deleted and users reassigned successfully."
+}
+```
+
 

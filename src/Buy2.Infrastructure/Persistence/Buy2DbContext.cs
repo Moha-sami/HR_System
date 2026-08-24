@@ -1,3 +1,4 @@
+using Buy2.Application.Common.Interfaces;
 using Buy2.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 

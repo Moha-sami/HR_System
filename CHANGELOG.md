@@ -4,6 +4,26 @@ All notable changes to the Buy2 HR Management System (HRMS) project will be docu
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 2026-08-24 — Atomic User Reassignment & Role Deletion (POST /api/v1/roles/{id}/reassign-and-delete) [SCRUM-266]
+- Files:
+  - `src/Buy2.Application/DTOs/Roles/ReassignUsersAndDeleteRoleDto.cs`
+  - `src/Buy2.Application/DTOs/Roles/RoleDeletionResultDto.cs`
+  - `src/Buy2.Application/Features/Roles/DeleteRole/ReassignUsersAndDeleteRoleCommand.cs`
+  - `src/Buy2.Application/Features/Roles/DeleteRole/ReassignUsersAndDeleteRoleCommandHandler.cs`
+  - `src/Buy2.Application/Features/Roles/DeleteRole/ReassignUsersAndDeleteRoleDtoValidator.cs`
+  - `src/Buy2.Application/Validators/ReassignUsersAndDeleteRoleDtoValidator.cs`
+  - `src/Buy2.Application/Common/Interfaces/IBuy2DbContext.cs`
+  - `src/Buy2.Infrastructure/Persistence/Buy2DbContext.cs`
+  - `src/Buy2.Infrastructure/DependencyInjection.cs`
+  - `src/Buy2.Api/Controllers/RolesController.cs`
+  - `tests/Buy2.Domain.Tests/Roles/ReassignUsersAndDeleteRoleCommandTests.cs`
+  - `tests/Buy2.Domain.Tests/Roles/ReassignUsersAndDeleteRoleDtoValidatorTests.cs`
+  - `docs/API_ENDPOINTS.md`
+  - `CHANGELOG.md`
+- Summary: Implemented `ReassignUsersAndDeleteRoleCommand` and handler for atomic user role reassignment and target role deletion/decommissioning. Open EF Core database transaction to reassign affected employees to valid active replacement roles and deactivate the role (`IsActive = false`, `UpdatedAt = UtcNow`). Prevented system role deletion (`IsSystemRole == true`), unmapped employees, and self-reassignment or invalid replacement roles. Added `POST /api/v1/roles/{id}/reassign-and-delete` endpoint to `RolesController` with full unit test coverage and updated API documentation.
+- Tests: PASS
+- Security review: PASS
+
 ## 2026-08-23 — Create New Role Endpoint (POST /api/v1/roles)
 - Files:
   - `src/Buy2.Application/Features/Roles/CreateRole/CreateRoleCommand.cs`

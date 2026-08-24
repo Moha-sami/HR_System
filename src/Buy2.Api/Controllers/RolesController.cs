@@ -1,5 +1,6 @@
 using Buy2.Application.DTOs.Roles;
 using Buy2.Application.Features.Roles.CreateRole;
+using Buy2.Application.Features.Roles.DeleteRole;
 using Buy2.Application.Features.Roles.GetRoleById;
 using Buy2.Application.Features.Roles.GetRoleDeletionImpact;
 using Buy2.Application.Features.Roles.GetRoles;
@@ -106,6 +107,36 @@ public class RolesController : ControllerBase
         }
 
         return Ok(result.UpdatedRole);
+    }
+
+    [HttpPost("{id:int}/reassign-and-delete")]
+    [Authorize(Roles = "Admin,Manager,HR,SuperAdmin")]
+    [ProducesResponseType(typeof(RoleDeletionResultDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> ReassignAndDeleteRole(
+        [FromRoute] int id,
+        [FromBody] ReassignUsersAndDeleteRoleDto dto,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var result = await _mediator.Send(new ReassignUsersAndDeleteRoleCommand(id, dto), cancellationToken);
+            return Ok(result);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, new { message = ex.Message });
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 }
 

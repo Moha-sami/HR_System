@@ -28,5 +28,8 @@ docs/assets
 .agent_artifacts/
 .context
 .env
+scripts/
+scripts/jira_helper.py
+
 
 

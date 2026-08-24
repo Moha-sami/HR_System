@@ -3,7 +3,7 @@ using Buy2.Application.DTOs;
 using Buy2.Domain.Entities;
 using MediatR;
 
-namespace Buy2.Application.CQRS.ShiftMarket.GetOpenShifts;
+namespace Buy2.Application.Features.ShiftMarket.GetOpenShifts;
 
 public record GetOpenShiftsQuery() : IRequest<List<ShiftDto>>;
 

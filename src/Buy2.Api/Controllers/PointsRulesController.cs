@@ -1,4 +1,4 @@
-using Buy2.Application.CQRS.Points.CreateRule;
+using Buy2.Application.Features.Points.CreateRule;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
