@@ -1,6 +1,7 @@
 using Buy2.Application.DTOs.Roles;
 using Buy2.Application.Features.Roles.CreateRole;
 using Buy2.Application.Features.Roles.GetRoleById;
+using Buy2.Application.Features.Roles.GetRoleDeletionImpact;
 using Buy2.Application.Features.Roles.GetRoles;
 using Buy2.Application.Features.Roles.UpdateRole;
 using MediatR;
@@ -43,6 +44,21 @@ public class RolesController : ControllerBase
         if (result is null)
         {
             return NotFound();
+        }
+
+        return Ok(result);
+    }
+
+    [HttpGet("{id:int}/deletion-impact")]
+    [Authorize(Roles = "Admin,Manager,HR,SuperAdmin")]
+    [ProducesResponseType(typeof(RoleDeletionImpactDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetDeletionImpact([FromRoute] int id, CancellationToken cancellationToken)
+    {
+        var result = await _mediator.Send(new GetRoleDeletionImpactQuery(id), cancellationToken);
+        if (result is null)
+        {
+            return NotFound(new { message = $"Role with ID {id} was not found." });
         }
 
         return Ok(result);
@@ -92,3 +108,4 @@ public class RolesController : ControllerBase
         return Ok(result.UpdatedRole);
     }
 }
+
