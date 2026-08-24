@@ -53,7 +53,7 @@ export class JobCreateComponent implements OnInit {
   private readonly router = inject(Router);
 
   readonly close = output<void>();
-  readonly jobId = input<string>(); // For edit mode
+  readonly id = input<string>(); // For edit mode
 
   isEditMode = false;
 
@@ -120,10 +120,10 @@ export class JobCreateComponent implements OnInit {
   showSuccessModal = signal(false);
 
   ngOnInit(): void {
-    const id = this.jobId();
-    if (id) {
+    const jobId = this.id();
+    if (jobId) {
       this.isEditMode = true;
-      this.loadJob(Number(id));
+      this.loadJob(jobId);
     }
 
     this.jobService.getDepartments().subscribe({
@@ -140,7 +140,7 @@ export class JobCreateComponent implements OnInit {
     });
   }
 
-  loadJob(id: number): void {
+  loadJob(id: string): void {
     this.jobService.getJob(id).subscribe({
       next: (job) => {
         this.form.jobTitle = job.jobName;
@@ -336,8 +336,8 @@ export class JobCreateComponent implements OnInit {
     };
 
     if (this.isEditMode) {
-      const id = Number(this.jobId());
-      this.jobService.updateJob(id, newJob).subscribe({
+      const jobId = this.id()!;
+      this.jobService.updateJob(jobId, newJob).subscribe({
         next: () => {
           this.showSuccessModal.set(true);
         },

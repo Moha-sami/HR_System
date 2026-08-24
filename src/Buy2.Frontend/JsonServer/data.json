@@ -180,18 +180,6 @@
   ],
   "jobs": [
     {
-      "id": "1",
-      "jobName": "UI UX Designer",
-      "jobDescription": "Lorem Ipsum is simply dummy text of the printing and",
-      "numberOfEmployees": 5
-    },
-    {
-      "id": "2",
-      "jobName": "Software Engineer",
-      "jobDescription": "Lorem Ipsum is simply dummy text of the printing and",
-      "numberOfEmployees": 12
-    },
-    {
       "id": "3",
       "jobName": "Product Manager",
       "jobDescription": "Lorem Ipsum is simply dummy text of the printing and",

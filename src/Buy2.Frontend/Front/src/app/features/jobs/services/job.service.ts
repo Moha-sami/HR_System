@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
 export interface Job {
-  id: number;
+  id: string;
   jobName: string;
   jobDescription: string;
   numberOfEmployees: number;
@@ -24,7 +24,7 @@ export class JobService {
     return this.http.get<Job[]>(this.apiUrl);
   }
 
-  getJob(id: number): Observable<Job> {
+  getJob(id: string): Observable<Job> {
     return this.http.get<Job>(`${this.apiUrl}/${id}`);
   }
 
@@ -32,11 +32,11 @@ export class JobService {
     return this.http.post<Job>(this.apiUrl, job);
   }
 
-  updateJob(id: number, job: Partial<Job>): Observable<Job> {
+  updateJob(id: string, job: Partial<Job>): Observable<Job> {
     return this.http.patch<Job>(`${this.apiUrl}/${id}`, job);
   }
 
-  deleteJob(id: number): Observable<void> {
+  deleteJob(id: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 
