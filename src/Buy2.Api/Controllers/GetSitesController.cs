@@ -1,10 +1,12 @@
 using Buy2.Application.CQRS.Authentication.Sites.Query;
 using Buy2.Application.DTOs;
 using Buy2.Application.DTOs.Sites;
+using Buy2.Application.Features.Sites.CreateSite;
 using Buy2.Application.Features.Sites.Regions;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Diagnostics.SymbolStore;
 
 namespace Buy2.Api.Controllers;
 
@@ -20,6 +22,7 @@ public class GetSitesController : ControllerBase
         _mediator = mediator;
     }
 
+    // Get All Sites
     [HttpGet]
     [ProducesResponseType(typeof(List<SiteDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -29,6 +32,35 @@ public class GetSitesController : ControllerBase
         return Ok(result);
     }
 
+    // Add New Site
+    [HttpPost]
+    [Authorize(Roles = "Admin")]
+    [ProducesResponseType(typeof(int), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<ActionResult<int>> CreateSite(CreateUpdateSiteDto dto, CancellationToken cancellation)
+    {
+        var command = new CreateSiteCommand(
+            dto.SiteName,
+            dto.Latitude,
+            dto.Longitude,
+            dto.MacWhitelist,
+            dto.MacAddress,
+            dto.Address,
+            dto.MapUrl,
+            dto.PhoneNumber,
+            dto.Instructions,
+            dto.RegionId,
+            dto.MaxCapacity,
+            dto.PreferredEmployeeIds,
+            dto.OperationalHours
+        );
+        var site = await _mediator.Send(command, cancellation);
+        return Ok(site);
+    }
+
+    // Get All Regions
     [HttpGet("regions")]
     [ProducesResponseType(typeof(List<RegionListItemDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -38,6 +70,7 @@ public class GetSitesController : ControllerBase
         return Ok(regions);
     }
 
+    // Create New Region
     [HttpPost("regions")]
     [Authorize(Roles = "Admin,Manager")]
     [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]

@@ -3,7 +3,7 @@ public record CreateUpdateSiteDto(
     string SiteName,
     double Latitude,
     double Longitude,
-    string MacAddressWhitelistJson,
+    List<string> MacWhitelist,
     string MacAddress,
     string Address,
     string MapUrl,
