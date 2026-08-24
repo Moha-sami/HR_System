@@ -1,5 +1,6 @@
 using Buy2.Application.Common.Interfaces;
 using Buy2.Application.DTOs.Roles;
+using Buy2.Domain.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,16 +13,23 @@ public record ReassignUsersAndDeleteRoleCommand(
 
 public class ReassignUsersAndDeleteRoleCommandHandler : IRequestHandler<ReassignUsersAndDeleteRoleCommand, RoleDeletionResultDto>
 {
-    private readonly IBuy2DbContext _dbContext;
+    private readonly IRepository<Role> _roleRepository;
+    private readonly IRepository<Employee> _employeeRepository;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public ReassignUsersAndDeleteRoleCommandHandler(IBuy2DbContext dbContext)
+    public ReassignUsersAndDeleteRoleCommandHandler(
+        IRepository<Role> roleRepository,
+        IRepository<Employee> employeeRepository,
+        IUnitOfWork unitOfWork)
     {
-        _dbContext = dbContext;
+        _roleRepository = roleRepository;
+        _employeeRepository = employeeRepository;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<RoleDeletionResultDto> Handle(ReassignUsersAndDeleteRoleCommand request, CancellationToken cancellationToken)
     {
-        var role = await _dbContext.Roles
+        var role = await _roleRepository.Query(asNoTracking: false)
             .IgnoreQueryFilters()
             .FirstOrDefaultAsync(r => r.Id == request.Id, cancellationToken);
 
@@ -35,7 +43,7 @@ public class ReassignUsersAndDeleteRoleCommandHandler : IRequestHandler<Reassign
             throw new InvalidOperationException("System roles cannot be deleted.");
         }
 
-        var assignedEmployees = await _dbContext.Employees
+        var assignedEmployees = await _employeeRepository.Query(asNoTracking: false)
             .IgnoreQueryFilters()
             .Where(e => !e.IsDeleted && e.RoleId == request.Id)
             .ToListAsync(cancellationToken);
@@ -69,7 +77,7 @@ public class ReassignUsersAndDeleteRoleCommandHandler : IRequestHandler<Reassign
                 throw new ArgumentException("Invalid replacement role specified.");
             }
 
-            var validActiveRoleIds = await _dbContext.Roles
+            var validActiveRoleIds = await _roleRepository.Query()
                 .Where(r => r.IsActive && distinctReplacementRoleIds.Contains(r.Id))
                 .Select(r => r.Id)
                 .ToListAsync(cancellationToken);
@@ -80,18 +88,19 @@ public class ReassignUsersAndDeleteRoleCommandHandler : IRequestHandler<Reassign
             }
         }
 
-        using var transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
+        await _unitOfWork.BeginTransactionAsync(cancellationToken);
 
         foreach (var employee in assignedEmployees)
         {
             employee.RoleId = employeeTargetRoles[employee.Id];
+            _employeeRepository.Update(employee);
         }
 
         role.IsActive = false;
         role.UpdatedAt = DateTimeOffset.UtcNow;
+        _roleRepository.Update(role);
 
-        await _dbContext.SaveChangesAsync(cancellationToken);
-        await transaction.CommitAsync(cancellationToken);
+        await _unitOfWork.CommitTransactionAsync(cancellationToken);
 
         return new RoleDeletionResultDto(true, request.Id, assignedEmployees.Count, "Role deleted and users reassigned successfully.");
     }

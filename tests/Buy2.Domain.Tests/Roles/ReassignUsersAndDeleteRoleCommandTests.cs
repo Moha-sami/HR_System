@@ -2,6 +2,7 @@ using Buy2.Application.DTOs.Roles;
 using Buy2.Application.Features.Roles.DeleteRole;
 using Buy2.Domain.Entities;
 using Buy2.Infrastructure.Persistence;
+using Buy2.Infrastructure.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
 
@@ -24,13 +25,17 @@ public class ReassignUsersAndDeleteRoleCommandTests
     {
         // Arrange
         using var context = CreateDbContext();
+        var roleRepository = new GenericRepository<Role>(context);
+        var employeeRepository = new GenericRepository<Employee>(context);
+        var unitOfWork = new UnitOfWork(context);
+
         var role = new Role { Id = 10, Name = "EmptyRole", IsSystemRole = false, IsActive = true, PermissionsJson = "[]" };
         context.Roles.Add(role);
         await context.SaveChangesAsync();
 
         var dto = new ReassignUsersAndDeleteRoleDto(DefaultNewRoleId: 2);
         var command = new ReassignUsersAndDeleteRoleCommand(10, dto);
-        var handler = new ReassignUsersAndDeleteRoleCommandHandler(context);
+        var handler = new ReassignUsersAndDeleteRoleCommandHandler(roleRepository, employeeRepository, unitOfWork);
 
         // Act
         var result = await handler.Handle(command, CancellationToken.None);
@@ -52,6 +57,10 @@ public class ReassignUsersAndDeleteRoleCommandTests
     {
         // Arrange
         using var context = CreateDbContext();
+        var roleRepository = new GenericRepository<Role>(context);
+        var employeeRepository = new GenericRepository<Employee>(context);
+        var unitOfWork = new UnitOfWork(context);
+
         var oldRole = new Role { Id = 10, Name = "OldRole", IsSystemRole = false, IsActive = true, PermissionsJson = "[]" };
         var defaultTargetRole = new Role { Id = 20, Name = "DefaultRole", IsSystemRole = false, IsActive = true, PermissionsJson = "[]" };
         var mappedTargetRole = new Role { Id = 30, Name = "MappedRole", IsSystemRole = false, IsActive = true, PermissionsJson = "[]" };
@@ -73,7 +82,7 @@ public class ReassignUsersAndDeleteRoleCommandTests
         );
 
         var command = new ReassignUsersAndDeleteRoleCommand(10, dto);
-        var handler = new ReassignUsersAndDeleteRoleCommandHandler(context);
+        var handler = new ReassignUsersAndDeleteRoleCommandHandler(roleRepository, employeeRepository, unitOfWork);
 
         // Act
         var result = await handler.Handle(command, CancellationToken.None);
@@ -103,13 +112,17 @@ public class ReassignUsersAndDeleteRoleCommandTests
     {
         // Arrange
         using var context = CreateDbContext();
+        var roleRepository = new GenericRepository<Role>(context);
+        var employeeRepository = new GenericRepository<Employee>(context);
+        var unitOfWork = new UnitOfWork(context);
+
         var systemRole = new Role { Id = 1, Name = "Admin", IsSystemRole = true, IsActive = true, PermissionsJson = "[]" };
         context.Roles.Add(systemRole);
         await context.SaveChangesAsync();
 
         var dto = new ReassignUsersAndDeleteRoleDto(DefaultNewRoleId: 2);
         var command = new ReassignUsersAndDeleteRoleCommand(1, dto);
-        var handler = new ReassignUsersAndDeleteRoleCommandHandler(context);
+        var handler = new ReassignUsersAndDeleteRoleCommandHandler(roleRepository, employeeRepository, unitOfWork);
 
         // Act & Assert
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => handler.Handle(command, CancellationToken.None));
@@ -121,9 +134,13 @@ public class ReassignUsersAndDeleteRoleCommandTests
     {
         // Arrange
         using var context = CreateDbContext();
+        var roleRepository = new GenericRepository<Role>(context);
+        var employeeRepository = new GenericRepository<Employee>(context);
+        var unitOfWork = new UnitOfWork(context);
+
         var dto = new ReassignUsersAndDeleteRoleDto(DefaultNewRoleId: 2);
         var command = new ReassignUsersAndDeleteRoleCommand(999, dto);
-        var handler = new ReassignUsersAndDeleteRoleCommandHandler(context);
+        var handler = new ReassignUsersAndDeleteRoleCommandHandler(roleRepository, employeeRepository, unitOfWork);
 
         // Act & Assert
         var ex = await Assert.ThrowsAsync<KeyNotFoundException>(() => handler.Handle(command, CancellationToken.None));
@@ -135,6 +152,10 @@ public class ReassignUsersAndDeleteRoleCommandTests
     {
         // Arrange
         using var context = CreateDbContext();
+        var roleRepository = new GenericRepository<Role>(context);
+        var employeeRepository = new GenericRepository<Employee>(context);
+        var unitOfWork = new UnitOfWork(context);
+
         var role = new Role { Id = 10, Name = "OldRole", IsSystemRole = false, IsActive = true, PermissionsJson = "[]" };
         context.Roles.Add(role);
 
@@ -144,7 +165,7 @@ public class ReassignUsersAndDeleteRoleCommandTests
 
         var dto = new ReassignUsersAndDeleteRoleDto(DefaultNewRoleId: null, Reassignments: null);
         var command = new ReassignUsersAndDeleteRoleCommand(10, dto);
-        var handler = new ReassignUsersAndDeleteRoleCommandHandler(context);
+        var handler = new ReassignUsersAndDeleteRoleCommandHandler(roleRepository, employeeRepository, unitOfWork);
 
         // Act & Assert
         var ex = await Assert.ThrowsAsync<ArgumentException>(() => handler.Handle(command, CancellationToken.None));
@@ -156,6 +177,10 @@ public class ReassignUsersAndDeleteRoleCommandTests
     {
         // Arrange
         using var context = CreateDbContext();
+        var roleRepository = new GenericRepository<Role>(context);
+        var employeeRepository = new GenericRepository<Employee>(context);
+        var unitOfWork = new UnitOfWork(context);
+
         var oldRole = new Role { Id = 10, Name = "OldRole", IsSystemRole = false, IsActive = true, PermissionsJson = "[]" };
         var inactiveRole = new Role { Id = 20, Name = "InactiveRole", IsSystemRole = false, IsActive = false, PermissionsJson = "[]" };
         context.Roles.AddRange(oldRole, inactiveRole);
@@ -166,7 +191,7 @@ public class ReassignUsersAndDeleteRoleCommandTests
 
         var dto = new ReassignUsersAndDeleteRoleDto(DefaultNewRoleId: 20);
         var command = new ReassignUsersAndDeleteRoleCommand(10, dto);
-        var handler = new ReassignUsersAndDeleteRoleCommandHandler(context);
+        var handler = new ReassignUsersAndDeleteRoleCommandHandler(roleRepository, employeeRepository, unitOfWork);
 
         // Act & Assert
         var ex = await Assert.ThrowsAsync<ArgumentException>(() => handler.Handle(command, CancellationToken.None));
@@ -178,6 +203,10 @@ public class ReassignUsersAndDeleteRoleCommandTests
     {
         // Arrange
         using var context = CreateDbContext();
+        var roleRepository = new GenericRepository<Role>(context);
+        var employeeRepository = new GenericRepository<Employee>(context);
+        var unitOfWork = new UnitOfWork(context);
+
         var oldRole = new Role { Id = 10, Name = "OldRole", IsSystemRole = false, IsActive = true, PermissionsJson = "[]" };
         context.Roles.Add(oldRole);
 
@@ -187,7 +216,7 @@ public class ReassignUsersAndDeleteRoleCommandTests
 
         var dto = new ReassignUsersAndDeleteRoleDto(DefaultNewRoleId: 10);
         var command = new ReassignUsersAndDeleteRoleCommand(10, dto);
-        var handler = new ReassignUsersAndDeleteRoleCommandHandler(context);
+        var handler = new ReassignUsersAndDeleteRoleCommandHandler(roleRepository, employeeRepository, unitOfWork);
 
         // Act & Assert
         var ex = await Assert.ThrowsAsync<ArgumentException>(() => handler.Handle(command, CancellationToken.None));

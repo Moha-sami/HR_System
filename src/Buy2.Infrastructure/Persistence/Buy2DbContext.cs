@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Buy2.Infrastructure.Persistence;
 
-public class Buy2DbContext : DbContext, IBuy2DbContext
+public class Buy2DbContext : DbContext
 {
     public Buy2DbContext(DbContextOptions<Buy2DbContext> options)
         : base(options)
