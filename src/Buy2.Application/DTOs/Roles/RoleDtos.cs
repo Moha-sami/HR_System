@@ -37,9 +37,3 @@ public record RolePaginatedResponseDto(
     int PageSize,
     int TotalPages
 );
-
-public record RoleLookupItemDto(
-    int Id,
-    string Name,
-    int AssignedEmployeesCount
-);

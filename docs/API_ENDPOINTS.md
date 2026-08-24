@@ -573,6 +573,36 @@ This document outlines the REST API endpoints provided by the Buy2 HRMS backend 
 }
 ```
 
+### `GET /api/v1/roles/lookup`
+- **Authorization**: `[Authorize]` (authenticated users)
+- **Controller**: `RolesController`
+- **Query Parameters**:
+  - `excludeRoleId` (int, optional) - Optional role ID to exclude from the returned list (useful for populating replacement role dropdowns)
+- **Description**: Retrieves a lightweight list of active roles (`id`, `name`) for UI selection dropdowns and replacement role selectors. Filters active roles (`IsActive == true`), orders them alphabetically by name, and supports excluding a specified role ID.
+- **Responses**:
+  - `200 OK` with `List<RoleLookupItemDto>`:
+    - `id` (int) - Unique role ID
+    - `name` (string) - Role display name
+  - `401 Unauthorized` if the request is unauthenticated.
+
+**Example Response**:
+```json
+[
+  {
+    "id": 1,
+    "name": "SuperAdmin"
+  },
+  {
+    "id": 2,
+    "name": "HR Manager"
+  },
+  {
+    "id": 3,
+    "name": "Employee"
+  }
+]
+```
+
 ### `GET /api/v1/roles/{id}`
 - **Authorization**: `[Authorize(Roles = "Admin,Manager,HR,SuperAdmin")]`
 - **Controller**: `RolesController`
