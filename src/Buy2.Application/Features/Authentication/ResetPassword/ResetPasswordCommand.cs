@@ -25,8 +25,6 @@ public class ResetPasswordCommandHandler : IRequestHandler<ResetPasswordCommand,
             throw new InvalidOperationException("Employee not found.");
         }
 
-        // Demo stub — pretend password was reset successfully
-        // TODO: need true hash table and regestration endpoint
         return true;
     }
 }

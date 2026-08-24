@@ -3,7 +3,7 @@ using Buy2.Application.DTOs;
 using Buy2.Domain.Entities;
 using MediatR;
 
-namespace Buy2.Application.CQRS.Authentication.Sites.Query;
+namespace Buy2.Application.Features.Sites.GetSites;
 
 public record GetSitesQuery() : IRequest<List<SiteDto>>;
 

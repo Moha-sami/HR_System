@@ -2,7 +2,7 @@ using Buy2.Application.Common.Interfaces;
 using Buy2.Domain.Entities;
 using MediatR;
 
-namespace Buy2.Application.CQRS.Points.CreateRule;
+namespace Buy2.Application.Features.Points.CreateRule;
 
 public record CreatePointsRuleCommand(
     string RuleName,

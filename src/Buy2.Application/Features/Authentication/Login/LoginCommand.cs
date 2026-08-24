@@ -28,7 +28,6 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, LoginResponseDt
             return null;
         }
 
-        // Direct SQL lookup with included Role
         var employee = await _employeeRepository.Query()
             .Include(e => e.Role)
             .FirstOrDefaultAsync(e => e.Email == request.Email.Trim(), cancellationToken);
@@ -40,7 +39,6 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, LoginResponseDt
 
         string roleName = employee.Role?.Name ?? "Employee";
 
-        // Generate JWT token
         var token = _jwtTokenGenerator.GenerateToken(employee.Id.ToString(), employee.Email, roleName);
 
         return new LoginResponseDto

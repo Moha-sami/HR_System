@@ -1,4 +1,4 @@
-using Buy2.Application.CQRS.ShiftMarket.GetOpenShifts;
+using Buy2.Application.Features.ShiftMarket.GetOpenShifts;
 using Buy2.Application.DTOs;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;

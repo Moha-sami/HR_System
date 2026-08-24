@@ -1,4 +1,4 @@
-using Buy2.Application.CQRS.Authentication.Sites.Query;
+using Buy2.Application.Features.Sites.GetSites;
 using Buy2.Application.DTOs;
 using Buy2.Application.DTOs.Sites;
 using Buy2.Application.Features.Sites.Regions;
