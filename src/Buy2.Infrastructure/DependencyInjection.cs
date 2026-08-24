@@ -26,6 +26,7 @@ public static class DependencyInjection
                     errorNumbersToAdd: null));
             options.ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
         });
+        services.AddScoped<IBuy2DbContext>(sp => sp.GetRequiredService<Buy2DbContext>());
         services.AddScoped(typeof(IRepository<>), typeof(GenericRepository<>));
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();

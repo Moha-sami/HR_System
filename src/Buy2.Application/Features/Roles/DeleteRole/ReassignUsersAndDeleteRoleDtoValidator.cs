@@ -1,7 +1,7 @@
 using Buy2.Application.DTOs.Roles;
 using FluentValidation;
 
-namespace Buy2.Application.Validators;
+namespace Buy2.Application.Features.Roles.DeleteRole;
 
 public class ReassignUsersAndDeleteRoleDtoValidator : AbstractValidator<ReassignUsersAndDeleteRoleDto>
 {
