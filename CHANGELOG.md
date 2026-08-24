@@ -4,6 +4,18 @@ All notable changes to the Buy2 HR Management System (HRMS) project will be docu
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 2026-08-25 — Role Lookup Endpoint (GET /api/v1/roles/lookup) [SCRUM-267]
+- Files:
+  - `src/Buy2.Application/DTOs/Roles/RoleLookupItemDto.cs`
+  - `src/Buy2.Application/Features/Roles/GetRoleLookup/GetRoleLookupQuery.cs`
+  - `src/Buy2.Api/Controllers/RolesController.cs`
+  - `tests/Buy2.Domain.Tests/Roles/GetRoleLookupQueryTests.cs`
+  - `docs/API_ENDPOINTS.md`
+  - `CHANGELOG.md`
+- Summary: Added DTO `RoleLookupItemDto(int Id, string Name)`. Implemented query and handler `GetRoleLookupQuery` co-located in `GetRoleLookupQuery.cs` using `IRepository<Role>` with `.AsNoTracking()`, filtering active roles (`IsActive == true`) sorted alphabetically by name and supporting optional role exclusion (`excludeRoleId`). Added `GET /api/v1/roles/lookup` endpoint to `RolesController` with `[Authorize]`. Added unit tests in `GetRoleLookupQueryTests.cs`.
+- Tests: PASS
+- Security review: PASS
+
 ## 2026-08-24 — Atomic User Reassignment & Role Deletion (POST /api/v1/roles/{id}/reassign-and-delete) [SCRUM-266]
 - Files:
   - `src/Buy2.Application/DTOs/Roles/ReassignUsersAndDeleteRoleDto.cs`

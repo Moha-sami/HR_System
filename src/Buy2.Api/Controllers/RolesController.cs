@@ -3,6 +3,7 @@ using Buy2.Application.Features.Roles.CreateRole;
 using Buy2.Application.Features.Roles.DeleteRole;
 using Buy2.Application.Features.Roles.GetRoleById;
 using Buy2.Application.Features.Roles.GetRoleDeletionImpact;
+using Buy2.Application.Features.Roles.GetRoleLookup;
 using Buy2.Application.Features.Roles.GetRoles;
 using Buy2.Application.Features.Roles.UpdateRole;
 using MediatR;
@@ -33,6 +34,16 @@ public class RolesController : ControllerBase
         var result = await _mediator.Send(new GetRolesQuery(filter), cancellationToken);
         return Ok(result);
     }
+
+    [HttpGet("lookup")]
+    [Authorize]
+    [ProducesResponseType(typeof(List<RoleLookupItemDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetRoleLookup([FromQuery] int? excludeRoleId, CancellationToken cancellationToken)
+    {
+        var result = await _mediator.Send(new GetRoleLookupQuery(excludeRoleId), cancellationToken);
+        return Ok(result);
+    }
+
 
     [HttpGet("{id:int}")]
     [ProducesResponseType(typeof(RoleDetailsDto), StatusCodes.Status200OK)]
