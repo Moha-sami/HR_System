@@ -17,5 +17,10 @@ public class JobRoleConfiguration : IEntityTypeConfiguration<JobRole>
             .WithMany()
             .HasForeignKey(jr => jr.DepartmentId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasMany(jr => jr.Employees)
+            .WithOne(e => e.JobRole)
+            .HasForeignKey(e => e.JobRoleId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }
