@@ -792,4 +792,45 @@ This document outlines the REST API endpoints provided by the Buy2 HRMS backend 
 }
 ```
 
+---
+
+## 8. Job Role Management (`/api/v1/jobs`) [SCRUM-277]
+
+### `GET /api/v1/jobs`
+- **Authorization**: `[Authorize(Roles = "Admin,Manager,HR,SuperAdmin")]`
+- **Controller**: `JobsController`
+- **Query Parameters**:
+  - `searchTerm` (string, optional) - Filters by title or department name matching substring.
+  - `departmentId` (int, optional) - Filters job roles belonging to specific department ID.
+  - `attendanceType` (string, optional) - Filters by work model (e.g. `Hybrid`, `OnSite`, `Remote`).
+  - `isActive` (bool, optional) - Filters active or inactive job roles.
+  - `pageNumber` (int, default: 1) - Page index.
+  - `pageSize` (int, default: 10) - Page size capacity.
+- **Description**: Returns a paginated list of job roles matching specified filter criteria. Computes live allocated employee count per job role.
+- **Response**: `200 OK` with `JobPaginatedResponseDto<JobListItemDto>`.
+
+### `GET /api/v1/jobs/{id}`
+- **Authorization**: `[Authorize(Roles = "Admin,Manager,HR,SuperAdmin")]`
+- **Controller**: `JobsController`
+- **Path Parameters**:
+  - `id` (int, required) - Unique ID of the job role.
+- **Description**: Returns detailed job role information including department details, seniority level, experience years, allocated employee count, and parsed JSON lists for online workdays, offline workdays, and required qualifications.
+- **Responses**:
+  - `200 OK` with `JobDetailsDto`.
+  - `404 Not Found` if job role with specified `id` does not exist.
+
+### `GET /api/v1/jobs/{id}/employees`
+- **Authorization**: `[Authorize(Roles = "Admin,Manager,HR,SuperAdmin")]`
+- **Controller**: `JobsController`
+- **Path Parameters**:
+  - `id` (int, required) - Unique ID of the job role.
+- **Query Parameters**:
+  - `pageNumber` (int, default: 1) - Page index.
+  - `pageSize` (int, default: 10) - Page size capacity.
+- **Description**: Returns a paginated roster of active, non-deleted employees assigned to the specified job role. Includes employee code, full name, contact information, site name, department name, join date, and active status.
+- **Responses**:
+  - `200 OK` with `JobPaginatedResponseDto<JobEmployeeRosterItemDto>`.
+  - `404 Not Found` if job role with specified `id` does not exist.
+
+
 
