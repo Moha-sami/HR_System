@@ -14,6 +14,18 @@
     </span>
   </ng-template>
 
+  <ng-template #minutesTemplate let-row let-column="column">
+    <span class="text-sm text-neutral-700">
+      {{ row[column.key] }} {{ 'POINTS.AUTOMATION.MINUTES_SUFFIX' | translate }}
+    </span>
+  </ng-template>
+
+  <ng-template #latenessPointsTemplate let-row>
+    <span class="text-sm font-medium" style="color: #dc2626">
+      {{ formatPoints(displayDeadlinePoints(row.pointsDeduction)) }}
+    </span>
+  </ng-template>
+
   <div class="flex items-center gap-3">
     <button
       type="button"
@@ -172,15 +184,48 @@
             (sortChange)="onDeadlineSort($event)"
           />
         </section>
-      }
+      } @else if (activeTab() === 'attendance') {
+        <section class="flex flex-col gap-3">
+          <h2 class="text-base font-semibold text-neutral-800">
+            {{ 'POINTS.AUTOMATION.ATTENDANCE_RATE' | translate }}
+          </h2>
+          <app-table
+            [columns]="columns()"
+            [rows]="viewAttendanceRows()"
+            [cellTemplates]="cellTemplates()"
+            size="sm"
+            (sortChange)="onSort($event)"
+          />
+        </section>
 
-      @if (activeTab() !== 'attendance') {
-        <div class="flex justify-end">
-          <app-button size="sm" (clicked)="enterSetup()">
-            {{ 'POINTS.AUTOMATION.EDIT' | translate }}
-          </app-button>
+        <section class="flex flex-col gap-3">
+          <h2 class="text-base font-semibold text-neutral-800">
+            {{ 'POINTS.AUTOMATION.LATENESS' | translate }}
+          </h2>
+          <app-table
+            [columns]="latenessColumns()"
+            [rows]="viewLatenessRows()"
+            [cellTemplates]="cellTemplates()"
+            size="sm"
+            (sortChange)="onLatenessSort($event)"
+          />
+        </section>
+
+        <div class="on-time-row">
+          <span class="text-sm font-medium text-neutral-800">
+            {{ 'POINTS.AUTOMATION.ON_TIME_BONUS' | translate }}
+          </span>
+          <span class="text-sm font-medium" style="color: #16a34a">
+            {{ formatPoints(config()!.attendance.onTimeBonus) }}
+          </span>
         </div>
       }
+
+      <div class="flex justify-end">
+        <app-button size="sm" (clicked)="enterSetup()">
+          {{ 'POINTS.AUTOMATION.EDIT' | translate }}
+        </app-button>
+      </div>
     } @else if (activeTab() === 'performance') {
       <div class="overflow-hidden rounded-lg border border-neutral-200">
         <div
@@ -457,9 +502,215 @@
           </button>
         </div>
       </section>
+    } @else if (activeTab() === 'attendance') {
+      <section class="flex flex-col gap-3 rounded-lg border border-neutral-200 p-4">
+        <h2 class="text-base font-semibold text-neutral-800">
+          {{ 'POINTS.AUTOMATION.ATTENDANCE_RATE' | translate }}
+        </h2>
+
+        <div class="overflow-hidden rounded-lg border border-neutral-200">
+          <div
+            class="grid items-center border-b border-neutral-200 bg-neutral-50 px-4 py-3 text-sm font-semibold text-neutral-700"
+            style="grid-template-columns: 1.4fr 1fr 1fr 1fr 48px"
+          >
+            <span>{{ 'POINTS.AUTOMATION.COL_TYPE' | translate }}</span>
+            <span>{{ 'POINTS.AUTOMATION.COL_FROM_PCT' | translate }}</span>
+            <span>{{ 'POINTS.AUTOMATION.COL_TO_PCT' | translate }}</span>
+            <span>{{ 'POINTS.AUTOMATION.COL_VALUE' | translate }}</span>
+            <span></span>
+          </div>
+
+          @for (range of draftAttendanceRanges(); track range.id) {
+            <div
+              class="grid items-center gap-3 border-b border-neutral-100 px-4 py-3"
+              style="grid-template-columns: 1.4fr 1fr 1fr 1fr 48px"
+              [class.range-row--error]="attendanceOverlapIds().has(range.id)"
+            >
+              <select
+                class="range-input"
+                [ngModel]="range.type"
+                (ngModelChange)="updateAttendanceType(range.id, $event)"
+              >
+                <option value="">{{ 'POINTS.AUTOMATION.TYPE_PLACEHOLDER' | translate }}</option>
+                <option value="Deduction">{{ 'POINTS.AUTOMATION.TYPE_DEDUCTION' | translate }}</option>
+                <option value="Reward">{{ 'POINTS.AUTOMATION.TYPE_REWARD' | translate }}</option>
+              </select>
+              <div class="relative">
+                <input
+                  type="number"
+                  min="0"
+                  max="100"
+                  class="range-input w-full pe-7"
+                  [ngModel]="range.from"
+                  (ngModelChange)="updateAttendanceFrom(range.id, $event)"
+                />
+                <span class="pointer-events-none absolute end-3 top-1/2 -translate-y-1/2 text-sm text-neutral-500">%</span>
+              </div>
+              <div class="relative">
+                <input
+                  type="number"
+                  min="0"
+                  max="100"
+                  class="range-input w-full pe-7"
+                  [ngModel]="range.to"
+                  (ngModelChange)="updateAttendanceTo(range.id, $event)"
+                />
+                <span class="pointer-events-none absolute end-3 top-1/2 -translate-y-1/2 text-sm text-neutral-500">%</span>
+              </div>
+              <input
+                type="number"
+                min="0"
+                step="1"
+                class="range-input w-full"
+                [ngModel]="range.value"
+                (ngModelChange)="updateAttendanceValue(range.id, $event)"
+              />
+              <button
+                type="button"
+                class="inline-flex h-8 w-8 items-center justify-center text-red-500 hover:text-red-600"
+                [attr.aria-label]="'COMMON.DELETE' | translate"
+                (click)="removeAttendanceRange(range.id)"
+              >
+                <svg aria-hidden="true" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 7h12M10 7V5h4v2m-7 0l1 12h8l1-12" />
+                </svg>
+              </button>
+            </div>
+          }
+
+          @if (hasAttendanceOverlap()) {
+            <p class="px-4 py-3 text-sm text-red-600">
+              {{ 'POINTS.AUTOMATION.OVERLAP_ERROR' | translate }}
+            </p>
+          }
+        </div>
+
+        <div class="flex justify-end">
+          <button type="button" class="add-range-btn" (click)="addAttendanceRange()">
+            {{ 'POINTS.AUTOMATION.ADD_RANGE' | translate }}
+          </button>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-6">
+          <span class="text-sm font-medium text-neutral-700">
+            {{ 'POINTS.AUTOMATION.PERIOD' | translate }}
+          </span>
+          @for (period of periods; track period) {
+            <label class="inline-flex cursor-pointer items-center gap-2 text-sm text-neutral-800">
+              <input
+                type="radio"
+                name="attendancePeriod"
+                class="h-4 w-4 accent-primary-600"
+                [value]="period"
+                [ngModel]="draftAttendancePeriod()"
+                (ngModelChange)="draftAttendancePeriod.set($event)"
+              />
+              {{ periodLabelKey(period) | translate }}
+            </label>
+          }
+        </div>
+      </section>
+
+      <section class="flex flex-col gap-3 rounded-lg border border-neutral-200 p-4">
+        <h2 class="text-base font-semibold text-neutral-800">
+          {{ 'POINTS.AUTOMATION.LATENESS' | translate }}
+        </h2>
+
+        <div class="overflow-hidden rounded-lg border border-neutral-200">
+          <div
+            class="grid items-center border-b border-neutral-200 bg-neutral-50 px-4 py-3 text-sm font-semibold text-neutral-700"
+            style="grid-template-columns: 1fr 1fr 1.2fr 48px"
+          >
+            <span>{{ 'POINTS.AUTOMATION.COL_FROM_MIN' | translate }}</span>
+            <span>{{ 'POINTS.AUTOMATION.COL_TO_MIN' | translate }}</span>
+            <span>{{ 'POINTS.AUTOMATION.COL_POINTS_DEDUCTION' | translate }}</span>
+            <span></span>
+          </div>
+
+          @for (range of draftLatenessRanges(); track range.id) {
+            <div
+              class="grid items-center gap-3 border-b border-neutral-100 px-4 py-3"
+              style="grid-template-columns: 1fr 1fr 1.2fr 48px"
+              [class.range-row--error]="latenessOverlapIds().has(range.id)"
+            >
+              <div class="relative">
+                <input
+                  type="number"
+                  min="0"
+                  class="range-input w-full pe-8"
+                  [ngModel]="range.fromMinutes"
+                  (ngModelChange)="updateLatenessFrom(range.id, $event)"
+                />
+                <span class="pointer-events-none absolute end-3 top-1/2 -translate-y-1/2 text-sm text-neutral-500">
+                  {{ 'POINTS.AUTOMATION.MINUTES_SUFFIX' | translate }}
+                </span>
+              </div>
+              <div class="relative">
+                <input
+                  type="number"
+                  min="0"
+                  class="range-input w-full pe-8"
+                  [ngModel]="range.toMinutes"
+                  (ngModelChange)="updateLatenessTo(range.id, $event)"
+                />
+                <span class="pointer-events-none absolute end-3 top-1/2 -translate-y-1/2 text-sm text-neutral-500">
+                  {{ 'POINTS.AUTOMATION.MINUTES_SUFFIX' | translate }}
+                </span>
+              </div>
+              <input
+                type="number"
+                min="0"
+                step="1"
+                class="range-input w-full"
+                [ngModel]="range.pointsDeduction"
+                (ngModelChange)="updateLatenessPoints(range.id, $event)"
+              />
+              <button
+                type="button"
+                class="inline-flex h-8 w-8 items-center justify-center text-red-500 hover:text-red-600"
+                [attr.aria-label]="'COMMON.DELETE' | translate"
+                (click)="removeLatenessRange(range.id)"
+              >
+                <svg aria-hidden="true" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 7h12M10 7V5h4v2m-7 0l1 12h8l1-12" />
+                </svg>
+              </button>
+            </div>
+          }
+
+          @if (hasLatenessOverlap()) {
+            <p class="px-4 py-3 text-sm text-red-600">
+              {{ 'POINTS.AUTOMATION.OVERLAP_ERROR' | translate }}
+            </p>
+          }
+        </div>
+
+        <div class="flex justify-end">
+          <button type="button" class="add-range-btn" (click)="addLatenessRange()">
+            {{ 'POINTS.AUTOMATION.ADD_RANGE' | translate }}
+          </button>
+        </div>
+      </section>
+
+      <div class="on-time-setup">
+        <span class="text-sm font-medium text-neutral-800">
+          {{ 'POINTS.AUTOMATION.ON_TIME_BONUS' | translate }}
+        </span>
+        <div class="flex items-center gap-3">
+          <span class="text-sm text-neutral-600">{{ 'POINTS.AUTOMATION.COL_VALUE' | translate }}</span>
+          <input
+            type="number"
+            min="0"
+            step="1"
+            class="range-input w-40"
+            [ngModel]="draftOnTimeBonus()"
+            (ngModelChange)="updateOnTimeBonus($event)"
+          />
+        </div>
+      </div>
     }
 
-    @if (mode() === 'setup' && activeTab() !== 'attendance') {
+    @if (mode() === 'setup') {
       <div class="flex justify-end gap-3 border-t border-[#E9EAF3] pt-4">
         <button
           type="button"

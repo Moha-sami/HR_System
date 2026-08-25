@@ -95,3 +95,15 @@
 .add-range-btn:hover {
   background: var(--color-primary-50);
 }
+
+.on-time-row,
+.on-time-setup {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  background: #fff;
+  padding: 0.875rem 1rem;
+}

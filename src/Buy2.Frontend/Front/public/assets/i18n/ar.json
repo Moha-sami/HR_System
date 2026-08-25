@@ -203,6 +203,7 @@
       "COL_POINTS_PER_DAY": "خصم النقاط / يوم تأخير",
       "COL_FROM_MIN": "من (د)",
       "COL_TO_MIN": "إلى (د)",
+      "MINUTES_SUFFIX": "د",
       "COL_POINTS_DEDUCTION": "خصم النقاط",
       "PERIOD": "فترة الأتمتة",
       "PERIOD_DAILY": "يومي",
