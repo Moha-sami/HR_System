@@ -1,7 +1,8 @@
-using Buy2.Application.Features.Sites.GetSites;
 using Buy2.Application.DTOs;
 using Buy2.Application.DTOs.Sites;
+using Buy2.Application.Features.Sites.GetSites;
 using Buy2.Application.Features.Sites.Regions;
+using Buy2.Application.Features.Sites.UpdateSite;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -28,6 +29,24 @@ public class GetSitesController : ControllerBase
         var result = await _mediator.Send(new GetSitesQuery(), cancellationToken);
         return Ok(result);
     }
+
+    [HttpPut("{id}")]
+    [Authorize(Roles = "Admin, Manager")]
+    [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<int>> UpdateSite(int id, CreateUpdateSiteDto dto, CancellationToken cancellation)
+    {
+        var command = new UpdateSiteCommand(
+            id, dto.SiteName, dto.Latitude, dto.Longitude, dto.MacWhitelist,
+            dto.MacAddress, dto.Address, dto.MapUrl, dto.PhoneNumber, dto.Instructions,
+            dto.RegionId, dto.MaxCapacity, dto.PreferredEmployeeIds, dto.OperationalHours
+            );
+        var site = await _mediator.Send(command, cancellation);
+        return Ok(site);
+    }
+
+
 
     [HttpGet("regions")]
     [ProducesResponseType(typeof(List<RegionListItemDto>), StatusCodes.Status200OK)]
