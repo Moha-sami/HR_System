@@ -1,0 +1,310 @@
+<section class="points-automation flex flex-col gap-6 p-6">
+  <ng-template #pointsTemplate let-row>
+    <span
+      class="text-sm font-medium"
+      [style.color]="displayPoints(row) >= 0 ? '#16a34a' : '#dc2626'"
+    >
+      {{ formatPoints(displayPoints(row)) }}
+    </span>
+  </ng-template>
+
+  <div class="flex items-center gap-3">
+    <button
+      type="button"
+      class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-neutral-200 text-primary-600 hover:bg-primary-50"
+      [attr.aria-label]="'POINTS.AUTOMATION.BACK' | translate"
+      (click)="navigateBack()"
+    >
+      <svg
+        aria-hidden="true"
+        class="h-4 w-4 rtl:rotate-180"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+      >
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15 18l-6-6 6-6" />
+      </svg>
+    </button>
+
+    <h1 class="text-2xl font-semibold text-neutral-900">
+      <button
+        type="button"
+        class="hover:text-primary-600"
+        (click)="navigateBack()"
+      >
+        {{ 'POINTS.TITLE' | translate }}
+      </button>
+      <span class="text-neutral-400"> &gt; </span>
+      <span>{{ 'POINTS.AUTOMATION.TITLE' | translate }}</span>
+      @if (mode() === 'setup') {
+        <span class="text-neutral-400"> &gt; </span>
+        <span>{{ 'POINTS.AUTOMATION.SETUP_TITLE' | translate }}</span>
+      }
+    </h1>
+  </div>
+
+  @if (loading()) {
+    <p class="text-sm text-neutral-500">
+      {{ 'POINTS.AUTOMATION.LOADING' | translate }}
+    </p>
+  } @else if (loadFailed() || !config()) {
+    <p class="text-sm text-red-600">
+      {{ 'POINTS.AUTOMATION.LOAD_ERROR' | translate }}
+    </p>
+  } @else {
+    <div class="grid grid-cols-1 gap-6 border-b border-neutral-200 pb-4 md:grid-cols-3">
+      <div
+        class="flex items-start justify-between gap-3 border-b-2 border-primary-600 pb-3"
+      >
+        <div>
+          <p class="text-base font-semibold text-primary-600">
+            {{ 'POINTS.AUTOMATION.PERFORMANCE' | translate }}
+          </p>
+          <p class="mt-1 text-xs text-neutral-400">
+            {{ 'POINTS.AUTOMATION.PERFORMANCE_HINT' | translate }}
+          </p>
+        </div>
+
+        <label class="toggle" [class.toggle--readonly]="mode() === 'view'">
+          <input
+            type="checkbox"
+            class="sr-only"
+            [ngModel]="draftEnabled()"
+            (ngModelChange)="draftEnabled.set($event)"
+            [disabled]="mode() === 'view'"
+          />
+          <span class="toggle__track"></span>
+        </label>
+      </div>
+
+      <div class="flex items-start justify-between gap-3 pb-3">
+        <div>
+          <p class="text-base font-semibold text-neutral-800">
+            {{ 'POINTS.AUTOMATION.TASKS' | translate }}
+          </p>
+          <p class="mt-1 text-xs text-neutral-400">
+            {{ 'POINTS.AUTOMATION.TASKS_HINT' | translate }}
+          </p>
+        </div>
+
+        <label class="toggle toggle--readonly">
+          <input type="checkbox" class="sr-only" [checked]="tasksEnabled()" disabled />
+          <span class="toggle__track"></span>
+        </label>
+      </div>
+
+      <div class="flex items-start justify-between gap-3 pb-3">
+        <div>
+          <p class="text-base font-semibold text-neutral-800">
+            {{ 'POINTS.AUTOMATION.ATTENDANCE' | translate }}
+          </p>
+          <p class="mt-1 text-xs text-neutral-400">
+            {{ 'POINTS.AUTOMATION.ATTENDANCE_HINT' | translate }}
+          </p>
+        </div>
+
+        <label class="toggle toggle--readonly">
+          <input type="checkbox" class="sr-only" [checked]="attendanceEnabled()" disabled />
+          <span class="toggle__track"></span>
+        </label>
+      </div>
+    </div>
+
+    @if (mode() === 'view') {
+      <app-table
+        [columns]="columns()"
+        [rows]="viewRows()"
+        [cellTemplates]="cellTemplates()"
+        size="sm"
+        (sortChange)="onSort($event)"
+      />
+
+      <div class="flex justify-end">
+        <app-button size="sm" (clicked)="enterSetup()">
+          {{ 'POINTS.AUTOMATION.EDIT' | translate }}
+        </app-button>
+      </div>
+    } @else {
+      <div class="overflow-hidden rounded-lg border border-neutral-200">
+        <div
+          class="grid items-center border-b border-neutral-200 bg-neutral-50 px-4 py-3 text-sm font-semibold text-neutral-700"
+          style="grid-template-columns: 1.4fr 1fr 1fr 1fr 48px"
+        >
+          <span>{{ 'POINTS.AUTOMATION.COL_TYPE' | translate }}</span>
+          <span>{{ 'POINTS.AUTOMATION.COL_FROM_PCT' | translate }}</span>
+          <span>{{ 'POINTS.AUTOMATION.COL_TO_PCT' | translate }}</span>
+          <span>{{ 'POINTS.AUTOMATION.COL_VALUE' | translate }}</span>
+          <span></span>
+        </div>
+
+        @for (range of draftRanges(); track range.id) {
+          <div
+            class="grid items-center gap-3 border-b border-neutral-100 px-4 py-3"
+            style="grid-template-columns: 1.4fr 1fr 1fr 1fr 48px"
+            [class.range-row--error]="overlapIds().has(range.id)"
+          >
+            <select
+              class="range-input"
+              [ngModel]="range.type"
+              (ngModelChange)="updateRangeType(range.id, $event)"
+            >
+              <option value="">
+                {{ 'POINTS.AUTOMATION.TYPE_PLACEHOLDER' | translate }}
+              </option>
+              <option value="Deduction">
+                {{ 'POINTS.AUTOMATION.TYPE_DEDUCTION' | translate }}
+              </option>
+              <option value="Reward">
+                {{ 'POINTS.AUTOMATION.TYPE_REWARD' | translate }}
+              </option>
+            </select>
+
+            <div class="relative">
+              <input
+                type="number"
+                min="0"
+                max="100"
+                class="range-input w-full pe-7"
+                [ngModel]="range.from"
+                (ngModelChange)="updateRangeFrom(range.id, $event)"
+              />
+              <span class="pointer-events-none absolute end-3 top-1/2 -translate-y-1/2 text-sm text-neutral-500">%</span>
+            </div>
+
+            <div class="relative">
+              <input
+                type="number"
+                min="0"
+                max="100"
+                class="range-input w-full pe-7"
+                [ngModel]="range.to"
+                (ngModelChange)="updateRangeTo(range.id, $event)"
+              />
+              <span class="pointer-events-none absolute end-3 top-1/2 -translate-y-1/2 text-sm text-neutral-500">%</span>
+            </div>
+
+            <input
+              type="number"
+              min="0"
+              step="1"
+              class="range-input w-full"
+              [ngModel]="range.value"
+              (ngModelChange)="updateRangeValue(range.id, $event)"
+            />
+
+            <button
+              type="button"
+              class="inline-flex h-8 w-8 items-center justify-center text-red-500 hover:text-red-600"
+              [attr.aria-label]="'COMMON.DELETE' | translate"
+              (click)="removeRange(range.id)"
+            >
+              <svg
+                aria-hidden="true"
+                class="h-5 w-5"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M6 7h12M10 7V5h4v2m-7 0l1 12h8l1-12"
+                />
+              </svg>
+            </button>
+          </div>
+        }
+
+        @if (hasOverlap()) {
+          <p class="px-4 py-3 text-sm text-red-600">
+            {{ 'POINTS.AUTOMATION.OVERLAP_ERROR' | translate }}
+          </p>
+        }
+      </div>
+
+      <div class="flex justify-end">
+        <button
+          type="button"
+          class="inline-flex items-center gap-1 rounded-lg border border-primary-600 px-4 py-2 text-sm font-medium text-primary-600 hover:bg-primary-50"
+          (click)="addRange()"
+        >
+          {{ 'POINTS.AUTOMATION.ADD_RANGE' | translate }}
+        </button>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-6">
+        <span class="text-sm font-medium text-neutral-700">
+          {{ 'POINTS.AUTOMATION.PERIOD' | translate }}
+        </span>
+
+        @for (period of periods; track period) {
+          <label class="inline-flex cursor-pointer items-center gap-2 text-sm text-neutral-800">
+            <input
+              type="radio"
+              name="automationPeriod"
+              class="h-4 w-4 accent-primary-600"
+              [value]="period"
+              [ngModel]="draftPeriod()"
+              (ngModelChange)="draftPeriod.set($event)"
+            />
+            {{ periodLabelKey(period) | translate }}
+          </label>
+        }
+      </div>
+
+      <div class="flex justify-end gap-3 border-t border-[#E9EAF3] pt-4">
+        <button
+          type="button"
+          class="px-4 py-2 text-sm font-medium text-primary-600 hover:text-primary-700"
+          (click)="onDiscard()"
+        >
+          {{ 'POINTS.AUTOMATION.DISCARD' | translate }}
+        </button>
+
+        <app-button
+          size="sm"
+          [disabled]="!canSave()"
+          [loading]="submitting()"
+          (clicked)="onSave()"
+        >
+          {{ 'POINTS.AUTOMATION.SAVE' | translate }}
+        </app-button>
+      </div>
+    }
+  }
+</section>
+
+@if (showSuccessModal()) {
+  <app-modal
+    size="small"
+    [showHeader]="false"
+    [showActions]="false"
+    [closeOnBackdrop]="false"
+    [closeOnEscape]="false"
+    (closed)="onSuccessClose()"
+  >
+    <app-modal-body>
+      <div class="flex flex-col items-center px-4 py-6 text-center">
+        <div
+          class="mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-green-500"
+        >
+          <svg
+            class="h-8 w-8 text-white"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            stroke-width="2.5"
+          >
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+          </svg>
+        </div>
+
+        <p class="whitespace-pre-line text-lg font-semibold text-neutral-900">
+          {{ 'POINTS.AUTOMATION.SUCCESS_PERFORMANCE' | translate }}
+        </p>
+      </div>
+    </app-modal-body>
+  </app-modal>
+}
