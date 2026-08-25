@@ -1,4 +1,4 @@
-﻿namespace Buy2.Application.DTOs.Sites;
+namespace Buy2.Application.DTOs.Sites;
 public record CreateUpdateSiteDto(
     string SiteName,
     double Latitude,

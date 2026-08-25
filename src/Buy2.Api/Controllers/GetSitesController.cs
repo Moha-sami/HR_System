@@ -1,12 +1,12 @@
-using Buy2.Application.Features.Sites.GetSites;
 using Buy2.Application.DTOs;
 using Buy2.Application.DTOs.Sites;
 using Buy2.Application.Features.Sites.CreateSite;
+using Buy2.Application.Features.Sites.GetSites;
 using Buy2.Application.Features.Sites.Regions;
+using Buy2.Application.Features.Sites.UpdateSite;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Diagnostics.SymbolStore;
 
 namespace Buy2.Api.Controllers;
 
@@ -44,10 +44,27 @@ public class GetSitesController : ControllerBase
         var command = new CreateSiteCommand(
             dto.SiteName, dto.Latitude, dto.Longitude, dto.MacWhitelist, dto.MacAddress, 
             dto.Address, dto.MapUrl, dto.PhoneNumber,  dto.Instructions,
-            dto.RegionId, dto.MaxCapacity,dto.PreferredEmployeeIds, dto.OperationalHours
+            dto.RegionId, dto.MaxCapacity, dto.PreferredEmployeeIds, dto.OperationalHours
         );
         var site = await _mediator.Send(command, cancellation);
         return Created($"/api/v1/sites/{site}", site);
+    }
+
+    // Update Site
+    [HttpPut("{id}")]
+    [Authorize(Roles = "Admin,Manager")]
+    [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<int>> UpdateSite(int id, CreateUpdateSiteDto dto, CancellationToken cancellation)
+    {
+        var command = new UpdateSiteCommand(
+            id, dto.SiteName, dto.Latitude, dto.Longitude, dto.MacWhitelist,
+            dto.MacAddress, dto.Address, dto.MapUrl, dto.PhoneNumber, dto.Instructions,
+            dto.RegionId, dto.MaxCapacity, dto.PreferredEmployeeIds, dto.OperationalHours
+        );
+        var site = await _mediator.Send(command, cancellation);
+        return Ok(site);
     }
 
     // Get All Regions
