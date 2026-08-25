@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Buy2.Application.Common.Interfaces;
@@ -42,9 +44,14 @@ public class GetJobsQueryHandler : IRequestHandler<GetJobsQuery, JobPaginatedRes
             query = query.Where(j => j.DepartmentId == filter.DepartmentId.Value);
         }
 
-        if (!string.IsNullOrWhiteSpace(filter.AttendanceType))
+        if (!string.IsNullOrWhiteSpace(filter.SeniorityLevel))
         {
-            query = query.Where(j => j.AttendanceType == filter.AttendanceType);
+            query = query.Where(j => j.SeniorityLevel == filter.SeniorityLevel);
+        }
+
+        if (!string.IsNullOrWhiteSpace(filter.WorkModel))
+        {
+            query = query.Where(j => j.AttendanceType == filter.WorkModel);
         }
 
         if (filter.IsActive.HasValue)
@@ -67,9 +74,10 @@ public class GetJobsQueryHandler : IRequestHandler<GetJobsQuery, JobPaginatedRes
             j.DepartmentId,
             j.Department != null ? j.Department.Name : "N/A",
             j.SeniorityLevel,
-            j.ExperienceYears,
             j.AttendanceType,
             j.Employees != null ? j.Employees.Count(e => !e.IsDeleted) : 0,
+            ParseJsonListCount(j.RequiredQualificationsJson),
+            j.ExperienceYears,
             j.IsActive,
             j.CreatedAt
         )).ToList();
@@ -77,5 +85,19 @@ public class GetJobsQueryHandler : IRequestHandler<GetJobsQuery, JobPaginatedRes
         var totalPages = pageSize > 0 ? (int)Math.Ceiling((double)totalCount / pageSize) : 0;
 
         return new JobPaginatedResponseDto<JobListItemDto>(items, totalCount, page, pageSize, totalPages);
+    }
+
+    private static int ParseJsonListCount(string? json)
+    {
+        if (string.IsNullOrWhiteSpace(json)) return 0;
+        try
+        {
+            var list = JsonSerializer.Deserialize<List<string>>(json);
+            return list?.Count ?? 0;
+        }
+        catch
+        {
+            return 0;
+        }
     }
 }
