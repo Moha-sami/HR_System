@@ -42,22 +42,12 @@ public class GetSitesController : ControllerBase
     public async Task<ActionResult<int>> CreateSite(CreateUpdateSiteDto dto, CancellationToken cancellation)
     {
         var command = new CreateSiteCommand(
-            dto.SiteName,
-            dto.Latitude,
-            dto.Longitude,
-            dto.MacWhitelist,
-            dto.MacAddress,
-            dto.Address,
-            dto.MapUrl,
-            dto.PhoneNumber,
-            dto.Instructions,
-            dto.RegionId,
-            dto.MaxCapacity,
-            dto.PreferredEmployeeIds,
-            dto.OperationalHours
+            dto.SiteName, dto.Latitude, dto.Longitude, dto.MacWhitelist, dto.MacAddress, 
+            dto.Address, dto.MapUrl, dto.PhoneNumber,  dto.Instructions,
+            dto.RegionId, dto.MaxCapacity,dto.PreferredEmployeeIds, dto.OperationalHours
         );
         var site = await _mediator.Send(command, cancellation);
-        return Ok(site);
+        return Created($"/api/v1/sites/{site}", site);
     }
 
     // Get All Regions

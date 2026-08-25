@@ -2,6 +2,7 @@
 using Buy2.Application.DTOs.Sites;
 using Buy2.Domain.Entities;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json;
 
@@ -27,17 +28,24 @@ public class CreateSiteCommandHandler : IRequestHandler<CreateSiteCommand, int>
 {
     private readonly IRepository<Site> _siteRepository;
     private readonly IRepository<Region> _regionRepository;
+    private readonly IRepository<Employee> _employeeRepository;
     private readonly IUnitOfWork _unitOfWork;
 
-    public CreateSiteCommandHandler(IRepository<Site> siteRepository, IRepository<Region> regionRepository, IUnitOfWork unitOfWork)
+    public CreateSiteCommandHandler(IRepository<Site> siteRepository, IRepository<Region> regionRepository, IRepository<Employee> employeeRepository, IUnitOfWork unitOfWork)
     {
         _siteRepository = siteRepository;
         _regionRepository = regionRepository;
+        _employeeRepository = employeeRepository;
         _unitOfWork = unitOfWork;
     }
 
     public async Task<int> Handle(CreateSiteCommand command, CancellationToken cancellationToken)
     {
+        if (string.IsNullOrWhiteSpace(command.SiteName))
+        {
+            throw new ValidationException("Site name is required.");
+        }
+
         var siteName = command.SiteName.Trim();
         var existingSite = await _siteRepository.
             AnyAsync(s => s.SiteName.ToLower() == siteName.ToLower()
@@ -55,13 +63,39 @@ public class CreateSiteCommandHandler : IRequestHandler<CreateSiteCommand, int>
         {
             throw new ValidationException("Selected region does not exist.");
         }
+        var preferredEmployeeId = (command.PreferredEmployeeIds ?? new List<int>())
+            .Distinct()
+            .ToList();
 
-        var preferredEmployee = command.PreferredEmployeeIds
+        var existingPreferredEmployee = await _employeeRepository
+            .Query()
+            .CountAsync(e => preferredEmployeeId.Contains(e.Id), cancellationToken);
+
+        if (existingPreferredEmployee != preferredEmployeeId.Count)
+        {
+            throw new ValidationException("One or more selected employees do not exist.");
+        }
+
+        var preferredEmployee = preferredEmployeeId
             .Select(eId => new SitePreferredEmployee
             {
                 EmployeeId = eId
             }).ToList();
-        var operationalHours = command.OperationalHours
+
+
+
+        var operationalHoursData = command.OperationalHours ?? new List<SiteOperationalHourDto>();
+
+        var duplicatDay = operationalHoursData
+            .GroupBy(e => e.Day)
+            .Any(g => g.Count() > 1);
+
+        if (duplicatDay)
+        {
+            throw new ValidationException("Operational hours cannot contain duplicate days.");
+        }
+
+        var operationalHours = operationalHoursData
             .Select(houre => new SiteOperationalHour
             {
                 DayOfWeek = houre.Day,
@@ -70,12 +104,13 @@ public class CreateSiteCommandHandler : IRequestHandler<CreateSiteCommand, int>
                 CloseTime = houre.To
             }).ToList();
 
+        var macWhiteList = command.MacWhitelist ?? new List<string>();
         var site = new Site
         {
             SiteName = siteName,
             Latitude = command.Latitude,
             Longitude = command.Longitude,
-            MacAddressWhitelistJson = JsonSerializer.Serialize(command.MacWhitelist),
+            MacAddressWhitelistJson = JsonSerializer.Serialize(macWhiteList),
             MacAddress = command.MacAddress,
             Address = command.Address,
             MapUrl = command.MapUrl,
@@ -93,4 +128,3 @@ public class CreateSiteCommandHandler : IRequestHandler<CreateSiteCommand, int>
         return site.Id;
     }
 }
-
