@@ -1,4 +1,4 @@
-﻿using Buy2.Application.Common.Interfaces;
+using Buy2.Application.Common.Interfaces;
 using Buy2.Application.DTOs.Sites;
 using Buy2.Domain.Entities;
 using MediatR;
@@ -49,6 +49,11 @@ public class UpdateSiteCommandHandler : IRequestHandler<UpdateSiteCommand, int>
         {
             throw new KeyNotFoundException("Site not found.");
         }
+        if (string.IsNullOrWhiteSpace(command.SiteName))
+        {
+            throw new ValidationException("Site name is required.");
+        }
+
         var siteName = command.SiteName.Trim();
         var existingSiteName = await _siteRepository
             .AnyAsync(s => s.Id != command.Id && s.SiteName.ToLower() == siteName.ToLower(),
@@ -64,10 +69,12 @@ public class UpdateSiteCommandHandler : IRequestHandler<UpdateSiteCommand, int>
             throw new ValidationException("Selected region does not exist.");
         }
 
+        var macWhitelist = command.MacWhitelist ?? new List<string>();
+
         site.SiteName = siteName;
         site.Latitude = command.Latitude;
         site.Longitude = command.Longitude;
-        site.MacAddressWhitelistJson = JsonSerializer.Serialize(command.MacWhitelist);
+        site.MacAddressWhitelistJson = JsonSerializer.Serialize(macWhitelist);
         site.MacAddress = command.MacAddress;
         site.Address = command.Address;
         site.MapUrl = command.MapUrl;
@@ -76,8 +83,8 @@ public class UpdateSiteCommandHandler : IRequestHandler<UpdateSiteCommand, int>
         site.RegionId = command.RegionId;
         site.MaxCapacity = command.MaxCapacity;
 
-        var employeeCommand = command.PreferredEmployeeIds.Distinct().ToList();
-        if (employeeCommand.Count() > 0)
+        var employeeCommand = (command.PreferredEmployeeIds ?? new List<int>()).Distinct().ToList();
+        if (employeeCommand.Count > 0)
         {
             var employeeExistsCount = await _employeeRepository
                 .Query()
@@ -97,16 +104,17 @@ public class UpdateSiteCommandHandler : IRequestHandler<UpdateSiteCommand, int>
             });
         }
 
-        var duplicateDay = command.OperationalHours
+        var operationalHoursData = command.OperationalHours ?? new List<SiteOperationalHourDto>();
+        var duplicateDay = operationalHoursData
             .GroupBy(o => o.Day)
             .Any(g => g.Count() > 1);
         if (duplicateDay)
         {
-            throw new ValidationException("Invalid operational hours.");
+            throw new ValidationException("Invalid operational hours: cannot contain duplicate days.");
         }
 
         site.OperationalHours.Clear();
-        foreach (var op in command.OperationalHours)
+        foreach (var op in operationalHoursData)
         {
             site.OperationalHours.Add(new SiteOperationalHour
             {
