@@ -38,6 +38,7 @@ public class Buy2DbContext : DbContext
     public DbSet<User> Users => Set<User>();
     public DbSet<Organization> Organizations => Set<Organization>();
     public DbSet<Department> Departments => Set<Department>();
+    public DbSet<Qualification> Qualifications => Set<Qualification>();
     public DbSet<Badge> Badges => Set<Badge>();
     public DbSet<Post> Posts => Set<Post>();
     public DbSet<Comment> Comments => Set<Comment>();

@@ -4,6 +4,20 @@ All notable changes to the Buy2 HR Management System (HRMS) project will be docu
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 2026-08-25 — JobRole, Department, Qualification Domain Entities Schema and EF Core Mapping [SCRUM-278]
+- Files:
+  - `src/Buy2.Domain/Entities/JobRole.cs`
+  - `src/Buy2.Domain/Entities/Department.cs`
+  - `src/Buy2.Domain/Entities/Qualification.cs`
+  - `src/Buy2.Infrastructure/Persistence/Configurations/JobRoleConfiguration.cs`
+  - `src/Buy2.Infrastructure/Persistence/Configurations/DepartmentConfiguration.cs`
+  - `src/Buy2.Infrastructure/Persistence/Configurations/QualificationConfiguration.cs`
+  - `src/Buy2.Infrastructure/Persistence/Buy2DbContext.cs`
+  - `tests/Buy2.Domain.Tests/Jobs/JobEntityTests.cs`
+- Summary: Implemented domain entities and EF Core entity configurations for JobRole, Department, and Qualification. Configured domain models extending `BaseEntity` with audit properties (`CreatedAt`, `UpdatedAt`, `IsActive`), navigation properties, default values, JSON storage properties (`RequiredQualificationsJson`, `OnlineWorkdaysJson`, `OfflineWorkdaysJson`), composite index `(Title, DepartmentId)` and `Restrict` delete behavior on `JobRole`, unique index on `Department.Name`, and unique index on `Qualification.Name`. Registered `DbSet<JobRole>`, `DbSet<Department>`, and `DbSet<Qualification>` in `Buy2DbContext`. Added comprehensive domain entity unit tests covering default value initialization and property assignments in `JobEntityTests.cs`.
+- Tests: PASS
+- Security review: PASS
+
 ## 2026-08-25 — Job Listing, Details & Roster Management (GET /api/v1/jobs, GET /api/v1/jobs/{id}, GET /api/v1/jobs/{id}/employees) [SCRUM-277]
 - Files:
   - `src/Buy2.Application/Features/Jobs/DTOs/JobDtos.cs`
