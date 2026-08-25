@@ -206,6 +206,7 @@
       "COL_POINTS_PER_DAY": "Points Deduction/Day delay",
       "COL_FROM_MIN": "From (m)",
       "COL_TO_MIN": "To (m)",
+      "MINUTES_SUFFIX": "m",
       "COL_POINTS_DEDUCTION": "Points Deduction",
       "PERIOD": "Automation Period",
       "PERIOD_DAILY": "Daily",
