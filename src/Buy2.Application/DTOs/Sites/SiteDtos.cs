@@ -1,9 +1,9 @@
-﻿namespace Buy2.Application.DTOs.Sites;
+namespace Buy2.Application.DTOs.Sites;
 public record CreateUpdateSiteDto(
     string SiteName,
     double Latitude,
     double Longitude,
-    List<string>MacWhitelist,
+    List<string> MacWhitelist,
     string MacAddress,
     string Address,
     string MapUrl,

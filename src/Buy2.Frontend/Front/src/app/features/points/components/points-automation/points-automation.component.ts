@@ -21,11 +21,19 @@ import {
   type ColumnDef,
 } from '../../../../shared/components/table/table.component';
 import type {
+  AttendanceAutomation,
+  AutomationCategory,
   AutomationPeriod,
+  LatenessRange,
+  LatenessRangeDraft,
   PerformanceRange,
   PerformanceRangeDraft,
   PerformanceRangeType,
   PointsAutomationConfig,
+  TaskDeadlineDraft,
+  TaskDeadlineRule,
+  TaskPriority,
+  TasksAutomation,
 } from '../../models/points-automation';
 import { PointsAutomationService } from '../../service/points-automation.service';
 
@@ -50,6 +58,12 @@ export class PointsAutomationComponent implements OnInit {
 
   private readonly pointsTemplate =
     viewChild<TemplateRef<CellContext>>('pointsTemplate');
+  private readonly deadlinePointsTemplate =
+    viewChild<TemplateRef<CellContext>>('deadlinePointsTemplate');
+  private readonly minutesTemplate =
+    viewChild<TemplateRef<CellContext>>('minutesTemplate');
+  private readonly latenessPointsTemplate =
+    viewChild<TemplateRef<CellContext>>('latenessPointsTemplate');
 
   readonly periods: AutomationPeriod[] = [
     'daily',
@@ -58,19 +72,34 @@ export class PointsAutomationComponent implements OnInit {
     'monthly',
   ];
 
+  readonly priorities: TaskPriority[] = ['Urgent', 'High', 'Medium', 'Low'];
+
   readonly loading = signal(true);
   readonly loadFailed = signal(false);
   readonly config = signal<PointsAutomationConfig | null>(null);
   readonly mode = signal<'view' | 'setup'>('view');
+  readonly activeTab = signal<AutomationCategory>('performance');
   readonly submitting = signal(false);
   readonly showSuccessModal = signal(false);
+  readonly successMessageKey = signal('POINTS.AUTOMATION.SUCCESS_PERFORMANCE');
 
-  readonly draftEnabled = signal(false);
+  readonly draftEnabledCategory = signal<AutomationCategory>('performance');
   readonly draftPeriod = signal<AutomationPeriod>('daily');
   readonly draftRanges = signal<PerformanceRangeDraft[]>([]);
+  readonly draftTasksPeriod = signal<AutomationPeriod>('daily');
+  readonly draftCompletionRanges = signal<PerformanceRangeDraft[]>([]);
+  readonly draftDeadlineRules = signal<TaskDeadlineDraft[]>([]);
+  readonly draftAttendancePeriod = signal<AutomationPeriod>('daily');
+  readonly draftAttendanceRanges = signal<PerformanceRangeDraft[]>([]);
+  readonly draftLatenessRanges = signal<LatenessRangeDraft[]>([]);
+  readonly draftOnTimeBonus = signal(0);
 
   readonly sortColumn = signal('');
   readonly sortDirection = signal<'asc' | 'desc'>('asc');
+  readonly deadlineSortColumn = signal('');
+  readonly deadlineSortDirection = signal<'asc' | 'desc'>('asc');
+  readonly latenessSortColumn = signal('');
+  readonly latenessSortDirection = signal<'asc' | 'desc'>('asc');
 
   private readonly columnLabels = toSignal(
     this.translate.stream([
@@ -78,6 +107,11 @@ export class PointsAutomationComponent implements OnInit {
       'POINTS.AUTOMATION.COL_FROM',
       'POINTS.AUTOMATION.COL_TO',
       'POINTS.AUTOMATION.COL_POINTS',
+      'POINTS.AUTOMATION.COL_PRIORITY',
+      'POINTS.AUTOMATION.COL_POINTS_PER_DAY',
+      'POINTS.AUTOMATION.COL_FROM_MIN',
+      'POINTS.AUTOMATION.COL_TO_MIN',
+      'POINTS.AUTOMATION.COL_POINTS_DEDUCTION',
     ]),
     {
       initialValue: {
@@ -85,6 +119,11 @@ export class PointsAutomationComponent implements OnInit {
         'POINTS.AUTOMATION.COL_FROM': 'From',
         'POINTS.AUTOMATION.COL_TO': 'To',
         'POINTS.AUTOMATION.COL_POINTS': 'Points',
+        'POINTS.AUTOMATION.COL_PRIORITY': 'Task Priority',
+        'POINTS.AUTOMATION.COL_POINTS_PER_DAY': 'Points Deduction/Day delay',
+        'POINTS.AUTOMATION.COL_FROM_MIN': 'From (m)',
+        'POINTS.AUTOMATION.COL_TO_MIN': 'To (m)',
+        'POINTS.AUTOMATION.COL_POINTS_DEDUCTION': 'Points Deduction',
       },
     }
   );
@@ -121,29 +160,104 @@ export class PointsAutomationComponent implements OnInit {
     ];
   });
 
+  readonly latenessColumns = computed<ColumnDef[]>(() => {
+    const labels = this.columnLabels();
+
+    return [
+      {
+        key: 'fromMinutes',
+        label: labels['POINTS.AUTOMATION.COL_FROM'],
+        width: '1fr',
+        sortable: true,
+        template: 'minutes',
+      },
+      {
+        key: 'toMinutes',
+        label: labels['POINTS.AUTOMATION.COL_TO'],
+        width: '1fr',
+        sortable: true,
+        template: 'minutes',
+      },
+      {
+        key: 'pointsDeduction',
+        label: labels['POINTS.AUTOMATION.COL_POINTS'],
+        width: '1fr',
+        sortable: true,
+        template: 'latenessPoints',
+      },
+    ];
+  });
+
+  readonly deadlineColumns = computed<ColumnDef[]>(() => {
+    const labels = this.columnLabels();
+
+    return [
+      {
+        key: 'priority',
+        label: labels['POINTS.AUTOMATION.COL_PRIORITY'],
+        width: '1.2fr',
+        sortable: true,
+      },
+      {
+        key: 'pointsPerDayDelay',
+        label: labels['POINTS.AUTOMATION.COL_POINTS_PER_DAY'],
+        width: '1.4fr',
+        sortable: true,
+        template: 'deadlinePoints',
+      },
+    ];
+  });
+
   readonly cellTemplates = computed(() => {
-    const pointsTemplate = this.pointsTemplate();
     const templates = new Map<string, TemplateRef<CellContext>>();
+    const pointsTemplate = this.pointsTemplate();
+    const deadlinePointsTemplate = this.deadlinePointsTemplate();
+    const minutesTemplate = this.minutesTemplate();
+    const latenessPointsTemplate = this.latenessPointsTemplate();
 
     if (pointsTemplate) {
       templates.set('points', pointsTemplate);
     }
 
+    if (deadlinePointsTemplate) {
+      templates.set('deadlinePoints', deadlinePointsTemplate);
+    }
+
+    if (minutesTemplate) {
+      templates.set('minutes', minutesTemplate);
+    }
+
+    if (latenessPointsTemplate) {
+      templates.set('latenessPoints', latenessPointsTemplate);
+    }
+
     return templates;
   });
 
-  readonly viewRows = computed(() => {
-    const ranges = this.config()?.performance.ranges ?? [];
-    const column = this.sortColumn();
-    const direction = this.sortDirection();
+  readonly viewRows = computed(() =>
+    this.sortRanges(this.config()?.performance.ranges ?? [], this.sortColumn(), this.sortDirection())
+  );
+
+  readonly viewAttendanceRows = computed(() =>
+    this.sortRanges(
+      this.config()?.attendance.attendanceRanges ?? [],
+      this.sortColumn(),
+      this.sortDirection()
+    )
+  );
+
+  readonly viewLatenessRows = computed(() => {
+    const ranges = this.config()?.attendance.latenessRanges ?? [];
+    const column = this.latenessSortColumn();
+    const direction = this.latenessSortDirection();
 
     if (!column) {
       return ranges;
     }
 
     return [...ranges].sort((first, second) => {
-      const firstValue = first[column as keyof PerformanceRange];
-      const secondValue = second[column as keyof PerformanceRange];
+      const firstValue = first[column as keyof LatenessRange];
+      const secondValue = second[column as keyof LatenessRange];
 
       if (typeof firstValue === 'number' && typeof secondValue === 'number') {
         return direction === 'asc' ? firstValue - secondValue : secondValue - firstValue;
@@ -155,20 +269,67 @@ export class PointsAutomationComponent implements OnInit {
     });
   });
 
-  readonly overlapIds = computed(() => {
-    const ranges = this.draftRanges().filter(
-      (range) => !this.isBlankRange(range) && this.isValidRange(range)
+  readonly viewCompletionRows = computed(() =>
+    this.sortRanges(
+      this.config()?.tasks.completionRanges ?? [],
+      this.sortColumn(),
+      this.sortDirection()
+    )
+  );
+
+  readonly viewDeadlineRows = computed(() => {
+    const rules = this.config()?.tasks.deadlineRules ?? [];
+    const column = this.deadlineSortColumn();
+    const direction = this.deadlineSortDirection();
+
+    if (!column) {
+      return rules;
+    }
+
+    return [...rules].sort((first, second) => {
+      const firstValue = first[column as keyof TaskDeadlineRule];
+      const secondValue = second[column as keyof TaskDeadlineRule];
+
+      if (typeof firstValue === 'number' && typeof secondValue === 'number') {
+        return direction === 'asc' ? firstValue - secondValue : secondValue - firstValue;
+      }
+
+      return direction === 'asc'
+        ? String(firstValue).localeCompare(String(secondValue))
+        : String(secondValue).localeCompare(String(firstValue));
+    });
+  });
+
+  readonly overlapIds = computed(() =>
+    this.findOverlapIds(this.draftRanges())
+  );
+
+  readonly completionOverlapIds = computed(() =>
+    this.findOverlapIds(this.draftCompletionRanges())
+  );
+
+  readonly attendanceOverlapIds = computed(() =>
+    this.findOverlapIds(this.draftAttendanceRanges())
+  );
+
+  readonly latenessOverlapIds = computed(() =>
+    this.findLatenessOverlapIds(this.draftLatenessRanges())
+  );
+
+  readonly duplicatePriorityIds = computed(() => {
+    const rules = this.draftDeadlineRules().filter(
+      (rule) => !this.isBlankDeadline(rule)
     );
     const overlapping = new Set<number>();
 
-    for (let index = 0; index < ranges.length; index += 1) {
-      for (let next = index + 1; next < ranges.length; next += 1) {
-        const first = ranges[index];
-        const second = ranges[next];
-
-        if (first.from <= second.to && second.from <= first.to) {
-          overlapping.add(first.id);
-          overlapping.add(second.id);
+    for (let index = 0; index < rules.length; index += 1) {
+      for (let next = index + 1; next < rules.length; next += 1) {
+        if (
+          rules[index].priority &&
+          rules[index].priority === rules[next].priority
+        ) {
+          overlapping.add(rules[index].id);
+          overlapping.add(rules[next].id);
         }
       }
     }
@@ -177,28 +338,75 @@ export class PointsAutomationComponent implements OnInit {
   });
 
   readonly hasOverlap = computed(() => this.overlapIds().size > 0);
+  readonly hasCompletionOverlap = computed(
+    () => this.completionOverlapIds().size > 0
+  );
+  readonly hasAttendanceOverlap = computed(
+    () => this.attendanceOverlapIds().size > 0
+  );
+  readonly hasLatenessOverlap = computed(() => this.latenessOverlapIds().size > 0);
+  readonly hasDuplicatePriority = computed(
+    () => this.duplicatePriorityIds().size > 0
+  );
+
+  readonly enabledCategory = computed(() => {
+    if (this.mode() === 'setup') {
+      return this.draftEnabledCategory();
+    }
+
+    return this.enabledCategoryFrom(this.config());
+  });
 
   readonly canSave = computed(() => {
     if (this.submitting() || !this.config()) {
       return false;
     }
 
+    if (this.activeTab() === 'attendance') {
+      const attendanceRanges = this.draftAttendanceRanges().filter(
+        (range) => !this.isBlankRange(range)
+      );
+      const latenessRanges = this.draftLatenessRanges().filter(
+        (range) => !this.isBlankLateness(range)
+      );
+
+      return (
+        attendanceRanges.every((range) => this.isValidRange(range)) &&
+        latenessRanges.every((range) => this.isValidLateness(range)) &&
+        !this.hasAttendanceOverlap() &&
+        !this.hasLatenessOverlap() &&
+        this.draftOnTimeBonus() >= 0 &&
+        Number.isInteger(this.draftOnTimeBonus())
+      );
+    }
+
+    if (this.activeTab() === 'tasks') {
+      const completion = this.draftCompletionRanges().filter(
+        (range) => !this.isBlankRange(range)
+      );
+      const deadlines = this.draftDeadlineRules().filter(
+        (rule) => !this.isBlankDeadline(rule)
+      );
+
+      return (
+        completion.every((range) => this.isValidRange(range)) &&
+        deadlines.every((rule) => this.isValidDeadline(rule)) &&
+        !this.hasCompletionOverlap() &&
+        !this.hasDuplicatePriority()
+      );
+    }
+
     const committed = this.draftRanges().filter((range) => !this.isBlankRange(range));
-    const allValid = committed.every((range) => this.isValidRange(range));
-
-    return allValid && !this.hasOverlap();
+    return committed.every((range) => this.isValidRange(range)) && !this.hasOverlap();
   });
-
-  readonly tasksEnabled = computed(() => this.readEnabled(this.config()?.tasks));
-  readonly attendanceEnabled = computed(() =>
-    this.readEnabled(this.config()?.attendance)
-  );
 
   ngOnInit(): void {
     this.automationService.getConfig().subscribe({
       next: (config) => {
-        this.config.set(config);
-        this.applyDraft(config);
+        const normalized = this.normalizeConfig(config);
+        this.config.set(normalized);
+        this.activeTab.set(this.enabledCategoryFrom(normalized));
+        this.applyDraft(normalized);
         this.loading.set(false);
       },
       error: (err: unknown) => {
@@ -211,6 +419,27 @@ export class PointsAutomationComponent implements OnInit {
 
   navigateBack(): void {
     void this.router.navigate(['/points']);
+  }
+
+  selectTab(tab: AutomationCategory): void {
+    this.activeTab.set(tab);
+    this.sortColumn.set('');
+    this.deadlineSortColumn.set('');
+    this.latenessSortColumn.set('');
+  }
+
+  onToggle(tab: AutomationCategory, enabled: boolean): void {
+    if (!enabled) {
+      return;
+    }
+
+    if (this.mode() === 'setup') {
+      this.draftEnabledCategory.set(tab);
+      this.activeTab.set(tab);
+      return;
+    }
+
+    this.enableCategory(tab);
   }
 
   enterSetup(): void {
@@ -237,35 +466,60 @@ export class PointsAutomationComponent implements OnInit {
       return;
     }
 
-    const ranges: PerformanceRange[] = this.draftRanges()
-      .filter((range) => !this.isBlankRange(range) && this.isValidRange(range))
-      .map((range) => ({
-        id: range.id,
-        type: range.type as PerformanceRangeType,
-        from: range.from,
-        to: range.to,
-        value: range.value,
-      }));
+    const enabled = this.draftEnabledCategory();
+    let payload = this.withExclusiveEnabled(config, enabled);
 
-    const enabled = this.draftEnabled();
-    const payload: PointsAutomationConfig = {
-      ...config,
-      activeCategory: enabled ? 'performance' : config.activeCategory,
-      performance: {
-        enabled,
-        period: this.draftPeriod(),
-        ranges,
-      },
-    };
+    if (this.activeTab() === 'tasks') {
+      payload = {
+        ...payload,
+        tasks: {
+          ...payload.tasks,
+          enabled: enabled === 'tasks',
+          period: this.draftTasksPeriod(),
+          completionRanges: this.commitRanges(this.draftCompletionRanges()),
+          deadlineRules: this.commitDeadlines(this.draftDeadlineRules()),
+        },
+      };
+    } else if (this.activeTab() === 'attendance') {
+      payload = {
+        ...payload,
+        attendance: {
+          ...payload.attendance,
+          enabled: enabled === 'attendance',
+          period: this.draftAttendancePeriod(),
+          attendanceRanges: this.commitRanges(this.draftAttendanceRanges()),
+          latenessRanges: this.commitLateness(this.draftLatenessRanges()),
+          onTimeBonus: this.draftOnTimeBonus(),
+        },
+      };
+    } else {
+      payload = {
+        ...payload,
+        performance: {
+          ...payload.performance,
+          enabled: enabled === 'performance',
+          period: this.draftPeriod(),
+          ranges: this.commitRanges(this.draftRanges()),
+        },
+      };
+    }
 
     this.submitting.set(true);
 
     this.automationService.saveConfig(payload).subscribe({
       next: (saved) => {
-        this.config.set(saved);
-        this.applyDraft(saved);
+        const normalized = this.normalizeConfig(saved);
+        this.config.set(normalized);
+        this.applyDraft(normalized);
         this.submitting.set(false);
         this.mode.set('view');
+        this.successMessageKey.set(
+          this.activeTab() === 'tasks'
+            ? 'POINTS.AUTOMATION.SUCCESS_TASKS'
+            : this.activeTab() === 'attendance'
+              ? 'POINTS.AUTOMATION.SUCCESS_ATTENDANCE'
+              : 'POINTS.AUTOMATION.SUCCESS_PERFORMANCE'
+        );
         this.showSuccessModal.set(true);
       },
       error: (err: unknown) => {
@@ -280,12 +534,37 @@ export class PointsAutomationComponent implements OnInit {
   }
 
   addRange(): void {
-    const nextId =
-      Math.max(0, ...this.draftRanges().map((range) => range.id), 0) + 1;
-
     this.draftRanges.update((ranges) => [
       ...ranges,
-      { id: nextId, type: '', from: 0, to: 0, value: 0 },
+      { id: this.nextId(ranges), type: '', from: 0, to: 0, value: 0 },
+    ]);
+  }
+
+  addCompletionRange(): void {
+    this.draftCompletionRanges.update((ranges) => [
+      ...ranges,
+      { id: this.nextId(ranges), type: '', from: 0, to: 0, value: 0 },
+    ]);
+  }
+
+  addDeadlineRule(): void {
+    this.draftDeadlineRules.update((rules) => [
+      ...rules,
+      { id: this.nextId(rules), priority: '', pointsPerDayDelay: 0 },
+    ]);
+  }
+
+  addAttendanceRange(): void {
+    this.draftAttendanceRanges.update((ranges) => [
+      ...ranges,
+      { id: this.nextId(ranges), type: '', from: 0, to: 0, value: 0 },
+    ]);
+  }
+
+  addLatenessRange(): void {
+    this.draftLatenessRanges.update((ranges) => [
+      ...ranges,
+      { id: this.nextId(ranges), fromMinutes: 0, toMinutes: 0, pointsDeduction: 0 },
     ]);
   }
 
@@ -293,22 +572,116 @@ export class PointsAutomationComponent implements OnInit {
     this.draftRanges.update((ranges) => ranges.filter((range) => range.id !== id));
   }
 
+  removeCompletionRange(id: number): void {
+    this.draftCompletionRanges.update((ranges) =>
+      ranges.filter((range) => range.id !== id)
+    );
+  }
+
+  removeDeadlineRule(id: number): void {
+    this.draftDeadlineRules.update((rules) => rules.filter((rule) => rule.id !== id));
+  }
+
+  removeAttendanceRange(id: number): void {
+    this.draftAttendanceRanges.update((ranges) =>
+      ranges.filter((range) => range.id !== id)
+    );
+  }
+
+  removeLatenessRange(id: number): void {
+    this.draftLatenessRanges.update((ranges) =>
+      ranges.filter((range) => range.id !== id)
+    );
+  }
+
   updateRangeType(id: number, type: string): void {
-    this.patchRange(id, {
+    this.patchRange(this.draftRanges, id, {
+      type: type === 'Reward' || type === 'Deduction' ? type : '',
+    });
+  }
+
+  updateCompletionType(id: number, type: string): void {
+    this.patchRange(this.draftCompletionRanges, id, {
+      type: type === 'Reward' || type === 'Deduction' ? type : '',
+    });
+  }
+
+  updateAttendanceType(id: number, type: string): void {
+    this.patchRange(this.draftAttendanceRanges, id, {
       type: type === 'Reward' || type === 'Deduction' ? type : '',
     });
   }
 
   updateRangeFrom(id: number, value: number | string): void {
-    this.patchRange(id, { from: this.toNumber(value) });
+    this.patchRange(this.draftRanges, id, { from: this.toNumber(value) });
+  }
+
+  updateCompletionFrom(id: number, value: number | string): void {
+    this.patchRange(this.draftCompletionRanges, id, { from: this.toNumber(value) });
+  }
+
+  updateAttendanceFrom(id: number, value: number | string): void {
+    this.patchRange(this.draftAttendanceRanges, id, { from: this.toNumber(value) });
   }
 
   updateRangeTo(id: number, value: number | string): void {
-    this.patchRange(id, { to: this.toNumber(value) });
+    this.patchRange(this.draftRanges, id, { to: this.toNumber(value) });
+  }
+
+  updateCompletionTo(id: number, value: number | string): void {
+    this.patchRange(this.draftCompletionRanges, id, { to: this.toNumber(value) });
+  }
+
+  updateAttendanceTo(id: number, value: number | string): void {
+    this.patchRange(this.draftAttendanceRanges, id, { to: this.toNumber(value) });
   }
 
   updateRangeValue(id: number, value: number | string): void {
-    this.patchRange(id, { value: Math.trunc(this.toNumber(value)) });
+    this.patchRange(this.draftRanges, id, { value: Math.trunc(this.toNumber(value)) });
+  }
+
+  updateCompletionValue(id: number, value: number | string): void {
+    this.patchRange(this.draftCompletionRanges, id, {
+      value: Math.trunc(this.toNumber(value)),
+    });
+  }
+
+  updateAttendanceValue(id: number, value: number | string): void {
+    this.patchRange(this.draftAttendanceRanges, id, {
+      value: Math.trunc(this.toNumber(value)),
+    });
+  }
+
+  updateDeadlinePriority(id: number, priority: string): void {
+    this.draftDeadlineRules.update((rules) =>
+      rules.map((rule) => (rule.id === id ? { ...rule, priority } : rule))
+    );
+  }
+
+  updateDeadlinePoints(id: number, value: number | string): void {
+    this.draftDeadlineRules.update((rules) =>
+      rules.map((rule) =>
+        rule.id === id
+          ? { ...rule, pointsPerDayDelay: Math.trunc(this.toNumber(value)) }
+          : rule
+      )
+    );
+  }
+
+  updateLatenessFrom(id: number, value: number | string): void {
+    this.patchLateness(id, { fromMinutes: this.toNumber(value) });
+  }
+
+  updateLatenessTo(id: number, value: number | string): void {
+    this.patchLateness(id, { toMinutes: this.toNumber(value) });
+  }
+
+  updateLatenessPoints(id: number, value: number | string): void {
+    this.patchLateness(id, { pointsDeduction: Math.trunc(this.toNumber(value)) });
+  }
+
+  updateOnTimeBonus(value: number | string): void {
+    this.draftOnTimeBonus.set(Math.trunc(this.toNumber(value)));
   }
 
   onSort(event: { column: string; direction: 'asc' | 'desc' }): void {
@@ -316,8 +689,22 @@ export class PointsAutomationComponent implements OnInit {
     this.sortDirection.set(event.direction);
   }
 
+  onDeadlineSort(event: { column: string; direction: 'asc' | 'desc' }): void {
+    this.deadlineSortColumn.set(event.column);
+    this.deadlineSortDirection.set(event.direction);
+  }
+
+  onLatenessSort(event: { column: string; direction: 'asc' | 'desc' }): void {
+    this.latenessSortColumn.set(event.column);
+    this.latenessSortDirection.set(event.direction);
+  }
+
   displayPoints(range: PerformanceRange): number {
     return range.type === 'Deduction' ? -Math.abs(range.value) : Math.abs(range.value);
+  }
+
+  displayDeadlinePoints(points: number): number {
+    return -Math.abs(points);
   }
 
   formatPoints(points: number): string {
@@ -343,6 +730,19 @@ export class PointsAutomationComponent implements OnInit {
     }
   }
 
+  priorityLabelKey(priority: TaskPriority): string {
+    switch (priority) {
+      case 'Urgent':
+        return 'POINTS.AUTOMATION.PRIORITY_URGENT';
+      case 'High':
+        return 'POINTS.AUTOMATION.PRIORITY_HIGH';
+      case 'Medium':
+        return 'POINTS.AUTOMATION.PRIORITY_MEDIUM';
+      case 'Low':
+        return 'POINTS.AUTOMATION.PRIORITY_LOW';
+    }
+  }
+
   isBlankRange(range: PerformanceRangeDraft): boolean {
     return range.type === '' && range.from === 0 && range.to === 0 && range.value === 0;
   }
@@ -361,31 +761,271 @@ export class PointsAutomationComponent implements OnInit {
     );
   }
 
-  private applyDraft(config: PointsAutomationConfig): void {
-    this.draftEnabled.set(config.performance.enabled);
-    this.draftPeriod.set(config.performance.period);
-    this.draftRanges.set(
-      config.performance.ranges.map((range) => ({ ...range }))
+  isBlankDeadline(rule: TaskDeadlineDraft): boolean {
+    return rule.priority === '' && rule.pointsPerDayDelay === 0;
+  }
+
+  isValidDeadline(rule: TaskDeadlineDraft): boolean {
+    return (
+      this.priorities.includes(rule.priority as TaskPriority) &&
+      Number.isFinite(rule.pointsPerDayDelay) &&
+      rule.pointsPerDayDelay >= 0 &&
+      Number.isInteger(rule.pointsPerDayDelay)
     );
   }
 
-  private patchRange(id: number, patch: Partial<PerformanceRangeDraft>): void {
-    this.draftRanges.update((ranges) =>
+  isBlankLateness(range: LatenessRangeDraft): boolean {
+    return (
+      range.fromMinutes === 0 && range.toMinutes === 0 && range.pointsDeduction === 0
+    );
+  }
+
+  isValidLateness(range: LatenessRangeDraft): boolean {
+    return (
+      Number.isFinite(range.fromMinutes) &&
+      Number.isFinite(range.toMinutes) &&
+      Number.isFinite(range.pointsDeduction) &&
+      range.fromMinutes >= 0 &&
+      range.toMinutes >= range.fromMinutes &&
+      range.pointsDeduction >= 0 &&
+      Number.isInteger(range.pointsDeduction)
+    );
+  }
+
+  private enableCategory(tab: AutomationCategory): void {
+    const config = this.config();
+    if (!config || this.enabledCategoryFrom(config) === tab) {
+      this.activeTab.set(tab);
+      return;
+    }
+
+    const payload = this.withExclusiveEnabled(config, tab);
+
+    this.automationService.saveConfig(payload).subscribe({
+      next: (saved) => {
+        const normalized = this.normalizeConfig(saved);
+        this.config.set(normalized);
+        this.applyDraft(normalized);
+        this.activeTab.set(tab);
+      },
+      error: (err: unknown) => {
+        console.error('Update automation category failed:', err);
+      },
+    });
+  }
+
+  private applyDraft(config: PointsAutomationConfig): void {
+    this.draftEnabledCategory.set(this.enabledCategoryFrom(config));
+    this.draftPeriod.set(config.performance.period);
+    this.draftRanges.set(config.performance.ranges.map((range) => ({ ...range })));
+    this.draftTasksPeriod.set(config.tasks.period);
+    this.draftCompletionRanges.set(
+      config.tasks.completionRanges.map((range) => ({ ...range }))
+    );
+    this.draftDeadlineRules.set(
+      config.tasks.deadlineRules.map((rule) => ({ ...rule }))
+    );
+    this.draftAttendancePeriod.set(config.attendance.period);
+    this.draftAttendanceRanges.set(
+      config.attendance.attendanceRanges.map((range) => ({ ...range }))
+    );
+    this.draftLatenessRanges.set(
+      config.attendance.latenessRanges.map((range) => ({ ...range }))
+    );
+    this.draftOnTimeBonus.set(config.attendance.onTimeBonus);
+  }
+
+  private withExclusiveEnabled(
+    config: PointsAutomationConfig,
+    category: AutomationCategory
+  ): PointsAutomationConfig {
+    return {
+      ...config,
+      activeCategory: category,
+      performance: {
+        ...config.performance,
+        enabled: category === 'performance',
+      },
+      tasks: {
+        ...config.tasks,
+        enabled: category === 'tasks',
+      },
+      attendance: {
+        ...config.attendance,
+        enabled: category === 'attendance',
+      },
+    };
+  }
+
+  private enabledCategoryFrom(config: PointsAutomationConfig | null): AutomationCategory {
+    if (!config) {
+      return 'performance';
+    }
+
+    if (config.performance.enabled) {
+      return 'performance';
+    }
+    if (config.tasks.enabled) {
+      return 'tasks';
+    }
+    if (config.attendance?.enabled) {
+      return 'attendance';
+    }
+
+    if (config.activeCategory === 'tasks' || config.activeCategory === 'attendance') {
+      return config.activeCategory;
+    }
+
+    return 'performance';
+  }
+
+  private normalizeConfig(config: PointsAutomationConfig): PointsAutomationConfig {
+    const tasks = (config.tasks ?? {}) as Partial<TasksAutomation>;
+    const attendance = (config.attendance ?? {}) as Partial<AttendanceAutomation>;
+
+    return {
+      ...config,
+      tasks: {
+        enabled: Boolean(tasks.enabled),
+        period: tasks.period ?? 'daily',
+        completionRanges: [...(tasks.completionRanges ?? [])],
+        deadlineRules: [...(tasks.deadlineRules ?? [])],
+      },
+      attendance: {
+        enabled: Boolean(attendance.enabled),
+        period: attendance.period ?? 'daily',
+        attendanceRanges: [...(attendance.attendanceRanges ?? [])],
+        latenessRanges: [...(attendance.latenessRanges ?? [])],
+        onTimeBonus: Number.isFinite(attendance.onTimeBonus)
+          ? Number(attendance.onTimeBonus)
+          : 0,
+      },
+    };
+  }
+
+  private findOverlapIds(ranges: PerformanceRangeDraft[]): Set<number> {
+    const valid = ranges.filter(
+      (range) => !this.isBlankRange(range) && this.isValidRange(range)
+    );
+    const overlapping = new Set<number>();
+
+    for (let index = 0; index < valid.length; index += 1) {
+      for (let next = index + 1; next < valid.length; next += 1) {
+        const first = valid[index];
+        const second = valid[next];
+
+        if (first.from <= second.to && second.from <= first.to) {
+          overlapping.add(first.id);
+          overlapping.add(second.id);
+        }
+      }
+    }
+
+    return overlapping;
+  }
+
+  private findLatenessOverlapIds(ranges: LatenessRangeDraft[]): Set<number> {
+    const valid = ranges.filter(
+      (range) => !this.isBlankLateness(range) && this.isValidLateness(range)
+    );
+    const overlapping = new Set<number>();
+
+    for (let index = 0; index < valid.length; index += 1) {
+      for (let next = index + 1; next < valid.length; next += 1) {
+        const first = valid[index];
+        const second = valid[next];
+
+        if (
+          first.fromMinutes <= second.toMinutes &&
+          second.fromMinutes <= first.toMinutes
+        ) {
+          overlapping.add(first.id);
+          overlapping.add(second.id);
+        }
+      }
+    }
+
+    return overlapping;
+  }
+
+  private sortRanges(
+    ranges: PerformanceRange[],
+    column: string,
+    direction: 'asc' | 'desc'
+  ): PerformanceRange[] {
+    if (!column) {
+      return ranges;
+    }
+
+    return [...ranges].sort((first, second) => {
+      const firstValue = first[column as keyof PerformanceRange];
+      const secondValue = second[column as keyof PerformanceRange];
+
+      if (typeof firstValue === 'number' && typeof secondValue === 'number') {
+        return direction === 'asc' ? firstValue - secondValue : secondValue - firstValue;
+      }
+
+      return direction === 'asc'
+        ? String(firstValue).localeCompare(String(secondValue))
+        : String(secondValue).localeCompare(String(firstValue));
+    });
+  }
+
+  private commitRanges(ranges: PerformanceRangeDraft[]): PerformanceRange[] {
+    return ranges
+      .filter((range) => !this.isBlankRange(range) && this.isValidRange(range))
+      .map((range) => ({
+        id: range.id,
+        type: range.type as PerformanceRangeType,
+        from: range.from,
+        to: range.to,
+        value: range.value,
+      }));
+  }
+
+  private commitDeadlines(rules: TaskDeadlineDraft[]): TaskDeadlineRule[] {
+    return rules
+      .filter((rule) => !this.isBlankDeadline(rule) && this.isValidDeadline(rule))
+      .map((rule) => ({
+        id: rule.id,
+        priority: rule.priority,
+        pointsPerDayDelay: rule.pointsPerDayDelay,
+      }));
+  }
+
+  private commitLateness(ranges: LatenessRangeDraft[]): LatenessRange[] {
+    return ranges
+      .filter((range) => !this.isBlankLateness(range) && this.isValidLateness(range))
+      .map((range) => ({
+        id: range.id,
+        fromMinutes: range.fromMinutes,
+        toMinutes: range.toMinutes,
+        pointsDeduction: range.pointsDeduction,
+      }));
+  }
+
+  private patchLateness(id: number, patch: Partial<LatenessRangeDraft>): void {
+    this.draftLatenessRanges.update((ranges) =>
       ranges.map((range) => (range.id === id ? { ...range, ...patch } : range))
     );
+  }
+
+  private patchRange(
+    target: typeof this.draftRanges,
+    id: number,
+    patch: Partial<PerformanceRangeDraft>
+  ): void {
+    target.update((ranges) =>
+      ranges.map((range) => (range.id === id ? { ...range, ...patch } : range))
+    );
+  }
+
+  private nextId(items: { id: number }[]): number {
+    return Math.max(0, ...items.map((item) => item.id), 0) + 1;
   }
 
   private toNumber(value: number | string): number {
     const parsed = Number(value);
     return Number.isFinite(parsed) ? parsed : 0;
-  }
-
-  private readEnabled(value: unknown): boolean {
-    return (
-      typeof value === 'object' &&
-      value !== null &&
-      'enabled' in value &&
-      Boolean((value as { enabled: boolean }).enabled)
-    );
   }
 }

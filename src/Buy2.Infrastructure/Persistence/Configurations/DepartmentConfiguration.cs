@@ -8,15 +8,20 @@ public class DepartmentConfiguration : IEntityTypeConfiguration<Department>
 {
     public void Configure(EntityTypeBuilder<Department> builder)
     {
-        builder.Property(d => d.Name)
-            .IsRequired()
-            .HasMaxLength(100)
-            .HasColumnType("nvarchar(100)");
+        builder.HasKey(d => d.Id);
 
-        builder.HasOne(d => d.Organization)
-            .WithMany(o => o.Departments)
-            .HasForeignKey(d => d.OrganizationId)
-            .OnDelete(DeleteBehavior.Cascade);
+        builder.Property(d => d.Name)
+            .HasMaxLength(100)
+            .IsRequired();
+
+        builder.HasIndex(d => d.Name)
+            .IsUnique();
+
+        builder.Property(d => d.Code)
+            .HasMaxLength(20);
+
+        builder.Property(d => d.Description)
+            .HasMaxLength(500);
 
         builder.HasOne(d => d.HeadEmployee)
             .WithMany()
