@@ -35,11 +35,16 @@ public class GetJobByIdQueryHandler : IRequestHandler<GetJobByIdQuery, JobDetail
             return null;
         }
 
+        return MapToJobDetailsDto(job);
+    }
+
+    private static JobDetailsDto MapToJobDetailsDto(JobRole job)
+    {
         return new JobDetailsDto(
             job.Id,
             job.Title,
             job.DepartmentId,
-            job.Department != null ? job.Department.Name : "N/A",
+            job.Department?.Name ?? "N/A",
             job.SeniorityLevel,
             job.Description,
             ParseJsonList(job.RequiredQualificationsJson),
@@ -47,7 +52,7 @@ public class GetJobByIdQueryHandler : IRequestHandler<GetJobByIdQuery, JobDetail
             job.AttendanceType,
             ParseJsonList(job.OnlineWorkdaysJson),
             ParseJsonList(job.OfflineWorkdaysJson),
-            job.Employees != null ? job.Employees.Count(e => !e.IsDeleted) : 0,
+            job.Employees?.Count(e => !e.IsDeleted) ?? 0,
             job.IsActive,
             job.CreatedAt,
             job.UpdatedAt
