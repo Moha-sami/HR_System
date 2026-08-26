@@ -89,8 +89,8 @@ public class JobQueriesTests
         Assert.Single(deptResult.Items);
         Assert.Equal("Sales Manager", deptResult.Items[0].Title);
 
-        // Act & Assert 3: AttendanceType filter
-        var attendanceQuery = new GetJobsQuery(new JobFilterQueryDto(AttendanceType: "Hybrid"));
+        // Act & Assert 3: WorkModel filter
+        var attendanceQuery = new GetJobsQuery(new JobFilterQueryDto(WorkModel: "Hybrid"));
         var attendanceResult = await handler.Handle(attendanceQuery, CancellationToken.None);
         Assert.Single(attendanceResult.Items);
         Assert.Equal("Senior Software Engineer", attendanceResult.Items[0].Title);
@@ -103,7 +103,7 @@ public class JobQueriesTests
     }
 
     [Fact]
-    public async Task GetJobsQuery_Pagination_And_AllocatedEmployeesCount()
+    public async Task GetJobsQuery_Pagination_And_AssignedEmployeesCount()
     {
         // Arrange
         using var context = CreateDbContext();
@@ -139,7 +139,7 @@ public class JobQueriesTests
 
         // Assert
         Assert.Single(result.Items);
-        Assert.Equal(2, result.Items[0].AllocatedEmployeesCount);
+        Assert.Equal(2, result.Items[0].AssignedEmployeesCount);
         Assert.Equal(1, result.TotalCount);
         Assert.Equal(1, result.TotalPages);
     }
