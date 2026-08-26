@@ -832,5 +832,83 @@ This document outlines the REST API endpoints provided by the Buy2 HRMS backend 
   - `200 OK` with `JobPaginatedResponseDto<JobEmployeeRosterItemDto>`.
   - `404 Not Found` if job role with specified `id` does not exist.
 
+---
+
+## 9. Site Management (`/api/v1/sites`) [SCRUM-229, SCRUM-230, SCRUM-232, SCRUM-233]
+
+### `GET /api/v1/sites`
+- **Authorization**: `[Authorize]`
+- **Controller**: `GetSitesController` / `SitesController`
+- **Description**: Returns list of all configured work sites.
+- **Response**: `200 OK` with `List<SiteDto>`.
+
+### `POST /api/v1/sites`
+- **Authorization**: `[Authorize(Roles = "Admin")]`
+- **Controller**: `GetSitesController` / `SitesController`
+- **Request Body** (`CreateUpdateSiteDto`):
+  - `siteName` (string, required) - Unique site name
+  - `regionId` (int, required) - Existing region ID
+  - `latitude` (double) & `longitude` (double) - GPS coordinates
+  - `macWhitelist` (array of strings) - Whitelisted MAC addresses
+  - `macAddress` (string), `address` (string), `mapUrl` (string), `phoneNumber` (string), `instructions` (string)
+  - `maxCapacity` (int) - Max employee capacity
+  - `preferredEmployeeIds` (array of int) - Attached preferred staff
+  - `operationalHours` (array of `SiteOperationalHourDto`: `day`, `isOpen`, `from`, `to`)
+- **Description**: Creates a new site with GPS coordinates, instructions, operational hours (Sun-Sat), and preferred employees in an atomic transaction.
+- **Responses**:
+  - `201 Created` with new `siteId` and `Location` header.
+  - `400 Bad Request` if site name is duplicate, region does not exist, or duplicate operational days are provided.
+
+### `PUT /api/v1/sites/{id}`
+- **Authorization**: `[Authorize(Roles = "Admin,Manager")]`
+- **Controller**: `GetSitesController` / `SitesController`
+- **Path Parameters**:
+  - `id` (int, required) - Site ID to update
+- **Request Body** (`CreateUpdateSiteDto`): Updated site fields, schedule, and preferred employees.
+- **Description**: Updates site basic info, operational hours schedule, and preferred employee list.
+- **Responses**:
+  - `200 OK` with updated `siteId`.
+  - `400 Bad Request` if site name conflicts with another site, region does not exist, or duplicate days exist.
+  - `404 Not Found` if site does not exist.
+
+### `GET /api/v1/sites/{id}/deletion-check`
+- **Authorization**: `[Authorize(Roles = "Admin")]`
+- **Controller**: `GetSitesController` / `SitesController`
+- **Path Parameters**:
+  - `id` (int, required) - Site ID to check
+- **Description**: Performs a deletion impact pre-check to verify if the site has allocated employees or future scheduled shifts. Populates deletion confirmation / reallocation warning modal.
+- **Responses**:
+  - `200 OK` with `DeletionCheckDto`:
+    - `canDelete` (bool) - True if 0 allocated employees and 0 future shifts.
+    - `allocatedEmployeesCount` (int) - Total count of assigned employees.
+    - `allocatedEmployees` (array of `AllocatedEmployeeDto`: `employeeId`, `fullName`).
+  - `404 Not Found` if site does not exist.
+
+### `DELETE /api/v1/sites/{id}`
+- **Authorization**: `[Authorize(Roles = "Admin")]`
+- **Controller**: `GetSitesController` / `SitesController`
+- **Path Parameters**:
+  - `id` (int, required) - Site ID to delete
+- **Request Body** (`ReallocateAndDeleteSiteDto`, optional if site has 0 employees):
+  - `employeeSiteReassignments` (array of `EmployeeSiteReassignmentDto`: `employeeId`, `newSiteId`)
+- **Description**: Deletes a company work site. If employees are currently assigned, requires a replacement target site for each allocated employee and reassigns them atomically before deleting the site entity. Blocks deletion if future scheduled shifts exist. Cascades removal of site operational hours, documents, and preferred staff links.
+- **Responses**:
+  - `204 No Content` on successful deletion and reallocation.
+  - `400 Bad Request` if future scheduled shifts exist, if any assigned employee is missing a replacement site, if multiple replacement sites are specified for the same employee, if target sites do not exist, or if an employee is reallocated to the site being deleted.
+  - `404 Not Found` if site does not exist.
+
+### `GET /api/v1/sites/regions`
+- **Authorization**: `[Authorize]`
+- **Description**: Returns all active regions ordered alphabetically by name for dropdown selection.
+- **Response**: `200 OK` with `List<RegionListItemDto>`.
+
+### `POST /api/v1/sites/regions`
+- **Authorization**: `[Authorize(Roles = "Admin,Manager")]`
+- **Request Body** (`CreateRegionDto`: `name`): Region name to create.
+- **Description**: Creates a new region inline with case-insensitive name uniqueness check.
+- **Responses**:
+  - `200 OK` with newly generated `regionId`.
+  - `400 Bad Request` if region name already exists.
+
 
 

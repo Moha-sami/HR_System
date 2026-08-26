@@ -1,4 +1,4 @@
-﻿using Buy2.Application.Common.Interfaces;
+using Buy2.Application.Common.Interfaces;
 using Buy2.Application.DTOs.Sites;
 using Buy2.Domain.Entities;
 using FluentValidation;
@@ -14,28 +14,40 @@ public record DeleteSiteCommand(
 public class DeleteSiteCommandHandler : IRequestHandler<DeleteSiteCommand>
 {
     private readonly IRepository<Site> _siteRepository;
+    private readonly IRepository<Employee> _employeeRepository;
     private readonly IUnitOfWork _unitOfWork;
-    public DeleteSiteCommandHandler(IRepository<Site> site, IUnitOfWork unit)
+
+    public DeleteSiteCommandHandler(
+        IRepository<Site> siteRepository,
+        IRepository<Employee> employeeRepository,
+        IUnitOfWork unitOfWork)
     {
-        _siteRepository = site;
-        _unitOfWork = unit;
+        _siteRepository = siteRepository;
+        _employeeRepository = employeeRepository;
+        _unitOfWork = unitOfWork;
     }
 
-    public async Task Handle(DeleteSiteCommand command, CancellationToken cancellation)
+    public async Task Handle(DeleteSiteCommand command, CancellationToken cancellationToken)
     {
         var site = await _siteRepository
-            .Query()
+            .Query(false)
             .Include(s => s.EmployeeSites)
             .Include(s => s.Shifts)
-            .FirstOrDefaultAsync(s => s.Id == command.SiteId, cancellation);
+            .FirstOrDefaultAsync(s => s.Id == command.SiteId, cancellationToken);
 
-        if(site is null)
+        if (site is null)
         {
             throw new KeyNotFoundException("Site not found.");
         }
 
-        var allocatedEmployeeIds = site.EmployeeSites
-            .Select(es => es.EmployeeId)
+        var primaryEmployeeIds = await _employeeRepository
+            .Query()
+            .Where(e => e.SiteId == command.SiteId)
+            .Select(e => e.Id)
+            .ToListAsync(cancellationToken);
+
+        var allocatedEmployeeIds = primaryEmployeeIds
+            .Concat(site.EmployeeSites.Select(es => es.EmployeeId))
             .Distinct()
             .ToList();
 
@@ -47,6 +59,7 @@ public class DeleteSiteCommandHandler : IRequestHandler<DeleteSiteCommand>
         {
             throw new ValidationException("Site cannot be deleted because it has future scheduled shifts.");
         }
+
         if (allocatedEmployeeIds.Count > 0)
         {
             if (command.EmployeeSiteReassignments is null ||
@@ -84,10 +97,10 @@ public class DeleteSiteCommandHandler : IRequestHandler<DeleteSiteCommand>
             }
 
             var missingEmployees = allocatedEmployeeIds
-                .Where(Id => !reassignedEmployeeIds.Contains(Id))
+                .Where(id => !reassignedEmployeeIds.Contains(id))
                 .ToList();
 
-            if(missingEmployees.Count > 0)
+            if (missingEmployees.Count > 0)
             {
                 throw new ValidationException("All assigned employees must have a replacement site.");
             }
@@ -101,8 +114,9 @@ public class DeleteSiteCommandHandler : IRequestHandler<DeleteSiteCommand>
                 .Query()
                 .Where(s => newSiteIds.Contains(s.Id))
                 .Select(s => s.Id)
-                .ToListAsync(cancellation);
-            if(validateNewSiteId.Count != newSiteIds.Count)
+                .ToListAsync(cancellationToken);
+
+            if (validateNewSiteId.Count != newSiteIds.Count)
             {
                 throw new ValidationException("One or more replacement sites do not exist.");
             }
@@ -112,16 +126,20 @@ public class DeleteSiteCommandHandler : IRequestHandler<DeleteSiteCommand>
                 throw new ValidationException("Employees cannot be reallocated to the site being deleted.");
             }
 
-            foreach (var employee in site.EmployeeSites)
-            {
-                var checkRessignment = reassignment
-                    .First(r => r.EmployeeId == employee.EmployeeId);
+            var employeesToReallocate = await _employeeRepository
+                .Query(false)
+                .Where(e => reassignedEmployeeIds.Contains(e.Id))
+                .ToListAsync(cancellationToken);
 
-                employee.SiteId = checkRessignment.NewSiteId; 
+            foreach (var emp in employeesToReallocate)
+            {
+                var target = reassignment.First(r => r.EmployeeId == emp.Id);
+                emp.SiteId = target.NewSiteId;
             }
         }
+
         _siteRepository.Delete(site);
-        await _unitOfWork.SaveChangesAsync(cancellation);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
 }
 

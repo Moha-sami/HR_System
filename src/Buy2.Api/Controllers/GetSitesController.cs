@@ -88,9 +88,9 @@ public class GetSitesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult> DeleteSite(int id, ReallocateAndDeleteSiteDto? dto, CancellationToken cancellation)
+    public async Task<ActionResult> DeleteSite(int id, [FromBody] ReallocateAndDeleteSiteDto? dto, CancellationToken cancellation)
     {
-        var command = new DeleteSiteCommand(id,dto?.EmployeeSiteReassignments);
+        var command = new DeleteSiteCommand(id, dto?.EmployeeSiteReassignments);
         await _mediator.Send(command, cancellation);
         return NoContent();
     }
