@@ -1,3 +1,5 @@
+using System.Security.Cryptography;
+using System.Text;
 using Buy2.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
@@ -7,6 +9,7 @@ public static class DatabaseSeeder
 {
     private static readonly string[] FirstNames = ["Mohamed", "Ahmed", "Mahmoud", "Omar", "Youssef", "Ali", "Hassan", "Ibrahim", "Mostafa", "Khaled", "Sarah", "Nour", "Nerveen", "Dina", "Fatma"];
     private static readonly string[] LastNames = ["Sami", "Shalapy", "Elshahawy", "Alim", "Gamal", "Hassan", "Ibrahim", "Fawzy", "Kamel", "Mansour", "Soliman", "Nasser", "Amer"];
+    private static readonly string DefaultPasswordHash = Convert.ToBase64String(SHA256.HashData(Encoding.UTF8.GetBytes("Welcome@123")));
 
     public static async Task SeedAsync(Buy2DbContext context)
     {
@@ -94,7 +97,7 @@ public static class DatabaseSeeder
                     RoleId = assignedRoleId,
                     SiteId = sites[globalIndex % sites.Count].Id,
                     JobRoleId = jobRoles[globalIndex % jobRoles.Count].Id,
-                    PasswordHash = "string"
+                    PasswordHash = DefaultPasswordHash
                 });
             }
 
