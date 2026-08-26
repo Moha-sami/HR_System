@@ -212,8 +212,8 @@ namespace Buy2.Infrastructure.Migrations
                 IF NOT EXISTS (SELECT 1 FROM [Organizations])
                 BEGIN
                     SET IDENTITY_INSERT [Organizations] ON;
-                    INSERT INTO [Organizations] ([Id], [Name], [Domain], [IsActive], [CreatedAt])
-                    VALUES (1, 'Buy2 HRMS', 'buy2hrms.com', 1, SYSDATETIMEOFFSET());
+                    INSERT INTO [Organizations] ([Id], [Name], [Timezone], [Currency], [CreatedAt])
+                    VALUES (1, 'Buy2 HRMS', 'UTC', 'USD', GETUTCDATE());
                     SET IDENTITY_INSERT [Organizations] OFF;
                 END
 
