@@ -287,13 +287,11 @@ public class JobQueriesTests
         Assert.Single(result.Items);
 
         var item = result.Items[0];
-        Assert.Equal(emp.Id, item.EmployeeId);
+        Assert.Equal(emp.Id, item.Id);
         Assert.Equal("EMP-0100", item.EmployeeCode);
         Assert.Equal("Alice Smith", item.FullName);
         Assert.Equal("alice@example.com", item.Email);
-        Assert.Equal("+123456789", item.Phone);
         Assert.Equal("HQ Main Site", item.SiteName);
         Assert.Equal("IT", item.DepartmentName);
-        Assert.Equal("Active", item.Status);
     }
 }

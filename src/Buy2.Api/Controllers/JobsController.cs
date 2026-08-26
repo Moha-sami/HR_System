@@ -50,17 +50,18 @@ public class JobsController : ControllerBase
     }
 
     [HttpGet("{id:int}/employees")]
-    [ProducesResponseType(typeof(JobPaginatedResponseDto<JobEmployeeRosterItemDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(JobPaginatedResponseDto<JobAssignedEmployeeListItemDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> GetJobEmployees(
         [FromRoute] int id,
+        [FromQuery] string? searchTerm = null,
         [FromQuery] int pageNumber = 1,
         [FromQuery] int pageSize = 10,
         CancellationToken cancellationToken = default)
     {
-        var result = await _mediator.Send(new GetJobEmployeesQuery(id, pageNumber, pageSize), cancellationToken);
+        var result = await _mediator.Send(new GetJobEmployeesQuery(id, searchTerm, pageNumber, pageSize), cancellationToken);
         if (result == null)
         {
             return NotFound(new { message = $"Job role with ID {id} was not found." });
