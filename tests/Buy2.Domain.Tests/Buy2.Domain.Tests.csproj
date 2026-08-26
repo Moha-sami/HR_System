@@ -23,6 +23,7 @@
     <ProjectReference Include="..\..\src\Buy2.Domain\Buy2.Domain.csproj" />
     <ProjectReference Include="..\..\src\Buy2.Application\Buy2.Application.csproj" />
     <ProjectReference Include="..\..\src\Buy2.Infrastructure\Buy2.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\Buy2.Api\Buy2.Api.csproj" />
   </ItemGroup>
 
 </Project>
