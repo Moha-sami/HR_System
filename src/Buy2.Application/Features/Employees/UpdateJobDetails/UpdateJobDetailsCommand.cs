@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Buy2.Application.Common.Interfaces;
 using Buy2.Domain.Entities;
 using MediatR;
@@ -17,21 +18,15 @@ public class UpdateJobDetailsCommandHandler : IRequestHandler<UpdateJobDetailsCo
 {
     private readonly IRepository<Employee> _employeeRepository;
     private readonly IRepository<JobRole> _jobRoleRepository;
-    private readonly IRepository<Role> _roleRepository;
-    private readonly IRepository<Site> _siteRepository;
     private readonly IUnitOfWork _unitOfWork;
 
     public UpdateJobDetailsCommandHandler(
         IRepository<Employee> employeeRepository,
         IRepository<JobRole> jobRoleRepository,
-        IRepository<Role> roleRepository,
-        IRepository<Site> siteRepository,
         IUnitOfWork unitOfWork)
     {
         _employeeRepository = employeeRepository;
         _jobRoleRepository = jobRoleRepository;
-        _roleRepository = roleRepository;
-        _siteRepository = siteRepository;
         _unitOfWork = unitOfWork;
     }
 
@@ -45,35 +40,16 @@ public class UpdateJobDetailsCommandHandler : IRequestHandler<UpdateJobDetailsCo
         }
 
         var dto = request.Dto;
+        JobRole? jobRoleToUpdate = null;
 
         if (dto.JobRoleId.HasValue)
         {
-            var jobRole = await _jobRoleRepository.GetByIdAsync(dto.JobRoleId.Value);
-            if (jobRole is null)
+            jobRoleToUpdate = await _jobRoleRepository.GetByIdAsync(dto.JobRoleId.Value);
+            if (jobRoleToUpdate is null)
             {
                 return UpdateJobDetailsResult.BadRequest($"JobRole with ID {dto.JobRoleId.Value} does not exist.");
             }
             employee.JobRoleId = dto.JobRoleId.Value;
-        }
-
-        if (dto.RoleId.HasValue)
-        {
-            var role = await _roleRepository.GetByIdAsync(dto.RoleId.Value);
-            if (role is null)
-            {
-                return UpdateJobDetailsResult.BadRequest($"Role with ID {dto.RoleId.Value} does not exist.");
-            }
-            employee.RoleId = dto.RoleId.Value;
-        }
-
-        if (dto.SiteId.HasValue)
-        {
-            var site = await _siteRepository.GetByIdAsync(dto.SiteId.Value);
-            if (site is null)
-            {
-                return UpdateJobDetailsResult.BadRequest($"Site with ID {dto.SiteId.Value} does not exist.");
-            }
-            employee.SiteId = dto.SiteId.Value;
         }
 
         if (dto.DirectManagerId.HasValue)
@@ -112,9 +88,28 @@ public class UpdateJobDetailsCommandHandler : IRequestHandler<UpdateJobDetailsCo
             employee.AttendanceType = dto.AttendanceType;
         }
 
-        if (dto.JoinDate.HasValue)
+        if (dto.OnlineWorkdays is not null)
         {
-            employee.JoinDate = dto.JoinDate.Value.UtcDateTime;
+            employee.OnlineWorkdaysJson = JsonSerializer.Serialize(dto.OnlineWorkdays);
+        }
+
+        if (dto.OfflineWorkdays is not null)
+        {
+            employee.OfflineWorkdaysJson = JsonSerializer.Serialize(dto.OfflineWorkdays);
+        }
+
+        if (dto.Qualifications is not null)
+        {
+            if (jobRoleToUpdate is null && employee.JobRoleId > 0)
+            {
+                jobRoleToUpdate = await _jobRoleRepository.GetByIdAsync(employee.JobRoleId);
+            }
+
+            if (jobRoleToUpdate is not null)
+            {
+                jobRoleToUpdate.RequiredQualificationsJson = JsonSerializer.Serialize(dto.Qualifications);
+                _jobRoleRepository.Update(jobRoleToUpdate);
+            }
         }
 
         _employeeRepository.Update(employee);

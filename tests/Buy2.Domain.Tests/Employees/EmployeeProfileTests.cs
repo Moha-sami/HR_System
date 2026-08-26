@@ -61,7 +61,9 @@ public class EmployeeProfileTests
             Qualifications: qualifications,
             AttendanceType: "Hybrid",
             OnlineWorkdays: onlineDays,
-            OfflineWorkdays: offlineDays
+            OfflineWorkdays: offlineDays,
+            JobRoleId: 10,
+            DirectManagerId: 5
         );
 
         Assert.Equal("Senior Software Engineer", dto.Title);
@@ -74,6 +76,8 @@ public class EmployeeProfileTests
         Assert.Equal("Hybrid", dto.AttendanceType);
         Assert.Equal(onlineDays, dto.OnlineWorkdays);
         Assert.Equal(offlineDays, dto.OfflineWorkdays);
+        Assert.Equal(10, dto.JobRoleId);
+        Assert.Equal(5, dto.DirectManagerId);
     }
 
     [Fact]

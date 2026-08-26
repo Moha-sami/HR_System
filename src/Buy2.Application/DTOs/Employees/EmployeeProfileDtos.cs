@@ -55,7 +55,9 @@ public record EmployeeJobDetailsDto(
     List<string> Qualifications,
     string AttendanceType,
     List<string> OnlineWorkdays,
-    List<string> OfflineWorkdays
+    List<string> OfflineWorkdays,
+    int? JobRoleId = null,
+    int? DirectManagerId = null
 );
 
 // 6. Payroll Summary DTO
@@ -85,19 +87,5 @@ public record EmployeeProfileDto(
     EmployeePersonalInfoDto PersonalInfo,
     EmployeeJobDetailsDto JobDetails,
     EmployeePayrollSummaryDto? Payroll = null
-);
-
-// 7. Update Partial Input DTOs
-public record UpdatePersonalInfoRequestDto(
-    DateTime? Birthdate,
-    Gender? Gender
-);
-
-public record UpdateJobDetailsRequestDto(
-    int? JobRoleId,
-    string? SeniorityLevel,
-    int? ExperienceYears,
-    int? DirectManagerId,
-    string? JobType
 );
 

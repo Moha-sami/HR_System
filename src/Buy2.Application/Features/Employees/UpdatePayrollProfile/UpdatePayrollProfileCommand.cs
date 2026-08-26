@@ -82,14 +82,14 @@ public class UpdatePayrollProfileCommandHandler : IRequestHandler<UpdatePayrollP
             payroll.PayoutDay = dto.PayoutDay.Value;
         }
 
-        if (dto.WorkWeekStart.HasValue)
+        if (dto.WorkWeekStartDay.HasValue)
         {
-            payroll.WorkWeekStart = dto.WorkWeekStart.Value.ToString();
+            payroll.WorkWeekStart = dto.WorkWeekStartDay.Value.ToString();
         }
 
-        if (dto.WorkWeekEnd.HasValue)
+        if (dto.WorkWeekEndDay.HasValue)
         {
-            payroll.WorkWeekEnd = dto.WorkWeekEnd.Value.ToString();
+            payroll.WorkWeekEnd = dto.WorkWeekEndDay.Value.ToString();
         }
 
         if (dto.PaymentAmount.HasValue)
@@ -102,9 +102,9 @@ public class UpdatePayrollProfileCommandHandler : IRequestHandler<UpdatePayrollP
             payroll.OvertimeThresholdHours = dto.OvertimeThresholdHours.Value;
         }
 
-        if (dto.OvertimeHourlyRate.HasValue)
+        if (dto.OvertimeRateMultiplier.HasValue)
         {
-            payroll.OvertimeHourlyRate = dto.OvertimeHourlyRate.Value;
+            payroll.OvertimeHourlyRate = dto.OvertimeRateMultiplier.Value;
         }
 
         if (dto.AttendanceType is not null)
@@ -114,9 +114,9 @@ public class UpdatePayrollProfileCommandHandler : IRequestHandler<UpdatePayrollP
         }
 
         // WorkSite sync
-        if (dto.WorkSiteIds is not null)
+        if (dto.AssignedWorkSiteIds is not null)
         {
-            var distinctSiteIds = dto.WorkSiteIds.Distinct().ToList();
+            var distinctSiteIds = dto.AssignedWorkSiteIds.Distinct().ToList();
 
             if (distinctSiteIds.Count > 0)
             {

@@ -122,7 +122,9 @@ public class GetEmployeeProfileQueryHandler : IRequestHandler<GetEmployeeProfile
             Qualifications: qualifications,
             AttendanceType: attendanceType,
             OnlineWorkdays: onlineWorkdays,
-            OfflineWorkdays: offlineWorkdays
+            OfflineWorkdays: offlineWorkdays,
+            JobRoleId: employee.JobRoleId > 0 ? employee.JobRoleId : (int?)null,
+            DirectManagerId: employee.DirectManagerId
         );
 
         // 5. Map Payroll Summary

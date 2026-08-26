@@ -6,13 +6,13 @@ public record UpdatePayrollProfileDto(
     SalaryType? SalaryType = null,
     string? PayoutPeriod = null,
     int? PayoutDay = null,
-    DayOfWeek? WorkWeekStart = null,
-    DayOfWeek? WorkWeekEnd = null,
+    DayOfWeek? WorkWeekStartDay = null,
+    DayOfWeek? WorkWeekEndDay = null,
     decimal? PaymentAmount = null,
     decimal? OvertimeThresholdHours = null,
-    decimal? OvertimeHourlyRate = null,
+    decimal? OvertimeRateMultiplier = null,
     string? AttendanceType = null,
-    List<int>? WorkSiteIds = null,
+    List<int>? AssignedWorkSiteIds = null,
     List<string>? OnlineWorkdays = null,
     List<string>? OfflineWorkdays = null
 );

@@ -45,24 +45,19 @@ public class UpdateEmployeePersonalInfoCommandHandler : IRequestHandler<UpdateEm
             employee.PhoneNumber = dto.PhoneNumber;
         }
 
-        if (dto.DateOfBirth.HasValue)
+        if (dto.Birthdate.HasValue)
         {
-            employee.Birthdate = dto.DateOfBirth.Value.UtcDateTime;
+            employee.Birthdate = dto.Birthdate.Value.UtcDateTime;
         }
 
-        if (dto.Address is not null)
+        if (dto.Gender.HasValue)
         {
-            employee.Address = dto.Address;
+            employee.Gender = dto.Gender.Value;
         }
 
-        if (dto.EmergencyContact is not null)
+        if (dto.Email is not null)
         {
-            employee.EmergencyContact = dto.EmergencyContact;
-        }
-
-        if (dto.NationalId is not null)
-        {
-            employee.NationalId = dto.NationalId;
+            employee.Email = dto.Email;
         }
 
         _employeeRepository.Update(employee);
