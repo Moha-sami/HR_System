@@ -1,14 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text.Json;
-using System.Threading;
-using System.Threading.Tasks;
 using Buy2.Application.Common.Interfaces;
 using Buy2.Application.Features.Jobs.DTOs;
 using Buy2.Domain.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 
 namespace Buy2.Application.Features.Jobs.GetJobs;
 
@@ -26,8 +21,8 @@ public class GetJobsQueryHandler : IRequestHandler<GetJobsQuery, JobPaginatedRes
     public async Task<JobPaginatedResponseDto<JobListItemDto>> Handle(GetJobsQuery request, CancellationToken cancellationToken)
     {
         var filter = request.Filter ?? new JobFilterQueryDto();
-        var page = filter.PageNumber > 0 ? filter.PageNumber : 1;
-        var pageSize = filter.PageSize > 0 ? filter.PageSize : 10;
+        var page = Math.Max(1, filter.PageNumber);
+        var pageSize = Math.Clamp(filter.PageSize, 1, 100);
 
         IQueryable<JobRole> query = _jobRoleRepository.Query(asNoTracking: true)
             .Include(j => j.Department)
@@ -35,8 +30,9 @@ public class GetJobsQueryHandler : IRequestHandler<GetJobsQuery, JobPaginatedRes
 
         if (!string.IsNullOrWhiteSpace(filter.SearchTerm))
         {
-            var searchTerm = filter.SearchTerm.Trim();
-            query = query.Where(j => j.Title.Contains(searchTerm) || (j.Department != null && j.Department.Name.Contains(searchTerm)));
+            var term = filter.SearchTerm.Trim().ToLower();
+            query = query.Where(j => j.Title.ToLower().Contains(term) ||
+                                     (j.Department != null && j.Department.Name.ToLower().Contains(term)));
         }
 
         if (filter.DepartmentId.HasValue)
@@ -61,7 +57,14 @@ public class GetJobsQueryHandler : IRequestHandler<GetJobsQuery, JobPaginatedRes
 
         var totalCount = await query.CountAsync(cancellationToken);
 
-        query = query.OrderByDescending(j => j.IsActive).ThenBy(j => j.Title);
+        // Dynamic sorting
+        query = filter.SortBy?.ToLower() switch
+        {
+            "title" => filter.SortDir?.ToLower() == "desc" ? query.OrderByDescending(j => j.Title) : query.OrderBy(j => j.Title),
+            "department" => filter.SortDir?.ToLower() == "desc" ? query.OrderByDescending(j => j.Department != null ? j.Department.Name : string.Empty) : query.OrderBy(j => j.Department != null ? j.Department.Name : string.Empty),
+            "createdat" => filter.SortDir?.ToLower() == "asc" ? query.OrderBy(j => j.CreatedAt) : query.OrderByDescending(j => j.CreatedAt),
+            _ => query.OrderByDescending(j => j.IsActive).ThenBy(j => j.Title)
+        };
 
         var rawList = await query
             .Skip((page - 1) * pageSize)
@@ -72,17 +75,17 @@ public class GetJobsQueryHandler : IRequestHandler<GetJobsQuery, JobPaginatedRes
             j.Id,
             j.Title,
             j.DepartmentId,
-            j.Department != null ? j.Department.Name : "N/A",
+            j.Department?.Name ?? "N/A",
             j.SeniorityLevel,
             j.AttendanceType,
-            j.Employees != null ? j.Employees.Count(e => !e.IsDeleted) : 0,
+            j.Employees?.Count(e => !e.IsDeleted) ?? 0,
             ParseJsonListCount(j.RequiredQualificationsJson),
             j.ExperienceYears,
             j.IsActive,
             j.CreatedAt
         )).ToList();
 
-        var totalPages = pageSize > 0 ? (int)Math.Ceiling((double)totalCount / pageSize) : 0;
+        var totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
 
         return new JobPaginatedResponseDto<JobListItemDto>(items, totalCount, page, pageSize, totalPages);
     }
