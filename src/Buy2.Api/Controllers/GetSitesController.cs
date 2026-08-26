@@ -1,6 +1,7 @@
 using Buy2.Application.DTOs;
 using Buy2.Application.DTOs.Sites;
 using Buy2.Application.Features.Sites.CreateSite;
+using Buy2.Application.Features.Sites.DeleteSite;
 using Buy2.Application.Features.Sites.GetSites;
 using Buy2.Application.Features.Sites.Regions;
 using Buy2.Application.Features.Sites.UpdateSite;
@@ -66,6 +67,34 @@ public class GetSitesController : ControllerBase
         var site = await _mediator.Send(command, cancellation);
         return Ok(site);
     }
+
+    // Deletion Check
+    [HttpGet("{id}/deletion-check")]
+    [Authorize(Roles = "Admin")]
+    [ProducesResponseType(typeof(DeletionCheckDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<DeletionCheckDto>> GetDeletionCheck(int id, CancellationToken cancellation)
+    {
+        var site = await _mediator.Send(new CheckSiteDeletionQuery(id), cancellation);
+        return Ok(site);
+    }
+    // Delete Site
+    [HttpDelete("{id}")]
+    [Authorize(Roles ="Admin")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult> DeleteSite(int id, ReallocateAndDeleteSiteDto? dto, CancellationToken cancellation)
+    {
+        var command = new DeleteSiteCommand(id,dto?.EmployeeSiteReassignments);
+        await _mediator.Send(command, cancellation);
+        return NoContent();
+    }
+
 
     // Get All Regions
     [HttpGet("regions")]
