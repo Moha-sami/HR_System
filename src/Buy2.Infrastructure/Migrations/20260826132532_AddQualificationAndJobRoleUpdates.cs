@@ -209,11 +209,19 @@ namespace Buy2.Infrastructure.Migrations
                 unique: true);
 
             migrationBuilder.Sql(@"
+                IF NOT EXISTS (SELECT 1 FROM [Organizations])
+                BEGIN
+                    SET IDENTITY_INSERT [Organizations] ON;
+                    INSERT INTO [Organizations] ([Id], [Name], [Domain], [IsActive], [CreatedAt])
+                    VALUES (1, 'Buy2 HRMS', 'buy2hrms.com', 1, SYSDATETIMEOFFSET());
+                    SET IDENTITY_INSERT [Organizations] OFF;
+                END
+
                 IF EXISTS (SELECT 1 FROM [JobRoles] WHERE [DepartmentId] IS NOT NULL AND [DepartmentId] NOT IN (SELECT [Id] FROM [Departments]))
                 BEGIN
                     SET IDENTITY_INSERT [Departments] ON;
-                    INSERT INTO [Departments] ([Id], [Name], [Code], [IsActive], [CreatedAt])
-                    SELECT DISTINCT [DepartmentId], CONCAT('Department #', [DepartmentId]), CONCAT('DEPT-', [DepartmentId]), 1, SYSDATETIMEOFFSET()
+                    INSERT INTO [Departments] ([Id], [Name], [OrganizationId], [Code], [IsActive], [CreatedAt])
+                    SELECT DISTINCT [DepartmentId], CONCAT('Department #', [DepartmentId]), 1, CONCAT('DEPT-', [DepartmentId]), 1, SYSDATETIMEOFFSET()
                     FROM [JobRoles]
                     WHERE [DepartmentId] IS NOT NULL AND [DepartmentId] NOT IN (SELECT [Id] FROM [Departments]);
                     SET IDENTITY_INSERT [Departments] OFF;
@@ -222,8 +230,8 @@ namespace Buy2.Infrastructure.Migrations
                 IF EXISTS (SELECT 1 FROM [Employees] WHERE [DepartmentId] IS NOT NULL AND [DepartmentId] NOT IN (SELECT [Id] FROM [Departments]))
                 BEGIN
                     SET IDENTITY_INSERT [Departments] ON;
-                    INSERT INTO [Departments] ([Id], [Name], [Code], [IsActive], [CreatedAt])
-                    SELECT DISTINCT [DepartmentId], CONCAT('Department #', [DepartmentId]), CONCAT('DEPT-', [DepartmentId]), 1, SYSDATETIMEOFFSET()
+                    INSERT INTO [Departments] ([Id], [Name], [OrganizationId], [Code], [IsActive], [CreatedAt])
+                    SELECT DISTINCT [DepartmentId], CONCAT('Department #', [DepartmentId]), 1, CONCAT('DEPT-', [DepartmentId]), 1, SYSDATETIMEOFFSET()
                     FROM [Employees]
                     WHERE [DepartmentId] IS NOT NULL AND [DepartmentId] NOT IN (SELECT [Id] FROM [Departments]);
                     SET IDENTITY_INSERT [Departments] OFF;
