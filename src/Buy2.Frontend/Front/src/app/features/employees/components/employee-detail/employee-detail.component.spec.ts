@@ -2,13 +2,19 @@ import { type ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute } from '@angular/router';
 import { of } from 'rxjs';
 import { EmployeeDetailComponent } from './employee-detail.component';
-import { EmployeeService } from '../../services/employee.service';
+import { EmployeeDetailService } from '../../services/employee-detail.service';
 import { TranslatePipe } from '@ngx-translate/core';
+import { signal } from '@angular/core';
 
 describe('EmployeeDetailComponent', () => {
   let component: EmployeeDetailComponent;
   let fixture: ComponentFixture<EmployeeDetailComponent>;
-  let mockEmployeeService: { getEmployeeProfile: (id: number) => ReturnType<typeof of> };
+  let mockEmployeeDetailService: {
+    loadDetailEmployee: (id: number) => void;
+    detailEmployee: ReturnType<typeof signal<any>>;
+    detailLoading: ReturnType<typeof signal<boolean>>;
+    detailError: ReturnType<typeof signal<string | null>>;
+  };
 
   const mockEmployee = {
     id: 1,
@@ -32,12 +38,17 @@ describe('EmployeeDetailComponent', () => {
   };
 
   beforeEach(async () => {
-    mockEmployeeService = { getEmployeeProfile: () => of(mockEmployee) };
+    mockEmployeeDetailService = {
+      loadDetailEmployee: () => {},
+      detailEmployee: signal(mockEmployee),
+      detailLoading: signal(false),
+      detailError: signal(null),
+    };
 
     await TestBed.configureTestingModule({
       imports: [EmployeeDetailComponent],
       providers: [
-        { provide: EmployeeService, useValue: mockEmployeeService },
+        { provide: EmployeeDetailService, useValue: mockEmployeeDetailService },
         {
           provide: ActivatedRoute,
           useValue: {
@@ -64,11 +75,11 @@ describe('EmployeeDetailComponent', () => {
 
   it('should have correct tabs configuration', () => {
     expect(component.tabs.length).toBe(5);
-    expect(component.tabs[0].id).toBe('personal');
-    expect(component.tabs[1].id).toBe('job');
-    expect(component.tabs[2].id).toBe('payroll');
-    expect(component.tabs[3].id).toBe('attendance');
-    expect(component.tabs[4].id).toBe('documents');
+    expect(component.tabs[0].id).toBe('information');
+    expect(component.tabs[1].id).toBe('payroll');
+    expect(component.tabs[2].id).toBe('attendance');
+    expect(component.tabs[3].id).toBe('documents');
+    expect(component.tabs[4].id).toBe('violations');
   });
 
   it('should format gender correctly', () => {

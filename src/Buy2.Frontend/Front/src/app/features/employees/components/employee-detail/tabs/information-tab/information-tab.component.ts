@@ -2,7 +2,7 @@ import { Component, inject, output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslatePipe } from '@ngx-translate/core';
-import { EmployeeService } from '../../../../services/employee.service';
+import { EmployeeDetailService } from '../../../../services/employee-detail.service';
 import type {
   UpdatePersonalInfoRequestDto,
   UpdateJobDetailsRequestDto,
@@ -15,7 +15,7 @@ import type {
   templateUrl: './information-tab.component.html',
 })
 export class InformationTabComponent {
-  private readonly employeeService = inject(EmployeeService);
+  private readonly employeeDetailService = inject(EmployeeDetailService);
 
   readonly saved = output<void>();
 
@@ -52,7 +52,7 @@ export class InformationTabComponent {
   readonly newQualification = signal('');
 
   // Computed getters for employee data
-  readonly employee = this.employeeService.detailEmployee;
+  readonly employee = this.employeeDetailService.detailEmployee;
 
   // Form data loading
   loadFormData(): void {
@@ -101,7 +101,7 @@ export class InformationTabComponent {
 
     const payload: UpdatePersonalInfoRequestDto = this.personalForm();
 
-    this.employeeService.updatePersonalInfo(emp.id, payload).subscribe({
+    this.employeeDetailService.updatePersonalInfo(emp.id, payload).subscribe({
       next: () => {
         this.personalSaving.set(false);
         this.personalEditing.set(false);
@@ -138,7 +138,7 @@ export class InformationTabComponent {
 
     const payload: UpdateJobDetailsRequestDto = this.jobForm();
 
-    this.employeeService.updateJobDetails(emp.id, payload).subscribe({
+    this.employeeDetailService.updateJobDetails(emp.id, payload).subscribe({
       next: () => {
         this.jobSaving.set(false);
         this.jobEditing.set(false);

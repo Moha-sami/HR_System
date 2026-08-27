@@ -2,7 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
-import { EmployeeService } from '../../services/employee.service';
+import { EmployeeDetailService } from '../../services/employee-detail.service';
 
 @Component({
   selector: 'app-employee-detail',
@@ -12,12 +12,12 @@ import { EmployeeService } from '../../services/employee.service';
 })
 export class EmployeeDetailComponent {
   private readonly route = inject(ActivatedRoute);
-  private readonly employeeService = inject(EmployeeService);
+  private readonly employeeDetailService = inject(EmployeeDetailService);
 
   readonly employeeId = signal<number>(0);
-  readonly employee = this.employeeService.detailEmployee;
-  readonly loading = this.employeeService.detailLoading;
-  readonly loadError = this.employeeService.detailError;
+  readonly employee = this.employeeDetailService.detailEmployee;
+  readonly loading = this.employeeDetailService.detailLoading;
+  readonly loadError = this.employeeDetailService.detailError;
 
   readonly activeTab = signal<
     'information' | 'payroll' | 'attendance' | 'documents' | 'violations'
@@ -36,7 +36,7 @@ export class EmployeeDetailComponent {
       const id = Number(params.get('id'));
       if (id) {
         this.employeeId.set(id);
-        this.employeeService.loadDetailEmployee(id);
+        this.employeeDetailService.loadDetailEmployee(id);
       }
     });
 
