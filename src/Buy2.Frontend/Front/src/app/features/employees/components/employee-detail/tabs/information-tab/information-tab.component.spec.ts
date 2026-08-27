@@ -1,13 +1,18 @@
 import { type ComponentFixture, TestBed } from '@angular/core/testing';
-import { of } from 'rxjs';
+import { of, type Observable } from 'rxjs';
 import { InformationTabComponent } from './information-tab.component';
-import { EmployeeService } from '../../../../services/employee.service';
+import { EmployeeDetailService } from '../../../../services/employee-detail.service';
 import { TranslatePipe } from '@ngx-translate/core';
+import { signal } from '@angular/core';
 
 describe('InformationTabComponent', () => {
   let component: InformationTabComponent;
   let fixture: ComponentFixture<InformationTabComponent>;
-  let mockEmployeeService: { updatePersonalInfo: (id: number, dto: Record<string, unknown>) => ReturnType<typeof of>; updateJobDetails: (id: number, dto: Record<string, unknown>) => ReturnType<typeof of> };
+  let mockEmployeeDetailService: {
+    updatePersonalInfo: (id: number, dto: Record<string, unknown>) => Observable<void>;
+    updateJobDetails: (id: number, dto: Record<string, unknown>) => Observable<void>;
+    detailEmployee: ReturnType<typeof signal<any>>;
+  };
 
   const mockEmployee = {
     id: 1,
@@ -32,13 +37,15 @@ describe('InformationTabComponent', () => {
   };
 
   beforeEach(async () => {
-    mockEmployeeService = { updatePersonalInfo: () => of(void 0), updateJobDetails: () => of(void 0) };
+    mockEmployeeDetailService = {
+      updatePersonalInfo: () => of(void 0) as Observable<void>,
+      updateJobDetails: () => of(void 0) as Observable<void>,
+      detailEmployee: signal(mockEmployee),
+    };
 
     await TestBed.configureTestingModule({
       imports: [InformationTabComponent],
-      providers: [
-        { provide: EmployeeService, useValue: mockEmployeeService },
-      ],
+      providers: [{ provide: EmployeeDetailService, useValue: mockEmployeeDetailService }],
     })
       .overrideComponent(InformationTabComponent, {
         remove: { imports: [TranslatePipe] },
@@ -47,8 +54,6 @@ describe('InformationTabComponent', () => {
 
     fixture = TestBed.createComponent(InformationTabComponent);
     component = fixture.componentInstance;
-    fixture.componentRef.setInput('employeeId', 1);
-    fixture.componentRef.setInput('employee', mockEmployee);
     fixture.detectChanges();
   });
 

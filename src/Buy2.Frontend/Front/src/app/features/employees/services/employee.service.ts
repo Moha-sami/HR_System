@@ -1,19 +1,8 @@
-import { inject, Injectable, signal } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import type { Observable } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 import { environment } from '../../../../environments/environment';
-import type {
-  EmployeeProfileDto,
-  UpdatePersonalInfoRequestDto,
-  UpdatePersonalInfoWrapperDto,
-  UpdateJobDetailsRequestDto,
-  UpdateJobDetailsWrapperDto,
-} from '../models/view-employee/employee-profile';
-import type {
-  EmployeePayrollProfileDto,
-  UpdatePayrollProfileDto,
-} from '../models/view-employee/employee-payroll';
 import type { PaginatedEmployeeListDto, EmployeeFilterDto } from '../models/employee-list/employee-list';
 import { buildEmployeeQueryParams } from '../models/employee-list/employee-list';
 import { Job } from '@app/core/models/job';
@@ -26,35 +15,6 @@ const API_BASE = environment.baseUrl;
 @Injectable({ providedIn: 'root' })
 export class EmployeeService {
   private readonly http = inject(HttpClient);
-
-  // Detail view store
-  readonly detailEmployee = signal<EmployeeProfileDto | null>(null);
-  readonly detailLoading = signal(false);
-  readonly detailError = signal<string | null>(null);
-
-
-  // Real API methods
-  getEmployeeProfile(id: number): Observable<EmployeeProfileDto> {
-    return this.http.get<EmployeeProfileDto>(`${API_BASE}/employees/${id}`);
-  }
-
-  getEmployeePayroll(id: number): Observable<EmployeePayrollProfileDto> {
-    return this.http.get<EmployeePayrollProfileDto>(`${API_BASE}/employees/${id}/payroll`);
-  }
-
-  updatePersonalInfo(id: number, dto: UpdatePersonalInfoRequestDto): Observable<void> {
-    const wrapper: UpdatePersonalInfoWrapperDto = { dto };
-    return this.http.put<void>(`${API_BASE}/employees/${id}/personal`, wrapper);
-  }
-
-  updateJobDetails(id: number, dto: UpdateJobDetailsRequestDto): Observable<void> {
-    const wrapper: UpdateJobDetailsWrapperDto = { dto };
-    return this.http.put<void>(`${API_BASE}/employees/${id}/job`, wrapper);
-  }
-
-  updatePayrollProfile(id: number, dto: UpdatePayrollProfileDto): Observable<void> {
-    return this.http.put<void>(`${API_BASE}/employees/${id}/payroll`, dto);
-  }
 
   // Dropdown options for create/edit forms
   getJobRoles(): Observable<readonly Job[]> {
@@ -88,7 +48,7 @@ export class EmployeeService {
     return this.http.post<{ id: number }>(`${API_BASE}/employees/onboard`, command);
   }
 
-  updateEmployee(id: number, input: InsertEmployee): Observable<EmployeeProfileDto> {
+  updateEmployee(id: number, input: InsertEmployee): Observable<{ id: number }> {
     // Backend has separate endpoints for personal, job, and payroll updates
     // Update personal info first, then fetch updated employee
     const personalDto = {
@@ -100,9 +60,9 @@ export class EmployeeService {
       emergencyContact: '',
       nationalId: '',
     };
-    return this.updatePersonalInfo(id, personalDto).pipe(
-      switchMap(() => this.getEmployeeProfile(id))
-    );
+    // Note: The actual personal/job updates should be done via EmployeeDetailService
+    // This method is kept for compatibility with employee-create flow
+    return this.http.put<{ id: number }>(`${API_BASE}/employees/${id}`, personalDto);
   }
 
   // Paginated list API
@@ -119,36 +79,4 @@ export class EmployeeService {
   deleteEmployee(id: number): Observable<void> {
     return this.http.delete<void>(`${API_BASE}/employees/${id}`);
   }
-
-  // Detail view store methods
-  loadDetailEmployee(id: number): void {
-    if (this.detailLoading() || this.detailEmployee()?.id === id) {
-      return;
-    }
-
-    this.detailLoading.set(true);
-    this.detailError.set(null);
-
-    this.getEmployeeProfile(id).subscribe({
-      next: (data) => {
-        this.detailEmployee.set(data);
-        this.detailLoading.set(false);
-      },
-      error: () => {
-        this.detailError.set('EMPLOYEE_MANAGEMENT.LIST_LOAD_FAILED');
-        this.detailLoading.set(false);
-      },
-    });
-  }
-
-  clearDetailEmployee(): void {
-    this.detailEmployee.set(null);
-    this.detailLoading.set(false);
-    this.detailError.set(null);
-  }
-  
-  updateDetailEmployee(partial: Partial<EmployeeProfileDto>): void {
-    this.detailEmployee.update((current) => (current ? { ...current, ...partial } : null));
-  }
-  
 }

@@ -1,7 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslatePipe } from '@ngx-translate/core';
-import { EmployeeService } from '../../../../services/employee.service';
+import { EmployeeDetailService } from '../../../../services/employee-detail.service';
 
 @Component({
   selector: 'app-documents-tab',
@@ -10,8 +10,8 @@ import { EmployeeService } from '../../../../services/employee.service';
   templateUrl: './documents-tab.component.html',
 })
 export class DocumentsTabComponent {
-  private readonly employeeService = inject(EmployeeService);
+  private readonly employeeDetailService = inject(EmployeeDetailService);
 
-  readonly employee = this.employeeService.detailEmployee;
+  readonly employee = this.employeeDetailService.detailEmployee;
   readonly comingSoon = true;
 }

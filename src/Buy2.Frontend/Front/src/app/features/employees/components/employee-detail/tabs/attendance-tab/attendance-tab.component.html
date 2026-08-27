@@ -1,27 +1,334 @@
 @if (employee(); as emp) {
   <section class="attendance-tab p-6">
-    <div class="max-w-4xl mx-auto">
-      <div class="text-center py-16">
-        <svg
-          class="mx-auto h-16 w-16 text-gray-400"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="1.5"
-            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-          ></path>
-        </svg>
-        <h3 class="mt-4 text-xl font-semibold text-gray-900">
-          {{ 'EMPLOYEE_DETAIL.TABS.ATTENDANCE' | translate }}
-        </h3>
-        <p class="mt-2 text-gray-500">
-          {{ 'EMPLOYEE_DETAIL.COMING_SOON' | translate }}
-        </p>
+    <div class="max-w-7xl mx-auto space-y-6">
+      <!-- 4 Summary Stat Cards -->
+      @if (attendanceCalendar(); as calendar) {
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <!-- Attendance Rate -->
+          <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm font-medium text-gray-500">
+                  {{ 'EMPLOYEE_DETAIL.ATTENDANCE.ATTENDANCE_RATE' | translate }}
+                </p>
+                <p class="mt-1 text-3xl font-bold text-primary-600">
+                  {{ calendar.summary.attendanceRate | number: '1.0-0' }}%
+                </p>
+              </div>
+              <div class="w-12 h-12 rounded-lg bg-primary-50 flex items-center justify-center">
+                <svg
+                  class="w-6 h-6 text-primary-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                  ></path>
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <!-- Punctuality Score -->
+          <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm font-medium text-gray-500">
+                  {{ 'EMPLOYEE_DETAIL.ATTENDANCE.PUNCTUALITY_SCORE' | translate }}
+                </p>
+                <p class="mt-1 text-3xl font-bold text-green-600">
+                  {{ calendar.summary.punctualityScore | number: '1.0-0' }}%
+                </p>
+              </div>
+              <div class="w-12 h-12 rounded-lg bg-green-50 flex items-center justify-center">
+                <svg
+                  class="w-6 h-6 text-green-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                  ></path>
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <!-- Average Lateness -->
+          <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm font-medium text-gray-500">
+                  {{ 'EMPLOYEE_DETAIL.ATTENDANCE.AVG_LATENESS' | translate }}
+                </p>
+                <p class="mt-1 text-3xl font-bold text-orange-600">
+                  {{ formatMinutes(calendar.summary.averageLatenessMinutes) }}
+                </p>
+              </div>
+              <div class="w-12 h-12 rounded-lg bg-orange-50 flex items-center justify-center">
+                <svg
+                  class="w-6 h-6 text-orange-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                  ></path>
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recorded Hours -->
+          <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm font-medium text-gray-500">
+                  {{ 'EMPLOYEE_DETAIL.ATTENDANCE.RECORDED_HOURS' | translate }}
+                </p>
+                <p class="mt-1 text-3xl font-bold text-blue-600">
+                  {{ formatHours(calendar.summary.recordedHours) }} /
+                  {{ formatHours(calendar.summary.targetHours) }}
+                </p>
+              </div>
+              <div class="w-12 h-12 rounded-lg bg-blue-50 flex items-center justify-center">
+                <svg
+                  class="w-6 h-6 text-blue-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                  ></path>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- Month/Year Selector + 5 Color Indicators -->
+      <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <!-- Month/Year Dropdowns -->
+          <div class="flex items-center justify-center md:justify-start gap-4">
+            <select
+              [value]="currentMonth()"
+              (change)="onMonthChange($event)"
+              [disabled]="attendanceLoading()"
+              class="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 bg-white disabled:opacity-50 disabled:cursor-not-allowed"
+              aria-label="Select month"
+            >
+              @for (month of months; track month.value) {
+                <option [value]="month.value">{{ month.label }}</option>
+              }
+            </select>
+            <select
+              [value]="currentYear()"
+              (change)="onYearChange($event)"
+              [disabled]="attendanceLoading()"
+              class="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 bg-white disabled:opacity-50 disabled:cursor-not-allowed"
+              aria-label="Select year"
+            >
+              @for (year of years(); track year) {
+                <option [value]="year">{{ year }}</option>
+              }
+            </select>
+          </div>
+
+          <!-- 5 Color Indicators -->
+          <div class="flex flex-wrap items-center justify-center md:justify-end gap-4">
+            <!-- Hours worked -->
+            <div class="flex items-center gap-2">
+              <div class="w-4 h-4 rounded border border-gray-300 bg-gray-200"></div>
+              <span class="text-sm font-medium text-gray-700">{{
+                'EMPLOYEE_DETAIL.ATTENDANCE.HOURS_WORKED' | translate
+              }}</span>
+            </div>
+            <!-- Hours Left -->
+            <div class="flex items-center gap-2">
+              <div class="w-4 h-4 rounded border border-gray-300 bg-blue-100"></div>
+              <span class="text-sm font-medium text-gray-700">{{
+                'EMPLOYEE_DETAIL.ATTENDANCE.HOURS_LEFT' | translate
+              }}</span>
+            </div>
+            <!-- OT Hours -->
+            <div class="flex items-center gap-2">
+              <div class="w-4 h-4 rounded border border-gray-300 bg-orange-100"></div>
+              <span class="text-sm font-medium text-gray-700">{{
+                'EMPLOYEE_DETAIL.ATTENDANCE.OT_HOURS' | translate
+              }}</span>
+            </div>
+            <!-- Break time recorded -->
+            <div class="flex items-center gap-2">
+              <div class="w-4 h-4 rounded border border-gray-300 bg-purple-100"></div>
+              <span class="text-sm font-medium text-gray-700">{{
+                'EMPLOYEE_DETAIL.ATTENDANCE.BREAK_TIME' | translate
+              }}</span>
+            </div>
+            <!-- Lateness Recorded -->
+            <div class="flex items-center gap-2">
+              <div class="w-4 h-4 rounded border border-gray-300 bg-red-100"></div>
+              <span class="text-sm font-medium text-gray-700">{{
+                'EMPLOYEE_DETAIL.ATTENDANCE.LATENESS_RECORDED' | translate
+              }}</span>
+            </div>
+          </div>
+        </div>
       </div>
+
+      <!-- Calendar Grid -->
+      <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+        <!-- Day Headers -->
+        <div class="grid grid-cols-7 border-b border-gray-200 bg-gray-50">
+          @for (dayHeader of dayHeaders; track dayHeader) {
+            <div
+              class="p-3 text-center text-sm font-semibold text-gray-500 border-r border-gray-200 last:border-r-0"
+            >
+              {{ dayHeader }}
+            </div>
+          }
+        </div>
+
+        <!-- Calendar Days -->
+        <div class="grid grid-cols-7">
+          @for (dayData of calendarGrid(); track $index; let i = $index) {
+            <div
+              class="min-h-[120px] border-r border-b border-gray-100 last:border-r-0 p-2 relative"
+              [style.background-color]="getDayCellBgColor(dayData)"
+              [style.border-color]="getDayCellBorderColor(dayData)"
+            >
+              <!-- Day Number -->
+              @if (dayData !== null) {
+                <div class="flex items-center justify-between mb-1">
+                  <span class="text-sm font-medium text-gray-900">
+                    {{ getDayNumber(i) }}
+                  </span>
+                  <!-- Status badge for special days -->
+                  @if (
+                    dayData.status !== AttendanceDayStatus.OnTime &&
+                    dayData.status !== AttendanceDayStatus.Late
+                  ) {
+                    <span
+                      class="px-1.5 py-0.5 text-xs font-medium rounded"
+                      [style.background-color]="getStatusColor(dayData.status)"
+                      [style.color]="getStatusTextColor(dayData.status)"
+                    >
+                      {{ getStatusLabel(dayData.status, dayData.leaveType) }}
+                    </span>
+                  }
+                </div>
+
+                <!-- Time Entries (max 5) -->
+                <div class="space-y-1 overflow-hidden">
+                  @for (entry of getDayEntries(dayData); track entry.label; let j = $index) {
+                    @if (j < 5) {
+                      <div class="flex items-center gap-1.5 text-xs">
+                        <div class="w-2 h-2 rounded" [style.background-color]="entry.color"></div>
+                        <span class="text-gray-600 truncate flex-1">
+                          @if (entry.label) {
+                            {{ entry.label }}:
+                          }
+                          {{ entry.value }}
+                        </span>
+                      </div>
+                    }
+                  }
+                </div>
+              } @else {
+                <!-- Empty cell for days outside current month -->
+                <div class="text-sm text-gray-300"></div>
+              }
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Loading State -->
+      @if (attendanceLoading()) {
+        <div class="flex items-center justify-center py-12">
+          <div class="flex flex-col items-center gap-3">
+            <svg class="animate-spin h-8 w-8 text-primary-600" viewBox="0 0 24 24">
+              <circle
+                class="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                stroke-width="4"
+                fill="none"
+              ></circle>
+              <path
+                class="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              ></path>
+            </svg>
+            <p class="text-gray-500">{{ 'COMMON.LOADING' | translate }}</p>
+          </div>
+        </div>
+      }
+
+      <!-- Error State -->
+      @if (attendanceError(); as errorKey) {
+        <div class="flex items-center justify-center py-12">
+          <div class="text-center">
+            <svg
+              class="mx-auto h-12 w-12 text-red-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+              ></path>
+            </svg>
+            <p class="mt-3 text-red-600">{{ errorKey | translate }}</p>
+          </div>
+        </div>
+      }
+
+      <!-- Empty State (no employee selected) -->
+      @if (!employee() && !attendanceLoading()) {
+        <div class="text-center py-16">
+          <svg
+            class="mx-auto h-16 w-16 text-gray-400"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="1.5"
+              d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+            ></path>
+          </svg>
+          <h3 class="mt-4 text-xl font-semibold text-gray-900">
+            {{ 'EMPLOYEE_DETAIL.TABS.ATTENDANCE' | translate }}
+          </h3>
+          <p class="mt-2 text-gray-500">{{ 'EMPLOYEE_DETAIL.COMING_SOON' | translate }}</p>
+        </div>
+      }
     </div>
   </section>
 }
