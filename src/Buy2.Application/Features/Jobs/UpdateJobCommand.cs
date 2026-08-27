@@ -38,16 +38,41 @@ public class UpdateJobCommandHandler : IRequestHandler<UpdateJobCommand, JobResp
         var dto = request.Dto;
 
         ValidateWorkModel(dto);
+        await ValidateDepartmentAsync(dto, cancellationToken);
+        await ValidateTitleUniquenessAsync(job, dto, request.Id, cancellationToken);
 
+        UpdateJobProperties(job, dto);
+
+        _jobRepository.Update(job);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        return MapToResponse(job, dto);
+    }
+
+    private async Task ValidateDepartmentAsync(UpdateJobDto dto, CancellationToken cancellationToken)
+    {
+        if (dto.DepartmentId.HasValue)
+        {
+            var deptExists = await _departmentRepository.AnyAsync(d => d.Id == dto.DepartmentId.Value, cancellationToken);
+            if (!deptExists)
+                throw new ArgumentException($"Department with ID {dto.DepartmentId.Value} not found.");
+        }
+    }
+
+    private async Task ValidateTitleUniquenessAsync(JobRole job, UpdateJobDto dto, int jobId, CancellationToken cancellationToken)
+    {
         int? targetDepartmentId = dto.DepartmentId ?? job.DepartmentId;
         if (dto.Title != job.Title || targetDepartmentId != job.DepartmentId)
         {
             if (targetDepartmentId.HasValue)
             {
-                await EnsureTitleIsUniqueAsync(dto.Title, targetDepartmentId.Value, request.Id, cancellationToken);
+                await EnsureTitleIsUniqueAsync(dto.Title, targetDepartmentId.Value, jobId, cancellationToken);
             }
         }
+    }
 
+    private void UpdateJobProperties(JobRole job, UpdateJobDto dto)
+    {
         job.Title = dto.Title;
         if (dto.DepartmentId.HasValue)
         {
@@ -62,10 +87,10 @@ public class UpdateJobCommandHandler : IRequestHandler<UpdateJobCommand, JobResp
         job.OfflineWorkdaysJson = JsonSerializer.Serialize(dto.OfflineWorkdays ?? new());
         job.IsActive = dto.IsActive;
         job.UpdatedAt = DateTimeOffset.UtcNow;
+    }
 
-        _jobRepository.Update(job);
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
-
+    private JobResponseDto MapToResponse(JobRole job, UpdateJobDto dto)
+    {
         return new JobResponseDto(
             job.Id,
             job.Title,
@@ -86,18 +111,29 @@ public class UpdateJobCommandHandler : IRequestHandler<UpdateJobCommand, JobResp
 
     private void ValidateWorkModel(UpdateJobDto dto)
     {
-        if (dto.WorkModel == "OnSite" && dto.OnlineWorkdays?.Any() == true)
-            throw new ArgumentException("OnSite work model cannot have online workdays.");
-        
-        if (dto.WorkModel == "Remote" && dto.OfflineWorkdays?.Any() == true)
-            throw new ArgumentException("Remote work model cannot have offline workdays.");
+        if (dto.WorkModel == "OnSite") ValidateOnSiteModel(dto);
+        else if (dto.WorkModel == "Remote") ValidateRemoteModel(dto);
+        else if (dto.WorkModel == "Hybrid") ValidateHybridModel(dto);
+    }
 
-        if (dto.WorkModel == "Hybrid")
-        {
-            int totalDays = (dto.OnlineWorkdays?.Count ?? 0) + (dto.OfflineWorkdays?.Count ?? 0);
-            if (totalDays != 5)
-                throw new ArgumentException("Hybrid work model total days must equal active work week (5 days).");
-        }
+    private void ValidateOnSiteModel(UpdateJobDto dto)
+    {
+        if (dto.OnlineWorkdays?.Any() == true)
+            throw new ArgumentException("OnSite work model cannot have online workdays.");
+    }
+
+    private void ValidateRemoteModel(UpdateJobDto dto)
+    {
+        if (dto.OfflineWorkdays?.Any() == true)
+            throw new ArgumentException("Remote work model cannot have offline workdays.");
+    }
+
+    private void ValidateHybridModel(UpdateJobDto dto)
+    {
+        int onlineDays = dto.OnlineWorkdays?.Count ?? 0;
+        int offlineDays = dto.OfflineWorkdays?.Count ?? 0;
+        if (onlineDays + offlineDays != 5)
+            throw new ArgumentException("Hybrid work model total days must equal active work week (5 days).");
     }
 
     private async Task EnsureTitleIsUniqueAsync(string title, int departmentId, int currentJobId, CancellationToken cancellationToken)
