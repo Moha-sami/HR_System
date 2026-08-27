@@ -9,8 +9,11 @@ using MediatR;
 using System.Linq;
 using System.Collections.Generic;
 
+using Buy2.Application.Common.Security;
+
 namespace Buy2.Application.Features.Jobs;
 
+[Authorize(Roles = "HRAdmin,Admin,SuperAdmin")]
 public record UpdateJobCommand(int Id, UpdateJobDto Dto) : IRequest<JobResponseDto>;
 
 public class UpdateJobCommandHandler : IRequestHandler<UpdateJobCommand, JobResponseDto>
@@ -39,9 +42,13 @@ public class UpdateJobCommandHandler : IRequestHandler<UpdateJobCommand, JobResp
 
         ValidateWorkModel(dto);
 
-        if (dto.DepartmentId.HasValue && dto.DepartmentId.Value != job.DepartmentId)
+        int? targetDepartmentId = dto.DepartmentId ?? job.DepartmentId;
+        if (dto.Title != job.Title || targetDepartmentId != job.DepartmentId)
         {
-            await EnsureTitleIsUniqueAsync(dto.Title, dto.DepartmentId.Value, request.Id, cancellationToken);
+            if (targetDepartmentId.HasValue)
+            {
+                await EnsureTitleIsUniqueAsync(dto.Title, targetDepartmentId.Value, request.Id, cancellationToken);
+            }
         }
 
         job.Title = dto.Title;

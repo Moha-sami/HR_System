@@ -8,8 +8,11 @@ using Buy2.Domain.Entities;
 using MediatR;
 using System.Linq;
 
+using Buy2.Application.Common.Security;
+
 namespace Buy2.Application.Features.Jobs;
 
+[Authorize(Roles = "HRAdmin,Admin,SuperAdmin")]
 public record CreateJobCommand(CreateJobDto Dto) : IRequest<JobResponseDto>;
 
 public class CreateJobCommandHandler : IRequestHandler<CreateJobCommand, JobResponseDto>
