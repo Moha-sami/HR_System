@@ -424,12 +424,7 @@ export class JobManagementComponent implements AfterViewInit {
   // =========================================================
 
   viewJob(job: Job): void {
-
-    console.log(
-      'View job:',
-      job
-    );
-
+    this.router.navigate(['/jobs/details', job.id]);
   }
 
 
