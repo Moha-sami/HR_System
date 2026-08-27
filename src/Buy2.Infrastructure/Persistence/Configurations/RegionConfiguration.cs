@@ -16,6 +16,10 @@ public class RegionConfiguration : IEntityTypeConfiguration<Region>
           .IsRequired(false)
           .HasColumnType("nvarchar(500)");
 
+        builder.Property(r => r.IsActive)
+          .IsRequired()
+          .HasDefaultValue(true);
+
         builder.HasMany(r => r.Sites)
             .WithOne(s => s.Region)
             .HasForeignKey(s => s.RegionId)
