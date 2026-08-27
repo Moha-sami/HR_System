@@ -33,3 +33,8 @@ scripts/jira_helper.py
 
 
 
+/docs/ORCHESTRATOR_WORKFLOW.md
+/.graft/symbol_index.md
+/.graft/architecture_map.md
+/docs/PRD.md
+/.gitignore
