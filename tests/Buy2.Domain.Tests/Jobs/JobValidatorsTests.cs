@@ -280,6 +280,63 @@ public class JobValidatorsTests
         Assert.Contains(result.Errors, e => e.PropertyName == nameof(UpdateJobDto.Title));
     }
 
+    [Theory]
+    [InlineData("Ab")] // Length 2 (Lower bound)
+    public void UpdateJobDtoValidator_TitleLengthLowerBound_ShouldPass(string title)
+    {
+        var dto = new UpdateJobDto(title, 1, "MidLevel", null, null, 2, "OnSite", null, null, true);
+        Assert.True(_updateJobValidator.Validate(dto).IsValid);
+    }
+
+    [Fact]
+    public void UpdateJobDtoValidator_TitleLength100_ShouldPass_And101_ShouldFail()
+    {
+        var title100 = new string('A', 100);
+        var dto100 = new UpdateJobDto(title100, 1, "MidLevel", null, null, 2, "OnSite", null, null, true);
+        Assert.True(_updateJobValidator.Validate(dto100).IsValid);
+
+        var title101 = new string('A', 101);
+        var dto101 = new UpdateJobDto(title101, 1, "MidLevel", null, null, 2, "OnSite", null, null, true);
+        Assert.False(_updateJobValidator.Validate(dto101).IsValid);
+    }
+    
+    [Theory]
+    [InlineData("junior")] // Case insensitivity
+    [InlineData("JUNIOR")]
+    [InlineData("Invalid")]
+    [InlineData("   ")] // Whitespace
+    [InlineData(null)]
+    public void UpdateJobDtoValidator_SeniorityLevelValidation(string level)
+    {
+        var dto = new UpdateJobDto("Developer", 1, level, null, null, 2, "OnSite", null, null, true);
+        var result = _updateJobValidator.Validate(dto);
+        if (string.IsNullOrWhiteSpace(level) || level == "Invalid") Assert.False(result.IsValid);
+        else Assert.True(result.IsValid);
+    }
+
+    [Theory]
+    [InlineData("onsite")] // Case insensitivity
+    [InlineData("ONSITE")]
+    [InlineData("Invalid")]
+    public void UpdateJobDtoValidator_WorkModelValidation(string model)
+    {
+        var dto = new UpdateJobDto("Developer", 1, "Junior", null, null, 2, model, null, null, true);
+        var result = _updateJobValidator.Validate(dto);
+        if (model == "Invalid") Assert.False(result.IsValid);
+        else Assert.True(result.IsValid);
+    }
+
+    [Theory]
+    [InlineData(0)] // Boundary
+    [InlineData(-1)]
+    public void UpdateJobDtoValidator_ExperienceYearsMinValidation(int exp)
+    {
+        var dto = new UpdateJobDto("Developer", 1, "Junior", null, null, exp, "OnSite", null, null, true);
+        var result = _updateJobValidator.Validate(dto);
+        if (exp >= 0) Assert.True(result.IsValid);
+        else Assert.False(result.IsValid);
+    }
+
     #endregion
 
     #region ReassignEmployeesAndDeleteJobDtoValidator Tests
