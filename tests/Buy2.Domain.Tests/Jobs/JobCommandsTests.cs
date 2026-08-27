@@ -60,6 +60,195 @@ public class JobCommandsTests
     }
 
     [Fact]
+    public async Task CreateJobCommandHandler_InlineDepartmentResolution_ShouldCreateNewDepartment()
+    {
+        // Arrange
+        using var context = CreateDbContext();
+        var jobRepo = new GenericRepository<JobRole>(context);
+        var deptRepo = new GenericRepository<Department>(context);
+        var uow = new UnitOfWork(context);
+
+        var command = new CreateJobCommand(new CreateJobDto(
+            Title: "HR Manager",
+            DepartmentId: null,
+            NewDepartmentName: "Human Resources",
+            SeniorityLevel: "Senior",
+            Description: "HR Desc",
+            RequiredQualifications: new List<string> { "HR" },
+            ExperienceYearsMin: 5,
+            WorkModel: "OnSite",
+            OnlineWorkdays: new List<string>(),
+            OfflineWorkdays: new List<string> { "Monday", "Tuesday", "Wednesday", "Thursday", "Friday" }
+        ));
+
+        var handler = new CreateJobCommandHandler(jobRepo, deptRepo, uow);
+
+        // Act
+        var result = await handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        Assert.NotNull(result);
+        var newDept = await context.Departments.FirstOrDefaultAsync(d => d.Name == "Human Resources");
+        Assert.NotNull(newDept);
+        Assert.Equal(newDept.Id, result.DepartmentId);
+    }
+
+    [Fact]
+    public async Task CreateJobCommandHandler_OnSiteWithEmptyOnlineDays_ShouldPass()
+    {
+        using var context = CreateDbContext();
+        var jobRepo = new GenericRepository<JobRole>(context);
+        var deptRepo = new GenericRepository<Department>(context);
+        var uow = new UnitOfWork(context);
+
+        var dept = new Department { Name = "IT", IsActive = true };
+        context.Departments.Add(dept);
+        await context.SaveChangesAsync();
+
+        var command = new CreateJobCommand(new CreateJobDto(
+            Title: "Software Engineer",
+            DepartmentId: 1,
+            NewDepartmentName: null,
+            SeniorityLevel: "Senior",
+            Description: "Desc",
+            RequiredQualifications: new List<string>(),
+            ExperienceYearsMin: 5,
+            WorkModel: "OnSite",
+            OnlineWorkdays: new List<string>(), // 0 online days
+            OfflineWorkdays: new List<string> { "Monday", "Tuesday", "Wednesday", "Thursday", "Friday" }
+        ));
+
+        var handler = new CreateJobCommandHandler(jobRepo, deptRepo, uow);
+
+        var result = await handler.Handle(command, CancellationToken.None);
+        Assert.NotNull(result);
+    }
+
+    [Fact]
+    public async Task CreateJobCommandHandler_OnSiteWithNullOnlineDays_ShouldPass()
+    {
+        using var context = CreateDbContext();
+        var jobRepo = new GenericRepository<JobRole>(context);
+        var deptRepo = new GenericRepository<Department>(context);
+        var uow = new UnitOfWork(context);
+
+        var dept = new Department { Name = "IT", IsActive = true };
+        context.Departments.Add(dept);
+        await context.SaveChangesAsync();
+
+        var command = new CreateJobCommand(new CreateJobDto(
+            Title: "Software Engineer",
+            DepartmentId: 1,
+            NewDepartmentName: null,
+            SeniorityLevel: "Senior",
+            Description: "Desc",
+            RequiredQualifications: new List<string>(),
+            ExperienceYearsMin: 5,
+            WorkModel: "OnSite",
+            OnlineWorkdays: null, // null online days
+            OfflineWorkdays: new List<string> { "Monday", "Tuesday", "Wednesday", "Thursday", "Friday" }
+        ));
+
+        var handler = new CreateJobCommandHandler(jobRepo, deptRepo, uow);
+
+        var result = await handler.Handle(command, CancellationToken.None);
+        Assert.NotNull(result);
+    }
+
+    [Fact]
+    public async Task CreateJobCommandHandler_RemoteWithEmptyOfflineDays_ShouldPass()
+    {
+        using var context = CreateDbContext();
+        var jobRepo = new GenericRepository<JobRole>(context);
+        var deptRepo = new GenericRepository<Department>(context);
+        var uow = new UnitOfWork(context);
+
+        var dept = new Department { Name = "IT", IsActive = true };
+        context.Departments.Add(dept);
+        await context.SaveChangesAsync();
+
+        var command = new CreateJobCommand(new CreateJobDto(
+            Title: "Software Engineer",
+            DepartmentId: 1,
+            NewDepartmentName: null,
+            SeniorityLevel: "Senior",
+            Description: "Desc",
+            RequiredQualifications: new List<string>(),
+            ExperienceYearsMin: 5,
+            WorkModel: "Remote",
+            OnlineWorkdays: new List<string> { "Monday", "Tuesday", "Wednesday", "Thursday", "Friday" },
+            OfflineWorkdays: new List<string>() // 0 offline days
+        ));
+
+        var handler = new CreateJobCommandHandler(jobRepo, deptRepo, uow);
+
+        var result = await handler.Handle(command, CancellationToken.None);
+        Assert.NotNull(result);
+    }
+
+    [Fact]
+    public async Task CreateJobCommandHandler_RemoteWithNullOfflineDays_ShouldPass()
+    {
+        using var context = CreateDbContext();
+        var jobRepo = new GenericRepository<JobRole>(context);
+        var deptRepo = new GenericRepository<Department>(context);
+        var uow = new UnitOfWork(context);
+
+        var dept = new Department { Name = "IT", IsActive = true };
+        context.Departments.Add(dept);
+        await context.SaveChangesAsync();
+
+        var command = new CreateJobCommand(new CreateJobDto(
+            Title: "Software Engineer",
+            DepartmentId: 1,
+            NewDepartmentName: null,
+            SeniorityLevel: "Senior",
+            Description: "Desc",
+            RequiredQualifications: new List<string>(),
+            ExperienceYearsMin: 5,
+            WorkModel: "Remote",
+            OnlineWorkdays: new List<string> { "Monday", "Tuesday", "Wednesday", "Thursday", "Friday" },
+            OfflineWorkdays: null // null offline days
+        ));
+
+        var handler = new CreateJobCommandHandler(jobRepo, deptRepo, uow);
+
+        var result = await handler.Handle(command, CancellationToken.None);
+        Assert.NotNull(result);
+    }
+
+    [Fact]
+    public async Task CreateJobCommandHandler_HybridWithExactlyFiveDays_ShouldPass()
+    {
+        using var context = CreateDbContext();
+        var jobRepo = new GenericRepository<JobRole>(context);
+        var deptRepo = new GenericRepository<Department>(context);
+        var uow = new UnitOfWork(context);
+
+        var dept = new Department { Name = "IT", IsActive = true };
+        context.Departments.Add(dept);
+        await context.SaveChangesAsync();
+
+        var command = new CreateJobCommand(new CreateJobDto(
+            Title: "Software Engineer",
+            DepartmentId: 1,
+            NewDepartmentName: null,
+            SeniorityLevel: "Senior",
+            Description: "Desc",
+            RequiredQualifications: new List<string>(),
+            ExperienceYearsMin: 5,
+            WorkModel: "Hybrid",
+            OnlineWorkdays: new List<string> { "Monday", "Tuesday" },
+            OfflineWorkdays: new List<string> { "Wednesday", "Thursday", "Friday" } // Total 5 days
+        ));
+
+        var handler = new CreateJobCommandHandler(jobRepo, deptRepo, uow);
+
+        var result = await handler.Handle(command, CancellationToken.None);
+        Assert.NotNull(result);
+    }
+
+    [Fact]
     public async Task CreateJobCommandHandler_OnSiteWithOnlineDays_ShouldThrowException()
     {
         // Arrange

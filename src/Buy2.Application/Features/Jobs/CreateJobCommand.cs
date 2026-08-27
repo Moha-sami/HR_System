@@ -34,10 +34,53 @@ public class CreateJobCommandHandler : IRequestHandler<CreateJobCommand, JobResp
 
         ValidateWorkModel(dto);
 
-        int departmentId = await ResolveDepartmentIdAsync(dto, cancellationToken);
-        await EnsureTitleIsUniqueAsync(dto.Title, departmentId, cancellationToken);
+        if (dto.DepartmentId.HasValue && dto.DepartmentId.Value > 0)
+        {
+            await EnsureTitleIsUniqueAsync(dto.Title, dto.DepartmentId.Value, cancellationToken);
+        }
 
-        var job = new JobRole
+        int departmentId = await ResolveDepartmentIdAsync(dto, cancellationToken);
+
+        var job = CreateJobRole(dto, departmentId);
+
+        await _jobRepository.AddAsync(job);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        return CreateJobResponse(job, dto);
+    }
+
+    private void ValidateWorkModel(CreateJobDto dto)
+    {
+        ValidateOnSiteModel(dto);
+        ValidateRemoteModel(dto);
+        ValidateHybridModel(dto);
+    }
+
+    private void ValidateOnSiteModel(CreateJobDto dto)
+    {
+        if (dto.WorkModel == "OnSite" && dto.OnlineWorkdays?.Any() == true)
+            throw new ArgumentException("OnSite work model cannot have online workdays.");
+    }
+
+    private void ValidateRemoteModel(CreateJobDto dto)
+    {
+        if (dto.WorkModel == "Remote" && dto.OfflineWorkdays?.Any() == true)
+            throw new ArgumentException("Remote work model cannot have offline workdays.");
+    }
+
+    private void ValidateHybridModel(CreateJobDto dto)
+    {
+        if (dto.WorkModel == "Hybrid")
+        {
+            int totalDays = (dto.OnlineWorkdays?.Count ?? 0) + (dto.OfflineWorkdays?.Count ?? 0);
+            if (totalDays != 5)
+                throw new ArgumentException("Hybrid work model total days must equal active work week (5 days).");
+        }
+    }
+
+    private JobRole CreateJobRole(CreateJobDto dto, int departmentId)
+    {
+        return new JobRole
         {
             Title = dto.Title,
             DepartmentId = departmentId,
@@ -51,10 +94,10 @@ public class CreateJobCommandHandler : IRequestHandler<CreateJobCommand, JobResp
             IsActive = true,
             CreatedAt = DateTimeOffset.UtcNow
         };
+    }
 
-        await _jobRepository.AddAsync(job);
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
-
+    private JobResponseDto CreateJobResponse(JobRole job, CreateJobDto dto)
+    {
         return new JobResponseDto(
             job.Id,
             job.Title,
@@ -71,22 +114,6 @@ public class CreateJobCommandHandler : IRequestHandler<CreateJobCommand, JobResp
             job.CreatedAt,
             job.UpdatedAt
         );
-    }
-
-    private void ValidateWorkModel(CreateJobDto dto)
-    {
-        if (dto.WorkModel == "OnSite" && dto.OnlineWorkdays?.Any() == true)
-            throw new ArgumentException("OnSite work model cannot have online workdays.");
-        
-        if (dto.WorkModel == "Remote" && dto.OfflineWorkdays?.Any() == true)
-            throw new ArgumentException("Remote work model cannot have offline workdays.");
-
-        if (dto.WorkModel == "Hybrid")
-        {
-            int totalDays = (dto.OnlineWorkdays?.Count ?? 0) + (dto.OfflineWorkdays?.Count ?? 0);
-            if (totalDays != 5)
-                throw new ArgumentException("Hybrid work model total days must equal active work week (5 days).");
-        }
     }
 
     private async Task<int> ResolveDepartmentIdAsync(CreateJobDto dto, CancellationToken cancellationToken)
