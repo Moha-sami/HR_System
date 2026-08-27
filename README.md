@@ -73,6 +73,13 @@ An enterprise-grade open-source HR Management System built with **.NET 10 Clean 
 | `GET` | `/api/v1/employees/{id}/points/transactions` | Paginated ledger — filterable by type, rule key, date range |
 | `POST` | `/api/v1/points/rules` | Create automation rule (trigger type, points value) |
 
+### Job Role Management
+| Method | Route | Description |
+| :--- | :--- | :--- |
+| `GET` | `/api/v1/jobs` | Paginated list — search, filter by department/work model/active status |
+| `GET` | `/api/v1/jobs/{id}` | Full job role details — qualifications, workdays, employee counts |
+| `GET` | `/api/v1/jobs/{id}/employees` | Paginated assigned employee roster with search filter |
+
 ### Sites (Stub Only)
 | Method | Route | Description |
 | :--- | :--- | :--- |

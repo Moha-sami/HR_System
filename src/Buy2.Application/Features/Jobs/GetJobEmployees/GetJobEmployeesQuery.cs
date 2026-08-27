@@ -70,9 +70,9 @@ public class GetJobEmployeesQueryHandler : IRequestHandler<GetJobEmployeesQuery,
 
         return new JobAssignedEmployeeListItemDto(
             e.Id,
-            e.EmployeeCode ?? "N/A",
+            string.IsNullOrWhiteSpace(e.EmployeeCode) ? "N/A" : e.EmployeeCode,
             fullName,
-            e.Email ?? "N/A",
+            string.IsNullOrWhiteSpace(e.Email) ? "N/A" : e.Email,
             e.JobRole?.Department?.Name ?? "N/A",
             e.Site?.SiteName ?? "N/A",
             e.JoinDate,

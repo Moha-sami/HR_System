@@ -359,6 +359,372 @@ public class GetJobEmployeesQueryTests
         Assert.Equal(404, notFoundResult.StatusCode);
     }
 
+    [Fact]
+    public async Task GetJobEmployeesQuery_FiltersByJobRoleId_ExcludesEmployeesFromOtherJobs()
+    {
+        // Arrange
+        using var context = CreateDbContext();
+        var jobRepo = new GenericRepository<JobRole>(context);
+        var empRepo = new GenericRepository<Employee>(context);
+
+        var site = new Site { SiteName = "HQ" };
+        context.Sites.Add(site);
+        var job1 = new JobRole { Title = "Backend Developer" };
+        var job2 = new JobRole { Title = "Frontend Developer" };
+        context.JobRoles.AddRange(job1, job2);
+        await context.SaveChangesAsync();
+
+        var empInJob1 = new Employee { FirstName = "Job1", LastName = "User", Email = "j1@example.com", EmployeeCode = "E1", JobRoleId = job1.Id, JobRole = job1, SiteId = site.Id, Site = site, IsDeleted = false };
+        var empInJob2 = new Employee { FirstName = "Job2", LastName = "User", Email = "j2@example.com", EmployeeCode = "E2", JobRoleId = job2.Id, JobRole = job2, SiteId = site.Id, Site = site, IsDeleted = false };
+        context.Employees.AddRange(empInJob1, empInJob2);
+        await context.SaveChangesAsync();
+
+        var handler = new GetJobEmployeesQueryHandler(jobRepo, empRepo);
+        var query = new GetJobEmployeesQuery(job1.Id);
+
+        // Act
+        var result = await handler.Handle(query, CancellationToken.None);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(1, result.TotalCount);
+        Assert.Single(result.Items);
+        Assert.Equal("Job1 User", result.Items[0].FullName);
+    }
+
+    [Fact]
+    public async Task GetJobEmployeesQuery_OrdersByFirstNameThenByLastName()
+    {
+        // Arrange
+        using var context = CreateDbContext();
+        var jobRepo = new GenericRepository<JobRole>(context);
+        var empRepo = new GenericRepository<Employee>(context);
+
+        var site = new Site { SiteName = "HQ" };
+        context.Sites.Add(site);
+        var job = new JobRole { Title = "Engineer" };
+        context.JobRoles.Add(job);
+        await context.SaveChangesAsync();
+
+        var emp1 = new Employee { FirstName = "Alex", LastName = "Zeta", Email = "alex.zeta@example.com", EmployeeCode = "EZ", JobRoleId = job.Id, JobRole = job, SiteId = site.Id, Site = site, IsDeleted = false };
+        var emp2 = new Employee { FirstName = "Alex", LastName = "Alpha", Email = "alex.alpha@example.com", EmployeeCode = "EA", JobRoleId = job.Id, JobRole = job, SiteId = site.Id, Site = site, IsDeleted = false };
+        var emp3 = new Employee { FirstName = "Bob", LastName = "Brown", Email = "bob.brown@example.com", EmployeeCode = "EB", JobRoleId = job.Id, JobRole = job, SiteId = site.Id, Site = site, IsDeleted = false };
+        context.Employees.AddRange(emp1, emp2, emp3);
+        await context.SaveChangesAsync();
+
+        var handler = new GetJobEmployeesQueryHandler(jobRepo, empRepo);
+        var query = new GetJobEmployeesQuery(job.Id, PageNumber: 1, PageSize: 10);
+
+        // Act
+        var result = await handler.Handle(query, CancellationToken.None);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(3, result.TotalCount);
+        Assert.Equal("Alex Alpha", result.Items[0].FullName);
+        Assert.Equal("Alex Zeta", result.Items[1].FullName);
+        Assert.Equal("Bob Brown", result.Items[2].FullName);
+    }
+
+    [Fact]
+    public async Task GetJobEmployeesQuery_Pagination_CalculatesTotalPagesAndOffsetCorrectly()
+    {
+        // Arrange
+        using var context = CreateDbContext();
+        var jobRepo = new GenericRepository<JobRole>(context);
+        var empRepo = new GenericRepository<Employee>(context);
+
+        var site = new Site { SiteName = "HQ" };
+        context.Sites.Add(site);
+        var job = new JobRole { Title = "Engineer" };
+        context.JobRoles.Add(job);
+        await context.SaveChangesAsync();
+
+        for (int i = 1; i <= 5; i++)
+        {
+            context.Employees.Add(new Employee
+            {
+                FirstName = $"Emp{i:D2}",
+                LastName = "Test",
+                Email = $"emp{i}@example.com",
+                EmployeeCode = $"CODE{i}",
+                JobRoleId = job.Id,
+                JobRole = job,
+                SiteId = site.Id,
+                Site = site,
+                IsDeleted = false
+            });
+        }
+        await context.SaveChangesAsync();
+
+        var handler = new GetJobEmployeesQueryHandler(jobRepo, empRepo);
+        var query = new GetJobEmployeesQuery(job.Id, PageNumber: 2, PageSize: 2);
+
+        // Act
+        var result = await handler.Handle(query, CancellationToken.None);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(5, result.TotalCount);
+        Assert.Equal(2, result.PageNumber);
+        Assert.Equal(2, result.PageSize);
+        Assert.Equal(3, result.TotalPages);
+        Assert.Equal(2, result.Items.Count);
+        Assert.Equal("Emp03 Test", result.Items[0].FullName);
+        Assert.Equal("Emp04 Test", result.Items[1].FullName);
+    }
+
+    [Fact]
+    public async Task GetJobEmployeesQuery_CalculatesZeroTotalPages_WhenNoEmployeesExist()
+    {
+        // Arrange
+        using var context = CreateDbContext();
+        var jobRepo = new GenericRepository<JobRole>(context);
+        var empRepo = new GenericRepository<Employee>(context);
+
+        var job = new JobRole { Title = "Empty Job" };
+        context.JobRoles.Add(job);
+        await context.SaveChangesAsync();
+
+        var handler = new GetJobEmployeesQueryHandler(jobRepo, empRepo);
+        var query = new GetJobEmployeesQuery(job.Id, PageNumber: 1, PageSize: 10);
+
+        // Act
+        var result = await handler.Handle(query, CancellationToken.None);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(0, result.TotalCount);
+        Assert.Equal(0, result.TotalPages);
+        Assert.Empty(result.Items);
+    }
+
+    [Theory]
+    [InlineData(0, 1)]
+    [InlineData(-10, 1)]
+    [InlineData(101, 100)]
+    public async Task GetJobEmployeesQuery_ClampsPageSize_ToValidRange(int inputPageSize, int expectedPageSize)
+    {
+        // Arrange
+        using var context = CreateDbContext();
+        var jobRepo = new GenericRepository<JobRole>(context);
+        var empRepo = new GenericRepository<Employee>(context);
+
+        var job = new JobRole { Title = "Clamping Test" };
+        context.JobRoles.Add(job);
+        await context.SaveChangesAsync();
+
+        var handler = new GetJobEmployeesQueryHandler(jobRepo, empRepo);
+        var query = new GetJobEmployeesQuery(job.Id, PageNumber: 1, PageSize: inputPageSize);
+
+        // Act
+        var result = await handler.Handle(query, CancellationToken.None);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(expectedPageSize, result.PageSize);
+    }
+
+    [Fact]
+    public async Task GetJobEmployeesQuery_SearchTerm_WhitespaceSearchTermDoesNotFilter()
+    {
+        // Arrange
+        using var context = CreateDbContext();
+        var jobRepo = new GenericRepository<JobRole>(context);
+        var empRepo = new GenericRepository<Employee>(context);
+
+        var site = new Site { SiteName = "HQ" };
+        context.Sites.Add(site);
+        var job = new JobRole { Title = "Staff" };
+        context.JobRoles.Add(job);
+        await context.SaveChangesAsync();
+
+        context.Employees.AddRange(
+            new Employee { FirstName = "User1", LastName = "A", Email = "u1@example.com", EmployeeCode = "U1", JobRoleId = job.Id, JobRole = job, SiteId = site.Id, Site = site, IsDeleted = false },
+            new Employee { FirstName = "User2", LastName = "B", Email = "u2@example.com", EmployeeCode = "U2", JobRoleId = job.Id, JobRole = job, SiteId = site.Id, Site = site, IsDeleted = false }
+        );
+        await context.SaveChangesAsync();
+
+        var handler = new GetJobEmployeesQueryHandler(jobRepo, empRepo);
+        var query = new GetJobEmployeesQuery(job.Id, SearchTerm: "   ");
+
+        // Act
+        var result = await handler.Handle(query, CancellationToken.None);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(2, result.TotalCount);
+        Assert.Equal(2, result.Items.Count);
+    }
+
+    [Fact]
+    public async Task GetJobEmployeesQuery_SearchTerm_MatchesWithLeadingAndTrailingSpaces()
+    {
+        // Arrange
+        using var context = CreateDbContext();
+        var jobRepo = new GenericRepository<JobRole>(context);
+        var empRepo = new GenericRepository<Employee>(context);
+
+        var site = new Site { SiteName = "HQ" };
+        context.Sites.Add(site);
+        var job = new JobRole { Title = "Staff" };
+        context.JobRoles.Add(job);
+        await context.SaveChangesAsync();
+
+        context.Employees.AddRange(
+            new Employee { FirstName = "Alice", LastName = "Smith", Email = "alice.s@example.com", EmployeeCode = "AS1", JobRoleId = job.Id, JobRole = job, SiteId = site.Id, Site = site, IsDeleted = false },
+            new Employee { FirstName = "Bob", LastName = "Jones", Email = "bob.j@example.com", EmployeeCode = "BJ1", JobRoleId = job.Id, JobRole = job, SiteId = site.Id, Site = site, IsDeleted = false }
+        );
+        await context.SaveChangesAsync();
+
+        var handler = new GetJobEmployeesQueryHandler(jobRepo, empRepo);
+        var query = new GetJobEmployeesQuery(job.Id, SearchTerm: "  ALICE  ");
+
+        // Act
+        var result = await handler.Handle(query, CancellationToken.None);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(1, result.TotalCount);
+        Assert.Equal("Alice Smith", result.Items[0].FullName);
+    }
+
+    [Fact]
+    public async Task GetJobEmployeesQuery_SearchTerm_WithNullOrEmptyPropertiesInDatabase_DoesNotThrow()
+    {
+        // Arrange
+        using var context = CreateDbContext();
+        var jobRepo = new GenericRepository<JobRole>(context);
+        var empRepo = new GenericRepository<Employee>(context);
+
+        var site = new Site { SiteName = "HQ" };
+        context.Sites.Add(site);
+        var job = new JobRole { Title = "Staff" };
+        context.JobRoles.Add(job);
+        await context.SaveChangesAsync();
+
+        context.Employees.Add(new Employee
+        {
+            FirstName = string.Empty,
+            LastName = string.Empty,
+            Email = "unique_empty@example.com",
+            EmployeeCode = string.Empty,
+            JobRoleId = job.Id,
+            JobRole = job,
+            SiteId = site.Id,
+            Site = site,
+            IsDeleted = false
+        });
+        await context.SaveChangesAsync();
+
+        var handler = new GetJobEmployeesQueryHandler(jobRepo, empRepo);
+        var query = new GetJobEmployeesQuery(job.Id, SearchTerm: "test");
+
+        // Act
+        var result = await handler.Handle(query, CancellationToken.None);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(0, result.TotalCount);
+        Assert.Empty(result.Items);
+    }
+
+    [Theory]
+    [InlineData("FirstOnly", "", "FirstOnly")]
+    [InlineData("", "LastOnly", "LastOnly")]
+    [InlineData("  First  ", "  Last  ", "First     Last")]
+    [InlineData("", "", "N/A")]
+    [InlineData("   ", "   ", "N/A")]
+    public async Task GetJobEmployeesQuery_FullNameMapping_HandlesNullAndWhitespaceCombinations(string firstName, string lastName, string expectedFullName)
+    {
+        // Arrange
+        using var context = CreateDbContext();
+        var jobRepo = new GenericRepository<JobRole>(context);
+        var empRepo = new GenericRepository<Employee>(context);
+
+        var site = new Site { SiteName = "HQ" };
+        context.Sites.Add(site);
+        var job = new JobRole { Title = "Role" };
+        context.JobRoles.Add(job);
+        await context.SaveChangesAsync();
+
+        context.Employees.Add(new Employee
+        {
+            FirstName = firstName,
+            LastName = lastName,
+            Email = $"fn_test_{Guid.NewGuid():N}@example.com",
+            JobRoleId = job.Id,
+            JobRole = job,
+            SiteId = site.Id,
+            Site = site,
+            IsDeleted = false
+        });
+        await context.SaveChangesAsync();
+
+        var handler = new GetJobEmployeesQueryHandler(jobRepo, empRepo);
+        var query = new GetJobEmployeesQuery(job.Id);
+
+        // Act
+        var result = await handler.Handle(query, CancellationToken.None);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Single(result.Items);
+        Assert.Equal(expectedFullName, result.Items[0].FullName);
+    }
+
+    [Fact]
+    public async Task GetJobEmployeesQuery_NullNavigationsAndFields_MapsFallbackDefaults()
+    {
+        // Arrange
+        using var context = CreateDbContext();
+        var jobRepo = new GenericRepository<JobRole>(context);
+        var empRepo = new GenericRepository<Employee>(context);
+
+        var site = new Site { SiteName = "Main HQ" };
+        context.Sites.Add(site);
+        var job = new JobRole { Title = "Solo Role", Department = null, DepartmentId = null };
+        context.JobRoles.Add(job);
+        await context.SaveChangesAsync();
+
+        var joinDate = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        context.Employees.Add(new Employee
+        {
+            Id = 42,
+            FirstName = "Solo",
+            LastName = "Worker",
+            EmployeeCode = string.Empty,
+            Email = string.Empty,
+            JobRoleId = job.Id,
+            JobRole = job,
+            SiteId = site.Id,
+            Site = site,
+            JoinDate = joinDate,
+            ProfilePhotoUrl = null,
+            IsDeleted = false
+        });
+        await context.SaveChangesAsync();
+
+        var handler = new GetJobEmployeesQueryHandler(jobRepo, empRepo);
+        var query = new GetJobEmployeesQuery(job.Id);
+
+        // Act
+        var result = await handler.Handle(query, CancellationToken.None);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Single(result.Items);
+        var item = result.Items[0];
+        Assert.Equal(42, item.Id);
+        Assert.Equal("N/A", item.EmployeeCode);
+        Assert.Equal("Solo Worker", item.FullName);
+        Assert.Equal("N/A", item.Email);
+        Assert.Equal("N/A", item.DepartmentName);
+        Assert.Equal("Main HQ", item.SiteName);
+        Assert.Equal(joinDate, item.JoinDate);
+        Assert.Null(item.ProfilePhotoUrl);
+    }
+
     private class FakeMediator : ISender
     {
         private readonly Func<object, CancellationToken, Task<object?>> _handler;
@@ -400,3 +766,5 @@ public class GetJobEmployeesQueryTests
         }
     }
 }
+
+

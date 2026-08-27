@@ -4,6 +4,8 @@ using Buy2.Application.Features.Jobs.DTOs;
 using Buy2.Application.Features.Jobs.GetJobById;
 using Buy2.Application.Features.Jobs.GetJobEmployees;
 using Buy2.Application.Features.Jobs.GetJobs;
+using Buy2.Application.Features.Jobs.DTOs;
+using Buy2.Application.Features.Jobs;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -68,5 +70,55 @@ public class JobsController : ControllerBase
         }
 
         return Ok(result);
+    }
+
+    [HttpPost]
+    [Authorize(Roles = "HRAdmin,Admin,SuperAdmin")]
+    [ProducesResponseType(typeof(JobResponseDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<IActionResult> CreateJob([FromBody] CreateJobDto dto, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var result = await _mediator.Send(new CreateJobCommand(dto), cancellationToken);
+            return CreatedAtAction(nameof(GetJobById), new { id = result.Id }, result);
+        }
+        catch (System.InvalidOperationException ex)
+        {
+            return Conflict(new { message = ex.Message });
+        }
+        catch (System.ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    [HttpPut("{id:int}")]
+    [Authorize(Roles = "HRAdmin,Admin,SuperAdmin")]
+    [ProducesResponseType(typeof(JobResponseDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+
+    public async Task<IActionResult> UpdateJob([FromRoute] int id, [FromBody] UpdateJobDto dto, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var result = await _mediator.Send(new UpdateJobCommand(id, dto), cancellationToken);
+            return Ok(result);
+        }
+        catch (System.Collections.Generic.KeyNotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+        catch (System.InvalidOperationException ex)
+        {
+            return Conflict(new { message = ex.Message });
+        }
+        catch (System.ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 }
