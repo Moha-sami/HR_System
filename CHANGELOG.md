@@ -4,6 +4,14 @@ All notable changes to the Buy2 HR Management System (HRMS) project will be docu
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 2026-08-27 — Refactor Job Creation & Authorization Fixes [SCRUM-284]
+- Files:
+  - `src/Buy2.Application/Common/Security/AuthorizeAttribute.cs`
+  - `src/Buy2.Application/Features/Jobs/CreateJob/CreateJobCommand.cs`
+  - `src/Buy2.Application/Features/Jobs/UpdateJob/UpdateJobCommand.cs`
+  - `src/Buy2.Application/Features/Jobs/CreateJob/CreateJobCommandHandler.cs`
+- Summary: Removed speculative `AuthorizeAttribute.cs` and `[Authorize]` attributes in `CreateJobCommand.cs` and `UpdateJobCommand.cs`. Fixed atomicity in `CreateJobCommandHandler` by moving title uniqueness check and work model validation before resolving or persisting a new inline department.
+
 ## 2026-08-27 — Job Creation & Modification Wizard Backend [SCRUM-283]
 - Files:
   - `src/Buy2.Application/Features/Jobs/CreateJob/CreateJobCommand.cs`
@@ -362,6 +370,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Security review: PASS
 
 ## [Unreleased]
+
+## 2026-08-27 — 4-Step Wizard Job Role Creation [SCRUM-284]
+- Files: `src/Buy2.Api/Controllers/JobsController.cs`, `src/Buy2.Application/Features/Jobs/CreateJob/CreateJobCommand.cs`
+- Summary: Added 4-step wizard job role creation endpoint `POST /api/v1/jobs` with inline department creation resolution when `NewDepartmentName` is provided in `CreateJobCommand`. Implemented duplicate title validation in department returning HTTP 409 Conflict, and enforced `[Authorize(Roles = "HRAdmin,Admin,SuperAdmin")]`.
+- Tests: PASS
+- Security review: PASS
 
 ## 2026-08-27 — Job Creation & Modification Wizard Backend [SCRUM-283]
 - Files: `src/Buy2.Application/Features/Jobs/DTOs/JobDtos.cs`, `src/Buy2.Application/Features/Jobs/CreateJobCommand.cs`, `src/Buy2.Application/Features/Jobs/UpdateJobCommand.cs`, `src/Buy2.Api/Controllers/JobsController.cs`, `src/Buy2.Api/Program.cs`
