@@ -363,6 +363,17 @@
       "SAVE_ERROR": "فشل في حفظ التغييرات. يرجى المحاولة مرة أخرى."
     },
     "COMING_SOON": "قريباً",
-    "NOT_AVAILABLE": "غير متاح"
+    "NOT_AVAILABLE": "غير متاح",
+    "ATTENDANCE": {
+      "ATTENDANCE_RATE": "معدل الحضور",
+      "PUNCTUALITY_SCORE": "درجة الالتزام بالوقت",
+      "AVG_LATENESS": "متوسط التأخير",
+      "RECORDED_HOURS": "ساعات مسجلة",
+      "HOURS_WORKED": "ساعات العمل",
+      "HOURS_LEFT": "ساعات متبقية",
+      "OT_HOURS": "ساعات إضافية",
+      "BREAK_TIME": "وقت الاستراحة",
+      "LATENESS_RECORDED": "التأخير المسجل"
+    }
   }
 }

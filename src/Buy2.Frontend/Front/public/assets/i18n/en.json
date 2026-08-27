@@ -366,6 +366,17 @@
       "SAVE_ERROR": "Failed to save changes. Please try again."
     },
     "COMING_SOON": "Coming Soon",
-    "NOT_AVAILABLE": "Not Available"
+    "NOT_AVAILABLE": "Not Available",
+    "ATTENDANCE": {
+      "ATTENDANCE_RATE": "Attendance Rate",
+      "PUNCTUALITY_SCORE": "Punctuality Score",
+      "AVG_LATENESS": "Avg. Lateness",
+      "RECORDED_HOURS": "Recorded Hours",
+      "HOURS_WORKED": "Hours Worked",
+      "HOURS_LEFT": "Hours Left",
+      "OT_HOURS": "OT Hours",
+      "BREAK_TIME": "Break Time Recorded",
+      "LATENESS_RECORDED": "Lateness Recorded"
+    }
   }
 }

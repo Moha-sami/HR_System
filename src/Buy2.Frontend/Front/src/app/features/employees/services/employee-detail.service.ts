@@ -13,6 +13,7 @@ import type {
   EmployeePayrollProfileDto,
   UpdatePayrollProfileDto,
 } from '../models/view-employee/employee-payroll';
+import type { AttendanceCalendarDto } from '../models/view-employee/employee-attendance';
 
 const API_BASE = environment.baseUrl;
 
@@ -25,6 +26,11 @@ export class EmployeeDetailService {
   readonly detailLoading = signal(false);
   readonly detailError = signal<string | null>(null);
 
+  // Attendance calendar store
+  readonly attendanceCalendar = signal<AttendanceCalendarDto | null>(null);
+  readonly attendanceLoading = signal(false);
+  readonly attendanceError = signal<string | null>(null);
+
   // Profile API
   getEmployeeProfile(id: number): Observable<EmployeeProfileDto> {
     return this.http.get<EmployeeProfileDto>(`${API_BASE}/employees/${id}`);
@@ -32,6 +38,17 @@ export class EmployeeDetailService {
 
   getEmployeePayroll(id: number): Observable<EmployeePayrollProfileDto> {
     return this.http.get<EmployeePayrollProfileDto>(`${API_BASE}/employees/${id}/payroll`);
+  }
+
+  // Attendance Calendar API
+  getAttendanceCalendar(
+    id: number,
+    month: number,
+    year: number,
+  ): Observable<AttendanceCalendarDto> {
+    return this.http.get<AttendanceCalendarDto>(`${API_BASE}/employees/${id}/attendance/calendar`, {
+      params: { month, year },
+    });
   }
 
   // Update API methods
@@ -70,10 +87,32 @@ export class EmployeeDetailService {
     });
   }
 
+  loadAttendanceCalendar(id: number, month: number, year: number): void {
+    this.attendanceLoading.set(true);
+    this.attendanceError.set(null);
+
+    this.getAttendanceCalendar(id, month, year).subscribe({
+      next: (data) => {
+        this.attendanceCalendar.set(data);
+        this.attendanceLoading.set(false);
+      },
+      error: () => {
+        this.attendanceError.set('EMPLOYEE_DETAIL.ATTENDANCE_LOAD_FAILED');
+        this.attendanceLoading.set(false);
+      },
+    });
+  }
+
   clearDetailEmployee(): void {
     this.detailEmployee.set(null);
     this.detailLoading.set(false);
     this.detailError.set(null);
+  }
+
+  clearAttendanceCalendar(): void {
+    this.attendanceCalendar.set(null);
+    this.attendanceLoading.set(false);
+    this.attendanceError.set(null);
   }
 
   updateDetailEmployee(partial: Partial<EmployeeProfileDto>): void {
