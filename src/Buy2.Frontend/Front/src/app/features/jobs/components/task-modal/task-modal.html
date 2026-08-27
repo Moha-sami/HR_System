@@ -1,0 +1,35 @@
+<div class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/50 backdrop-blur-sm p-4">
+  <div class="bg-white rounded-xl shadow-xl w-full max-w-2xl relative overflow-hidden flex flex-col p-8">
+    <button (click)="close.emit()" class="absolute top-4 right-4 text-primary-800 hover:text-primary-900 bg-gray-100 rounded-full p-1">
+      <svg class="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+    </button>
+    
+    <h2 class="text-2xl font-bold text-gray-900 mb-2">{{ taskName }}</h2>
+    <p class="text-gray-600 mb-8">{{ description }}</p>
+    
+    <div class="grid grid-cols-[150px_1fr] gap-y-6 text-sm">
+      <div class="text-primary-400">Steps</div>
+      <div class="flex flex-col gap-2 font-medium text-gray-800">
+        <div *ngFor="let step of steps">{{ step }}</div>
+      </div>
+      
+      <div class="text-primary-400">Repeat</div>
+      <div class="font-medium text-gray-800">{{ repeat }}</div>
+      
+      <div class="text-primary-400">Submission Time</div>
+      <div class="font-medium text-gray-800">{{ submissionTime }}</div>
+      
+      <div class="text-primary-400 mt-2">Files</div>
+      <div *ngIf="file" class="inline-flex items-center gap-3 bg-gray-50 rounded-md px-4 py-2 w-max border border-gray-100">
+        <span class="text-red-600 font-bold bg-white rounded p-1 text-[10px]">PDF</span>
+        <span class="text-gray-700 text-sm">{{ file }}</span>
+        <button class="text-primary-600 ml-4 hover:text-primary-800"><svg class="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" /><circle cx="12" cy="12" r="2.5" /></svg></button>
+      </div>
+    </div>
+    
+    <div class="mt-8 flex justify-end gap-4">
+      <button (click)="delete.emit()" class="bg-red-600 text-white px-8 py-2.5 rounded-md font-medium hover:bg-red-700 transition-colors">Delete</button>
+      <button (click)="edit.emit()" class="bg-primary-800 text-white px-8 py-2.5 rounded-md font-medium hover:bg-primary-900 transition-colors">Edit</button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,28 @@
+<div class="flex flex-col gap-6 w-full max-w-5xl">
+  <div class="border border-gray-100 rounded-xl overflow-hidden shadow-sm bg-white">
+    <div class="w-full overflow-x-auto">
+      <table class="w-full text-sm text-center text-gray-500">
+        <thead class="text-xs text-primary-700 bg-gray-50 border-b border-gray-100">
+          <tr>
+            <th class="px-6 py-4 font-medium">Employee ID</th>
+            <th class="px-6 py-4 font-medium">Employee Name</th>
+            <th class="px-6 py-4 font-medium">Email</th>
+            <th class="px-6 py-4 font-medium">Join Date <span class="text-xs">▼</span></th>
+            <th class="px-6 py-4 font-medium">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let e of employees" class="bg-white border-b border-gray-100 hover:bg-gray-50">
+            <td class="px-6 py-4">{{ e.id }}</td>
+            <td class="px-6 py-4">{{ e.name }}</td>
+            <td class="px-6 py-4">{{ e.email }}</td>
+            <td class="px-6 py-4">{{ e.joinDate }}</td>
+            <td class="px-6 py-4 flex justify-center">
+              <button class="text-primary-600 hover:text-primary-800"><svg class="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" /><circle cx="12" cy="12" r="2.5" /></svg></button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

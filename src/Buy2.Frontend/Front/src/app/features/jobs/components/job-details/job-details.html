@@ -1,0 +1,69 @@
+<div class="h-full flex flex-col relative w-full pt-4">
+  <!-- Breadcrumb -->
+  <div class="px-8 flex items-center text-sm mb-4">
+    <span class="text-gray-500 font-medium cursor-pointer hover:text-gray-700" routerLink="/jobs">Job Management</span>
+    <span class="mx-3 text-gray-500"> </span>
+    <span class="font-semibold text-gray-900">Job Details</span>
+  </div>
+
+  <div class="bg-white rounded-xl border border-gray-100 shadow-sm mx-8 overflow-hidden flex flex-col">
+    <!-- Header: Title and Actions -->
+    <div class="flex items-center justify-between px-6 pt-6 pb-2">
+      <h2 class="text-xl font-bold text-primary-900">{{ jobTitle }}</h2>
+      <div class="flex items-center gap-3">
+        <!-- Edit Action -->
+        <button class="text-primary-600 hover:text-primary-800 transition-colors p-1" title="Edit">
+          <svg class="size-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 3.487a2.25 2.25 0 0 1 3.182 3.182L8.25 18.463 4.5 19.5l1.037-3.75L16.862 3.487Z" />
+          </svg>
+        </button>
+        <!-- Delete Action -->
+        <button class="text-red-500 hover:text-red-700 transition-colors p-1" title="Delete">
+          <svg class="size-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 7h12M9 7V5.5A1.5 1.5 0 0 1 10.5 4h3A1.5 1.5 0 0 1 15 5.5V7m-7 0 .75 12.25A1.5 1.5 0 0 0 10.247 20h3.506a1.5 1.5 0 0 0 1.497-1.75L16 7M10 10.5v6M14 10.5v6" />
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="px-6 py-4 flex gap-4">
+      <div class="border border-dashed border-gray-200 rounded-lg px-4 py-3 min-w-[120px]">
+        <div class="text-2xl font-bold text-primary-900">{{ totalPoints }}</div>
+        <div class="text-xs text-gray-400 mt-1">Total Points</div>
+      </div>
+      <div class="border border-dashed border-gray-200 rounded-lg px-4 py-3 min-w-[120px]">
+        <div class="text-2xl font-bold text-primary-900">{{ totalTasks }}</div>
+        <div class="text-xs text-gray-400 mt-1">Tasks</div>
+      </div>
+      <div class="border border-dashed border-gray-200 rounded-lg px-4 py-3 min-w-[120px]">
+        <div class="text-2xl font-bold text-primary-900">{{ totalGifts }}</div>
+        <div class="text-xs text-gray-400 mt-1">Gifts</div>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="flex border-b border-gray-200 mt-2 px-10">
+      <a 
+        routerLink="information" 
+        routerLinkActive="border-primary-900 text-primary-900 font-medium" 
+        [routerLinkActiveOptions]="{exact: true}"
+        class="pb-3 px-6 text-sm text-gray-500 border-b-2 border-transparent hover:text-gray-700 transition-colors flex-1 text-center"
+      >
+        Information
+      </a>
+      <a 
+        routerLink="employees" 
+        routerLinkActive="border-primary-900 text-primary-900 font-medium"
+        class="pb-3 px-6 text-sm text-gray-500 border-b-2 border-transparent hover:text-gray-700 transition-colors flex-1 text-center"
+      >
+        Employees
+      </a>
+    </div>
+  </div>
+
+  <!-- Main Content Area -->
+  <div class="flex-1 overflow-y-auto px-8 py-6 pb-20 w-full">
+    <router-outlet></router-outlet>
+  </div>
+</div>
