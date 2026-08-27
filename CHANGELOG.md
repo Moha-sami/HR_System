@@ -4,6 +4,16 @@ All notable changes to the Buy2 HR Management System (HRMS) project will be docu
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 2026-08-27 — Job Creation & Modification Wizard Backend [SCRUM-283]
+- Files:
+  - `src/Buy2.Application/Features/Jobs/CreateJob/CreateJobCommand.cs`
+  - `src/Buy2.Application/Features/Jobs/UpdateJob/UpdateJobCommand.cs`
+  - `src/Buy2.Application/Features/Jobs/DTOs/JobWizardDtos.cs`
+  - `src/Buy2.Api/Controllers/JobsController.cs`
+- Summary: Implemented Job Creation & Modification Wizard Backend. Added CreateJobCommand, UpdateJobCommand, and corresponding JobsController endpoints. Implemented JobWizardDtos for data transfer. Implemented Work Model rules and duplicate title checks. Added comprehensive tests and verified architecture rules.
+- Tests: PASS
+- Security review: PASS
+
 ## 2026-08-25 — JobRole, Department, Qualification Domain Entities Schema and EF Core Mapping [SCRUM-278]
 - Files:
   - `src/Buy2.Domain/Entities/JobRole.cs`
@@ -352,6 +362,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Security review: PASS
 
 ## [Unreleased]
+
+## 2026-08-27 — Job Creation & Modification Wizard Backend [SCRUM-283]
+- Files: `src/Buy2.Application/Features/Jobs/DTOs/JobDtos.cs`, `src/Buy2.Application/Features/Jobs/CreateJobCommand.cs`, `src/Buy2.Application/Features/Jobs/UpdateJobCommand.cs`, `src/Buy2.Api/Controllers/JobsController.cs`, `src/Buy2.Api/Program.cs`
+- Summary: Implemented Job Creation & Modification Wizard Backend. Added 4-step wizard DTOs `CreateJobDto`, `UpdateJobDto`, and `JobResponseDto`. Added MediatR commands (`CreateJobCommand`, `UpdateJobCommand`) with co-located handlers. Exposed `POST` and `PUT` endpoints in `JobsController` protected by strict role-based authorization (`[Authorize(Roles = "HRAdmin,Admin,SuperAdmin")]`) and set JWT clock skew to zero.
+- Tests: PASS
+- Security review: PASS
 
 ### Added
 - **Employee Directory CSV Export (`[EP-2]`)**:

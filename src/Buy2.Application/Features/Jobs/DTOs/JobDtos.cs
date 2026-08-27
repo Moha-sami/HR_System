@@ -35,31 +35,7 @@ public record JobDetailsDto(
     DateTimeOffset? UpdatedAt
 );
 
-public record CreateJobDto(
-    string Title,
-    int? DepartmentId,
-    string? NewDepartmentName,
-    string SeniorityLevel,
-    string? Description,
-    List<string>? RequiredQualifications,
-    int ExperienceYearsMin,
-    string WorkModel,
-    List<string>? OnlineWorkdays,
-    List<string>? OfflineWorkdays
-);
 
-public record UpdateJobDto(
-    string Title,
-    int? DepartmentId,
-    string SeniorityLevel,
-    string? Description,
-    List<string>? RequiredQualifications,
-    int ExperienceYearsMin,
-    string WorkModel,
-    List<string>? OnlineWorkdays,
-    List<string>? OfflineWorkdays,
-    bool IsActive
-);
 
 public record JobFilterQueryDto(
     string? SearchTerm = null,
@@ -123,4 +99,47 @@ public record JobEmployeeRosterItemDto(
     string DepartmentName,
     DateTime? HiredDate,
     string Status
+);
+
+public record CreateJobDto(
+    string Title,
+    int? DepartmentId,
+    string? NewDepartmentName,
+    string SeniorityLevel,
+    string? Description,
+    List<string>? RequiredQualifications,
+    int ExperienceYearsMin,
+    string WorkModel,
+    List<string>? OnlineWorkdays,
+    List<string>? OfflineWorkdays
+);
+
+public record UpdateJobDto(
+    string Title,
+    int? DepartmentId,
+    string SeniorityLevel,
+    string? Description,
+    List<string>? RequiredQualifications,
+    int ExperienceYearsMin,
+    string WorkModel,
+    List<string>? OnlineWorkdays,
+    List<string>? OfflineWorkdays,
+    bool IsActive
+);
+
+public record JobResponseDto(
+    int Id,
+    string Title,
+    int? DepartmentId,
+    string? DepartmentName,
+    string SeniorityLevel,
+    string? Description,
+    List<string> RequiredQualifications,
+    int ExperienceYearsMin,
+    string WorkModel,
+    List<string> OnlineWorkdays,
+    List<string> OfflineWorkdays,
+    bool IsActive,
+    DateTimeOffset CreatedAt,
+    DateTimeOffset? UpdatedAt
 );

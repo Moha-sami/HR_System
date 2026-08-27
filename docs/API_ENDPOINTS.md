@@ -819,18 +819,78 @@ This document outlines the REST API endpoints provided by the Buy2 HRMS backend 
   - `200 OK` with `JobDetailsDto`.
   - `404 Not Found` if job role with specified `id` does not exist.
 
-### `GET /api/v1/jobs/{id}/employees`
+### `GET /api/v1/jobs/{id}/employees` [SCRUM-282]
 - **Authorization**: `[Authorize(Roles = "Admin,Manager,HR,SuperAdmin")]`
 - **Controller**: `JobsController`
+- **Route**: `GET /api/v1/jobs/{id}/employees`
 - **Path Parameters**:
   - `id` (int, required) - Unique ID of the job role.
 - **Query Parameters**:
-  - `pageNumber` (int, default: 1) - Page index.
-  - `pageSize` (int, default: 10) - Page size capacity.
-- **Description**: Returns a paginated roster of active, non-deleted employees assigned to the specified job role. Includes employee code, full name, contact information, site name, department name, join date, and active status.
+  - `searchTerm` (string, optional) - Filters employees by case-insensitive substring search matching `firstName`, `lastName`, `email`, or `employeeCode`.
+  - `pageNumber` (int, optional, default: 1, min: 1) - Page number for pagination.
+  - `pageSize` (int, optional, default: 10, range: 1..100) - Items per page.
+- **Description**: Returns a paginated roster of active, non-deleted employees assigned to the specified job role. Eager loads employee `Site` and `JobRole.Department` navigation properties. Validates job role existence, returning HTTP 404 if the job role does not exist. Orders records alphabetically by `FirstName` ascending, then `LastName` ascending.
+- **Business Rules & Processing**:
+  1. Validates that the target `JobRole` exists in the database (`AnyAsync(j => j.Id == id)`). If missing, returns `404 Not Found`.
+  2. Queries active employees (`!e.IsDeleted && e.JobRoleId == id`) with `.AsNoTracking()`.
+  3. Includes `Site` and `JobRole.Department` for site and department resolution.
+  4. If `searchTerm` is provided, applies case-insensitive substring matching against `FirstName`, `LastName`, `Email`, and `EmployeeCode`.
+  5. Computes total count and paginates using `Skip((pageNumber - 1) * pageSize).Take(pageSize)`.
+  6. Maps each employee entity into `JobAssignedEmployeeListItemDto` with fallback `"N/A"` for null or empty values.
 - **Responses**:
-  - `200 OK` with `JobPaginatedResponseDto<JobEmployeeRosterItemDto>`.
+  - `200 OK` with `JobPaginatedResponseDto<JobAssignedEmployeeListItemDto>`:
+    - `items` (array of `JobAssignedEmployeeListItemDto`):
+      - `id` (int) - Employee unique identifier
+      - `employeeCode` (string) - Employee identification code (e.g., `"EMP-0012"`)
+      - `fullName` (string) - Formatted full name (`FirstName LastName`)
+      - `email` (string) - Corporate email address
+      - `departmentName` (string) - Department name mapped from `JobRole.Department.Name` (`"N/A"` if unassigned)
+      - `siteName` (string) - Assigned primary work site name (`Site.SiteName` or `"N/A"`)
+      - `joinDate` (DateTime/ISO 8601, nullable) - Date employee joined the company
+      - `profilePhotoUrl` (string, nullable) - Profile avatar URL
+    - `totalCount` (int) - Total count of matching assigned employees
+    - `pageNumber` (int) - Current page index
+    - `pageSize` (int) - Items per page capacity
+    - `totalPages` (int) - Calculated total page count
   - `404 Not Found` if job role with specified `id` does not exist.
+  - `401 Unauthorized` if the request is unauthenticated.
+  - `403 Forbidden` if authenticated user lacks required administrative role (`Admin`, `Manager`, `HR`, `SuperAdmin`).
+
+**Example Request**:
+```http
+GET /api/v1/jobs/5/employees?searchTerm=sarah&pageNumber=1&pageSize=10 HTTP/1.1
+Host: localhost:5000
+Authorization: Bearer <jwt-token>
+```
+
+**Example Response (`200 OK`)**:
+```json
+{
+  "items": [
+    {
+      "id": 12,
+      "employeeCode": "EMP-0012",
+      "fullName": "Sarah Jenkins",
+      "email": "sarah.jenkins@buy2.com",
+      "departmentName": "Engineering",
+      "siteName": "Headquarters - Cairo",
+      "joinDate": "2024-03-15T00:00:00Z",
+      "profilePhotoUrl": "https://storage.buy2.com/photos/emp-0012.jpg"
+    }
+  ],
+  "totalCount": 1,
+  "pageNumber": 1,
+  "pageSize": 10,
+  "totalPages": 1
+}
+```
+
+**Example Response (`404 Not Found`)**:
+```json
+{
+  "message": "Job role with ID 999 was not found."
+}
+```
 
 ---
 

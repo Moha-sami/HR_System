@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using Buy2.Application.Features.Departments.DTOs;
 using Buy2.Application.Features.Departments.Validators;
 using Buy2.Application.Features.Jobs.DTOs;
+using Buy2.Application.Features.Jobs.DTOs;
 using Buy2.Application.Features.Jobs.Validators;
 using Buy2.Application.Features.Qualifications.DTOs;
 using Buy2.Application.Features.Qualifications.Validators;
