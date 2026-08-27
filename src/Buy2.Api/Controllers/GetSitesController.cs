@@ -117,7 +117,6 @@ public class GetSitesController : ControllerBase
     {
         var command = new CreateRegionCommand(Name: dto.Name);
         var region = await _mediator.Send(command, cancellation);
-        return Ok(region);
+        return Created($"/api/v1/sites/regions/{region}", region);
     }
-
 }

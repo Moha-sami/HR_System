@@ -17,6 +17,7 @@ public class GetRegionsQueryHandler : IRequestHandler<GetRegionsQuery, List<Regi
     {
         return await _regionRepository
             .Query()
+            .Where(r => r.IsActive)
             .OrderBy(r => r.Name)
             .Select(r => new RegionListItemDto(r.Id, r.Name))
             .ToListAsync(cancellationToken);
