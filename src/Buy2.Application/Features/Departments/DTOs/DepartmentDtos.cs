@@ -20,3 +20,11 @@ public record CreateDepartmentDto(
     string? Description,
     int? HeadEmployeeId
 );
+
+public record DepartmentLookupDto(
+    int Id,
+    string Name,
+    string? Description,
+    int ActiveJobCount,
+    string? HeadEmployeeName
+);

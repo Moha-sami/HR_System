@@ -430,7 +430,7 @@ public class JobValidatorsTests
     {
         var dto = new CreateQualificationDto(
             Name: "AWS Certified Solutions Architect",
-            Category: "Cloud & DevOps",
+            Type: "Cloud & DevOps",
             Description: "Professional cloud certification"
         );
 
@@ -449,7 +449,7 @@ public class JobValidatorsTests
     {
         var dto = new CreateQualificationDto(
             Name: name!,
-            Category: "Certifications",
+            Type: "Certifications",
             Description: null
         );
 
@@ -465,7 +465,7 @@ public class JobValidatorsTests
         var longName = new string('Q', 151);
         var dto = new CreateQualificationDto(
             Name: longName,
-            Category: "Certifications",
+            Type: "Certifications",
             Description: null
         );
 
@@ -479,18 +479,18 @@ public class JobValidatorsTests
     [InlineData(null)]
     [InlineData("")]
     [InlineData("   ")]
-    public void CreateQualificationDtoValidator_InvalidCategory_ShouldFail(string? category)
+    public void CreateQualificationDtoValidator_InvalidCategory_ShouldFail(string? Type)
     {
         var dto = new CreateQualificationDto(
             Name: "Scrum Master",
-            Category: category!,
+            Type: Type!,
             Description: null
         );
 
         var result = _createQualificationValidator.Validate(dto);
 
         Assert.False(result.IsValid);
-        Assert.Contains(result.Errors, e => e.PropertyName == nameof(CreateQualificationDto.Category));
+        Assert.Contains(result.Errors, e => e.PropertyName == nameof(CreateQualificationDto.Type));
     }
 
     [Fact]
@@ -499,14 +499,14 @@ public class JobValidatorsTests
         var longCategory = new string('C', 51);
         var dto = new CreateQualificationDto(
             Name: "Scrum Master",
-            Category: longCategory,
+            Type: longCategory,
             Description: null
         );
 
         var result = _createQualificationValidator.Validate(dto);
 
         Assert.False(result.IsValid);
-        Assert.Contains(result.Errors, e => e.PropertyName == nameof(CreateQualificationDto.Category));
+        Assert.Contains(result.Errors, e => e.PropertyName == nameof(CreateQualificationDto.Type));
     }
 
     #endregion

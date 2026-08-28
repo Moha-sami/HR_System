@@ -4,6 +4,12 @@ All notable changes to the Buy2 HR Management System (HRMS) project will be docu
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 2026-08-28 — Departments and Qualifications APIs [SCRUM-289]
+- Files: `docs/API_ENDPOINTS.md`, `CHANGELOG.md`
+- Summary: Added Departments and Qualifications endpoints. Implemented `GET /api/v1/departments` for department lookup list and `POST /api/v1/departments` for inline department creation. Implemented `GET /api/v1/qualifications` for qualification catalog and `POST /api/v1/qualifications` for inline qualification creation.
+- Tests: PASS
+- Security review: PASS
+
 ## 2026-08-27 — Refactor Job Creation & Authorization Fixes [SCRUM-284]
 - Files:
   - `src/Buy2.Application/Common/Security/AuthorizeAttribute.cs`
@@ -370,6 +376,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Security review: PASS
 
 ## [Unreleased]
+
+## 2026-08-28 — Auxiliary Lookups & Inline Entity Creation Backend [SCRUM-289]
+- Files: `src/Buy2.Api/Controllers/DepartmentsController.cs`, `src/Buy2.Api/Controllers/QualificationsController.cs`, `src/Buy2.Application/Features/Departments/`, `src/Buy2.Application/Features/Qualifications/`, `tests/Buy2.Domain.Tests/Departments/DepartmentHandlersTests.cs`, `tests/Buy2.Domain.Tests/Qualifications/QualificationHandlersTests.cs`
+- Summary: Added GET and POST endpoints for Departments and Qualifications to support lightweight lookups, categorized catalog retrieval, and inline entity creation with duplicate name checks. Implemented underlying CQRS queries and commands.
+- Tests: PASS
+- Security review: N/A
 
 ## 2026-08-28 — Atomic Employee Reassignment & Job Deletion [SCRUM-288]
 - Files: `src/Buy2.Api/Controllers/JobsController.cs`, `src/Buy2.Application/Features/Jobs/ReassignAndDeleteJobCommand.cs`, `tests/Buy2.Domain.Tests/Jobs/JobDeletionSafeguardTests.cs`

@@ -17,10 +17,10 @@ public class CreateQualificationDtoValidator : AbstractValidator<CreateQualifica
                 return trimmed.Length >= 2 && trimmed.Length <= 150;
             }).WithMessage("Qualification name length must be between 2 and 150 characters.");
 
-        RuleFor(x => x.Category)
+        RuleFor(x => x.Type)
             .Cascade(CascadeMode.Stop)
-            .NotNull().WithMessage("Category is required.")
-            .Must(cat => !string.IsNullOrWhiteSpace(cat)).WithMessage("Category cannot be empty or whitespace.")
-            .Must(cat => cat.Trim().Length <= 50).WithMessage("Category length cannot exceed 50 characters.");
+            .NotNull().WithMessage("Type is required.")
+            .Must(cat => !string.IsNullOrWhiteSpace(cat)).WithMessage("Type cannot be empty or whitespace.")
+            .Must(cat => cat.Trim().Length <= 50).WithMessage("Type length cannot exceed 50 characters.");
     }
 }
