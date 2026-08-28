@@ -14,7 +14,7 @@ namespace Buy2.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/departments")]
-[Authorize(Roles = "HRAdmin,Admin,SuperAdmin")]
+[Authorize]
 public class DepartmentsController : ControllerBase
 {
     private readonly ISender _mediator;
@@ -33,6 +33,7 @@ public class DepartmentsController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = "HRAdmin,Admin,SuperAdmin")]
     [ProducesResponseType(typeof(DepartmentDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]

@@ -124,6 +124,10 @@ public class DepartmentHandlersTests
             Assert.Equal(0, result.JobRolesCount);
             Assert.Equal(0, result.EmployeesCount);
             Assert.True(result.IsActive);
+
+            var savedDept = await context.Departments.FirstOrDefaultAsync(d => d.Name == "IT");
+            Assert.NotNull(savedDept);
+            Assert.NotEqual(default, savedDept.CreatedAt);
         }
     }
 
