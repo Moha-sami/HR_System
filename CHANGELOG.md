@@ -371,6 +371,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## 2026-08-28 — Atomic Employee Reassignment & Job Deletion [SCRUM-288]
+- Files: `src/Buy2.Api/Controllers/JobsController.cs`, `src/Buy2.Application/Features/Jobs/ReassignAndDeleteJobCommand.cs`, `tests/Buy2.Domain.Tests/Jobs/JobDeletionSafeguardTests.cs`
+- Summary: Documented atomic reassignment and deletion endpoint `POST /api/v1/jobs/{id}/reassign-and-delete` in `JobsController.cs` returning `ReassignAndDeleteJobResponseDto` (HTTP 200 OK). Documented `ReassignAndDeleteJobCommand` with helper methods (`GetJobToDeleteAsync`, `ReassignEmployeesIfRequiredAsync`) keeping cyclomatic complexity <= 4. Documented unit tests in `JobDeletionSafeguardTests.cs` (260 unit tests passing).
+- Tests: PASS
+- Security review: N/A
+
 ## 2026-08-28 — Pre-Deletion Impact Check (GET /api/v1/jobs/{id}/deletion-impact) [SCRUM-287]
 - Files:
   - `src/Buy2.Api/Controllers/JobsController.cs`

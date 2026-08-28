@@ -139,15 +139,15 @@ public class JobsController : ControllerBase
 
     [HttpPost("{id:int}/reassign-and-delete")]
     [Authorize(Roles = "HRAdmin,Admin,SuperAdmin")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ReassignAndDeleteJobResponseDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> ReassignAndDeleteJob([FromRoute] int id, [FromBody] ReassignEmployeesAndDeleteJobDto dto, CancellationToken cancellationToken)
     {
         try
         {
-            await _mediator.Send(new ReassignAndDeleteJobCommand(id, dto.ReplacementJobId), cancellationToken);
-            return NoContent();
+            var result = await _mediator.Send(new ReassignAndDeleteJobCommand(id, dto.ReplacementJobId), cancellationToken);
+            return Ok(result);
         }
         catch (System.Collections.Generic.KeyNotFoundException ex)
         {

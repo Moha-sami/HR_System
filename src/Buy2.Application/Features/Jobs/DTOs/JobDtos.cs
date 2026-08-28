@@ -75,7 +75,13 @@ public record JobDeletionImpactDto(
 );
 
 public record ReassignEmployeesAndDeleteJobDto(
-    int ReplacementJobId
+    int? ReplacementJobId
+);
+
+public record ReassignAndDeleteJobResponseDto(
+    string Message,
+    int ReassignedCount,
+    int DeletedJobId
 );
 
 public record JobAssignedEmployeeListItemDto(

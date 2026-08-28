@@ -8,11 +8,13 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 
+using Buy2.Application.Features.Jobs.DTOs;
+
 namespace Buy2.Application.Features.Jobs;
 
-public record ReassignAndDeleteJobCommand(int JobId, int? ReplacementJobId) : IRequest;
+public record ReassignAndDeleteJobCommand(int JobId, int? ReplacementJobId) : IRequest<ReassignAndDeleteJobResponseDto>;
 
-public class ReassignAndDeleteJobCommandHandler : IRequestHandler<ReassignAndDeleteJobCommand>
+public class ReassignAndDeleteJobCommandHandler : IRequestHandler<ReassignAndDeleteJobCommand, ReassignAndDeleteJobResponseDto>
 {
     private readonly IRepository<JobRole> _jobRepository;
     private readonly IRepository<Employee> _employeeRepository;
@@ -28,7 +30,7 @@ public class ReassignAndDeleteJobCommandHandler : IRequestHandler<ReassignAndDel
         _unitOfWork = unitOfWork;
     }
 
-    public async Task Handle(ReassignAndDeleteJobCommand request, CancellationToken cancellationToken)
+    public async Task<ReassignAndDeleteJobResponseDto> Handle(ReassignAndDeleteJobCommand request, CancellationToken cancellationToken)
     {
         if (request.JobId == request.ReplacementJobId)
             throw new ArgumentException("Replacement job ID cannot be the same as the target job ID.");
@@ -39,13 +41,19 @@ public class ReassignAndDeleteJobCommandHandler : IRequestHandler<ReassignAndDel
         if (activeEmployees.Any() && !request.ReplacementJobId.HasValue)
             throw new InvalidOperationException("Cannot delete job role with assigned employees without a valid replacement job role.");
 
+        int reassignedCount = activeEmployees.Count;
         await ReassignEmployeesIfRequiredAsync(activeEmployees, request.ReplacementJobId);
 
         jobToDelete.IsDeleted = true;
         jobToDelete.DeletedAt = DateTimeOffset.UtcNow;
-        _jobRepository.Update(jobToDelete);
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        return new ReassignAndDeleteJobResponseDto(
+            Message: "Job role deleted successfully.",
+            ReassignedCount: reassignedCount,
+            DeletedJobId: request.JobId
+        );
     }
 
     private async Task<JobRole> GetJobToDeleteAsync(int jobId, CancellationToken cancellationToken)
@@ -72,7 +80,6 @@ public class ReassignAndDeleteJobCommandHandler : IRequestHandler<ReassignAndDel
         foreach (var employee in activeEmployees)
         {
             employee.JobRoleId = replacementJobId.Value;
-            _employeeRepository.Update(employee);
         }
     }
 }
