@@ -970,5 +970,36 @@ Authorization: Bearer <jwt-token>
   - `200 OK` with newly generated `regionId`.
   - `400 Bad Request` if region name already exists.
 
+---
 
+## 10. Organization Lookups (`/api/v1/departments` & `/api/v1/qualifications`) [SCRUM-289]
 
+### `GET /api/v1/departments`
+- **Authorization**: `[Authorize]`
+- **Controller**: `DepartmentsController`
+- **Description**: Returns a lookup list of all departments.
+- **Response**: `200 OK` with list of departments.
+
+### `POST /api/v1/departments`
+- **Authorization**: `[Authorize(Roles = "Admin,Manager,HR,SuperAdmin")]`
+- **Controller**: `DepartmentsController`
+- **Request Body**: Department creation payload (`name`).
+- **Description**: Creates a new department inline with case-insensitive name uniqueness validation.
+- **Responses**:
+  - `200 OK` or `201 Created` with the new department details.
+  - `409 Conflict` if the department name already exists.
+
+### `GET /api/v1/qualifications`
+- **Authorization**: `[Authorize]`
+- **Controller**: `QualificationsController`
+- **Description**: Returns the qualification catalog.
+- **Response**: `200 OK` with list of qualifications.
+
+### `POST /api/v1/qualifications`
+- **Authorization**: `[Authorize(Roles = "Admin,Manager,HR,SuperAdmin")]`
+- **Controller**: `QualificationsController`
+- **Request Body**: Qualification creation payload (`name`).
+- **Description**: Creates a new qualification inline with case-insensitive name uniqueness validation.
+- **Responses**:
+  - `200 OK` or `201 Created` with the new qualification details.
+  - `409 Conflict` if the qualification name already exists.

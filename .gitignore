@@ -33,8 +33,16 @@ scripts/jira_helper.py
 
 
 
-/docs/ORCHESTRATOR_WORKFLOW.md
-/.graft/symbol_index.md
-/.graft/architecture_map.md
-/docs/PRD.md
-/.gitignore
+# Graft & PRD Docs
+.graft/
+docs/PRD.md
+docs/ORCHESTRATOR_WORKFLOW.md
+
+# Temporary Mutation Test & Extractor Scripts
+extract.*
+run_extractor.ps1
+Extractor/
+report.json
+StrykerOutput/
+
+
