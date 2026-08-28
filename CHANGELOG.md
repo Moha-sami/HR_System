@@ -377,6 +377,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## 2026-08-28 — GET/POST /api/v1/departments - Inline Department Lookup & Creation [SCRUM-290]
+- Files: `src/Buy2.Api/Controllers/DepartmentsController.cs`, `src/Buy2.Application/Features/Departments/GetDepartmentsQuery.cs`, `src/Buy2.Application/Features/Departments/CreateDepartmentCommand.cs`, `tests/Buy2.Domain.Tests/Departments/DepartmentHandlersTests.cs`
+- Summary: Documented `GET /api/v1/departments` and `POST /api/v1/departments` endpoints in `DepartmentsController.cs` for inline department lookups and creation. Added `GetDepartmentsQuery` and `CreateDepartmentCommand` handlers and RBAC attributes (`[Authorize]` on GET and `[Authorize(Roles = "HRAdmin,Admin,SuperAdmin")]` on POST).
+- Tests: PASS
+- Security review: N/A
+
 ## 2026-08-28 — Auxiliary Lookups & Inline Entity Creation Backend [SCRUM-289]
 - Files: `src/Buy2.Api/Controllers/DepartmentsController.cs`, `src/Buy2.Api/Controllers/QualificationsController.cs`, `src/Buy2.Application/Features/Departments/`, `src/Buy2.Application/Features/Qualifications/`, `tests/Buy2.Domain.Tests/Departments/DepartmentHandlersTests.cs`, `tests/Buy2.Domain.Tests/Qualifications/QualificationHandlersTests.cs`
 - Summary: Added GET and POST endpoints for Departments and Qualifications to support lightweight lookups, categorized catalog retrieval, and inline entity creation with duplicate name checks. Implemented underlying CQRS queries and commands.
