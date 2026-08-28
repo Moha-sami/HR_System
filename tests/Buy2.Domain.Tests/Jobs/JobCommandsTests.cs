@@ -642,6 +642,7 @@ public class JobCommandsTests
         var result = await handler.Handle(command, CancellationToken.None);
         
         var updatedJob = await context.JobRoles.FindAsync(1);
+        Assert.NotNull(updatedJob);
         Assert.Equal(1, updatedJob.DepartmentId);
         Assert.Equal("[]", updatedJob.RequiredQualificationsJson);
         Assert.Equal("[]", updatedJob.OnlineWorkdaysJson);

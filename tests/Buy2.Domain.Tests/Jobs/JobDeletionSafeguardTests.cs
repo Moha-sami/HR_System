@@ -106,10 +106,12 @@ public class JobDeletionSafeguardTests
         await handler.Handle(new ReassignAndDeleteJobCommand(jobToDelete.Id, replacementJob.Id), CancellationToken.None);
 
         var deletedJob = await context.JobRoles.IgnoreQueryFilters().FirstOrDefaultAsync(j => j.Id == jobToDelete.Id);
+        Assert.NotNull(deletedJob);
         Assert.True(deletedJob.IsDeleted);
         Assert.NotNull(deletedJob.DeletedAt);
 
         var updatedEmployee = await context.Employees.FindAsync(employee.Id);
+        Assert.NotNull(updatedEmployee);
         Assert.Equal(replacementJob.Id, updatedEmployee.JobRoleId);
     }
 
@@ -258,6 +260,56 @@ public class JobDeletionSafeguardTests
             await handler.Handle(new ReassignAndDeleteJobCommand(job.Id, null), CancellationToken.None);
 
             var deletedJob = await context.JobRoles.IgnoreQueryFilters().FirstOrDefaultAsync(j => j.Id == job.Id);
+            Assert.NotNull(deletedJob);
             Assert.True(deletedJob.IsDeleted);
+        }
+
+        [Fact]
+        public async Task GetJobDeletionImpactQuery_MultipleJobs_OnlyReturnsImpactForRequestedJob()
+        {
+            using var context = CreateDbContext();
+            var job1 = new JobRole { Title = "Job 1", DepartmentId = 1, IsActive = true };
+            var job2 = new JobRole { Title = "Job 2", DepartmentId = 1, IsActive = true };
+            context.JobRoles.AddRange(job1, job2);
+            await context.SaveChangesAsync();
+            
+            var emp1 = new Employee { FirstName = "A", LastName = "B", Email = "a@b.com", IsActive = true, JobRoleId = job1.Id, JobRole = job1 };
+            var emp2 = new Employee { FirstName = "C", LastName = "D", Email = "c@d.com", IsActive = true, JobRoleId = job2.Id, JobRole = job2 };
+            context.Employees.AddRange(emp1, emp2);
+            await context.SaveChangesAsync();
+            
+            context.ChangeTracker.Clear();
+
+            var jobRepo = new GenericRepository<JobRole>(context);
+            var empRepo = new GenericRepository<Employee>(context);
+            var handler = new GetJobDeletionImpactQueryHandler(jobRepo, empRepo);
+            var result = await handler.Handle(new GetJobDeletionImpactQuery(job1.Id), CancellationToken.None);
+
+            Assert.False(result.CanDeleteDirectly);
+            Assert.Single(result.AffectedEmployees);
+            Assert.Equal(emp1.Id, result.AffectedEmployees.First().Id);
+        }
+
+        [Fact]
+        public async Task GetJobDeletionImpactQuery_EmployeeWithNullNames_HandlesGracefully()
+        {
+            using var context = CreateDbContext();
+            var job = new JobRole { Title = "Job 1", DepartmentId = 1, IsActive = true };
+            context.JobRoles.Add(job);
+            await context.SaveChangesAsync();
+            
+            var emp = new Employee { FirstName = null, LastName = null, Email = "test@example.com", IsActive = true, JobRoleId = job.Id, JobRole = job };
+            context.Employees.Add(emp);
+            await context.SaveChangesAsync();
+            
+            context.ChangeTracker.Clear();
+
+            var jobRepo = new GenericRepository<JobRole>(context);
+            var empRepo = new GenericRepository<Employee>(context);
+            var handler = new GetJobDeletionImpactQueryHandler(jobRepo, empRepo);
+            var result = await handler.Handle(new GetJobDeletionImpactQuery(job.Id), CancellationToken.None);
+
+            var affected = result.AffectedEmployees.First();
+            Assert.Equal(string.Empty, affected.FullName);
         }
 }

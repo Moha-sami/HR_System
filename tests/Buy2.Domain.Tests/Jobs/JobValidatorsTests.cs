@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using Buy2.Application.Features.Departments.DTOs;
 using Buy2.Application.Features.Departments.Validators;
 using Buy2.Application.Features.Jobs.DTOs;
-using Buy2.Application.Features.Jobs.DTOs;
 using Buy2.Application.Features.Jobs.Validators;
 using Buy2.Application.Features.Qualifications.DTOs;
 using Buy2.Application.Features.Qualifications.Validators;
@@ -306,9 +305,9 @@ public class JobValidatorsTests
     [InlineData("Invalid")]
     [InlineData("   ")] // Whitespace
     [InlineData(null)]
-    public void UpdateJobDtoValidator_SeniorityLevelValidation(string level)
+    public void UpdateJobDtoValidator_SeniorityLevelValidation(string? level)
     {
-        var dto = new UpdateJobDto("Developer", 1, level, null, null, 2, "OnSite", null, null, true);
+        var dto = new UpdateJobDto("Developer", 1, level ?? "", null, null, 2, "OnSite", null, null, true);
         var result = _updateJobValidator.Validate(dto);
         if (string.IsNullOrWhiteSpace(level) || level == "Invalid") Assert.False(result.IsValid);
         else Assert.True(result.IsValid);

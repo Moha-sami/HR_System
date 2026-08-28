@@ -37,14 +37,7 @@ public class GetJobDeletionImpactQueryHandler : IRequestHandler<GetJobDeletionIm
             .ToListAsync(cancellationToken);
 
 
-        var affected = activeEmployees.Select(e => new AffectedEmployeeDto(
-            Id: e.Id,
-            EmployeeCode: e.EmployeeCode,
-            FullName: $"{e.FirstName?.Trim()} {e.LastName?.Trim()}".Trim(),
-            Email: e.Email,
-            SiteName: e.Site?.SiteName ?? string.Empty,
-            ProfilePhotoUrl: e.ProfilePhotoUrl
-        )).ToList();
+        var affected = activeEmployees.Select(MapToAffectedEmployeeDto).ToList();
 
         return new JobDeletionImpactDto(
             JobId: job.Id,
@@ -52,6 +45,18 @@ public class GetJobDeletionImpactQueryHandler : IRequestHandler<GetJobDeletionIm
             AssignedEmployeesCount: affected.Count,
             CanDeleteDirectly: affected.Count == 0,
             AffectedEmployees: affected
+        );
+    }
+
+    private AffectedEmployeeDto MapToAffectedEmployeeDto(Employee e)
+    {
+        return new AffectedEmployeeDto(
+            Id: e.Id,
+            EmployeeCode: e.EmployeeCode,
+            FullName: $"{e.FirstName?.Trim()} {e.LastName?.Trim()}".Trim(),
+            Email: e.Email,
+            SiteName: e.Site?.SiteName ?? string.Empty,
+            ProfilePhotoUrl: e.ProfilePhotoUrl
         );
     }
 }
