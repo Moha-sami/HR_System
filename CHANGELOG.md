@@ -371,6 +371,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## 2026-08-28 — Pre-Deletion Impact Check (GET /api/v1/jobs/{id}/deletion-impact) [SCRUM-287]
+- Files:
+  - `src/Buy2.Api/Controllers/JobsController.cs`
+  - `src/Buy2.Application/Features/Jobs/GetJobDeletionImpactQuery.cs`
+  - `tests/Buy2.Domain.Tests/Jobs/JobDeletionSafeguardTests.cs`
+- Summary: Implemented pre-deletion impact check endpoint `GET /api/v1/jobs/{id}/deletion-impact`. Created `GetJobDeletionImpactQuery` with an extracted mapping helper `MapToAffectedEmployeeDto` to maintain cyclomatic complexity <= 6. Added comprehensive unit tests in `JobDeletionSafeguardTests.cs`.
+- Tests: PASS (259 passing)
+- Security review: N/A
+
 ## 2026-08-28 — Job Deletion & Employee Reassignment Safeguard Backend [SCRUM-286]
 - Files:
   - `src/Buy2.Api/Controllers/JobsController.cs`

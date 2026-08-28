@@ -4,7 +4,6 @@ using Buy2.Application.Features.Jobs.DTOs;
 using Buy2.Application.Features.Jobs.GetJobById;
 using Buy2.Application.Features.Jobs.GetJobEmployees;
 using Buy2.Application.Features.Jobs.GetJobs;
-using Buy2.Application.Features.Jobs.DTOs;
 using Buy2.Application.Features.Jobs;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
