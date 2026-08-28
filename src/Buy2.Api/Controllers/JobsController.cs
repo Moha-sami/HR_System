@@ -15,7 +15,7 @@ namespace Buy2.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/jobs")]
-[Authorize(Roles = "Admin,Manager,HR,SuperAdmin")]
+[Authorize(Roles = "HRAdmin,Admin,Manager,HR,SuperAdmin")]
 public class JobsController : ControllerBase
 {
     private readonly ISender _mediator;
@@ -117,6 +117,48 @@ public class JobsController : ControllerBase
             return Conflict(new { message = ex.Message });
         }
         catch (System.ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+    [HttpGet("{id:int}/deletion-impact")]
+    [Authorize(Roles = "HRAdmin,Admin,SuperAdmin")]
+    [ProducesResponseType(typeof(JobDeletionImpactDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetJobDeletionImpact([FromRoute] int id, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var result = await _mediator.Send(new GetJobDeletionImpactQuery(id), cancellationToken);
+            return Ok(result);
+        }
+        catch (System.Collections.Generic.KeyNotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+    }
+
+    [HttpPost("{id:int}/reassign-and-delete")]
+    [Authorize(Roles = "HRAdmin,Admin,SuperAdmin")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> ReassignAndDeleteJob([FromRoute] int id, [FromBody] ReassignEmployeesAndDeleteJobDto dto, CancellationToken cancellationToken)
+    {
+        try
+        {
+            await _mediator.Send(new ReassignAndDeleteJobCommand(id, dto.ReplacementJobId), cancellationToken);
+            return NoContent();
+        }
+        catch (System.Collections.Generic.KeyNotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+        catch (System.ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (System.InvalidOperationException ex)
         {
             return BadRequest(new { message = ex.Message });
         }

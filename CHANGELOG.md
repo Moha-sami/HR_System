@@ -371,6 +371,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## 2026-08-28 — Job Deletion & Employee Reassignment Safeguard Backend [SCRUM-286]
+- Files:
+  - `src/Buy2.Api/Controllers/JobsController.cs`
+  - `tests/Buy2.Domain.Tests/Jobs/JobDeletionSafeguardTests.cs`
+- Summary: Added GET /api/v1/jobs/{id}/deletion-impact endpoint returning active assigned employee count and impact DTO. Added POST /api/v1/jobs/{id}/reassign-and-delete endpoint for atomically reassigning employees and soft-deleting the target job role. Enforced 400 BadRequest validation rules against deletion without replacement and self-reassignment.
+- Tests: PASS
+- Security review: N/A
+
 ## 2026-08-28 — Update Job Title, Department, Qualifications & Work Model [SCRUM-285]
 - Files: `src/Buy2.Api/Controllers/JobsController.cs`, `src/Buy2.Application/Features/Jobs/UpdateJobCommand.cs`
 - Summary: Added job role update endpoint `PUT /api/v1/jobs/{id}` in `JobsController.cs`. Refactored `UpdateJobCommand` with helper methods (`ValidateDepartmentAsync`, `ValidateTitleUniquenessAsync`, `UpdateJobProperties`, `MapToResponse`) ensuring cyclomatic complexity <= 6. Added boundary condition unit tests covering missing job 404, title collision 409 (excluding self), and null-coalescing fallbacks.
