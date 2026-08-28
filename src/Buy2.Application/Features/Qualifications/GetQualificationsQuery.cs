@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Buy2.Application.Features.Qualifications.GetQualifications;
 
-public record GetQualificationsQuery() : IRequest<IEnumerable<QualificationLookupDto>>;
+public record GetQualificationsQuery(string? Search = null, string? Type = null) : IRequest<IEnumerable<QualificationLookupDto>>;
 
 public class GetQualificationsQueryHandler : IRequestHandler<GetQualificationsQuery, IEnumerable<QualificationLookupDto>>
 {
@@ -23,16 +23,28 @@ public class GetQualificationsQueryHandler : IRequestHandler<GetQualificationsQu
 
     public async Task<IEnumerable<QualificationLookupDto>> Handle(GetQualificationsQuery request, CancellationToken cancellationToken)
     {
-        var qualifications = await _qualificationRepository.Query(asNoTracking: true)
+        var query = _qualificationRepository.Query(asNoTracking: true);
+
+        if (!string.IsNullOrWhiteSpace(request.Search))
+        {
+            var searchLower = request.Search.Trim().ToLower();
+            query = query.Where(q => q.Name.ToLower().Contains(searchLower) || (q.Description != null && q.Description.ToLower().Contains(searchLower)));
+        }
+
+        if (!string.IsNullOrWhiteSpace(request.Type))
+        {
+            var typeLower = request.Type.Trim().ToLower();
+            query = query.Where(q => q.Category.ToLower() == typeLower);
+        }
+
+        return await query
             .Select(q => new QualificationLookupDto(
                 q.Id,
                 q.Name,
                 q.Category,
                 q.Description,
-                false // Assuming IsSystem is false by default since there's no DB column for it
+                false
             ))
             .ToListAsync(cancellationToken);
-
-        return qualifications;
     }
 }
