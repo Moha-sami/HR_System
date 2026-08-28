@@ -103,7 +103,13 @@ public class JobDeletionSafeguardTests
         var uow = new UnitOfWork(context);
 
         var handler = new ReassignAndDeleteJobCommandHandler(jobRepo, empRepo, uow);
-        await handler.Handle(new ReassignAndDeleteJobCommand(jobToDelete.Id, replacementJob.Id), CancellationToken.None);
+        var result = await handler.Handle(new ReassignAndDeleteJobCommand(jobToDelete.Id, replacementJob.Id), CancellationToken.None);
+
+        Assert.Equal("Job role deleted successfully.", result.Message);
+        Assert.Equal(1, result.ReassignedCount);
+        Assert.Equal(jobToDelete.Id, result.DeletedJobId);
+
+        context.ChangeTracker.Clear();
 
         var deletedJob = await context.JobRoles.IgnoreQueryFilters().FirstOrDefaultAsync(j => j.Id == jobToDelete.Id);
         Assert.NotNull(deletedJob);
@@ -135,7 +141,8 @@ public class JobDeletionSafeguardTests
 
         var handler = new ReassignAndDeleteJobCommandHandler(jobRepo, empRepo, uow);
         
-        await Assert.ThrowsAsync<InvalidOperationException>(() => handler.Handle(new ReassignAndDeleteJobCommand(jobToDelete.Id, null), CancellationToken.None));
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => handler.Handle(new ReassignAndDeleteJobCommand(jobToDelete.Id, null), CancellationToken.None));
+        Assert.Equal("Cannot delete job role with assigned employees without a valid replacement job role.", ex.Message);
     }
 
     [Fact]
@@ -153,7 +160,8 @@ public class JobDeletionSafeguardTests
         var uow = new UnitOfWork(context);
 
         var handler = new ReassignAndDeleteJobCommandHandler(jobRepo, empRepo, uow);
-        await Assert.ThrowsAsync<ArgumentException>(() => handler.Handle(new ReassignAndDeleteJobCommand(jobToDelete.Id, jobToDelete.Id), CancellationToken.None));
+        var ex = await Assert.ThrowsAsync<ArgumentException>(() => handler.Handle(new ReassignAndDeleteJobCommand(jobToDelete.Id, jobToDelete.Id), CancellationToken.None));
+        Assert.Equal("Replacement job ID cannot be the same as the target job ID.", ex.Message);
     }
 
     [Fact]
@@ -216,7 +224,8 @@ public class JobDeletionSafeguardTests
             var uow = new UnitOfWork(context);
             var handler = new ReassignAndDeleteJobCommandHandler(jobRepo, empRepo, uow);
             
-            await Assert.ThrowsAsync<KeyNotFoundException>(() => handler.Handle(new ReassignAndDeleteJobCommand(99, null), CancellationToken.None));
+            var ex = await Assert.ThrowsAsync<KeyNotFoundException>(() => handler.Handle(new ReassignAndDeleteJobCommand(99, null), CancellationToken.None));
+            Assert.Equal("Job with ID 99 not found.", ex.Message);
         }
 
         [Fact]
@@ -236,7 +245,8 @@ public class JobDeletionSafeguardTests
             var uow = new UnitOfWork(context);
             var handler = new ReassignAndDeleteJobCommandHandler(jobRepo, empRepo, uow);
             
-            await Assert.ThrowsAsync<KeyNotFoundException>(() => handler.Handle(new ReassignAndDeleteJobCommand(job.Id, 99), CancellationToken.None));
+            var ex = await Assert.ThrowsAsync<KeyNotFoundException>(() => handler.Handle(new ReassignAndDeleteJobCommand(job.Id, 99), CancellationToken.None));
+            Assert.Equal("Replacement job with ID 99 not found.", ex.Message);
         }
 
         [Fact]
@@ -257,7 +267,13 @@ public class JobDeletionSafeguardTests
             var handler = new ReassignAndDeleteJobCommandHandler(jobRepo, empRepo, uow);
             
             // Should succeed without replacement job ID
-            await handler.Handle(new ReassignAndDeleteJobCommand(job.Id, null), CancellationToken.None);
+            var result = await handler.Handle(new ReassignAndDeleteJobCommand(job.Id, null), CancellationToken.None);
+
+            Assert.Equal("Job role deleted successfully.", result.Message);
+            Assert.Equal(0, result.ReassignedCount);
+            Assert.Equal(job.Id, result.DeletedJobId);
+
+            context.ChangeTracker.Clear();
 
             var deletedJob = await context.JobRoles.IgnoreQueryFilters().FirstOrDefaultAsync(j => j.Id == job.Id);
             Assert.NotNull(deletedJob);
@@ -298,7 +314,7 @@ public class JobDeletionSafeguardTests
             context.JobRoles.Add(job);
             await context.SaveChangesAsync();
             
-            var emp = new Employee { FirstName = null, LastName = null, Email = "test@example.com", IsActive = true, JobRoleId = job.Id, JobRole = job };
+            var emp = new Employee { FirstName = "", LastName = "", Email = "test@example.com", IsActive = true, JobRoleId = job.Id, JobRole = job };
             context.Employees.Add(emp);
             await context.SaveChangesAsync();
             
@@ -311,5 +327,34 @@ public class JobDeletionSafeguardTests
 
             var affected = result.AffectedEmployees.First();
             Assert.Equal(string.Empty, affected.FullName);
+        }
+
+        [Fact]
+        public async Task ReassignAndDeleteJobCommand_DeletedActiveEmployees_AreIgnored()
+        {
+            using var context = CreateDbContext();
+            var job = new JobRole { Title = "Job 1", DepartmentId = 1, IsActive = true };
+            context.JobRoles.Add(job);
+            
+            var empDeleted = new Employee { FirstName = "A", LastName = "B", IsActive = true, IsDeleted = true, JobRole = job };
+            context.Employees.Add(empDeleted);
+            await context.SaveChangesAsync();
+            context.ChangeTracker.Clear();
+
+            var jobRepo = new GenericRepository<JobRole>(context);
+            var empRepo = new GenericRepository<Employee>(context);
+            var uow = new UnitOfWork(context);
+            var handler = new ReassignAndDeleteJobCommandHandler(jobRepo, empRepo, uow);
+            
+            // Should succeed without replacement job ID since the only employee is deleted
+            var result = await handler.Handle(new ReassignAndDeleteJobCommand(job.Id, null), CancellationToken.None);
+
+            Assert.Equal("Job role deleted successfully.", result.Message);
+            Assert.Equal(0, result.ReassignedCount);
+            
+            context.ChangeTracker.Clear();
+            var deletedJob = await context.JobRoles.IgnoreQueryFilters().FirstOrDefaultAsync(j => j.Id == job.Id);
+            Assert.NotNull(deletedJob);
+            Assert.True(deletedJob.IsDeleted);
         }
 }
