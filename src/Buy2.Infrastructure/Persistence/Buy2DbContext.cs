@@ -66,6 +66,7 @@ public class Buy2DbContext : DbContext
 
         modelBuilder.Entity<Role>().HasQueryFilter(r => r.IsActive);
         modelBuilder.Entity<Employee>().HasQueryFilter(e => !e.IsDeleted);
+        modelBuilder.Entity<JobRole>().HasQueryFilter(j => !j.IsDeleted);
 
         modelBuilder.Entity<EmployeeSite>()
             .HasKey(es => new { es.EmployeeId, es.SiteId });
