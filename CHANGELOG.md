@@ -377,6 +377,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## 2026-08-28 — Inline Qualifications & Skills Catalog Lookup & Creation [SCRUM-291]
+- Files: `src/Buy2.Api/Controllers/QualificationsController.cs`, `tests/Buy2.Domain.Tests/Qualifications/QualificationHandlersTests.cs`
+- Summary: Documented `GET /api/v1/qualifications` (with `search` and `type` category query parameters) and `POST /api/v1/qualifications` endpoints in `QualificationsController.cs` for inline qualification creation and lookups. Documented `GetQualificationsQuery` and `CreateQualificationCommand` handlers and RBAC attributes (`[Authorize]` on GET and `[Authorize(Roles = "HRAdmin,Admin,SuperAdmin")]` on POST).
+- Tests: PASS
+- Security review: N/A
+
 ## 2026-08-28 — GET/POST /api/v1/departments - Inline Department Lookup & Creation [SCRUM-290]
 - Files: `src/Buy2.Api/Controllers/DepartmentsController.cs`, `src/Buy2.Application/Features/Departments/GetDepartmentsQuery.cs`, `src/Buy2.Application/Features/Departments/CreateDepartmentCommand.cs`, `tests/Buy2.Domain.Tests/Departments/DepartmentHandlersTests.cs`
 - Summary: Documented `GET /api/v1/departments` and `POST /api/v1/departments` endpoints in `DepartmentsController.cs` for inline department lookups and creation. Added `GetDepartmentsQuery` and `CreateDepartmentCommand` handlers and RBAC attributes (`[Authorize]` on GET and `[Authorize(Roles = "HRAdmin,Admin,SuperAdmin")]` on POST).

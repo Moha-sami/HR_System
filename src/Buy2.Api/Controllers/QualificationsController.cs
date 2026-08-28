@@ -14,7 +14,7 @@ namespace Buy2.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/qualifications")]
-[Authorize(Roles = "HRAdmin,Admin,SuperAdmin")]
+[Authorize]
 public class QualificationsController : ControllerBase
 {
     private readonly ISender _mediator;
@@ -26,13 +26,14 @@ public class QualificationsController : ControllerBase
 
     [HttpGet]
     [ProducesResponseType(typeof(IEnumerable<QualificationLookupDto>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetQualifications(CancellationToken cancellationToken)
+    public async Task<IActionResult> GetQualifications([FromQuery] string? search, [FromQuery] string? type, CancellationToken cancellationToken)
     {
-        var result = await _mediator.Send(new GetQualificationsQuery(), cancellationToken);
+        var result = await _mediator.Send(new GetQualificationsQuery(search, type), cancellationToken);
         return Ok(result);
     }
 
     [HttpPost]
+    [Authorize(Roles = "HRAdmin,Admin,SuperAdmin")]
     [ProducesResponseType(typeof(QualificationDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
