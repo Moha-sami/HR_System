@@ -1,5 +1,6 @@
 using Buy2.Application.Common.Interfaces;
 using Buy2.Domain.Entities;
+using Buy2.Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -44,7 +45,7 @@ public class GetPointsSummaryQueryHandler : IRequestHandler<GetPointsSummaryQuer
 
         // TotalPointsRedeemed: sum of absolute values of redemption transactions (e.g. where Type is Redemption or amount < 0 / redemption category).
         int totalPointsRedeemed = transactions
-            .Where(t => (t.TransactionType != null && t.TransactionType.Contains("Redemption", StringComparison.OrdinalIgnoreCase)) || t.Amount < 0)
+            .Where(t => t.TransactionType == TransactionType.Redeemed || t.Amount < 0)
             .Sum(t => Math.Abs(t.Amount));
 
         // 3. Query RewardRedemption for EmployeeId
