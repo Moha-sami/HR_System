@@ -17,6 +17,7 @@ using Buy2.Application.Features.Employees.ResolveViolation;
 using Buy2.Application.Features.Employees.UpdateJobDetails;
 using Buy2.Application.Features.Employees.UpdatePayrollProfile;
 using Buy2.Application.Features.Employees.UpdatePersonalInfo;
+using Buy2.Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -311,11 +312,17 @@ public class EmployeeDirectoryController : ControllerBase
         [FromQuery] DateTimeOffset? dateTo = null,
         CancellationToken cancellationToken = default)
     {
+        TransactionType? transactionType = null;
+        if (!string.IsNullOrWhiteSpace(type) && Enum.TryParse<TransactionType>(type, true, out var parsed))
+        {
+            transactionType = parsed;
+        }
+
         var query = new GetPointsTransactionsQuery(
             EmployeeId: id,
             Page: page,
             PageSize: pageSize,
-            Type: type,
+            Type: transactionType,
             TriggeredBy: triggeredBy,
             DateFrom: dateFrom,
             DateTo: dateTo

@@ -1,5 +1,6 @@
 using Buy2.Application.Common.Interfaces;
 using Buy2.Domain.Entities;
+using Buy2.Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,7 +10,7 @@ public record GetPointsTransactionsQuery(
     int EmployeeId,
     int Page = 1,
     int PageSize = 10,
-    string? Type = null,
+    TransactionType? Type = null,
     string? TriggeredBy = null,
     DateTimeOffset? DateFrom = null,
     DateTimeOffset? DateTo = null
@@ -49,14 +50,14 @@ public class GetPointsTransactionsQueryHandler : IRequestHandler<GetPointsTransa
             .Where(t => t.EmployeeId == request.EmployeeId);
 
         // 4. Filter by Type
-        if (!string.IsNullOrWhiteSpace(request.Type))
+        if (request.Type.HasValue)
         {
-            var type = request.Type.Trim();
-            if (string.Equals(type, "Earned", StringComparison.OrdinalIgnoreCase))
+            var type = request.Type.Value;
+            if (type == TransactionType.Earned || type == TransactionType.Add)
             {
                 query = query.Where(t => t.Amount > 0);
             }
-            else if (string.Equals(type, "Redeemed", StringComparison.OrdinalIgnoreCase))
+            else if (type == TransactionType.Redeemed || type == TransactionType.Deduct)
             {
                 query = query.Where(t => t.Amount < 0);
             }
@@ -72,20 +73,18 @@ public class GetPointsTransactionsQueryHandler : IRequestHandler<GetPointsTransa
             var triggeredBy = request.TriggeredBy.Trim();
             query = query.Where(t =>
                 (t.PointsRule != null && (t.PointsRule.RuleKey.Contains(triggeredBy) || t.PointsRule.EventType.Contains(triggeredBy))) ||
-                t.TransactionType.Contains(triggeredBy));
+                t.TriggeredBy.Contains(triggeredBy));
         }
 
         // 6. Filter by Date range
         if (request.DateFrom.HasValue)
         {
-            var fromUtc = request.DateFrom.Value.UtcDateTime;
-            query = query.Where(t => t.CreatedAt >= fromUtc);
+            query = query.Where(t => t.CreatedAt >= request.DateFrom.Value);
         }
 
         if (request.DateTo.HasValue)
         {
-            var toUtc = request.DateTo.Value.UtcDateTime;
-            query = query.Where(t => t.CreatedAt <= toUtc);
+            query = query.Where(t => t.CreatedAt <= request.DateTo.Value);
         }
 
         // 7. Get total count before pagination
@@ -115,19 +114,14 @@ public class GetPointsTransactionsQueryHandler : IRequestHandler<GetPointsTransa
 
     private static PointsTransactionDto MapToDto(PointsTransaction t)
     {
-        var transactionType = !string.IsNullOrWhiteSpace(t.TransactionType)
-            ? t.TransactionType
-            : (t.Amount >= 0 ? "Earned" : "Redeemed");
+        var transactionType = t.TransactionType.ToString();
 
-        var triggeredBy = t.PointsRule?.RuleKey ?? t.PointsRule?.EventType ?? transactionType;
-        var comments = t.PointsRule?.EventType;
-
-        var dateUtc = DateTime.SpecifyKind(t.CreatedAt, DateTimeKind.Utc);
-        var dateOffset = new DateTimeOffset(dateUtc);
+        var triggeredBy = t.TriggeredBy;
+        var comments = t.Comments;
 
         return new PointsTransactionDto(
             Id: t.Id,
-            Date: dateOffset,
+            Date: t.CreatedAt,
             Amount: t.Amount,
             Type: transactionType,
             TriggeredBy: triggeredBy,

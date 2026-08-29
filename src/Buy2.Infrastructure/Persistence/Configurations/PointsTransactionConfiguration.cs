@@ -11,9 +11,34 @@ public class PointsTransactionConfiguration : IEntityTypeConfiguration<PointsTra
         builder.Property(p => p.Amount)
             .IsRequired()
             .HasColumnType("int");
+
         builder.Property(p => p.TransactionType)
             .IsRequired()
+            .HasConversion<string>()
+            .HasMaxLength(30)
             .HasColumnType("varchar(30)");
+
+        builder.Property(p => p.TriggeredBy)
+            .IsRequired()
+            .HasMaxLength(100)
+            .HasColumnType("varchar(100)");
+
+        builder.Property(p => p.Comments)
+            .HasMaxLength(1000)
+            .HasColumnType("nvarchar(1000)");
+
+        builder.Property(p => p.EvaluationPeriodStart)
+            .HasColumnType("datetimeoffset");
+
+        builder.Property(p => p.EvaluationPeriodEnd)
+            .HasColumnType("datetimeoffset");
+
+        builder.Property(p => p.CreatedByUserId)
+            .HasColumnType("int");
+
+        builder.Property(p => p.CreatedAt)
+            .IsRequired()
+            .HasColumnType("datetimeoffset");
 
         builder.HasOne(p => p.Employee)
             .WithMany()
@@ -24,5 +49,9 @@ public class PointsTransactionConfiguration : IEntityTypeConfiguration<PointsTra
             .WithMany()
             .HasForeignKey(p => p.PointsRuleId)
             .OnDelete(DeleteBehavior.SetNull);
+
+        builder.HasIndex(p => new { p.EmployeeId, p.CreatedAt });
+        builder.HasIndex(p => p.TriggeredBy);
+        builder.HasIndex(p => p.TransactionType);
     }
 }
