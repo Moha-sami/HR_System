@@ -1,4 +1,4 @@
-﻿using Buy2.Domain.Enums;
+using Buy2.Domain.Enums;
 
 namespace Buy2.Domain.Entities;
 
@@ -13,7 +13,7 @@ public class PointsTransaction : BaseEntity
     public DateTimeOffset? EvaluationPeriodStart { get; set; }
     public DateTimeOffset? EvaluationPeriodEnd { get; set; }
     public int? CreatedByUserId { get; set; }
-    public DateTimeOffset CreatedAt { get; set; }
+    public new DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
 
     public Employee Employee { get; set; } = null!;
     public PointsRule? PointsRule { get; set; }
