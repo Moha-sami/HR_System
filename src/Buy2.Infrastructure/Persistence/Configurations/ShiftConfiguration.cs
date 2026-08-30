@@ -29,5 +29,10 @@ public class ShiftConfiguration : IEntityTypeConfiguration<ShiftEntity>
             .HasForeignKey(s => s.JobRoleId)
             .OnDelete(DeleteBehavior.Restrict);
 
+        builder.HasOne<ShiftTemplate>()
+            .WithMany()
+            .HasForeignKey(s => s.ShiftTamplateId)
+            .OnDelete(DeleteBehavior.Restrict);
+
     }
 }
