@@ -15,7 +15,6 @@ import { Subject, takeUntil } from 'rxjs';
 import { SiteService } from '../../services/site.service';
 import { ModalComponent } from '@app/shared/components/modal/modal.component';
 import { ModalBodyComponent } from '@app/shared/components/modal/modal-body.component';
-import { ModalFooterComponent } from '@app/shared/components/modal/modal-footer.component';
 import type { SiteListItemDto, RegionDto } from '../../models/site.models';
 
 @Component({
@@ -27,7 +26,6 @@ import type { SiteListItemDto, RegionDto } from '../../models/site.models';
     TranslatePipe,
     ModalComponent,
     ModalBodyComponent,
-    ModalFooterComponent,
   ],
   templateUrl: './site-list.component.html',
   styleUrl: './site-list.component.css',
