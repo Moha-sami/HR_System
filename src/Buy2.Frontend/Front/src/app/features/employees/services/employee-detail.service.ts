@@ -14,6 +14,7 @@ import type {
   UpdatePayrollProfileDto,
 } from '../models/view-employee/employee-payroll';
 import type { AttendanceCalendarDto } from '../models/view-employee/employee-attendance';
+import type { ViolationDto, ViolationFilters } from '../models/view-employee/employee-violations';
 
 const API_BASE = environment.baseUrl;
 
@@ -30,6 +31,11 @@ export class EmployeeDetailService {
   readonly attendanceCalendar = signal<AttendanceCalendarDto | null>(null);
   readonly attendanceLoading = signal(false);
   readonly attendanceError = signal<string | null>(null);
+
+  // Violations store
+  readonly violations = signal<readonly ViolationDto[]>([]);
+  readonly violationsLoading = signal(false);
+  readonly violationsError = signal<string | null>(null);
 
   // Profile API
   getEmployeeProfile(id: number): Observable<EmployeeProfileDto> {
@@ -48,6 +54,32 @@ export class EmployeeDetailService {
   ): Observable<AttendanceCalendarDto> {
     return this.http.get<AttendanceCalendarDto>(`${API_BASE}/employees/${id}/attendance/calendar`, {
       params: { month, year },
+    });
+  }
+
+  // Violations API
+  getViolations(id: number, filters: ViolationFilters = {}): Observable<readonly ViolationDto[]> {
+    const params: Record<string, string> = {};
+    if (filters.type) params['type'] = filters.type;
+    if (filters.severityLevel) params['severityLevel'] = filters.severityLevel;
+    if (filters.dateFrom) params['dateFrom'] = filters.dateFrom;
+    if (filters.dateTo) params['dateTo'] = filters.dateTo;
+
+    return this.http.get<readonly ViolationDto[]>(`${API_BASE}/employees/${id}/violations`, {
+      params,
+    });
+  }
+
+  exportViolations(id: number, filters: ViolationFilters = {}): Observable<Blob> {
+    const params: Record<string, string> = {};
+    if (filters.type) params['type'] = filters.type;
+    if (filters.severityLevel) params['severityLevel'] = filters.severityLevel;
+    if (filters.dateFrom) params['dateFrom'] = filters.dateFrom;
+    if (filters.dateTo) params['dateTo'] = filters.dateTo;
+
+    return this.http.get(`${API_BASE}/employees/${id}/violations/export`, {
+      params,
+      responseType: 'blob',
     });
   }
 
@@ -103,6 +135,22 @@ export class EmployeeDetailService {
     });
   }
 
+  loadViolations(id: number, filters: ViolationFilters = {}): void {
+    this.violationsLoading.set(true);
+    this.violationsError.set(null);
+
+    this.getViolations(id, filters).subscribe({
+      next: (data) => {
+        this.violations.set(data);
+        this.violationsLoading.set(false);
+      },
+      error: () => {
+        this.violationsError.set('EMPLOYEE_DETAIL.VIOLATIONS_LOAD_FAILED');
+        this.violationsLoading.set(false);
+      },
+    });
+  }
+
   clearDetailEmployee(): void {
     this.detailEmployee.set(null);
     this.detailLoading.set(false);
@@ -113,6 +161,12 @@ export class EmployeeDetailService {
     this.attendanceCalendar.set(null);
     this.attendanceLoading.set(false);
     this.attendanceError.set(null);
+  }
+
+  clearViolations(): void {
+    this.violations.set([]);
+    this.violationsLoading.set(false);
+    this.violationsError.set(null);
   }
 
   updateDetailEmployee(partial: Partial<EmployeeProfileDto>): void {

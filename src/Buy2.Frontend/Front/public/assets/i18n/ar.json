@@ -374,6 +374,47 @@
       "OT_HOURS": "ساعات إضافية",
       "BREAK_TIME": "وقت الاستراحة",
       "LATENESS_RECORDED": "التأخير المسجل"
+    },
+    "VIOLATIONS": {
+      "FILTERS": {
+        "TYPE": "النوع",
+        "SEVERITY": "مستوى الخطورة",
+        "DATE_FROM": "من تاريخ",
+        "DATE_TO": "إلى تاريخ",
+        "ALL_TYPES": "كل الأنواع",
+        "ALL_SEVERITIES": "كل مستويات الخطورة"
+      },
+      "TABLE": {
+        "DATE": "التاريخ",
+        "TYPE": "نوع المخالفة",
+        "DESCRIPTION": "الوصف",
+        "REPORTED_BY": "تم الإبلاغ بواسطة",
+        "SEVERITY": "مستوى الخطورة",
+        "STATUS": "الحالة",
+        "ACTIONS": "الإجراءات"
+      },
+      "SEVERITY": {
+        "LOW": "منخفض",
+        "MEDIUM": "متوسط",
+        "HIGH": "عالي",
+        "CRITICAL": "حرج"
+      },
+      "STATUS": {
+        "PENDING": "قيد الانتظار",
+        "APPROVED": "مقبول",
+        "REJECTED": "مرفوض",
+        "RESOLVED": "تم الحل",
+        "UNDERINVESTIGATION": "قيد التحقيق"
+      },
+      "ACTIONS": {
+        "VIEW": "عرض",
+        "RESOLVE": "حل",
+        "EXPORT": "تصدير",
+        "CLEAR_FILTERS": "مسح الفلاتر"
+      },
+      "EMPTY_TITLE": "لا توجد مخالفات",
+      "EMPTY_MESSAGE": "لم يتم العثور على مخالفات لهذا الموظف.",
+      "LOAD_FAILED": "فشل في تحميل المخالفات. يرجى المحاولة مرة أخرى."
     }
   }
 }

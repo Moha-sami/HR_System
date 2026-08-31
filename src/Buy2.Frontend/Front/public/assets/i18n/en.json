@@ -377,6 +377,47 @@
       "OT_HOURS": "OT Hours",
       "BREAK_TIME": "Break Time Recorded",
       "LATENESS_RECORDED": "Lateness Recorded"
+    },
+    "VIOLATIONS": {
+      "FILTERS": {
+        "TYPE": "Type",
+        "SEVERITY": "Severity",
+        "DATE_FROM": "Date From",
+        "DATE_TO": "Date To",
+        "ALL_TYPES": "All Types",
+        "ALL_SEVERITIES": "All Severities"
+      },
+      "TABLE": {
+        "DATE": "Date",
+        "TYPE": "Violation Type",
+        "DESCRIPTION": "Description",
+        "REPORTED_BY": "Reported By",
+        "SEVERITY": "Severity",
+        "STATUS": "Status",
+        "ACTIONS": "Actions"
+      },
+      "SEVERITY": {
+        "LOW": "Low",
+        "MEDIUM": "Medium",
+        "HIGH": "High",
+        "CRITICAL": "Critical"
+      },
+      "STATUS": {
+        "PENDING": "Pending",
+        "APPROVED": "Approved",
+        "REJECTED": "Rejected",
+        "RESOLVED": "Resolved",
+        "UNDERINVESTIGATION": "Under Investigation"
+      },
+      "ACTIONS": {
+        "VIEW": "View",
+        "RESOLVE": "Resolve",
+        "EXPORT": "Export",
+        "CLEAR_FILTERS": "Clear Filters"
+      },
+      "EMPTY_TITLE": "No Violations",
+      "EMPTY_MESSAGE": "No violations found for this employee.",
+      "LOAD_FAILED": "Failed to load violations. Please try again."
     }
   }
 }

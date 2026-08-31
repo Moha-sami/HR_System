@@ -30,6 +30,9 @@ docs/assets
 .env
 scripts/
 scripts/jira_helper.py
+AGENTS.md
+docs/agents
+CONTEXT_FRONTEND.md
 
 
 
