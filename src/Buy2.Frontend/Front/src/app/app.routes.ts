@@ -79,10 +79,10 @@ export const routes: Routes = [
       // ──────────────────────────────────────────────────────────────────────
       // §3.1 — Site & Location Management
       // ──────────────────────────────────────────────────────────────────────
-      // {
-      //   path: 'sites',
-      //   loadChildren: () => import('./features/sites/sites.routes').then(m => m.SITES_ROUTES)
-      // },
+      {
+        path: 'sites',
+        loadChildren: () => import('./features/sites/sites.routes').then(m => m.SITES_ROUTES)
+      },
 
       // ──────────────────────────────────────────────────────────────────────
       // §3.2 — Attendance Profiles & Tracking
