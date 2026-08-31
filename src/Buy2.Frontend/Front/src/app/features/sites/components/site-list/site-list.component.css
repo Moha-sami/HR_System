@@ -1,0 +1,361 @@
+/* ── Page Layout ───────────────────────────────────────────────────────────── */
+.sites-page {
+  padding: 0;
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.page-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin: 0;
+}
+
+/* ── Export Button ─────────────────────────────────────────────────────────── */
+.btn-export {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: #234199;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.btn-export:hover { background: #1b2f73; }
+
+/* ── Filters Bar ───────────────────────────────────────────────────────────── */
+.filters-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.filter-region {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filter-region label {
+  font-size: 0.85rem;
+  color: #555;
+  white-space: nowrap;
+}
+
+.filter-region select {
+  padding: 8px 12px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  background: #fff;
+  cursor: pointer;
+  color: #333;
+  outline: none;
+  min-width: 130px;
+}
+.filter-region select:focus { border-color: #234199; }
+
+.filter-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f7f8fa;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 8px 12px;
+  flex: 1;
+  min-width: 200px;
+}
+
+.filter-search input {
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 0.85rem;
+  color: #333;
+  width: 100%;
+}
+
+.filter-search input::placeholder { color: #aaa; }
+
+.btn-create {
+  padding: 9px 20px;
+  background: #234199;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s, transform 0.1s;
+}
+.btn-create:hover { background: #1b2f73; }
+.btn-create:active { transform: scale(0.98); }
+
+/* ── Loading / Error / Empty ───────────────────────────────────────────────── */
+.loading-state, .error-state, .empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 0;
+  gap: 12px;
+  color: #888;
+}
+
+.spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid #e2e8f0;
+  border-top-color: #234199;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.btn-retry {
+  padding: 8px 18px;
+  background: #234199;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+/* ── Sites Grid ────────────────────────────────────────────────────────────── */
+.sites-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+  gap: 20px;
+}
+
+/* ── Site Card ─────────────────────────────────────────────────────────────── */
+.site-card {
+  background: #fff;
+  border: 1.5px solid #e8ecf4;
+  border-radius: 12px;
+  padding: 20px;
+  transition: box-shadow 0.2s, border-color 0.2s;
+  position: relative;
+}
+
+.site-card:hover {
+  box-shadow: 0 4px 20px rgba(35, 65, 153, 0.1);
+  border-color: #b8c9f5;
+}
+
+.site-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.site-name {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #234199;
+  margin: 0;
+}
+
+/* ── Three-dot Menu ────────────────────────────────────────────────────────── */
+.site-menu-wrapper {
+  position: relative;
+}
+
+.btn-menu {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #888;
+  font-size: 1.1rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: background 0.15s;
+}
+.btn-menu:hover { background: #f0f4ff; color: #234199; }
+
+.site-menu-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  background: #fff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 6px;
+  z-index: 50;
+  min-width: 130px;
+  box-shadow: 0 6px 24px rgba(0,0,0,0.1);
+  animation: dropdown-in 0.15s ease;
+}
+
+@keyframes dropdown-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 12px;
+  border: none;
+  background: transparent;
+  border-radius: 7px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.menu-item--edit { color: #234199; }
+.menu-item--edit:hover { background: #eef2ff; }
+.menu-item--delete { color: #e53e3e; }
+.menu-item--delete:hover { background: #fff5f5; }
+
+/* ── Card Body ─────────────────────────────────────────────────────────────── */
+.site-card-body p {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  color: #666;
+  margin: 4px 0;
+}
+
+/* ── Delete Modal ──────────────────────────────────────────────────────────── */
+.delete-modal-content {
+  text-align: center;
+  padding: 8px 8px 16px;
+}
+
+.delete-icon-wrapper {
+  width: 72px;
+  height: 72px;
+  background: #fff5f5;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+}
+
+.delete-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin: 0 0 8px;
+}
+
+.delete-message {
+  font-size: 0.88rem;
+  color: #666;
+  margin: 0 0 16px;
+}
+
+.delete-error {
+  font-size: 0.82rem;
+  color: #e53e3e;
+  margin-bottom: 12px;
+}
+
+.delete-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.btn-cancel {
+  padding: 9px 24px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 8px;
+  background: #fff;
+  color: #555;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-cancel:hover { border-color: #b0b8c9; background: #f7f8fa; }
+.btn-cancel:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.btn-delete {
+  padding: 9px 24px;
+  background: #e53e3e;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background 0.2s;
+}
+.btn-delete:hover { background: #c53030; }
+.btn-delete:disabled { opacity: 0.6; cursor: not-allowed; }
+
+/* ── Success Modal ─────────────────────────────────────────────────────────── */
+.success-modal-content {
+  text-align: center;
+  padding: 8px 8px 16px;
+}
+
+.success-icon-wrapper {
+  width: 80px;
+  height: 80px;
+  background: #f0fff4;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+}
+
+.success-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin: 0 0 16px;
+}
+
+.btn-ok {
+  padding: 9px 36px;
+  background: #234199;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.btn-ok:hover { background: #1b2f73; }
+
+/* ── Spinner small ─────────────────────────────────────────────────────────── */
+.spinner-sm {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255,255,255,0.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  display: inline-block;
+}

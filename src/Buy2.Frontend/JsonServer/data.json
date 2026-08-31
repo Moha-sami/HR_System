@@ -82,29 +82,48 @@
       "name": ".NET"
     }
   ],
+  "regions": [
+    { "id": 1, "name": "Cairo" },
+    { "id": 2, "name": "Riyadh" },
+    { "id": 3, "name": "Jeddah" },
+    { "id": 4, "name": "Alexandria" },
+    { "id": 5, "name": "Giza" }
+  ],
   "sites": [
     {
-      "id": "1",
+      "id": 1,
       "siteName": "Downtown Campus",
+      "address": "Sheikh Zayed, Giza",
+      "regionId": 5,
+      "regionName": "Giza",
       "latitude": 30.0444,
       "longitude": 31.2357,
-      "macAddressWhitelistJson": "[\"00:1B:44:11:3A:B7\", \"00:1B:44:11:3A:B8\"]",
+      "phoneNumber": "+20123456789",
+      "macAddress": "00:1B:44:11:3A:B7",
       "createdAt": "2026-01-01T08:00:00Z"
     },
     {
-      "id": "2",
-      "siteName": "Riyadh Branch",
-      "latitude": 24.7136,
-      "longitude": 46.6753,
-      "macAddressWhitelistJson": "[\"00:1B:44:11:3C:D1\"]",
+      "id": 2,
+      "siteName": "5th Settlement Branch",
+      "address": "5th Settlement, Cairo",
+      "regionId": 1,
+      "regionName": "Cairo",
+      "latitude": 30.0131,
+      "longitude": 31.4682,
+      "phoneNumber": "+20987654321",
+      "macAddress": "00:1B:44:11:3C:D1",
       "createdAt": "2026-01-01T08:00:00Z"
     },
     {
-      "id": "3",
-      "siteName": "Jeddah Branch",
-      "latitude": 21.4858,
-      "longitude": 39.1925,
-      "macAddressWhitelistJson": "[\"00:1B:44:11:3D:E5\"]",
+      "id": 3,
+      "siteName": "Nasr City Hub",
+      "address": "Nasr City, Cairo",
+      "regionId": 1,
+      "regionName": "Cairo",
+      "latitude": 30.0626,
+      "longitude": 31.3566,
+      "phoneNumber": "+20111223344",
+      "macAddress": "00:1B:44:11:3D:E5",
       "createdAt": "2026-02-15T08:00:00Z"
     }
   ],

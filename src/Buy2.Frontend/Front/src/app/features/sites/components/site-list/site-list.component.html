@@ -1,0 +1,220 @@
+<div class="sites-page">
+
+  <!-- ── Page Header ─────────────────────────────────────────── -->
+  <div class="page-header">
+    <div class="header-left">
+      <h1 class="page-title">{{ 'SITE_MANAGEMENT.TITLE' | translate }}</h1>
+    </div>
+    <div class="header-right">
+      <button class="btn-export" id="sites-export-btn">
+        {{ 'SITE_MANAGEMENT.EXPORT' | translate }}
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/>
+          <line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- ── Filters Bar ─────────────────────────────────────────── -->
+  <div class="filters-bar">
+    <div class="filter-region">
+      <label>{{ 'SITE_MANAGEMENT.FILTER_BY' | translate }}</label>
+      <select
+        id="sites-region-filter"
+        [ngModel]="selectedRegion()"
+        (ngModelChange)="selectedRegion.set($event ? +$event : null)">
+        <option [ngValue]="null">{{ 'SITE_MANAGEMENT.ALL_REGIONS' | translate }}</option>
+        @for (r of regions(); track r.id) {
+          <option [ngValue]="r.id">{{ r.name }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="filter-search">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+        stroke="#999" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input
+        type="text"
+        id="sites-search"
+        [placeholder]="'SITE_MANAGEMENT.SEARCH_PLACEHOLDER' | translate"
+        [ngModel]="searchQuery()"
+        (ngModelChange)="searchQuery.set($event)"
+      />
+    </div>
+
+    <button class="btn-create" id="sites-create-btn" (click)="navigateToCreate()">
+      {{ 'SITE_MANAGEMENT.CREATE_SITE' | translate }}
+    </button>
+  </div>
+
+  <!-- ── Loading State ───────────────────────────────────────── -->
+  @if (loading()) {
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>{{ 'COMMON.LOADING' | translate }}</p>
+    </div>
+  }
+
+  <!-- ── Error State ─────────────────────────────────────────── -->
+  @if (loadError() && !loading()) {
+    <div class="error-state">
+      <p>{{ 'SITE_MANAGEMENT.LOAD_ERROR' | translate }}</p>
+      <button class="btn-retry" (click)="loadSites()">{{ 'SITE_MANAGEMENT.RETRY' | translate }}</button>
+    </div>
+  }
+
+  <!-- ── Empty State ─────────────────────────────────────────── -->
+  @if (!loading() && !loadError() && filteredSites().length === 0) {
+    <div class="empty-state">
+      <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none"
+        stroke="#ccc" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="2" y1="12" x2="22" y2="12"/>
+        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+      </svg>
+      <p>{{ 'SITE_MANAGEMENT.NO_SITES' | translate }}</p>
+    </div>
+  }
+
+  <!-- ── Sites Grid ──────────────────────────────────────────── -->
+  @if (!loading() && !loadError() && filteredSites().length > 0) {
+    <div class="sites-grid">
+      @for (site of filteredSites(); track site.id) {
+        <div class="site-card">
+          <div class="site-card-header">
+            <h3 class="site-name">{{ site.siteName }}</h3>
+            <div class="site-menu-wrapper">
+              <button
+                class="btn-menu"
+                [id]="'site-menu-' + site.id"
+                (click)="toggleMenu($event, site.id)">
+                <span>•••</span>
+              </button>
+              @if (openMenuId() === site.id) {
+                <div class="site-menu-dropdown">
+                  <button class="menu-item menu-item--edit" (click)="openMenuId.set(null)">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                    </svg>
+                    {{ 'COMMON.EDIT' | translate }}
+                  </button>
+                  <button class="menu-item menu-item--delete" (click)="openDeleteModal($event, site)">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="3 6 5 6 21 6"/>
+                      <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                      <path d="M10 11v6"/><path d="M14 11v6"/>
+                      <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                    </svg>
+                    {{ 'COMMON.DELETE' | translate }}
+                  </button>
+                </div>
+              }
+            </div>
+          </div>
+          <div class="site-card-body">
+            @if (site.address) {
+              <p class="site-address">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none"
+                  stroke="#888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                  <circle cx="12" cy="10" r="3"/>
+                </svg>
+                {{ site.address }}
+              </p>
+            }
+            @if (site.regionName) {
+              <p class="site-region">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none"
+                  stroke="#888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="2" y1="12" x2="22" y2="12"/>
+                  <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                </svg>
+                {{ site.regionName }}
+              </p>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+</div>
+
+<!-- ── Delete Confirmation Modal ───────────────────────────────────────── -->
+@if (showDeleteModal()) {
+  <app-modal
+    size="small"
+    [closeOnBackdrop]="!isDeleting()"
+    [showHeader]="false"
+    [showActions]="false"
+    (closed)="closeDeleteModal()">
+
+    <app-modal-body>
+      <div class="delete-modal-content">
+          <div class="delete-icon-wrapper">
+            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none"
+              stroke="#e53e3e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="3 6 5 6 21 6"/>
+              <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+              <path d="M10 11v6"/><path d="M14 11v6"/>
+              <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+            </svg>
+          </div>
+          <h3 class="delete-title">{{ 'SITE_MANAGEMENT.DELETE_CONFIRM_TITLE' | translate }}</h3>
+          <p class="delete-message">
+            {{ 'SITE_MANAGEMENT.DELETE_CONFIRM_MSG' | translate : { name: deletingSite()?.siteName } }}
+          </p>
+          @if (deleteError()) {
+            <p class="delete-error">{{ deleteError() }}</p>
+          }
+          <div class="delete-actions">
+            <button class="btn-cancel" [disabled]="isDeleting()" (click)="closeDeleteModal()">
+              {{ 'COMMON.CANCEL' | translate }}
+            </button>
+            <button class="btn-delete" [disabled]="isDeleting()" (click)="confirmDelete()">
+              @if (isDeleting()) {
+                <span class="spinner-sm"></span>
+              } @else {
+                {{ 'COMMON.DELETE' | translate }}
+              }
+            </button>
+          </div>
+        </div>
+    </app-modal-body>
+
+  </app-modal>
+}
+
+<!-- ── Success Modal ────────────────────────────────────────────────────── -->
+@if (showSuccessModal()) {
+  <app-modal
+    size="small"
+    [closeOnBackdrop]="true"
+    [showHeader]="false"
+    [showActions]="false"
+    (closed)="confirmSuccess()">
+    
+    <app-modal-body>
+      <div class="success-modal-content">
+          <div class="success-icon-wrapper">
+            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none"
+              stroke="#38a169" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <polyline points="9 12 11 14 15 10"/>
+            </svg>
+          </div>
+          <h3 class="success-title">{{ 'SITE_MANAGEMENT.DELETE_SUCCESS' | translate }}</h3>
+          <button class="btn-ok" (click)="confirmSuccess()">{{ 'COMMON.OK' | translate }}</button>
+      </div>
+    </app-modal-body>
+  </app-modal>
+}

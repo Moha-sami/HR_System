@@ -1,0 +1,402 @@
+<div class="create-page">
+
+  <!-- ── Breadcrumb-style header ────────────────────────────────────────── -->
+  <div class="create-header">
+    <span class="breadcrumb-parent" (click)="onDiscard()">{{ 'SITE_MANAGEMENT.TITLE' | translate }}</span>
+    <span class="breadcrumb-sep">›</span>
+    <span class="breadcrumb-current">{{ 'SITE_MANAGEMENT.CREATE_SITE' | translate }}</span>
+  </div>
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+    <!-- ── Form Body ────────────────────────────────────────────────────── -->
+    <div class="form-body">
+
+      <!-- Site Name -->
+      <div class="field-row">
+        <div class="field-label">
+          <span>{{ 'SITE_MANAGEMENT.SITE_NAME' | translate }}</span>
+          <small class="required-tag">{{ 'SITE_MANAGEMENT.REQUIRED' | translate }}</small>
+        </div>
+        <div class="field-input">
+          <input
+            id="site-name-input"
+            type="text"
+            class="form-control"
+            [class.invalid]="isInvalid('siteName')"
+            formControlName="siteName"
+            [placeholder]="'SITE_MANAGEMENT.SITE_NAME_PLACEHOLDER' | translate"
+          />
+          @if (isInvalid('siteName')) {
+            <small class="error-msg">{{ 'SITE_MANAGEMENT.SITE_NAME_REQUIRED' | translate }}</small>
+          }
+        </div>
+      </div>
+      @if (isInvalid('siteName')) {
+        <div class="validation-alert-full">A site with this name already exists. Please choose a different name.</div>
+      }
+
+      <!-- Region -->
+      <div class="field-row">
+        <div class="field-label">
+          <span>{{ 'SITE_MANAGEMENT.REGION' | translate }}</span>
+          <small class="required-tag">{{ 'SITE_MANAGEMENT.REQUIRED' | translate }}</small>
+        </div>
+        <div class="field-input">
+          <div class="region-dropdown-wrapper" [class.open]="regionDropdownOpen()">
+            <div class="region-trigger" (click)="$event.stopPropagation(); toggleRegionDropdown()">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                stroke="#aaa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+              @if (selectedRegion()) {
+                <span class="selected-region-text">{{ selectedRegion()!.name }}</span>
+              } @else {
+                <input
+                  class="region-search-input"
+                  type="text"
+                  [placeholder]="'SITE_MANAGEMENT.REGION_PLACEHOLDER' | translate"
+                  [ngModel]="regionSearch()"
+                  (ngModelChange)="regionSearch.set($event)"
+                  [ngModelOptions]="{ standalone: true }"
+                  (click)="$event.stopPropagation(); regionDropdownOpen.set(true)"
+                />
+              }
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none"
+                stroke="#aaa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                [style.transform]="regionDropdownOpen() ? 'rotate(180deg)' : 'none'"
+                style="transition: transform 0.2s; flex-shrink: 0;">
+                <polyline points="6 9 12 15 18 9"/>
+              </svg>
+            </div>
+            @if (regionDropdownOpen()) {
+              <div class="region-options">
+                @if (selectedRegion()) {
+                  <div class="region-search-wrap">
+                    <input
+                      type="text"
+                      class="region-search-input-inner"
+                      [placeholder]="'SITE_MANAGEMENT.REGION_PLACEHOLDER' | translate"
+                      [ngModel]="regionSearch()"
+                      (ngModelChange)="regionSearch.set($event)"
+                      [ngModelOptions]="{ standalone: true }"
+                    />
+                  </div>
+                }
+                @for (r of filteredRegions(); track r.id) {
+                  <div class="region-option" (click)="selectRegion(r)">
+                    <span class="region-radio" [class.selected]="selectedRegion()?.id === r.id"></span>
+                    {{ r.name }}
+                  </div>
+                }
+                @if (filteredRegions().length === 0) {
+                  <div class="region-empty">{{ 'SITE_MANAGEMENT.NO_REGIONS' | translate }}</div>
+                }
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+      @if (form.touched && !selectedRegion()) {
+        <div class="validation-alert-full">Region is required</div>
+      }
+
+      <!-- Location / Address -->
+      <div class="field-row">
+        <div class="field-label">
+          <span>{{ 'SITE_MANAGEMENT.LOCATION' | translate }}</span>
+          <small class="required-tag">{{ 'SITE_MANAGEMENT.REQUIRED' | translate }}</small>
+        </div>
+        <div class="field-input">
+          <div class="address-input-wrapper">
+            <input
+              id="site-address-input"
+              type="text"
+              class="form-control"
+              formControlName="address"
+              [placeholder]="'SITE_MANAGEMENT.ADDRESS_PLACEHOLDER' | translate"
+            />
+            <button type="button" class="btn-map" (click)="openMapModal()" id="site-map-btn">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                stroke="#888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/>
+                <line x1="8" y1="2" x2="8" y2="18"/>
+                <line x1="16" y1="6" x2="16" y2="22"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Phone Number -->
+      <div class="field-row">
+        <div class="field-label">
+          <span>{{ 'SITE_MANAGEMENT.PHONE_NUMBER' | translate }}</span>
+        </div>
+        <div class="field-input">
+          <input
+            id="site-phone-input"
+            type="tel"
+            class="form-control"
+            formControlName="phoneNumber"
+            [placeholder]="'SITE_MANAGEMENT.PHONE_PLACEHOLDER' | translate"
+          />
+        </div>
+      </div>
+
+      <!-- MAC Address -->
+      <div class="field-row">
+        <div class="field-label">
+          <span>{{ 'SITE_MANAGEMENT.MAC_ADDRESS' | translate }}</span>
+        </div>
+        <div class="field-input">
+          <input
+            id="site-mac-input"
+            type="text"
+            class="form-control"
+            formControlName="macAddress"
+            [placeholder]="'SITE_MANAGEMENT.MAC_PLACEHOLDER' | translate"
+          />
+        </div>
+      </div>
+
+      <!-- Preferred People -->
+      <div class="field-row">
+        <div class="field-label">
+          <span>Preferred People</span>
+        </div>
+        <div class="field-input">
+          <div class="employee-dropdown-wrapper" [class.open]="employeeDropdownOpen()">
+            <div class="employee-trigger" (click)="$event.stopPropagation(); toggleEmployeeDropdown()">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                stroke="#aaa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+              
+              <div class="selected-employees-pills">
+                @for (emp of selectedEmployees(); track emp.id) {
+                  <span class="employee-pill">
+                    {{ emp.employeeName }}
+                    <button type="button" class="btn-remove-pill" (click)="$event.stopPropagation(); removeEmployee(emp.id)">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                      </svg>
+                    </button>
+                  </span>
+                }
+                <input
+                  class="employee-search-input"
+                  type="text"
+                  placeholder="Search Employee(s)"
+                  [ngModel]="employeeSearch()"
+                  (ngModelChange)="employeeSearch.set($event)"
+                  [ngModelOptions]="{ standalone: true }"
+                  (click)="$event.stopPropagation(); employeeDropdownOpen.set(true)"
+                />
+              </div>
+            </div>
+            
+            @if (employeeDropdownOpen()) {
+              <div class="employee-options">
+                @for (e of filteredEmployees(); track e.id) {
+                  <div class="employee-option" (click)="selectEmployee(e)">
+                    {{ e.employeeName }}
+                  </div>
+                }
+                @if (filteredEmployees().length === 0) {
+                  <div class="employee-empty">No employees found</div>
+                }
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Instructions -->
+      <div class="field-row field-row--top">
+        <div class="field-label">
+          <span>{{ 'SITE_MANAGEMENT.INSTRUCTIONS' | translate }}</span>
+        </div>
+        <div class="field-input">
+          <textarea
+            id="site-instructions-input"
+            class="form-control form-textarea"
+            formControlName="instructions"
+            rows="4"
+            [placeholder]="'SITE_MANAGEMENT.INSTRUCTIONS_PLACEHOLDER' | translate">
+          </textarea>
+        </div>
+      </div>
+
+      <!-- Operational Days & Hours -->
+      <div class="field-row field-row--top">
+        <div class="field-label">
+          <span>{{ 'SITE_MANAGEMENT.OPERATIONAL_HOURS' | translate }}</span>
+          <small class="required-tag">{{ 'SITE_MANAGEMENT.REQUIRED' | translate }}</small>
+        </div>
+        <div class="field-input">
+          <div class="days-list">
+            @for (day of operationalDays(); track day.dayIndex) {
+              <div class="day-row">
+                <label class="day-checkbox-label">
+                  <input
+                    type="checkbox"
+                    [checked]="day.isOpen"
+                    (change)="toggleDay(day.dayIndex)"
+                    [id]="'day-check-' + day.dayIndex"
+                  />
+                  <span class="day-label">{{ day.labelKey | translate }}</span>
+                </label>
+                <div class="time-inputs" [class.disabled]="!day.isOpen">
+                  <span class="time-label-from">{{ 'SITE_MANAGEMENT.FROM' | translate }}</span>
+                  <input
+                    type="time"
+                    class="time-input"
+                    [value]="day.from"
+                    [disabled]="!day.isOpen"
+                    (change)="updateDayTime(day.dayIndex, 'from', $any($event.target).value)"
+                    [id]="'day-from-' + day.dayIndex"
+                  />
+                  <span class="time-label-to">{{ 'SITE_MANAGEMENT.TO' | translate }}</span>
+                  <input
+                    type="time"
+                    class="time-input"
+                    [value]="day.to"
+                    [disabled]="!day.isOpen"
+                    (change)="updateDayTime(day.dayIndex, 'to', $any($event.target).value)"
+                    [id]="'day-to-' + day.dayIndex"
+                  />
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ── Submit Error ─────────────────────────────────────────────────── -->
+    @if (submitError()) {
+      <div class="submit-error">{{ submitError() }}</div>
+    }
+
+    <!-- ── Footer Actions ──────────────────────────────────────────────── -->
+    <div class="form-footer">
+      <button type="button" class="btn-discard" (click)="onDiscard()">
+        {{ 'SITE_MANAGEMENT.DISCARD' | translate }}
+      </button>
+      <button type="submit" class="btn-submit" [disabled]="isSubmitting()" id="site-submit-btn">
+        @if (isSubmitting()) {
+          <span class="spinner-sm"></span>
+        } @else {
+          {{ 'SITE_MANAGEMENT.SUBMIT' | translate }}
+        }
+      </button>
+    </div>
+
+  </form>
+</div>
+
+<!-- ─────────────────────────────────────────────────────────────────────────── -->
+<!-- MAP MODAL                                                                   -->
+<!-- HOW IT WORKS: Uses Leaflet.js (open-source) with OpenStreetMap tiles.      -->
+<!-- No API key needed. Free geocoding via Nominatim API.                        -->
+<!-- ─────────────────────────────────────────────────────────────────────────── -->
+@if (showMapModal()) {
+  <app-modal
+    size="large"
+    [closeOnBackdrop]="true"
+    [showHeader]="false"
+    [showActions]="false"
+    (closed)="closeMapModal()">
+
+    <app-modal-body>
+      <div class="map-modal-content">
+          <h3 class="map-modal-title">{{ 'SITE_MANAGEMENT.MAP_TITLE' | translate }}</h3>
+
+          <!-- Search Address -->
+          <div class="map-search-row">
+            <label class="map-search-label">{{ 'SITE_MANAGEMENT.MAP_SEARCH_LABEL' | translate }}</label>
+            <div class="map-search-input-wrapper">
+              <input
+                type="text"
+                class="map-search-input"
+                id="map-search-input"
+                [placeholder]="'SITE_MANAGEMENT.MAP_SEARCH_PLACEHOLDER' | translate"
+                [ngModel]="mapSearchAddress()"
+                (ngModelChange)="mapSearchAddress.set($event)"
+                [ngModelOptions]="{ standalone: true }"
+                (keyup.enter)="searchMapAddress()"
+              />
+              <button type="button" class="btn-map-search" (click)="searchMapAddress()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/>
+                  <line x1="8" y1="2" x2="8" y2="18"/>
+                  <line x1="16" y1="6" x2="16" y2="22"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Leaflet Map Container -->
+          <div id="leaflet-map-container" class="leaflet-map"></div>
+
+          <!-- Selected Location Display -->
+          <div class="map-selected-row">
+            <label class="map-selected-label">{{ 'SITE_MANAGEMENT.MAP_SELECTED_LABEL' | translate }}</label>
+            <div class="map-selected-value">
+              {{ mapSelectedAddress() || ('SITE_MANAGEMENT.MAP_NO_LOCATION' | translate) }}
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="map-actions">
+            <button type="button" class="btn-map-cancel" (click)="closeMapModal()">
+              {{ 'COMMON.CANCEL' | translate }}
+            </button>
+            <button type="button" class="btn-map-confirm" (click)="confirmMapLocation()" id="map-confirm-btn">
+              {{ 'SITE_MANAGEMENT.MAP_CONFIRM' | translate }}
+            </button>
+          </div>
+
+          <!-- Explanation note -->
+          <p class="map-info-note">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none"
+              stroke="#888" stroke-width="2"><circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            {{ 'SITE_MANAGEMENT.MAP_INFO' | translate }}
+          </p>
+        </div>
+    </app-modal-body>
+
+  </app-modal>
+}
+
+<!-- ── Success Modal ─────────────────────────────────────────────────────── -->
+@if (showSuccessModal()) {
+  <app-modal
+    size="small"
+    [closeOnBackdrop]="true"
+    [showHeader]="false"
+    [showActions]="false"
+    (closed)="confirmSuccess()">
+    
+    <app-modal-body>
+      <div class="success-modal-content">
+          <div class="success-icon-wrapper">
+            <svg xmlns="http://www.w3.org/2000/svg" width="52" height="52" viewBox="0 0 24 24" fill="none"
+              stroke="#38a169" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <polyline points="9 12 11 14 15 10"/>
+            </svg>
+          </div>
+          <h3 class="success-title">
+            {{ 'SITE_MANAGEMENT.CREATE_SUCCESS' | translate : { name: createdSiteName() } }}
+          </h3>
+          <button class="btn-ok" (click)="confirmSuccess()">{{ 'COMMON.OK' | translate }}</button>
+      </div>
+    </app-modal-body>
+  </app-modal>
+}
