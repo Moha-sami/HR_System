@@ -1,0 +1,42 @@
+{
+  "stryker-config": {
+    "project-info": {
+      "name": "github.com/Moha-sami/HR_System",
+      "module": "Buy2.Domain.Tests",
+      "version": "main"
+    },
+    "reporters": [
+      "json",
+      "html",
+      "dashboard"
+    ],
+    "dashboard": {
+      "compare-dashboard-result": true,
+      "fallback-version": "main"
+    },
+    "baseline": {
+      "provider": "dashboard",
+      "fallback-version": "main"
+    },
+    "mutation-level": "Advanced",
+    "coverage-analysis": "PerTest",
+    "since": {
+      "target": "main",
+      "enabled-by-default": false
+    },
+    "project": "Buy2.Domain.Tests.csproj",
+    "test-projects": [
+      "../Buy2.Domain.Tests/Buy2.Domain.Tests.csproj"
+    ],
+    "output-path": "../../StrykerOutput",
+    "threshold": {
+      "high": 100,
+      "low": 95,
+      "break": 95
+    },
+    "ignore-mutations": [
+      "string",
+      "logical"
+    ]
+  }
+}
