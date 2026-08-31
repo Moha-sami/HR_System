@@ -10,6 +10,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
+import { Router } from '@angular/router';
 import { TableComponent, type ColumnDef } from '@app/shared/components/table/table.component';
 import { ButtonComponent } from '@app/shared/components/button/button.component';
 import { EmployeeDetailService } from '../../../../services/employee-detail.service';
@@ -28,6 +29,7 @@ import type {
 export class ViolationsTabComponent {
   private readonly employeeDetailService = inject(EmployeeDetailService);
   private readonly translate = inject(TranslateService);
+  readonly router = inject(Router);
 
   @ViewChild('dateTemplate') dateTemplate!: TemplateRef<any>;
   @ViewChild('descriptionTemplate') descriptionTemplate!: TemplateRef<any>;

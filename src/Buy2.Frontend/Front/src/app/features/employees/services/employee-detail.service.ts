@@ -14,7 +14,12 @@ import type {
   UpdatePayrollProfileDto,
 } from '../models/view-employee/employee-payroll';
 import type { AttendanceCalendarDto } from '../models/view-employee/employee-attendance';
-import type { ViolationDto, ViolationFilters } from '../models/view-employee/employee-violations';
+import type {
+  ViolationDto,
+  ViolationFilters,
+  ViolationDetailDto,
+  ResolveViolationDto,
+} from '../models/view-employee/employee-violations';
 
 const API_BASE = environment.baseUrl;
 
@@ -36,6 +41,11 @@ export class EmployeeDetailService {
   readonly violations = signal<readonly ViolationDto[]>([]);
   readonly violationsLoading = signal(false);
   readonly violationsError = signal<string | null>(null);
+
+  // Violation detail store
+  readonly violationDetail = signal<ViolationDetailDto | null>(null);
+  readonly violationDetailLoading = signal(false);
+  readonly violationDetailError = signal<string | null>(null);
 
   // Profile API
   getEmployeeProfile(id: number): Observable<EmployeeProfileDto> {
@@ -68,6 +78,23 @@ export class EmployeeDetailService {
     return this.http.get<readonly ViolationDto[]>(`${API_BASE}/employees/${id}/violations`, {
       params,
     });
+  }
+
+  getViolationDetail(employeeId: number, violationId: number): Observable<ViolationDetailDto> {
+    return this.http.get<ViolationDetailDto>(
+      `${API_BASE}/employees/${employeeId}/violations/${violationId}`,
+    );
+  }
+
+  resolveViolation(
+    employeeId: number,
+    violationId: number,
+    dto: ResolveViolationDto,
+  ): Observable<void> {
+    return this.http.patch<void>(
+      `${API_BASE}/employees/${employeeId}/violations/${violationId}/resolve`,
+      dto,
+    );
   }
 
   exportViolations(id: number, filters: ViolationFilters = {}): Observable<Blob> {
@@ -151,6 +178,30 @@ export class EmployeeDetailService {
     });
   }
 
+  loadViolationDetail(employeeId: number, violationId: number): void {
+    this.violationDetailLoading.set(true);
+    this.violationDetailError.set(null);
+
+    this.getViolationDetail(employeeId, violationId).subscribe({
+      next: (data) => {
+        this.violationDetail.set(data);
+        this.violationDetailLoading.set(false);
+      },
+      error: () => {
+        this.violationDetailError.set('EMPLOYEE_DETAIL.VIOLATIONS.DETAIL.LOAD_FAILED');
+        this.violationDetailLoading.set(false);
+      },
+    });
+  }
+
+  resolveViolationAction(
+    employeeId: number,
+    violationId: number,
+    dto: ResolveViolationDto,
+  ): Observable<void> {
+    return this.resolveViolation(employeeId, violationId, dto);
+  }
+
   clearDetailEmployee(): void {
     this.detailEmployee.set(null);
     this.detailLoading.set(false);
@@ -167,6 +218,12 @@ export class EmployeeDetailService {
     this.violations.set([]);
     this.violationsLoading.set(false);
     this.violationsError.set(null);
+  }
+
+  clearViolationDetail(): void {
+    this.violationDetail.set(null);
+    this.violationDetailLoading.set(false);
+    this.violationDetailError.set(null);
   }
 
   updateDetailEmployee(partial: Partial<EmployeeProfileDto>): void {

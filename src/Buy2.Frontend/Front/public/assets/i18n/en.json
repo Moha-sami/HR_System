@@ -127,6 +127,7 @@
     "OK": "OK",
     "YES": "Yes",
     "NO": "No",
+    "BACK": "Back",
     "LOADING": "Loading...",
     "ERROR": "Error",
     "SUCCESS": "Success",
@@ -417,7 +418,30 @@
       },
       "EMPTY_TITLE": "No Violations",
       "EMPTY_MESSAGE": "No violations found for this employee.",
-      "LOAD_FAILED": "Failed to load violations. Please try again."
+      "LOAD_FAILED": "Failed to load violations. Please try again.",
+      "DETAIL": {
+        "TITLE": "Violation Details",
+        "SUBTITLE": "Violation",
+        "TYPE": "Type",
+        "SEVERITY": "Severity",
+        "DESCRIPTION": "Description",
+        "REPORTED_BY": "Reported By",
+        "DATE": "Date",
+        "WITNESSES": "Witnesses",
+        "DOCUMENT": "Document",
+        "VIEW_DOCUMENT": "View Document",
+        "ACTION_TAKEN": "Action Taken",
+        "ACTION_TYPE": "Action Type",
+        "ACTION_DATE": "Action Date",
+        "ACTION_TAKEN_BY": "Action Taken By",
+        "ACTION_DESCRIPTION": "Action Description",
+        "RESOLVE_FORM": "Resolve Violation",
+        "ACTION_TAKEN_BY_ID": "Action Taken By (Employee ID)",
+        "ALREADY_RESOLVED": "This violation has been resolved",
+        "LOAD_FAILED": "Failed to load violation details. Please try again.",
+        "RESOLVE_FAILED": "Failed to resolve violation. Please try again.",
+        "VIOLATION_RESOLVE_FAILED": "Failed to resolve violation. Please try again."
+      }
     }
   }
 }

@@ -1,0 +1,329 @@
+@if (loading()) {
+  <!-- Loading State -->
+  <div class="flex items-center justify-center min-h-[400px]">
+    <svg class="animate-spin h-10 w-10 text-primary-600" viewBox="0 0 24 24">
+      <circle
+        class="opacity-25"
+        cx="12"
+        cy="12"
+        r="10"
+        stroke="currentColor"
+        stroke-width="4"
+        fill="none"
+      ></circle>
+      <path
+        class="opacity-75"
+        fill="currentColor"
+        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+      ></path>
+    </svg>
+  </div>
+} @else if (error(); as errorKey) {
+  <!-- Error State -->
+  <div class="text-center py-16">
+    <svg
+      class="mx-auto h-16 w-16 text-red-400"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
+        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+      ></path>
+    </svg>
+    <p class="mt-4 text-red-600">{{ errorKey | translate }}</p>
+    <app-button variant="secondary" (clicked)="goBack()" class="mt-4">
+      {{ 'COMMON.BACK' | translate }}
+    </app-button>
+  </div>
+} @else if (violation(); as v) {
+  <!-- Violation Detail Page -->
+  <div class="max-w-4xl mx-auto space-y-6">
+    <!-- Header with Back Button -->
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <app-button variant="ghost" size="sm" (clicked)="goBack()">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M15 19l-7-7 7-7"
+            ></path>
+          </svg>
+        </app-button>
+        <div>
+          <h1 class="text-2xl font-bold text-gray-900">
+            {{ 'EMPLOYEE_DETAIL.VIOLATIONS.DETAIL.TITLE' | translate }}
+          </h1>
+          <p class="text-gray-500 text-sm">
+            {{ 'EMPLOYEE_DETAIL.VIOLATIONS.DETAIL.SUBTITLE' | translate }} #{{ v.id }}
+          </p>
+        </div>
+      </div>
+      <span class="inline-flex px-3 py-1 text-sm font-medium rounded-full" [class]="statusClass()">
+        {{ 'EMPLOYEE_DETAIL.VIOLATIONS.STATUS.' + v.status.toUpperCase() | translate }}
+      </span>
+    </div>
+
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+      <div class="p-6 space-y-6">
+        <!-- Type & Severity Row -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label class="block text-xs font-medium text-gray-500 mb-1">
+              {{ 'EMPLOYEE_DETAIL.VIOLATIONS.DETAIL.TYPE' | translate }}
+            </label>
+            <p class="text-gray-900 font-medium">{{ v.violationType }}</p>
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-gray-500 mb-1">
+              {{ 'EMPLOYEE_DETAIL.VIOLATIONS.DETAIL.SEVERITY' | translate }}
+            </label>
+            <span
+              class="inline-flex px-3 py-1 text-sm font-medium rounded-full"
+              [class]="severityClass()"
+            >
+              {{ 'EMPLOYEE_DETAIL.VIOLATIONS.SEVERITY.' + v.severity.toUpperCase() | translate }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Description -->
+        <div>
+          <label class="block text-xs font-medium text-gray-500 mb-1">
+            {{ 'EMPLOYEE_DETAIL.VIOLATIONS.DETAIL.DESCRIPTION' | translate }}
+          </label>
+          <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+            <p class="text-gray-900 whitespace-pre-wrap">{{ v.description }}</p>
+          </div>
+        </div>
+
+        <!-- Reported By & Date -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label class="block text-xs font-medium text-gray-500 mb-1">
+              {{ 'EMPLOYEE_DETAIL.VIOLATIONS.DETAIL.REPORTED_BY' | translate }}
+            </label>
+            <p class="text-gray-900">{{ v.reportedByName }}</p>
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-gray-500 mb-1">
+              {{ 'EMPLOYEE_DETAIL.VIOLATIONS.DETAIL.DATE' | translate }}
+            </label>
+            <p class="text-gray-900">{{ formatDate(v.createdAt) }}</p>
+          </div>
+        </div>
+
+        <!-- Witnesses -->
+        @if (v.witnesses && v.witnesses.length > 0) {
+          <div>
+            <label class="block text-xs font-medium text-gray-500 mb-1">
+              {{ 'EMPLOYEE_DETAIL.VIOLATIONS.DETAIL.WITNESSES' | translate }}
+            </label>
+            <ul
+              class="list-disc list-inside text-gray-900 space-y-1 bg-gray-50 p-4 rounded-lg border border-gray-200"
+            >
+              @for (witness of v.witnesses; track witness) {
+                <li>{{ witness }}</li>
+              }
+            </ul>
+          </div>
+        }
+
+        <!-- Document -->
+        @if (v.documentUrl) {
+          <div>
+            <label class="block text-xs font-medium text-gray-500 mb-1">
+              {{ 'EMPLOYEE_DETAIL.VIOLATIONS.DETAIL.DOCUMENT' | translate }}
+            </label>
+            <a
+              [href]="v.documentUrl"
+              target="_blank"
+              class="inline-flex items-center gap-2 text-primary-600 hover:text-primary-700 font-medium"
+            >
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                ></path>
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                ></path>
+              </svg>
+              {{ 'EMPLOYEE_DETAIL.VIOLATIONS.DETAIL.VIEW_DOCUMENT' | translate }}
+            </a>
+          </div>
+        }
+
+        <!-- Action Detail (if resolved) -->
+        @if (v.actionDetail) {
+          <div class="bg-blue-50 rounded-lg p-6 border border-blue-200">
+            <h3 class="text-lg font-semibold text-blue-900 mb-4">
+              {{ 'EMPLOYEE_DETAIL.VIOLATIONS.DETAIL.ACTION_TAKEN' | translate }}
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+              @if (v.actionDetail.actionType) {
+                <div>
+                  <label class="text-xs font-medium text-blue-700">
+                    {{ 'EMPLOYEE_DETAIL.VIOLATIONS.DETAIL.ACTION_TYPE' | translate }}
+                  </label>
+                  <p class="text-blue-900">{{ v.actionDetail.actionType }}</p>
+                </div>
+              }
+              @if (v.actionDetail.actionDate) {
+                <div>
+                  <label class="text-xs font-medium text-blue-700">
+                    {{ 'EMPLOYEE_DETAIL.VIOLATIONS.DETAIL.ACTION_DATE' | translate }}
+                  </label>
+                  <p class="text-blue-900">{{ formatDate(v.actionDetail.actionDate!) }}</p>
+                </div>
+              }
+              @if (v.actionDetail.actionTakenByName) {
+                <div class="md:col-span-2">
+                  <label class="text-xs font-medium text-blue-700">
+                    {{ 'EMPLOYEE_DETAIL.VIOLATIONS.DETAIL.ACTION_TAKEN_BY' | translate }}
+                  </label>
+                  <p class="text-blue-900">{{ v.actionDetail.actionTakenByName }}</p>
+                </div>
+              }
+              @if (v.actionDetail.actionDescription) {
+                <div class="md:col-span-2">
+                  <label class="text-xs font-medium text-blue-700">
+                    {{ 'EMPLOYEE_DETAIL.VIOLATIONS.DETAIL.ACTION_DESCRIPTION' | translate }}
+                  </label>
+                  <p class="text-blue-900 whitespace-pre-wrap">
+                    {{ v.actionDetail.actionDescription }}
+                  </p>
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Resolve Form (only if not resolved) -->
+      @if (canResolve()) {
+        <div class="border-t border-gray-200 bg-gray-50 px-6 py-6">
+          <h2 class="text-lg font-semibold text-gray-900 mb-4">
+            {{ 'EMPLOYEE_DETAIL.VIOLATIONS.DETAIL.RESOLVE_FORM' | translate }}
+          </h2>
+
+          @if (resolveError(); as resolveErrorKey) {
+            <div class="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+              {{ resolveErrorKey | translate }}
+            </div>
+          }
+
+          <form (ngSubmit)="onResolve()" class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="md:col-span-2">
+                <label class="block text-xs font-medium text-gray-700 mb-1">
+                  {{ 'EMPLOYEE_DETAIL.VIOLATIONS.DETAIL.ACTION_TYPE' | translate }}
+                  <span class="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  [(ngModel)]="actionType"
+                  name="actionType"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  required
+                />
+              </div>
+
+              <div class="md:col-span-2">
+                <label class="block text-xs font-medium text-gray-700 mb-1">
+                  {{ 'EMPLOYEE_DETAIL.VIOLATIONS.DETAIL.ACTION_DESCRIPTION' | translate }}
+                  <span class="text-red-500">*</span>
+                </label>
+                <textarea
+                  [(ngModel)]="actionDescription"
+                  name="actionDescription"
+                  rows="3"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  required
+                ></textarea>
+              </div>
+
+              <div>
+                <label class="block text-xs font-medium text-gray-700 mb-1">
+                  {{ 'EMPLOYEE_DETAIL.VIOLATIONS.DETAIL.ACTION_DATE' | translate }}
+                </label>
+                <input
+                  type="datetime-local"
+                  [(ngModel)]="actionDate"
+                  name="actionDate"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                />
+              </div>
+
+              <div>
+                <label class="block text-xs font-medium text-gray-700 mb-1">
+                  {{ 'EMPLOYEE_DETAIL.VIOLATIONS.DETAIL.ACTION_TAKEN_BY_ID' | translate }}
+                </label>
+                <input
+                  type="number"
+                  [(ngModel)]="actionTakenById"
+                  name="actionTakenById"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  placeholder="Employee ID"
+                />
+              </div>
+            </div>
+
+            <div class="flex justify-end gap-3 pt-2">
+              <app-button variant="secondary" type="button" (clicked)="resolving.set(false)">
+                {{ 'COMMON.CANCEL' | translate }}
+              </app-button>
+              <app-button variant="primary" type="submit" [loading]="resolving()">
+                {{ 'EMPLOYEE_DETAIL.VIOLATIONS.ACTIONS.RESOLVE' | translate }}
+              </app-button>
+            </div>
+          </form>
+        </div>
+      }
+
+      <!-- Resolved message -->
+      @if (!canResolve() && v.status.toLowerCase() === 'resolved') {
+        <div class="border-t border-gray-200 bg-green-50 px-6 py-6">
+          <div class="flex items-center gap-3 text-green-800">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+              ></path>
+            </svg>
+            <span class="font-medium">
+              {{ 'EMPLOYEE_DETAIL.VIOLATIONS.DETAIL.ALREADY_RESOLVED' | translate }}
+            </span>
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- Back Button at bottom -->
+    <div class="flex justify-start">
+      <app-button variant="secondary" (clicked)="goBack()">
+        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M15 19l-7-7 7-7"
+          ></path>
+        </svg>
+        {{ 'COMMON.BACK' | translate }}
+      </app-button>
+    </div>
+  </div>
+}

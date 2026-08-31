@@ -184,14 +184,14 @@
 
       <ng-template #actionsTemplate let-row="$implicit">
         <div class="flex items-center justify-center gap-2">
-          <app-button variant="primary-light" size="sm" class="whitespace-nowrap">
+          <app-button
+            variant="primary-light"
+            size="sm"
+            class="whitespace-nowrap"
+            (clicked)="router.navigate(['/employees', employee()?.id, 'violations', row.id])"
+          >
             {{ 'EMPLOYEE_DETAIL.VIOLATIONS.ACTIONS.VIEW' | translate }}
           </app-button>
-          @if (row.status.toLowerCase() !== 'resolved') {
-            <app-button variant="primary" size="sm" class="whitespace-nowrap">
-              {{ 'EMPLOYEE_DETAIL.VIOLATIONS.ACTIONS.RESOLVE' | translate }}
-            </app-button>
-          }
         </div>
       </ng-template>
     </div>
