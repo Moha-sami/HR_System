@@ -45,4 +45,6 @@ Extractor/
 report.json
 StrykerOutput/
 
-
+# Local pipeline tooling — never commit to GitHub
+docs/PIPELINE.md
+**/stryker-config.json
