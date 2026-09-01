@@ -83,30 +83,15 @@
     }
   ],
   "regions": [
-    {
-      "id": "1",
-      "name": "Cairo"
-    },
-    {
-      "id": "2",
-      "name": "Riyadh"
-    },
-    {
-      "id": "3",
-      "name": "Jeddah"
-    },
-    {
-      "id": "4",
-      "name": "Alexandria"
-    },
-    {
-      "id": "5",
-      "name": "Giza"
-    }
+    { "id": 1, "name": "Cairo" },
+    { "id": 2, "name": "Riyadh" },
+    { "id": 3, "name": "Jeddah" },
+    { "id": 4, "name": "Alexandria" },
+    { "id": 5, "name": "Giza" }
   ],
   "sites": [
     {
-      "id": "1",
+      "id": 1,
       "siteName": "Downtown Campus",
       "address": "Sheikh Zayed, Giza",
       "regionId": 5,
@@ -118,7 +103,7 @@
       "createdAt": "2026-01-01T08:00:00Z"
     },
     {
-      "id": "2",
+      "id": 2,
       "siteName": "5th Settlement Branch",
       "address": "5th Settlement, Cairo",
       "regionId": 1,
@@ -130,7 +115,7 @@
       "createdAt": "2026-01-01T08:00:00Z"
     },
     {
-      "id": "3",
+      "id": 3,
       "siteName": "Nasr City Hub",
       "address": "Nasr City, Cairo",
       "regionId": 1,
@@ -629,22 +614,10 @@
     }
   ],
   "rewardCategories": [
-    {
-      "id": "1",
-      "name": "Coupon Codes"
-    },
-    {
-      "id": "2",
-      "name": "Gift Cards"
-    },
-    {
-      "id": "3",
-      "name": "Experience"
-    },
-    {
-      "id": "4",
-      "name": "Merchandise"
-    }
+    { "id": "1", "name": "Coupon Codes" },
+    { "id": "2", "name": "Gift Cards" },
+    { "id": "3", "name": "Experience" },
+    { "id": "4", "name": "Merchandise" }
   ],
   "rewardItems": [
     {
@@ -654,7 +627,7 @@
       "category": "Coupon Codes",
       "imageUrl": "https://placehold.co/80x80/FF5A00/ffffff?text=T",
       "cost": 400,
-      "price": 60.77,
+      "price": 60.76,
       "pointsValue": 2000,
       "howToRedeem": "Show the voucher code at checkout.",
       "termsOfUse": "Valid for one use. Cannot be combined with other offers.",
@@ -858,6 +831,5 @@
         "onTimeBonus": 1000
       }
     }
-  ],
-  "$schema": "./node_modules/json-server/schema.json"
+  ]
 }

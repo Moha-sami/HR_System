@@ -119,10 +119,10 @@ export const routes: Routes = [
       // ──────────────────────────────────────────────────────────────────────
       // §7 — Rewards & Inventory Management
       // ──────────────────────────────────────────────────────────────────────
-      // {
-      //   path: 'rewards',
-      //   loadChildren: () => import('./features/rewards/rewards.routes').then(m => m.REWARDS_ROUTES)
-      // },
+      {
+        path: 'rewards',
+        loadChildren: () => import('./features/rewards/rewards.routes').then(m => m.REWARDS_ROUTES)
+      },
 
       // ──────────────────────────────────────────────────────────────────────
       // RBAC — Role-Based Access Control
