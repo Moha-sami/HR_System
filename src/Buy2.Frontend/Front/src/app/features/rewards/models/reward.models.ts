@@ -35,3 +35,33 @@ export interface RewardRedemption {
 export interface RewardListRow extends RewardItem {
   redemptionCount: number;
 }
+
+export type InventoryStatus = 'Available' | 'Redeemed';
+
+export interface RewardInventoryItem {
+  id: string;
+  rewardItemId: string | number;
+  batchId: string;
+  fileName: string;
+  voucherCode: string;
+  status: InventoryStatus;
+  createdAt: string;
+  redeemedAt: string | null;
+  employeeId: string | number | null;
+}
+
+export type CreateInventoryDto = Omit<RewardInventoryItem, 'id'>;
+
+export interface EmployeeName {
+  id: string;
+  firstName: string;
+  lastName: string;
+}
+
+export interface UploadBatchPreview {
+  clientId: string;
+  batchId: string;
+  fileName: string;
+  codes: string[];
+  selected: boolean;
+}

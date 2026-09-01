@@ -1,0 +1,73 @@
+<div class="view-page">
+  <div class="page-crumb">
+    <a routerLink="/rewards">{{ 'REWARD_MANAGEMENT.TITLE' | translate }}</a>
+    <span class="crumb-sep">›</span>
+    <span>{{ 'REWARD_MANAGEMENT.VIEW_TITLE' | translate }}</span>
+  </div>
+
+  @if (ctx.loading()) {
+    <p class="state-msg">{{ 'COMMON.LOADING' | translate }}</p>
+  } @else if (ctx.loadError()) {
+    <p class="state-msg error">{{ 'REWARD_MANAGEMENT.LOAD_ONE_ERROR' | translate }}</p>
+  } @else if (ctx.reward(); as reward) {
+    <div class="reward-header">
+      <div class="reward-identity">
+        @if (reward.imageUrl) {
+          <img class="reward-logo" [src]="reward.imageUrl" [alt]="reward.name" />
+        }
+        <div>
+          <h1 class="reward-name">{{ reward.name }}</h1>
+          <p class="reward-desc">{{ reward.description }}</p>
+        </div>
+      </div>
+      <label class="enable-toggle">
+        <span>{{ 'REWARD_MANAGEMENT.ENABLE' | translate }}</span>
+        <input
+          type="checkbox"
+          [checked]="ctx.isEnabled()"
+          [disabled]="ctx.toggling()"
+          (change)="ctx.toggleEnabled()"
+        />
+      </label>
+    </div>
+
+    <div class="metric-row">
+      <div class="metric-card">
+        <span class="metric-label">{{ 'REWARD_MANAGEMENT.METRIC_REDEMPTION' | translate }}</span>
+        <span class="metric-value">{{ ctx.redemptionCount() }}</span>
+      </div>
+      <div class="metric-card">
+        <span class="metric-label">{{ 'REWARD_MANAGEMENT.METRIC_AVAILABILITY' | translate }}</span>
+        <span class="metric-value metric-value--accent">{{ ctx.availableCount() }} / {{ ctx.totalCount() }}</span>
+      </div>
+      <div class="metric-card">
+        <span class="metric-label">{{ 'REWARD_MANAGEMENT.METRIC_COST' | translate }}</span>
+        <span class="metric-value">${{ reward.cost }}</span>
+      </div>
+      <div class="metric-card">
+        <span class="metric-label">{{ 'REWARD_MANAGEMENT.METRIC_TOP' | translate }}</span>
+        <span class="metric-value">{{ ctx.topRedeemed() }}</span>
+      </div>
+      <div class="metric-card">
+        <span class="metric-label">{{ 'REWARD_MANAGEMENT.METRIC_POINTS' | translate }}</span>
+        <span class="metric-value">{{ reward.pointsValue }}</span>
+      </div>
+    </div>
+
+    <nav class="tabs">
+      <a
+        class="tab"
+        routerLink="information"
+        routerLinkActive="tab--active"
+        [routerLinkActiveOptions]="{ exact: true }"
+      >
+        {{ 'REWARD_MANAGEMENT.TAB_INFORMATION' | translate }}
+      </a>
+      <a class="tab" routerLink="inventory" routerLinkActive="tab--active">
+        {{ 'REWARD_MANAGEMENT.TAB_INVENTORY' | translate }}
+      </a>
+    </nav>
+
+    <router-outlet />
+  }
+</div>

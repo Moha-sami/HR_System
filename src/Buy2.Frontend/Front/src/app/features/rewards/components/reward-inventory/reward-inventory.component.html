@@ -1,0 +1,176 @@
+<section class="inventory-tab">
+  <div class="toolbar">
+    <label class="select-all">
+      <input
+        type="checkbox"
+        [checked]="allFilteredSelected()"
+        (change)="toggleAll($any($event.target).checked)"
+      />
+    </label>
+    <div class="search-wrap">
+      <input
+        type="text"
+        [placeholder]="'REWARD_MANAGEMENT.INVENTORY_SEARCH' | translate"
+        [ngModel]="search()"
+        (ngModelChange)="search.set($event)"
+      />
+    </div>
+    <select [ngModel]="statusFilter()" (ngModelChange)="statusFilter.set($event)">
+      <option value="">{{ 'REWARD_MANAGEMENT.FILTER_STATUS' | translate }}</option>
+      <option value="Available">{{ 'REWARD_MANAGEMENT.STATUS_AVAILABLE' | translate }}</option>
+      <option value="Redeemed">{{ 'REWARD_MANAGEMENT.STATUS_REDEEMED' | translate }}</option>
+    </select>
+    <input
+      type="date"
+      [ngModel]="createdDate()"
+      (ngModelChange)="createdDate.set($event)"
+      [attr.aria-label]="'REWARD_MANAGEMENT.COL_CREATED' | translate"
+    />
+    <input id="inventory-file-input" type="file" hidden multiple accept=".csv,.xlsx,.xls" (change)="onFileSelected($event)" />
+    <button type="button" class="btn-upload" (click)="triggerFilePicker()">
+      {{ 'REWARD_MANAGEMENT.UPLOAD_EXCEL' | translate }}
+    </button>
+  </div>
+
+  <app-table
+    [columns]="columns()"
+    [rows]="filteredRows()"
+    [cellTemplates]="cellTemplates()"
+    [emptyMessage]="'REWARD_MANAGEMENT.NO_CODES' | translate"
+  />
+
+  <div class="table-footer">
+    <button
+      type="button"
+      class="btn-delete-selected"
+      [disabled]="!selectedIds().size"
+      (click)="openDeleteConfirm()"
+    >
+      {{ 'REWARD_MANAGEMENT.DELETE_SELECTED' | translate }}
+    </button>
+  </div>
+</section>
+
+<ng-template #checkTemplate let-row>
+  <input
+    type="checkbox"
+    [checked]="isSelected(row.id)"
+    (change)="toggleRow(row.id, $any($event.target).checked); $event.stopPropagation()"
+    (click)="$event.stopPropagation()"
+  />
+</ng-template>
+
+<ng-template #statusTemplate let-row>
+  <span class="status-badge" [class.status-badge--available]="row.status === 'Available'">
+    {{
+      (row.status === 'Available' ? 'REWARD_MANAGEMENT.STATUS_AVAILABLE' : 'REWARD_MANAGEMENT.STATUS_REDEEMED')
+        | translate
+    }}
+  </span>
+</ng-template>
+
+<ng-template #createdTemplate let-row>
+  {{ formatCreated(row.createdAt) }}
+</ng-template>
+
+@if (showTypeError()) {
+  <app-modal size="small" [showHeader]="false" [showActions]="false" (closed)="closeTypeError()">
+    <app-modal-body>
+      <div class="warn-modal">
+        <div class="warn-icon">!</div>
+        <h3>{{ 'REWARD_MANAGEMENT.UPLOAD_PROBLEM' | translate }}</h3>
+        <p>{{ 'REWARD_MANAGEMENT.WRONG_FILE_TYPE' | translate }}</p>
+        <div class="modal-actions">
+          <button type="button" class="btn-text" (click)="closeTypeError()">{{ 'COMMON.CANCEL' | translate }}</button>
+          <button type="button" class="btn-primary" (click)="tryAgainUpload()">
+            {{ 'REWARD_MANAGEMENT.TRY_AGAIN' | translate }}
+          </button>
+        </div>
+      </div>
+    </app-modal-body>
+  </app-modal>
+}
+
+@if (showUploadPreview()) {
+  <app-modal size="large" [showHeader]="false" [showActions]="false" (closed)="closeUploadPreview()">
+    <app-modal-body>
+      <div class="preview-modal">
+        <h3>{{ 'REWARD_MANAGEMENT.UPLOAD_CONFIRM' | translate }}</h3>
+        <table class="preview-table">
+          <thead>
+            <tr>
+              <th></th>
+              <th>{{ 'REWARD_MANAGEMENT.COL_BATCH' | translate }}</th>
+              <th>{{ 'REWARD_MANAGEMENT.COL_FILE' | translate }}</th>
+              <th>{{ 'REWARD_MANAGEMENT.COL_IMPORTED' | translate }}</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (batch of batches(); track batch.clientId) {
+              <tr>
+                <td>
+                  <input
+                    type="checkbox"
+                    [checked]="batch.selected"
+                    (change)="toggleBatch(batch.clientId, $any($event.target).checked)"
+                  />
+                </td>
+                <td>{{ batch.batchId }}</td>
+                <td>{{ batch.fileName }}</td>
+                <td>{{ batch.codes.length }}</td>
+                <td>
+                  <button type="button" class="icon-del" (click)="removeBatch(batch.clientId)">✕</button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+        @if (uploadError()) {
+          <p class="error-text">{{ uploadError() }}</p>
+        }
+        <div class="preview-footer">
+          <button type="button" class="btn-add" (click)="triggerFilePicker()">
+            {{ 'REWARD_MANAGEMENT.ADD_MORE_FILES' | translate }}
+          </button>
+          <div class="modal-actions">
+            <button type="button" class="btn-text" (click)="closeUploadPreview()">{{ 'COMMON.CANCEL' | translate }}</button>
+            <button type="button" class="btn-primary" [disabled]="isUploading()" (click)="submitUpload()">
+              {{ 'REWARD_MANAGEMENT.SUBMIT' | translate }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </app-modal-body>
+  </app-modal>
+}
+
+@if (showDeleteConfirm()) {
+  <app-modal size="small" [showHeader]="false" [showActions]="false" [closeOnBackdrop]="!isDeleting()" (closed)="closeDeleteConfirm()">
+    <app-modal-body>
+      <div class="warn-modal">
+        <div class="warn-icon">!</div>
+        <h3>{{ 'REWARD_MANAGEMENT.DELETE_CODES_CONFIRM' | translate }}</h3>
+        <div class="modal-actions">
+          <button type="button" class="btn-text" [disabled]="isDeleting()" (click)="closeDeleteConfirm()">
+            {{ 'COMMON.CANCEL' | translate }}
+          </button>
+          <button type="button" class="btn-danger" [disabled]="isDeleting()" (click)="confirmDelete()">
+            {{ 'COMMON.DELETE' | translate }}
+          </button>
+        </div>
+      </div>
+    </app-modal-body>
+  </app-modal>
+}
+
+@if (showDeleteSuccess()) {
+  <app-modal size="small" [showHeader]="false" [showActions]="false" (closed)="closeDeleteSuccess()">
+    <app-modal-body>
+      <div class="success-modal">
+        <div class="success-icon">✓</div>
+        <h3>{{ 'REWARD_MANAGEMENT.DELETE_CODES_SUCCESS' | translate }}</h3>
+      </div>
+    </app-modal-body>
+  </app-modal>
+}
