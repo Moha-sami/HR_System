@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { RoleService } from './role.service';
-import type { Role } from '../models/role';
+import type { RoleListItem, RoleDetails, CreateRoleInput } from '../models/role';
 import { environment } from '../../../../environments/environment';
 
 const ROLES_URL = `${environment.baseUrl}/roles`;
@@ -23,17 +23,41 @@ describe('RoleService', () => {
     httpMock.verify();
   });
 
-  function sampleRoles(): Role[] {
+  function sampleRoles(): RoleListItem[] {
     return [
-      { id: 10, roleName: 'Admin', permissions: ['employee.add'] },
-      { id: 11, roleName: 'Viewer', permissions: [] },
+      {
+        id: 10,
+        name: 'Admin',
+        description: null,
+        assignedEmployeesCount: 0,
+        isSystemRole: true,
+        isActive: true,
+        createdAt: '2026-01-01T00:00:00Z',
+        permissionsSummary: ['employee.add'],
+      },
+      {
+        id: 11,
+        name: 'Viewer',
+        description: null,
+        assignedEmployeesCount: 0,
+        isSystemRole: false,
+        isActive: true,
+        createdAt: '2026-01-01T00:00:00Z',
+        permissionsSummary: [],
+      },
     ];
   }
 
-  function flushRoles(roles: Role[]): void {
+  function flushRoles(roles: RoleListItem[]): void {
     const req = httpMock.expectOne(ROLES_URL);
     expect(req.request.method).toBe('GET');
-    req.flush(roles);
+    req.flush({
+      items: roles,
+      totalCount: roles.length,
+      pageNumber: 1,
+      pageSize: 10,
+      totalPages: 1,
+    });
   }
 
   it('should be created', () => {
@@ -51,7 +75,6 @@ describe('RoleService', () => {
 
       expect(service.roles()).toEqual(sampleRoles());
       expect(service.loading()).toBe(false);
-      expect(service.mockMode()).toBe(false);
       expect(service.error()).toBeNull();
     });
 
@@ -62,7 +85,6 @@ describe('RoleService', () => {
       req.flush({ message: 'Not Found' }, { status: 404, statusText: 'Not Found' });
 
       expect(service.roles().length).toBeGreaterThan(0);
-      expect(service.mockMode()).toBe(true);
       expect(service.loading()).toBe(false);
       // catchError absorbs the 404 into the mock fallback, so the user-facing
       // error signal stays null — the mock itself is the recovery.
@@ -75,7 +97,6 @@ describe('RoleService', () => {
       const req = httpMock.expectOne(ROLES_URL);
       req.error(new ProgressEvent('error'));
 
-      expect(service.mockMode()).toBe(true);
       expect(service.loading()).toBe(false);
       expect(service.roles().length).toBeGreaterThan(0);
     });
@@ -85,16 +106,30 @@ describe('RoleService', () => {
       service.loadAll();
 
       const req = httpMock.expectOne(ROLES_URL);
-      req.flush([]);
+      req.flush({ items: [], totalCount: 0, pageNumber: 1, pageSize: 10, totalPages: 1 });
     });
   });
 
   describe('create', () => {
-    it('should POST {roleName, permissions} and append to signal', () => {
-      const input = { roleName: 'New Role', permissions: ['employee.add', 'site.edit'] };
-      const responseBody: Role = { id: 99, ...input };
+    it('should POST {name, permissions} and append to signal', () => {
+      const input: CreateRoleInput = {
+        name: 'New Role',
+        description: null,
+        permissions: [{ module: 'employee', actions: ['add'], scope: null }],
+      };
+      const responseBody: RoleDetails = {
+        id: 99,
+        name: 'New Role',
+        description: null,
+        isSystemRole: false,
+        isActive: true,
+        assignedEmployeesCount: 0,
+        createdAt: '2026-01-01T00:00:00Z',
+        updatedAt: null,
+        permissions: [{ module: 'employee', actions: ['add'], scope: null }],
+      };
 
-      let created: Role | null = null;
+      let created: RoleDetails | null = null;
       service.create(input).subscribe((role) => {
         created = role;
       });
@@ -105,11 +140,13 @@ describe('RoleService', () => {
       req.flush(responseBody);
 
       expect(created).toEqual(responseBody);
+      // The service converts RoleDetails to RoleListItem when appending to signal
       expect(service.roles().map((r) => r.id)).toContain(99);
+      expect(service.roles().find((r) => r.id === 99)?.permissionsSummary).toContain('employee');
     });
 
     it('should propagate server errors', () => {
-      const input = { roleName: 'Bad', permissions: [] };
+      const input: CreateRoleInput = { name: 'Bad', description: null, permissions: [] };
       let error: unknown = null;
 
       service.create(input).subscribe({ error: (err) => (error = err) });
@@ -125,8 +162,26 @@ describe('RoleService', () => {
     it('should DELETE :id and remove from signal', () => {
       service.loadAll();
       flushRoles([
-        { id: 1, roleName: 'A', permissions: [] },
-        { id: 2, roleName: 'B', permissions: [] },
+        {
+          id: 1,
+          name: 'A',
+          description: null,
+          assignedEmployeesCount: 0,
+          isSystemRole: false,
+          isActive: true,
+          createdAt: '2026-01-01T00:00:00Z',
+          permissionsSummary: [],
+        },
+        {
+          id: 2,
+          name: 'B',
+          description: null,
+          assignedEmployeesCount: 0,
+          isSystemRole: false,
+          isActive: true,
+          createdAt: '2026-01-01T00:00:00Z',
+          permissionsSummary: [],
+        },
       ]);
       expect(service.roles().length).toBe(2);
 
@@ -144,13 +199,14 @@ describe('RoleService', () => {
 
   describe('update', () => {
     it('should throw because backend PUT is not implemented yet', () => {
-      expect(() => service.update(1, { roleName: 'X', permissions: [] })).toThrowError(
-        /UpdateRole endpoint is not implemented/,
-      );
+      expect(() =>
+        service.update(1, { name: 'X', description: null, permissions: [] }),
+      ).toThrowError(/UpdateRole endpoint is not implemented/);
     });
 
     it('should include role id and name in the thrown error', () => {
-      const call = () => service.update(42, { roleName: 'Facilitator', permissions: [] });
+      const call = () =>
+        service.update(42, { name: 'Facilitator', description: null, permissions: [] });
       expect(call).toThrowError(/id=42/);
       expect(call).toThrowError(/Facilitator/);
     });

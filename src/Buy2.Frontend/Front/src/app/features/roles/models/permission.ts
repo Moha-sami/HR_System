@@ -1,14 +1,13 @@
 /**
  * Declarative UI config for the 6 permission groups shown in the Create / Edit forms.
  * Source: Figma frames 6377:104558 + 6380:105823.
- *
- * Each toggle pill's wire-format key is `${group.id}.${toggle}` (e.g. `employee.add`).
- * Access sub-sections emit `${scope}.access.type.${type}` and `${scope}.group.${id}`.
+ * Aligned with backend API format: ModulePermissionDto[]
  */
+
 export interface PermissionGroup {
   readonly id: GroupId;
   readonly title: string;
-  readonly toggles: readonly string[];
+  readonly actions: readonly string[];
   /** Sub-section for groups that scope access hierarchically (employee, site). */
   readonly access?: AccessSubsection;
 }
@@ -25,7 +24,7 @@ export const PERMISSION_GROUPS: readonly PermissionGroup[] = [
   {
     id: 'employee',
     title: 'Employee Management',
-    toggles: ['add', 'edit', 'delete', 'suspend', 'admin_access'],
+    actions: ['add', 'edit', 'delete', 'suspend', 'admin_access'],
     access: {
       scope: 'employee',
       types: ['all', 'department', 'region', 'sites', 'teams'],
@@ -35,12 +34,12 @@ export const PERMISSION_GROUPS: readonly PermissionGroup[] = [
   {
     id: 'job',
     title: 'Job Management',
-    toggles: ['add', 'edit', 'delete'],
+    actions: ['add', 'edit', 'delete'],
   },
   {
     id: 'site',
     title: 'Site Management',
-    toggles: ['add', 'edit', 'delete', 'shifts'],
+    actions: ['add', 'edit', 'delete', 'shifts'],
     access: {
       scope: 'site',
       types: ['all', 'region', 'specific'],
@@ -50,16 +49,16 @@ export const PERMISSION_GROUPS: readonly PermissionGroup[] = [
   {
     id: 'points',
     title: 'Points Management',
-    toggles: ['add_transaction', 'automation', 'view_transactions'],
+    actions: ['add_transaction', 'automation', 'view_transactions'],
   },
   {
     id: 'notifications',
     title: 'Notifications Management',
-    toggles: ['send'],
+    actions: ['send'],
   },
   {
     id: 'rewards',
     title: 'Reward Management',
-    toggles: ['add', 'edit', 'delete', 'inventory'],
+    actions: ['add', 'edit', 'delete', 'inventory'],
   },
 ] as const;
