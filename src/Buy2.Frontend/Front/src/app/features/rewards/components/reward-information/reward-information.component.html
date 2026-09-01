@@ -1,0 +1,56 @@
+<section class="info-tab">
+  <div class="chart-card">
+    <div class="chart-head">
+      <div>
+        <h2>{{ 'REWARD_MANAGEMENT.REDEMPTION_RATE' | translate }}</h2>
+        <p>{{ 'REWARD_MANAGEMENT.TOTAL_REDEEMED' | translate }} {{ totalInRange() }}</p>
+      </div>
+      <div class="period-wrap">
+        <button type="button" class="period-btn" (click)="periodOpen.set(!periodOpen())">
+          ‹ {{ periodLabel() }} ›
+        </button>
+        @if (periodOpen()) {
+          <div class="period-menu">
+            <button type="button" (click)="selectPeriod('7d')">{{ 'REWARD_MANAGEMENT.PERIOD_7D' | translate }}</button>
+            <button type="button" (click)="selectPeriod('30d')">{{ 'REWARD_MANAGEMENT.PERIOD_30D' | translate }}</button>
+            <button type="button" (click)="selectPeriod('month')">{{ 'REWARD_MANAGEMENT.PERIOD_MONTH' | translate }}</button>
+            <button type="button" (click)="selectPeriod('year')">{{ 'REWARD_MANAGEMENT.PERIOD_YEAR' | translate }}</button>
+            <button type="button" (click)="selectPeriod('custom')">{{ 'REWARD_MANAGEMENT.PERIOD_CUSTOM' | translate }}</button>
+            @if (period() === 'custom') {
+              <div class="custom-range">
+                <input type="date" [ngModel]="customFrom()" (ngModelChange)="customFrom.set($event)" />
+                <input type="date" [ngModel]="customTo()" (ngModelChange)="customTo.set($event)" />
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </div>
+    <div class="chart">
+      @for (bar of chartBars(); track bar.label) {
+        <div class="chart-col">
+          <div class="bar" [style.height.%]="(bar.value / maxBar()) * 100">
+            @if (bar.value) {
+              <span class="bar-value">{{ bar.value }}</span>
+            }
+          </div>
+          <span class="bar-label">{{ bar.label }}</span>
+        </div>
+      }
+    </div>
+  </div>
+
+  <div class="tx-card">
+    <h2>{{ 'REWARD_MANAGEMENT.TRANSACTIONS' | translate }}</h2>
+    <app-table
+      [columns]="columns()"
+      [rows]="transactionRows()"
+      [cellTemplates]="cellTemplates()"
+      [emptyMessage]="'REWARD_MANAGEMENT.NO_TRANSACTIONS' | translate"
+    />
+  </div>
+</section>
+
+<ng-template #codeTemplate let-row>
+  {{ row.voucherCode }}
+</ng-template>

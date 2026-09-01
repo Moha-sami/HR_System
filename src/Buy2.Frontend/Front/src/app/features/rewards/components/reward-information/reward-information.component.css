@@ -1,0 +1,124 @@
+.info-tab {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.chart-card,
+.tx-card {
+  background: #fff;
+  border: 1px solid #e8ecf4;
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.chart-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.chart-head h2,
+.tx-card h2 {
+  margin: 0 0 4px;
+  font-size: 1.05rem;
+  color: #1a1a2e;
+}
+
+.chart-head p {
+  margin: 0;
+  color: #6b7280;
+  font-size: 0.82rem;
+}
+
+.period-wrap {
+  position: relative;
+}
+
+.period-btn {
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  border-radius: 8px;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.period-menu {
+  position: absolute;
+  right: 0;
+  top: 36px;
+  z-index: 20;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  min-width: 180px;
+  padding: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.period-menu button {
+  border: none;
+  background: transparent;
+  text-align: left;
+  padding: 8px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.period-menu button:hover {
+  background: #f3f4f6;
+}
+
+.custom-range {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 6px 4px 0;
+}
+
+.chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  height: 180px;
+  padding-top: 12px;
+}
+
+.chart-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.bar {
+  width: 28px;
+  min-height: 4px;
+  background: #234199;
+  border-radius: 6px 6px 0 0;
+  position: relative;
+}
+
+.bar-value {
+  position: absolute;
+  top: -18px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.7rem;
+  color: #234199;
+  font-weight: 600;
+}
+
+.bar-label {
+  font-size: 0.72rem;
+  color: #6b7280;
+  white-space: nowrap;
+}

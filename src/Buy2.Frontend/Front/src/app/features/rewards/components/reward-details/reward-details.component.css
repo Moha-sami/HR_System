@@ -1,0 +1,150 @@
+.view-page {
+  padding: 8px 8px 32px;
+}
+
+.page-crumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  margin-bottom: 20px;
+}
+
+.page-crumb a {
+  color: #234199;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.page-crumb a:hover {
+  text-decoration: underline;
+}
+
+.crumb-sep {
+  color: #aaa;
+}
+
+.state-msg {
+  padding: 24px;
+  color: #666;
+}
+
+.state-msg.error {
+  color: #e53e3e;
+}
+
+.reward-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 24px;
+  margin-bottom: 20px;
+}
+
+.reward-identity {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.reward-logo {
+  width: 56px;
+  height: 56px;
+  border-radius: 10px;
+  object-fit: cover;
+}
+
+.reward-name {
+  margin: 0 0 6px;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #1a1a2e;
+}
+
+.reward-desc {
+  margin: 0;
+  max-width: 640px;
+  color: #6b7280;
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+.enable-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+  color: #1a1a2e;
+  white-space: nowrap;
+}
+
+.enable-toggle input {
+  width: 42px;
+  height: 22px;
+  accent-color: #234199;
+  cursor: pointer;
+}
+
+.metric-row {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.metric-card {
+  background: #fff;
+  border: 1px solid #e8ecf4;
+  border-radius: 12px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.metric-label {
+  font-size: 0.78rem;
+  color: #6b7280;
+}
+
+.metric-value {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #234199;
+}
+
+.metric-value--accent {
+  color: #234199;
+}
+
+.tabs {
+  display: flex;
+  border-bottom: 1px solid #e5e7eb;
+  margin-bottom: 20px;
+}
+
+.tab {
+  flex: 1;
+  text-align: center;
+  padding: 12px 8px;
+  font-size: 0.9rem;
+  color: #6b7280;
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+}
+
+.tab--active {
+  color: #1a1a2e;
+  font-weight: 600;
+  border-bottom-color: #1a1a2e;
+}
+
+@media (max-width: 960px) {
+  .metric-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .reward-header {
+    flex-direction: column;
+  }
+}
