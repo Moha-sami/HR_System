@@ -49,7 +49,19 @@
       "PERMISSIONS_COUNT": "{{count}} permissions",
       "EDIT": "Edit",
       "DELETE": "Delete",
-      "DELETE_CONFIRM": "Delete role \"{{name}}\"?"
+      "DELETE_CONFIRM": "Delete role \"{{name}}\"?",
+      "REASSIGN_TITLE": "Reassign Employees Before Deleting",
+      "REASSIGN_MESSAGE": "The role \"{{roleName}}\" has assigned employees. Please reassign them to other roles before deleting.",
+      "SYSTEM_ROLE_WARNING": "This is a system role. It cannot be deleted directly.",
+      "NO_EMPLOYEES_TO_REASSIGN": "No employees need reassignment.",
+      "DEFAULT_NEW_ROLE": "Default New Role for All Employees",
+      "SELECT_DEFAULT_ROLE": "Select a default role",
+      "EMPLOYEE_CODE": "Employee Code",
+      "EMPLOYEE_NAME": "Employee Name",
+      "CURRENT_ROLE": "Current Role",
+      "NEW_ROLE": "New Role",
+      "SELECT_ROLE": "Select a role",
+      "REASSIGN_AND_DELETE": "Reassign and Delete"
     },
     "CREATE": {
       "TITLE": "Create Role",
@@ -62,7 +74,8 @@
       "SAVE": "Save",
       "SUCCESS_TITLE": "Role Created",
       "SUCCESS_MESSAGE": "The role has been created successfully.",
-      "SUCCESS_OK": "OK"
+      "SUCCESS_OK": "OK",
+      "IS_ACTIVE_LABEL": "Active"
     },
     "EDIT": {
       "TITLE": "Edit Role",
@@ -113,10 +126,12 @@
       "SITES": "Sites",
       "TEAMS": "Teams",
       "SPECIFIC": "Specific",
-      "CHOOSE_GROUPS": "Choose Groups"
+      "CHOOSE_GROUPS": "Choose Groups",
+      "SELECT_GROUPS": "Select Groups"
     }
   },
   "COMMON": {
+    "NO_OPTIONS": "No options available",
     "DISCARD": "Discard",
     "SAVE": "Save",
     "CANCEL": "Cancel",

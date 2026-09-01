@@ -2,7 +2,7 @@ import { type ComponentFixture, TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
 import { RoleListComponent } from './role-list.component';
 import { RoleService } from '../services/role.service';
-import { MOCK_ROLES } from '../services/role.service';
+import { MOCK_ROLES } from '../models/role';
 
 class MockRoleService {
   roles = vi.fn().mockReturnValue(MOCK_ROLES);

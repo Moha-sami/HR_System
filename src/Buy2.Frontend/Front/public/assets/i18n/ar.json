@@ -1,7 +1,10 @@
 {
   "LAYOUT": {
     "LOGOUT": "تسجيل الخروج",
-    "LANGUAGE": { "ENGLISH": "الإنجليزية", "ARABIC": "العربية" },
+    "LANGUAGE": {
+      "ENGLISH": "الإنجليزية",
+      "ARABIC": "العربية"
+    },
     "NAV": {
       "DASHBOARD": "لوحة التحكم",
       "EMPLOYEE_MANAGEMENT": "إدارة الموظفين",
@@ -46,7 +49,19 @@
       "PERMISSIONS_COUNT": "{{count}} صلاحية",
       "EDIT": "تعديل",
       "DELETE": "حذف",
-      "DELETE_CONFIRM": "حذف الدور \"{{name}}\"؟"
+      "DELETE_CONFIRM": "حذف الدور \"{{name}}\"؟",
+      "REASSIGN_TITLE": "إعادة تعيين الموظفين قبل الحذف",
+      "REASSIGN_MESSAGE": "الدور \"{{roleName}}\" لديه موظفون معينون. يرجى إعادة تعيينهم إلى أدوار أخرى قبل الحذف.",
+      "SYSTEM_ROLE_WARNING": "هذا دور نظام. لا يمكن حذفه مباشرة.",
+      "NO_EMPLOYEES_TO_REASSIGN": "لا يوجد موظفون بحاجة لإعادة التعيين.",
+      "DEFAULT_NEW_ROLE": "الدور الجديد الافتراضي لجميع الموظفين",
+      "SELECT_DEFAULT_ROLE": "اختر دورًا افتراضيًا",
+      "EMPLOYEE_CODE": "كود الموظف",
+      "EMPLOYEE_NAME": "اسم الموظف",
+      "CURRENT_ROLE": "الدور الحالي",
+      "NEW_ROLE": "الدور الجديد",
+      "SELECT_ROLE": "اختر دورًا",
+      "REASSIGN_AND_DELETE": "إعادة التعيين والحذف"
     },
     "CREATE": {
       "TITLE": "إنشاء دور",
@@ -59,7 +74,8 @@
       "SAVE": "حفظ",
       "SUCCESS_TITLE": "تم إنشاء الدور",
       "SUCCESS_MESSAGE": "تم إنشاء الدور بنجاح.",
-      "SUCCESS_OK": "موافق"
+      "SUCCESS_OK": "موافق",
+      "IS_ACTIVE_LABEL": "نشط"
     },
     "EDIT": {
       "TITLE": "تعديل دور",
@@ -110,10 +126,12 @@
       "SITES": "المواقع",
       "TEAMS": "الفرق",
       "SPECIFIC": "محدد",
-      "CHOOSE_GROUPS": "اختيار المجموعات"
+      "CHOOSE_GROUPS": "اختيار المجموعات",
+      "SELECT_GROUPS": "اختيار المجموعات"
     }
   },
   "COMMON": {
+    "NO_OPTIONS": "لا توجد خيارات متاحة",
     "DISCARD": "إلغاء",
     "SAVE": "حفظ",
     "CANCEL": "إلغاء",

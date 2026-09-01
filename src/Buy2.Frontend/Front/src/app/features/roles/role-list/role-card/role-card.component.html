@@ -5,7 +5,7 @@
   <div class="flex justify-between items-start">
     <div class="flex-1 min-w-0">
       <h3 class="font-semibold text-[#1E1E1E] text-base leading-tight truncate">
-        {{ role.roleName }}
+        {{ role.name }}
       </h3>
       <p class="text-xs text-[#868686] mt-1">
         {{ 'ROLES.CARD.PERMISSIONS_COUNT' | translate: { count: permissionCount } }}
@@ -56,3 +56,12 @@
     </div>
   </div>
 </div>
+
+@if (showReassignModal) {
+  <app-role-reassign-modal
+    [impact]="deletionImpact!"
+    [availableRoles]="availableRoles"
+    (confirm)="onReassignConfirm($event)"
+    (cancel)="onReassignCancel()"
+  />
+}

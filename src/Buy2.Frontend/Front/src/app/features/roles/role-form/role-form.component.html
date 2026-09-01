@@ -1,0 +1,184 @@
+<div class="role-form p-6">
+  <h1 class="text-2xl font-semibold mb-6">{{ prefix + '.TITLE' | translate }}</h1>
+
+  @if (loading()) {
+    <div class="flex justify-center py-8">
+      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+    </div>
+  } @else {
+    <form (ngSubmit)="onSubmit()" class="space-y-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label for="roleName" class="block text-sm font-medium text-gray-700 mb-1">{{
+            prefix + '.ROLE_NAME_LABEL' | translate
+          }}</label>
+          <input
+            id="roleName"
+            [(ngModel)]="roleName"
+            name="roleName"
+            type="text"
+            class="w-full px-4 py-[13px] border border-gray-300 rounded-[6px] bg-[rgba(217,217,217,0.23)] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            required
+            [placeholder]="'ROLES.CREATE.ROLE_NAME_PLACEHOLDER' | translate"
+          />
+        </div>
+        <div>
+          <label for="description" class="block text-sm font-medium text-gray-700 mb-1">{{
+            prefix + '.DESCRIPTION_LABEL' | translate
+          }}</label>
+          <textarea
+            id="description"
+            [(ngModel)]="description"
+            name="description"
+            rows="3"
+            class="w-full px-4 py-[13px] border border-[#D0D0D0] rounded-[6px] bg-[rgba(217,217,217,0.23)] text-[#1E1E1E] placeholder-[#868686] focus:outline-none focus:ring-2 focus:ring-[#234199] focus:border-[#234199] transition-colors resize-none"
+            [placeholder]="'ROLES.CREATE.DESCRIPTION_PLACEHOLDER' | translate"
+          ></textarea>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              [(ngModel)]="isActive"
+              name="isActive"
+              class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+            />
+            <span class="text-sm text-gray-700">{{
+              'ROLES.CREATE.IS_ACTIVE_LABEL' | translate
+            }}</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="permissions-section">
+        <div
+          class="flex items-center justify-between px-4 py-[16px] border-b border-[#E9EAF3] mb-4"
+        >
+          <h2 class="text-[19px] font-semibold text-black">
+            {{ prefix + '.PERMISSIONS_TITLE' | translate }}
+          </h2>
+        </div>
+        @for (group of PERMISSION_GROUPS; track group.id) {
+          <div class="mb-6 px-4">
+            <h3 class="text-[19px] font-semibold text-black mb-2">
+              {{ 'PERMISSIONS.GROUPS.' + group.id.toUpperCase() + '_MANAGEMENT' | translate }}
+            </h3>
+            <div class="flex flex-wrap gap-2 items-center mb-3">
+              @for (action of group.actions; track action) {
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    [checked]="isActionEnabled(group.id, action)"
+                    (change)="toggleAction(group.id, action)"
+                    class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                  />
+                  <span class="text-sm text-gray-700">{{
+                    'PERMISSIONS.TOGGLES.' + action.toUpperCase() | translate
+                  }}</span>
+                </label>
+              }
+            </div>
+            @if (group.access) {
+              <div class="access-type-section mt-3 pt-3 border-t border-gray-200">
+                <label class="text-sm text-gray-600 mr-2">
+                  {{ 'PERMISSIONS.ACCESS_TYPES.LABEL' | translate }}
+                </label>
+                @for (type of group.access.types; track type) {
+                  <button
+                    type="button"
+                    class="px-4 py-2 rounded-[6px] text-sm font-medium transition-colors border mr-2 mb-2"
+                    [class.bg-blue-600]="getAccessType(group.id) === type"
+                    [class.text-white]="getAccessType(group.id) === type"
+                    [class.border-blue-600]="getAccessType(group.id) === type"
+                    [class.bg-transparent]="getAccessType(group.id) !== type"
+                    [class.text-gray-700]="getAccessType(group.id) !== type"
+                    [class.border-gray-300]="getAccessType(group.id) !== type"
+                    (click)="onAccessTypeChange(group, type)"
+                  >
+                    {{ 'PERMISSIONS.ACCESS_TYPES.' + type.toUpperCase() | translate }}
+                  </button>
+                }
+                @if (group.access.types.includes('all') && getAccessType(group.id) !== 'all') {
+                  <div class="mt-2">
+                    <label class="block text-sm text-gray-600 mb-1">
+                      {{ 'PERMISSIONS.ACCESS_TYPES.SELECT_GROUPS' | translate }}:
+                    </label>
+                    <app-dropdown
+                      [options]="getScopeOptions(group, getAccessType(group.id) ?? 'all')"
+                      [mode]="'multiple'"
+                      [placeholder]="'PERMISSIONS.ACCESS_TYPES.CHOOSE_GROUPS' | translate"
+                      [selectedValue]="getScopeTargetIds(group.id)"
+                      (selectionChange)="onScopeChange(group, $event)"
+                      [disabled]="loadingRefData"
+                    />
+                    @if (getSelectedScopeNames(group).length > 0) {
+                      <span class="mt-1 text-xs text-gray-500">
+                        {{ getSelectedScopeNames(group).join(', ') }}
+                      </span>
+                    }
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      <div class="flex justify-end gap-3 pt-4 border-t border-[#E9EAF3]">
+        <button
+          type="button"
+          class="px-4 py-2 border border-gray-300 rounded-[6px] text-sm font-medium text-gray-700 hover:bg-gray-50"
+          (click)="onDiscard()"
+        >
+          {{ 'COMMON.DISCARD' | translate }}
+        </button>
+        <button
+          type="submit"
+          class="px-4 py-2 bg-blue-600 text-white rounded-[6px] text-sm font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          [disabled]="!roleName"
+        >
+          {{ prefix + '.' + submitText | translate }}
+        </button>
+      </div>
+    </form>
+  }
+</div>
+
+@if (showSuccessModal()) {
+  <app-modal
+    size="small"
+    (closed)="onSuccessClose()"
+    [closeOnBackdrop]="false"
+    [closeOnEscape]="false"
+  >
+    <app-modal-header>
+      <h3 class="text-lg font-semibold text-[#1E1E1E]">
+        {{ prefix + '.' + successTitle | translate }}
+      </h3>
+    </app-modal-header>
+    <app-modal-body>
+      <div class="text-center">
+        <div
+          class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100 mb-4"
+        >
+          <svg class="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M5 13l4 4L19 7"
+            />
+          </svg>
+        </div>
+        <p class="text-[#868686]">{{ prefix + '.' + successMessage | translate }}</p>
+      </div>
+    </app-modal-body>
+    <app-modal-footer>
+      <app-button variant="primary" (clicked)="onSuccessClose()">{{
+        prefix + '.' + successOk | translate
+      }}</app-button>
+    </app-modal-footer>
+  </app-modal>
+}

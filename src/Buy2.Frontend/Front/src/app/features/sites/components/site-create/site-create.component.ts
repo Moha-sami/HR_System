@@ -18,7 +18,6 @@ import { Subject, takeUntil } from 'rxjs';
 import { SiteService, type EmployeeListItemDto } from '../../services/site.service';
 import { ModalComponent } from '@app/shared/components/modal/modal.component';
 import { ModalBodyComponent } from '@app/shared/components/modal/modal-body.component';
-import { ModalFooterComponent } from '@app/shared/components/modal/modal-footer.component';
 import type { RegionDto, SiteOperationalHourDto } from '../../models/site.models';
 
 // Day index: 0=Sunday 1=Mon 2=Tue 3=Wed 4=Thu 5=Fri 6=Sat
@@ -42,7 +41,6 @@ export interface DayHour {
     TranslatePipe,
     ModalComponent,
     ModalBodyComponent,
-    ModalFooterComponent,
   ],
   templateUrl: './site-create.component.html',
   styleUrl: './site-create.component.css',
