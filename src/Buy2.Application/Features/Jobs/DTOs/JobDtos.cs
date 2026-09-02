@@ -59,11 +59,7 @@ public record JobPaginatedResponseDto<T>(
 
 public record AffectedEmployeeDto(
     int Id,
-    string EmployeeCode,
-    string FullName,
-    string Email,
-    string SiteName,
-    string? ProfilePhotoUrl
+    string FullName
 );
 
 public record JobDeletionImpactDto(
@@ -74,8 +70,15 @@ public record JobDeletionImpactDto(
     List<AffectedEmployeeDto> AffectedEmployees
 );
 
+public record EmployeeJobReassignmentDto(
+    int EmployeeId,
+    int NewJobId
+);
+
 public record ReassignEmployeesAndDeleteJobDto(
-    int? ReplacementJobId
+    int? DefaultReplacementJobId = null,
+    List<EmployeeJobReassignmentDto>? Reassignments = null,
+    int? ReplacementJobId = null
 );
 
 public record ReassignAndDeleteJobResponseDto(

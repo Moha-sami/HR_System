@@ -892,6 +892,66 @@ Authorization: Bearer <jwt-token>
 }
 ```
 
+### `GET /api/v1/jobs/export`
+- **Authorization**: `[Authorize(Roles = "HRAdmin,Admin,Manager,HR,SuperAdmin")]`
+- **Controller**: `JobsController`
+- **Query Parameters**:
+  - `searchTerm` (string, optional) - Filters by title or department name substring.
+  - `departmentId` (int, optional) - Filters by department ID.
+  - `seniorityLevel` (string, optional) - Filters by seniority level (`Junior`, `MidLevel`, `Senior`, `Lead`, `Manager`, `Director`).
+  - `workModel` (string, optional) - Filters by attendance type (`Hybrid`, `OnSite`, `Remote`).
+  - `isActive` (bool, optional) - Filters active or inactive job roles.
+  - `sortBy` (string, optional) - Column to sort on (`title`, `department`, `createdat`).
+  - `sortDir` (string, optional) - Sort direction (`asc`, `desc`, default: `desc`).
+- **Description**: Exports filtered job roles as a UTF-8 BOM CSV file (`jobs.csv`) for Microsoft Excel compatibility.
+- **CSV Columns**:
+  - `Job Title`
+  - `Department`
+  - `Seniority Level`
+  - `Work Model`
+  - `Experience (Years)`
+  - `Assigned Employees`
+  - `Status` (`Active` / `Inactive`)
+  - `Created Date` (`yyyy-MM-dd`)
+- **Response**: `200 OK` with binary `text/csv` file download.
+
+### `GET /api/v1/jobs/{id}/deletion-impact`
+- **Authorization**: `[Authorize(Roles = "HRAdmin,Admin,SuperAdmin")]`
+- **Controller**: `JobsController`
+- **Path Parameters**:
+  - `id` (int, required) - Unique ID of the job role.
+- **Description**: High-performance deletion check endpoint. Directly projects SQL query into lightweight DTO containing only `id` and `fullName` of assigned active employees, computing whether the job role can be deleted directly without reassignment.
+- **Responses**:
+  - `200 OK` with `JobDeletionImpactDto`:
+    - `jobId` (int) - ID of the target job role.
+    - `jobTitle` (string) - Display title of the job role.
+    - `assignedEmployeesCount` (int) - Total count of assigned active employees.
+    - `canDeleteDirectly` (bool) - `true` if `assignedEmployeesCount == 0`.
+    - `affectedEmployees` (array of `AffectedEmployeeDto`):
+      - `id` (int) - Employee ID.
+      - `fullName` (string) - Trimmed employee full name.
+  - `404 Not Found` if job role with specified `id` does not exist.
+
+### `POST /api/v1/jobs/{id}/reassign-and-delete`
+- **Authorization**: `[Authorize(Roles = "HRAdmin,Admin,SuperAdmin")]`
+- **Controller**: `JobsController`
+- **Path Parameters**:
+  - `id` (int, required) - Unique ID of the job role to delete.
+- **Request Body** (`application/json`, `ReassignEmployeesAndDeleteJobDto`):
+  - `defaultReplacementJobId` (int, optional) - Fallback replacement job ID for all unmapped employees.
+  - `reassignments` (array of `EmployeeJobReassignmentDto`, optional):
+    - `employeeId` (int, required) - Specific employee ID to reassign.
+    - `newJobId` (int, required) - Destination replacement job ID.
+  - `replacementJobId` (int, optional) - Legacy alias for `defaultReplacementJobId`.
+- **Description**: Reassigns active employees to specified new job roles (or fallback default replacement job) and soft-deletes the target job role.
+- **Responses**:
+  - `200 OK` with `ReassignAndDeleteJobResponseDto`:
+    - `message` (string) - Confirmation message.
+    - `reassignedCount` (int) - Total number of reassigned employees.
+    - `deletedJobId` (int) - ID of the deleted job role.
+  - `400 Bad Request` if replacement job equals target job ID, or unassigned employees remain without a replacement.
+  - `404 Not Found` if target job or any replacement job does not exist.
+
 ---
 
 ## 9. Site Management (`/api/v1/sites`) [SCRUM-229, SCRUM-230, SCRUM-232, SCRUM-233]

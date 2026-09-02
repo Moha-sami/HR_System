@@ -212,7 +212,7 @@ public class JobDeletionSafeguardTests
 
         var affected = result.AffectedEmployees.First();
         Assert.Equal("E F", affected.FullName);
-        Assert.Equal(string.Empty, affected.SiteName);
+        Assert.Equal(emp.Id, affected.Id);
     }
 
         [Fact]

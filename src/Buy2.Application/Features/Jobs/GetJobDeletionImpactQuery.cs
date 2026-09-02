@@ -26,18 +26,21 @@ public class GetJobDeletionImpactQueryHandler : IRequestHandler<GetJobDeletionIm
 
     public async Task<JobDeletionImpactDto> Handle(GetJobDeletionImpactQuery request, CancellationToken cancellationToken)
     {
-        var job = await _jobRepository.Query(true)
-            .FirstOrDefaultAsync(j => j.Id == request.JobId, cancellationToken);
+        var job = await _jobRepository.Query(false)
+            .Where(j => j.Id == request.JobId)
+            .Select(j => new { j.Id, j.Title })
+            .FirstOrDefaultAsync(cancellationToken);
 
         if (job == null)
             throw new KeyNotFoundException($"Job with ID {request.JobId} not found.");
 
-        var activeEmployees = await _employeeRepository.Query(true)
+        var affected = await _employeeRepository.Query(false)
             .Where(e => e.JobRoleId == request.JobId && e.IsActive && !e.IsDeleted)
+            .Select(e => new AffectedEmployeeDto(
+                e.Id,
+                (e.FirstName != null && e.LastName != null ? e.FirstName.Trim() + " " + e.LastName.Trim() : (e.FirstName ?? e.LastName ?? string.Empty).Trim()).Trim()
+            ))
             .ToListAsync(cancellationToken);
-
-
-        var affected = activeEmployees.Select(MapToAffectedEmployeeDto).ToList();
 
         return new JobDeletionImpactDto(
             JobId: job.Id,
@@ -47,17 +50,4 @@ public class GetJobDeletionImpactQueryHandler : IRequestHandler<GetJobDeletionIm
             AffectedEmployees: affected
         );
     }
-
-    private AffectedEmployeeDto MapToAffectedEmployeeDto(Employee e)
-    {
-        return new AffectedEmployeeDto(
-            Id: e.Id,
-            EmployeeCode: e.EmployeeCode,
-            FullName: $"{e.FirstName?.Trim()} {e.LastName?.Trim()}".Trim(),
-            Email: e.Email,
-            SiteName: e.Site?.SiteName ?? string.Empty,
-            ProfilePhotoUrl: e.ProfilePhotoUrl
-        );
-    }
 }
-

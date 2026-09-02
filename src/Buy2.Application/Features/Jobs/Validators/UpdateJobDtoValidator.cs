@@ -1,7 +1,6 @@
 using System;
 using System.Linq;
 using Buy2.Application.Features.Jobs.DTOs;
-using Buy2.Application.Features.Jobs.DTOs;
 using FluentValidation;
 
 namespace Buy2.Application.Features.Jobs.Validators;

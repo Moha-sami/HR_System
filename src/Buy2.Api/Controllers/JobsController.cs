@@ -4,6 +4,7 @@ using Buy2.Application.Features.Jobs.DTOs;
 using Buy2.Application.Features.Jobs.GetJobById;
 using Buy2.Application.Features.Jobs.GetJobEmployees;
 using Buy2.Application.Features.Jobs.GetJobs;
+using Buy2.Application.Features.Jobs.ExportJobs;
 using Buy2.Application.Features.Jobs;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -120,6 +121,17 @@ public class JobsController : ControllerBase
             return BadRequest(new { message = ex.Message });
         }
     }
+    [HttpGet("export")]
+    [Authorize(Roles = "HRAdmin,Admin,Manager,HR,SuperAdmin")]
+    [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> ExportJobs([FromQuery] ExportJobsQuery query, CancellationToken cancellationToken)
+    {
+        var result = await _mediator.Send(query, cancellationToken);
+        return File(result, "text/csv", "jobs.csv");
+    }
+
     [HttpGet("{id:int}/deletion-impact")]
     [Authorize(Roles = "HRAdmin,Admin,SuperAdmin")]
     [ProducesResponseType(typeof(JobDeletionImpactDto), StatusCodes.Status200OK)]
@@ -146,7 +158,7 @@ public class JobsController : ControllerBase
     {
         try
         {
-            var result = await _mediator.Send(new ReassignAndDeleteJobCommand(id, dto.ReplacementJobId), cancellationToken);
+            var result = await _mediator.Send(new ReassignAndDeleteJobCommand(id, dto.DefaultReplacementJobId, dto.Reassignments, dto.ReplacementJobId), cancellationToken);
             return Ok(result);
         }
         catch (System.Collections.Generic.KeyNotFoundException ex)

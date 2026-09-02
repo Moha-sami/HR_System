@@ -1,18 +1,22 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Buy2.Application.Common.Interfaces;
+using Buy2.Application.Features.Jobs.DTOs;
 using Buy2.Domain.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
-
-using Buy2.Application.Features.Jobs.DTOs;
 
 namespace Buy2.Application.Features.Jobs;
 
-public record ReassignAndDeleteJobCommand(int JobId, int? ReplacementJobId) : IRequest<ReassignAndDeleteJobResponseDto>;
+public record ReassignAndDeleteJobCommand(
+    int JobId,
+    int? DefaultReplacementJobId = null,
+    List<EmployeeJobReassignmentDto>? Reassignments = null,
+    int? ReplacementJobId = null
+) : IRequest<ReassignAndDeleteJobResponseDto>;
 
 public class ReassignAndDeleteJobCommandHandler : IRequestHandler<ReassignAndDeleteJobCommand, ReassignAndDeleteJobResponseDto>
 {
@@ -32,17 +36,27 @@ public class ReassignAndDeleteJobCommandHandler : IRequestHandler<ReassignAndDel
 
     public async Task<ReassignAndDeleteJobResponseDto> Handle(ReassignAndDeleteJobCommand request, CancellationToken cancellationToken)
     {
-        if (request.JobId == request.ReplacementJobId)
+        var fallbackJobId = request.DefaultReplacementJobId ?? request.ReplacementJobId;
+        if (fallbackJobId.HasValue && fallbackJobId.Value == request.JobId)
             throw new ArgumentException("Replacement job ID cannot be the same as the target job ID.");
 
-        var jobToDelete = await GetJobToDeleteAsync(request.JobId, cancellationToken);
+        var jobToDelete = await _jobRepository.Query(false)
+            .Include(j => j.Employees)
+            .FirstOrDefaultAsync(j => j.Id == request.JobId, cancellationToken);
+
+        if (jobToDelete == null)
+            throw new KeyNotFoundException($"Job with ID {request.JobId} not found.");
+
         var activeEmployees = jobToDelete.Employees.Where(e => e.IsActive && !e.IsDeleted).ToList();
-
-        if (activeEmployees.Any() && !request.ReplacementJobId.HasValue)
-            throw new InvalidOperationException("Cannot delete job role with assigned employees without a valid replacement job role.");
-
         int reassignedCount = activeEmployees.Count;
-        await ReassignEmployeesIfRequiredAsync(activeEmployees, request.ReplacementJobId);
+
+        if (activeEmployees.Any())
+        {
+            if (!fallbackJobId.HasValue && (request.Reassignments == null || !request.Reassignments.Any()))
+                throw new InvalidOperationException("Cannot delete job role with assigned employees without a valid replacement job role.");
+
+            await ReassignEmployeesAsync(request.JobId, activeEmployees, request.Reassignments, fallbackJobId, cancellationToken);
+        }
 
         jobToDelete.IsDeleted = true;
         jobToDelete.DeletedAt = DateTimeOffset.UtcNow;
@@ -56,30 +70,56 @@ public class ReassignAndDeleteJobCommandHandler : IRequestHandler<ReassignAndDel
         );
     }
 
-    private async Task<JobRole> GetJobToDeleteAsync(int jobId, CancellationToken cancellationToken)
+    private async Task ReassignEmployeesAsync(
+        int currentJobId,
+        List<Employee> activeEmployees,
+        List<EmployeeJobReassignmentDto>? reassignments,
+        int? fallbackJobId,
+        CancellationToken cancellationToken)
     {
-        var jobToDelete = await _jobRepository.Query(false)
-            .Include(j => j.Employees)
-            .FirstOrDefaultAsync(j => j.Id == jobId, cancellationToken);
+        var mapping = new Dictionary<int, int>();
+        if (reassignments != null)
+        {
+            foreach (var item in reassignments)
+            {
+                if (item.NewJobId == currentJobId)
+                    throw new ArgumentException($"Replacement job for employee {item.EmployeeId} cannot be the same as the target job ID.");
 
-        if (jobToDelete == null)
-            throw new KeyNotFoundException($"Job with ID {jobId} not found.");
+                mapping[item.EmployeeId] = item.NewJobId;
+            }
+        }
 
-        return jobToDelete;
-    }
-
-    private async Task ReassignEmployeesIfRequiredAsync(List<Employee> activeEmployees, int? replacementJobId)
-    {
-        if (!replacementJobId.HasValue)
-            return;
-
-        var replacementJob = await _jobRepository.GetByIdAsync(replacementJobId.Value);
-        if (replacementJob == null)
-            throw new KeyNotFoundException($"Replacement job with ID {replacementJobId.Value} not found.");
-
+        // Validate that all active employees have a designated replacement job
         foreach (var employee in activeEmployees)
         {
-            employee.JobRoleId = replacementJobId.Value;
+            if (!mapping.ContainsKey(employee.Id))
+            {
+                if (fallbackJobId.HasValue)
+                {
+                    mapping[employee.Id] = fallbackJobId.Value;
+                }
+                else
+                {
+                    throw new InvalidOperationException($"Cannot delete job role: Employee '{employee.FirstName} {employee.LastName}' (ID {employee.Id}) has no valid replacement job role specified.");
+                }
+            }
+        }
+
+        // Verify all referenced target jobs exist
+        var uniqueTargetJobIds = mapping.Values.Distinct().ToList();
+        var existingJobs = await _jobRepository.Query(true)
+            .Where(j => uniqueTargetJobIds.Contains(j.Id) && !j.IsDeleted)
+            .Select(j => j.Id)
+            .ToListAsync(cancellationToken);
+
+        var missingJobs = uniqueTargetJobIds.Except(existingJobs).ToList();
+        if (missingJobs.Any())
+            throw new KeyNotFoundException($"Replacement job with ID {missingJobs.First()} not found.");
+
+        // Apply reassignments
+        foreach (var employee in activeEmployees)
+        {
+            employee.JobRoleId = mapping[employee.Id];
         }
     }
 }
