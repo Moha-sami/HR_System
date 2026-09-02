@@ -3,7 +3,8 @@ using FluentValidation;
 
 namespace Buy2.Application.Validators.Points;
 
-public class CreateManualPointsTransactionDtoValidator : AbstractValidator<CreateManualPointsTransactionDto>
+public class CreateManualPointsTransactionDtoValidator 
+    : AbstractValidator<CreateManualPointsTransactionDto>
 {
     public CreateManualPointsTransactionDtoValidator()
     {
@@ -14,17 +15,14 @@ public class CreateManualPointsTransactionDtoValidator : AbstractValidator<Creat
         RuleFor(x => x.TransactionType)
             .NotEmpty()
             .WithMessage("TransactionType is required.")
-            .Must(t => t.Equals("Add", StringComparison.OrdinalIgnoreCase) ||
-                       t.Equals("Deduct", StringComparison.OrdinalIgnoreCase) ||
-                       t.Equals("Reward", StringComparison.OrdinalIgnoreCase) ||
-                       t.Equals("Deduction", StringComparison.OrdinalIgnoreCase))
-            .WithMessage("TransactionType must be one of: Add, Deduct, Reward, Deduction.");
+            .Must(t =>
+                t.Equals("Add", StringComparison.OrdinalIgnoreCase) ||
+                t.Equals("Deduct", StringComparison.OrdinalIgnoreCase))
+            .WithMessage("TransactionType must be one of: Add, Deduct.");
 
         RuleFor(x => x.PointsValue)
-            .NotEqual(0m)
-            .WithMessage("PointsValue cannot be zero.")
-            .Must(v => Math.Abs(v) >= 1m && Math.Abs(v) <= 100000m)
-            .WithMessage("PointsValue magnitude must be between 1 and 100,000.");
+            .InclusiveBetween(50m, 10000m)
+            .WithMessage("PointsValue must be between 50 and 10,000.");
 
         RuleFor(x => x.Comments)
             .NotEmpty()
