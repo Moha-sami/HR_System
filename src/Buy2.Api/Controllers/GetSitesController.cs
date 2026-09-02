@@ -2,6 +2,7 @@ using Buy2.Application.DTOs;
 using Buy2.Application.DTOs.Sites;
 using Buy2.Application.Features.Sites.CreateSite;
 using Buy2.Application.Features.Sites.DeleteSite;
+using Buy2.Application.Features.Sites.GetSiteDetails;
 using Buy2.Application.Features.Sites.GetSites;
 using Buy2.Application.Features.Sites.Regions;
 using Buy2.Application.Features.Sites.UpdateSite;
@@ -95,6 +96,38 @@ public class GetSitesController : ControllerBase
         return NoContent();
     }
 
+    // Get Site Info
+    [HttpGet("{id}")]
+    [ProducesResponseType(typeof(SiteFullProfile), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<SiteFullProfile>> GetSiteFullProfileInfo(int id, CancellationToken cancellation)
+    {
+        var site = await _mediator.Send(new GetSiteBasicInfoQuery(id), cancellation);
+        return Ok(site);
+    }
+
+    // Get Sits Shifts
+    [HttpGet("{id}/shifts")]
+    [ProducesResponseType(typeof(List<ShiftClaimsController>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<List<ShiftTabDto>>> GetSiteShifts(int id, CancellationToken cancellation)
+    {
+        var shifts = await _mediator.Send(new GetSiteShiftsQuery(id), cancellation);
+        return Ok(shifts);
+    }
+
+    // Get Sits Employees
+    [HttpGet("{id}/employees")]
+    [ProducesResponseType(typeof(List<EmployeeTabDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<List<EmployeeTabDto>>> GetSiteEmployees(int id, CancellationToken cancellation)
+    {
+        var employees = await _mediator.Send(new GetSiteEmployeesQuery(id), cancellation);
+        return Ok(employees);
+    }
 
     // Get All Regions
     [HttpGet("regions")]
