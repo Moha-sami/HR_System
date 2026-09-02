@@ -5,8 +5,8 @@ namespace Buy2.Application.Validators.Points;
 
 public class PointsTransactionFilterQueryDtoValidator : AbstractValidator<PointsTransactionFilterQueryDto>
 {
-    private static readonly string[] ValidTransactionTypes = ["Reward", "Deduction"];
-    private static readonly string[] ValidSortByFields = ["TransactionType", "Points", "EmployeeName"];
+    private static readonly string[] ValidTransactionTypes = ["Add", "Deduct", "Reward", "Deduction", "Earned", "Redeemed"];
+    private static readonly string[] ValidSortByFields = ["CreatedAt", "Date", "TransactionType", "Points", "Amount", "EmployeeName"];
     private static readonly string[] ValidSortDirections = ["Asc", "Desc"];
 
     public PointsTransactionFilterQueryDtoValidator()

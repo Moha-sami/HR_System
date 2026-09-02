@@ -1,4 +1,4 @@
-﻿using Buy2.Domain.Entities;
+using Buy2.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -24,15 +24,16 @@ public class ShiftConfiguration : IEntityTypeConfiguration<ShiftEntity>
             .WithMany()
             .HasForeignKey(s => s.SiteId)
             .OnDelete(DeleteBehavior.Restrict);
-        builder.HasOne<JobRole>()
+        builder.HasOne(s => s.JobRole)
             .WithMany()
             .HasForeignKey(s => s.JobRoleId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasOne<ShiftTemplate>()
+        builder.HasOne(s => s.ShiftTemplate)
             .WithMany()
-            .HasForeignKey(s => s.ShiftTamplateId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .HasForeignKey(s => s.ShiftTemplateId)
+            .IsRequired(false)
+            .OnDelete(DeleteBehavior.SetNull);
 
     }
 }

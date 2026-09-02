@@ -8,7 +8,7 @@ public class ShiftEntity : BaseEntity
     public DateTimeOffset StartTime { get; set; }
     public DateTimeOffset EndTime { get; set; }
     public bool IsPublished { get; set; }
-    public int ShiftTamplateId { get; set; }
+    public int? ShiftTemplateId { get; set; }
     public ShiftTemplate? ShiftTemplate { get; set; }
     public JobRole? JobRole { get; set; }
 }

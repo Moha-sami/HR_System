@@ -957,6 +957,36 @@ Authorization: Bearer <jwt-token>
   - `400 Bad Request` if future scheduled shifts exist, if any assigned employee is missing a replacement site, if multiple replacement sites are specified for the same employee, if target sites do not exist, or if an employee is reallocated to the site being deleted.
   - `404 Not Found` if site does not exist.
 
+### `GET /api/v1/sites/{id}`
+- **Authorization**: `[Authorize]`
+- **Controller**: `GetSitesController` / `SitesController`
+- **Path Parameters**:
+  - `id` (int, required) - Site ID
+- **Description**: Returns basic info profile tab including region name, address, GPS link, phone, MAC address, operational hours schedule, documents, and preferred personnel.
+- **Responses**:
+  - `200 OK` with `SiteFullProfile`.
+  - `404 Not Found` if site does not exist.
+
+### `GET /api/v1/sites/{id}/shifts`
+- **Authorization**: `[Authorize]`
+- **Controller**: `GetSitesController` / `SitesController`
+- **Path Parameters**:
+  - `id` (int, required) - Site ID
+- **Description**: Returns scheduled shifts tab for the site with template names, start/end times, smart posting status, and job role headcount requirements.
+- **Responses**:
+  - `200 OK` with `List<ShiftTabDto>`.
+  - `404 Not Found` if site does not exist.
+
+### `GET /api/v1/sites/{id}/employees`
+- **Authorization**: `[Authorize]`
+- **Controller**: `GetSitesController` / `SitesController`
+- **Path Parameters**:
+  - `id` (int, required) - Site ID
+- **Description**: Returns assigned employees tab for the site across primary site allocation and secondary `EmployeeSites` junction, with employment status (`Active`, `Suspended`, `Terminated`).
+- **Responses**:
+  - `200 OK` with `List<EmployeeTabDto>`.
+  - `404 Not Found` if site does not exist.
+
 ### `GET /api/v1/sites/regions`
 - **Authorization**: `[Authorize]`
 - **Description**: Returns all active regions ordered alphabetically by name for dropdown selection.

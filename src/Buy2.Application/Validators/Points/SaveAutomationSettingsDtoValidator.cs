@@ -32,14 +32,18 @@ public class SaveAutomationSettingsDtoValidator : AbstractValidator<SaveAutomati
 
     private static bool ValidateNoDuplicateTaskPriority(List<AutomationSettingCategoryDto> settings)
     {
-        var seen = new HashSet<string>();
+        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (var category in settings)
         {
+            if (category.Ranges == null) continue;
             foreach (var range in category.Ranges)
             {
-                var key = $"{category.Category}|{category.SubCategory}|{range.TaskPriority}";
-                if (!seen.Add(key))
-                    return false;
+                if (!string.IsNullOrWhiteSpace(range.TaskPriority))
+                {
+                    var key = $"{category.Category}|{category.SubCategory}|{range.TaskPriority.Trim()}";
+                    if (!seen.Add(key))
+                        return false;
+                }
             }
         }
         return true;
@@ -66,7 +70,7 @@ public class AutomationSettingCategoryDtoValidator : AbstractValidator<Automatio
 
         RuleFor(x => x.Ranges!)
             .Must(ValidateNoOverlappingRanges)
-            .WithMessage("Ranges must not overlap or touch boundaries.")
+            .WithMessage("Ranges must not overlap.")
             .OverridePropertyName("Ranges");
 
         RuleForEach(x => x.Ranges!)
@@ -75,12 +79,16 @@ public class AutomationSettingCategoryDtoValidator : AbstractValidator<Automatio
 
     private static bool ValidateNoOverlappingRanges(List<AutomationRangeDto> ranges)
     {
-        var sorted = ranges.OrderBy(r => r.FromValue).ToList();
-        for (int i = 0; i < sorted.Count - 1; i++)
+        var valueRanges = ranges
+            .Where(r => r.FromValue.HasValue && r.ToValue.HasValue)
+            .OrderBy(r => r.FromValue!.Value)
+            .ToList();
+
+        for (int i = 0; i < valueRanges.Count - 1; i++)
         {
-            var current = sorted[i];
-            var next = sorted[i + 1];
-            if (current.ToValue >= next.FromValue)
+            var current = valueRanges[i];
+            var next = valueRanges[i + 1];
+            if (current.ToValue!.Value > next.FromValue!.Value)
                 return false;
         }
         return true;
@@ -89,22 +97,25 @@ public class AutomationSettingCategoryDtoValidator : AbstractValidator<Automatio
 
 public class AutomationRangeDtoValidator : AbstractValidator<AutomationRangeDto>
 {
+    private static readonly string[] ValidTaskPriorities = ["Low", "Medium", "High", "Urgent"];
+
     public AutomationRangeDtoValidator()
     {
         RuleFor(x => x.RangeType)
             .NotEmpty()
             .WithMessage("RangeType is required.");
 
-        RuleFor(x => x.FromValue)
-            .LessThan(x => x.ToValue)
-            .WithMessage("FromValue must be less than ToValue.");
-
-        RuleFor(x => x.TaskPriority)
-            .GreaterThan(0)
-            .WithMessage("TaskPriority must be greater than 0.");
-
         RuleFor(x => x.PointsValue)
             .NotEqual(0)
             .WithMessage("PointsValue cannot be zero.");
+
+        RuleFor(x => x)
+            .Must(x => !x.FromValue.HasValue || !x.ToValue.HasValue || x.FromValue.Value <= x.ToValue.Value)
+            .WithMessage("FromValue must be less than or equal to ToValue.")
+            .OverridePropertyName(nameof(AutomationRangeDto.FromValue));
+
+        RuleFor(x => x.TaskPriority)
+            .Must(p => string.IsNullOrWhiteSpace(p) || ValidTaskPriorities.Contains(p.Trim(), StringComparer.OrdinalIgnoreCase))
+            .WithMessage("TaskPriority must be one of: Low, Medium, High, Urgent.");
     }
 }

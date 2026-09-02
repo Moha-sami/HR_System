@@ -1,4 +1,4 @@
-﻿using Buy2.Application.Common.Interfaces;
+using Buy2.Application.Common.Interfaces;
 using Buy2.Application.DTOs.Sites;
 using Buy2.Domain.Entities;
 using MediatR;
@@ -28,6 +28,7 @@ public class GetSiteEmployeesQueryHandler : IRequestHandler<GetSiteEmployeesQuer
 
         var employees = await _employeeRepository
             .Query(false)
+            .IgnoreQueryFilters()
             .Include(e => e.JobRole)
             .Where(employee => employee.SiteId == query.SiteId ||
                    employee.EmployeeSites.Any(es => es.SiteId == query.SiteId))
@@ -47,7 +48,7 @@ public class GetSiteEmployeesQueryHandler : IRequestHandler<GetSiteEmployeesQuer
     {
         if (e.IsDeleted)
         {
-            return "Termainated";
+            return "Terminated";
         }
         if (!e.IsActive)
         {
