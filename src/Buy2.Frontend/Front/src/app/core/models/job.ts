@@ -1,6 +1,6 @@
 /**
  * Job API Response
- * Source: GET /api/v1/job-roles
+ * Source: GET /api/v1/jobs
  */
 export interface Job {
   readonly id: number;
@@ -8,13 +8,13 @@ export interface Job {
   readonly departmentId: number | null;
   /** Legacy entity-shaped field; the paginated jobs API returns a qualification count instead. */
   readonly requiredQualificationsJson?: string;
-  readonly departmentName?: string | null;
-  readonly seniorityLevel?: string;
-  readonly workModel?: string;
-  readonly assignedEmployeesCount?: number;
-  readonly requiredQualificationsCount?: number;
-  readonly experienceYearsMin?: number;
-  readonly isActive?: boolean;
+  readonly departmentName: string | null;
+  readonly seniorityLevel: string;
+  readonly workModel: string;
+  readonly assignedEmployeesCount: number;
+  readonly requiredQualificationsCount: number;
+  readonly experienceYearsMin: number;
+  readonly isActive: boolean;
   readonly createdAt: string;
 }
 

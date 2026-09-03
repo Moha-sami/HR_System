@@ -5,7 +5,7 @@ import { forkJoin, map, of, switchMap } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import type { PaginatedEmployeeListDto, EmployeeFilterDto } from '../models/employee-list/employee-list';
 import { buildEmployeeQueryParams } from '../models/employee-list/employee-list';
-import { Job } from '@app/core/models/job';
+import { Job, JobPaginatedResponse } from '@app/core/models/job';
 import { Role, RolePaginatedResponse } from '@app/core/models/role.models';
 import { Site } from '@app/core/models/site.models';
 import { InsertEmployee } from '../models/insert-employee/insert-employee.models';
@@ -35,22 +35,12 @@ export class EmployeeService {
 
   /** SCRUM-276: load every active role from the real paginated roles endpoint. */
   getBulkOnboardingRoles(): Observable<readonly Role[]> {
-    return this.getAllLookupPages<Role, RolePaginatedResponse>(`${API_BASE}/roles`);
+    return this.getAllLookupPages<Role, RolePaginatedResponse>(`${API_BASE}/roles`, true);
   }
 
-  /** SCRUM-276: adapt the requested roles endpoint to Job Title dropdown options. */
+  /** SCRUM-276: load every job from the real paginated jobs endpoint. */
   getBulkOnboardingJobs(): Observable<readonly Job[]> {
-    return this.getAllLookupPages<Role, RolePaginatedResponse>(`${API_BASE}/roles`).pipe(
-      map((roles) =>
-        roles.map((role) => ({
-          id: role.id,
-          title: role.name,
-          departmentId: null,
-          isActive: role.isActive,
-          createdAt: role.createdAt,
-        })),
-      ),
-    );
+    return this.getAllLookupPages<Job, JobPaginatedResponse>(`${API_BASE}/jobs`, false);
   }
 
   bulkOnboardEmployees(request: BulkOnboardRequest): Observable<BulkOnboardResult> {
@@ -111,11 +101,9 @@ export class EmployeeService {
   private getAllLookupPages<T, TResponse extends {
     readonly items: readonly T[];
     readonly totalPages: number;
-  }>(url: string): Observable<readonly T[]> {
-    const params = new HttpParams()
-      .set('isActive', 'true')
-      .set('pageNumber', '1')
-      .set('pageSize', '100');
+  }>(url: string, activeOnly: boolean): Observable<readonly T[]> {
+    let params = new HttpParams().set('pageNumber', '1').set('pageSize', '100');
+    if (activeOnly) params = params.set('isActive', 'true');
 
     return this.http.get<TResponse>(url, { params }).pipe(
       switchMap((firstPage) => {

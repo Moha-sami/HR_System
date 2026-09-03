@@ -143,7 +143,7 @@ export class EmployeeBulkOnboardComponent {
     }).subscribe({
       next: ({ roles, jobs }) => {
         this.roles.set(roles.filter((role) => role.isActive !== false));
-        this.jobs.set(jobs.filter((job) => job.isActive !== false));
+        this.jobs.set(jobs);
         this.lookupsLoading.set(false);
       },
       error: () => {
