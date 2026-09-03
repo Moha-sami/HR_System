@@ -1,0 +1,123 @@
+<form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+  <app-modal
+    size="large"
+    [showCloseButton]="!isSubmitting()"
+    [closeOnBackdrop]="!isSubmitting()"
+    [closeOnEscape]="!isSubmitting()"
+    (closed)="close()"
+  >
+    <app-modal-header>
+      <h2 class="text-center text-xl font-bold text-neutral-900">
+        {{ 'EMPLOYEE_MANAGEMENT.ADD_EMPLOYEES' | translate }}
+      </h2>
+    </app-modal-header>
+
+    <app-modal-body>
+      @if (lookupError()) {
+        <p class="mb-4 rounded-lg bg-error-50 p-3 text-sm text-error-700" role="alert">
+          {{ 'EMPLOYEE_MANAGEMENT.BULK_LOOKUP_FAILED' | translate }}
+        </p>
+      }
+
+      @if (submitError()) {
+        <p class="mb-4 rounded-lg bg-error-50 p-3 text-sm text-error-700" role="alert">
+          {{ 'EMPLOYEE_MANAGEMENT.BULK_ONBOARD_FAILED' | translate }}
+        </p>
+      }
+
+      @if (resultSummary(); as summary) {
+        <p class="mb-4 rounded-lg bg-warning-50 p-3 text-sm text-warning-800" role="status">
+          {{
+            'EMPLOYEE_MANAGEMENT.BULK_PARTIAL_SUCCESS'
+              | translate
+                : { createdCount: summary.createdCount, failedCount: summary.failedCount }
+          }}
+        </p>
+      }
+
+      @if (lookupsLoading()) {
+        <div class="flex items-center justify-center gap-3 py-10 text-sm text-neutral-600" role="status">
+          <span class="size-6 animate-spin rounded-full border-2 border-neutral-200 border-b-primary-600"></span>
+          {{ 'EMPLOYEE_MANAGEMENT.BULK_LOADING_LOOKUPS' | translate }}
+        </div>
+      } @else {
+        <div class="overflow-x-auto rounded-lg border border-neutral-200">
+          <table class="min-w-[860px] w-full border-collapse text-sm">
+            <thead class="bg-neutral-100 text-primary-700">
+              <tr>
+                <th scope="col" class="px-3 py-3 text-start font-semibold">{{ 'EMPLOYEE_MANAGEMENT.FIRST_NAME' | translate }}</th>
+                <th scope="col" class="px-3 py-3 text-start font-semibold">{{ 'EMPLOYEE_MANAGEMENT.LAST_NAME' | translate }}</th>
+                <th scope="col" class="px-3 py-3 text-start font-semibold">{{ 'EMPLOYEE_MANAGEMENT.EMAIL' | translate }}</th>
+                <th scope="col" class="px-3 py-3 text-start font-semibold">{{ 'EMPLOYEE_MANAGEMENT.JOB_TITLE' | translate }}</th>
+                <th scope="col" class="px-3 py-3 text-start font-semibold">{{ 'EMPLOYEE_MANAGEMENT.ADMIN_ACCESS' | translate }}</th>
+                <th scope="col" class="w-14 px-3 py-3">
+                  <span class="sr-only">{{ 'EMPLOYEE_MANAGEMENT.ACTIONS' | translate }}</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody formArrayName="employees" class="divide-y divide-neutral-200">
+              @for (row of employees.controls; track row; let index = $index) {
+                <tr [formGroupName]="index" class="align-top">
+                  <td class="px-3 py-3">
+                    <label class="sr-only" [for]="'bulk-first-name-' + index">{{ 'EMPLOYEE_MANAGEMENT.FIRST_NAME' | translate }} {{ index + 1 }}</label>
+                    <input [id]="'bulk-first-name-' + index" formControlName="firstName" type="text" [readOnly]="isSubmitting()" class="w-full min-w-32 rounded-md border bg-neutral-50 px-3 py-2 outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500" [class.border-error-500]="isInvalid(row.controls.firstName)" [class.border-neutral-200]="!isInvalid(row.controls.firstName)" />
+                    @if (isInvalid(row.controls.firstName)) { <p class="mt-1 text-xs text-error-600">{{ 'EMPLOYEE_MANAGEMENT.REQUIRED' | translate }}</p> }
+                  </td>
+                  <td class="px-3 py-3">
+                    <label class="sr-only" [for]="'bulk-last-name-' + index">{{ 'EMPLOYEE_MANAGEMENT.LAST_NAME' | translate }} {{ index + 1 }}</label>
+                    <input [id]="'bulk-last-name-' + index" formControlName="lastName" type="text" [readOnly]="isSubmitting()" class="w-full min-w-32 rounded-md border bg-neutral-50 px-3 py-2 outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500" [class.border-error-500]="isInvalid(row.controls.lastName)" [class.border-neutral-200]="!isInvalid(row.controls.lastName)" />
+                    @if (isInvalid(row.controls.lastName)) { <p class="mt-1 text-xs text-error-600">{{ 'EMPLOYEE_MANAGEMENT.REQUIRED' | translate }}</p> }
+                  </td>
+                  <td class="px-3 py-3">
+                    <label class="sr-only" [for]="'bulk-email-' + index">{{ 'EMPLOYEE_MANAGEMENT.EMAIL' | translate }} {{ index + 1 }}</label>
+                    <input [id]="'bulk-email-' + index" formControlName="email" type="email" [readOnly]="isSubmitting()" class="w-full min-w-44 rounded-md border bg-neutral-50 px-3 py-2 outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500" [class.border-error-500]="isInvalid(row.controls.email)" [class.border-neutral-200]="!isInvalid(row.controls.email)" />
+                    @if (isInvalid(row.controls.email)) { <p class="mt-1 text-xs text-error-600">{{ (row.controls.email.hasError('required') ? 'EMPLOYEE_MANAGEMENT.REQUIRED' : 'EMPLOYEE_MANAGEMENT.INVALID_EMAIL') | translate }}</p> }
+                  </td>
+                  <td class="px-3 py-3">
+                    <label class="sr-only" [for]="'bulk-job-' + index">{{ 'EMPLOYEE_MANAGEMENT.JOB_TITLE' | translate }} {{ index + 1 }}</label>
+                    <select [id]="'bulk-job-' + index" formControlName="jobRoleId" [attr.disabled]="isSubmitting() ? true : null" [attr.aria-label]="'EMPLOYEE_MANAGEMENT.JOB_TITLE' | translate" class="w-full min-w-40 rounded-md border bg-neutral-50 px-3 py-2 text-primary-700 outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 disabled:cursor-not-allowed disabled:opacity-60" [class.border-error-500]="isInvalid(row.controls.jobRoleId)" [class.border-neutral-200]="!isInvalid(row.controls.jobRoleId)">
+                      <option [ngValue]="null" disabled>{{ 'EMPLOYEE_MANAGEMENT.SELECT_JOB_ROLE' | translate }}</option>
+                      @for (job of jobs(); track job.id) { <option [ngValue]="job.id">{{ job.title }}</option> }
+                    </select>
+                    @if (isInvalid(row.controls.jobRoleId)) { <p class="mt-1 text-xs text-error-600">{{ 'EMPLOYEE_MANAGEMENT.REQUIRED' | translate }}</p> }
+                  </td>
+                  <td class="px-3 py-3">
+                    <label class="sr-only" [for]="'bulk-role-' + index">{{ 'EMPLOYEE_MANAGEMENT.ADMIN_ACCESS' | translate }} {{ index + 1 }}</label>
+                    <select [id]="'bulk-role-' + index" formControlName="roleId" [attr.disabled]="isSubmitting() ? true : null" [attr.aria-label]="'EMPLOYEE_MANAGEMENT.ADMIN_ACCESS' | translate" class="w-full min-w-40 rounded-md border bg-neutral-50 px-3 py-2 text-primary-700 outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 disabled:cursor-not-allowed disabled:opacity-60" [class.border-error-500]="isInvalid(row.controls.roleId)" [class.border-neutral-200]="!isInvalid(row.controls.roleId)">
+                      <option [ngValue]="null" disabled>{{ 'EMPLOYEE_MANAGEMENT.SELECT_SYSTEM_ROLE' | translate }}</option>
+                      @for (role of roles(); track role.id) { <option [ngValue]="role.id">{{ role.name }}</option> }
+                    </select>
+                    @if (isInvalid(row.controls.roleId)) { <p class="mt-1 text-xs text-error-600">{{ 'EMPLOYEE_MANAGEMENT.REQUIRED' | translate }}</p> }
+                  </td>
+                  <td class="px-3 py-3 text-center">
+                    <button type="button" [disabled]="isSubmitting()" (click)="removeEmployee(index)" class="rounded-full p-2 text-error-700 hover:bg-error-50 focus:outline-none focus:ring-2 focus:ring-error-500 disabled:cursor-not-allowed disabled:opacity-50" [attr.aria-label]="'EMPLOYEE_MANAGEMENT.REMOVE_EMPLOYEE' | translate: { row: index + 1 }">
+                      <svg aria-hidden="true" class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 7h16M10 11v6m4-6v6M6 7l1 13h10l1-13M9 7V4h6v3" /></svg>
+                    </button>
+                  </td>
+                </tr>
+                @if (serverError(row); as error) {
+                  <tr><td colspan="6" class="bg-error-50 px-4 py-2 text-sm text-error-700" role="alert">{{ 'EMPLOYEE_MANAGEMENT.ROW_ERROR' | translate: { row: index + 1, error: error } }}</td></tr>
+                }
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <div class="mt-4 flex justify-end">
+          <app-button variant="primary-light" size="sm" [disabled]="isSubmitting()" (clicked)="addEmployee()">
+            <span aria-hidden="true">+</span> {{ 'EMPLOYEE_MANAGEMENT.ADD_EMPLOYEE' | translate }}
+          </app-button>
+        </div>
+      }
+    </app-modal-body>
+
+    <app-modal-footer>
+      <app-button variant="secondary" [disabled]="isSubmitting()" (clicked)="close()">
+        {{ 'EMPLOYEE_MANAGEMENT.CANCEL' | translate }}
+      </app-button>
+      <app-button type="submit" variant="primary" [loading]="isSubmitting()" [disabled]="form.invalid || lookupsLoading() || lookupError() || isSubmitting()">
+        {{ (isSubmitting() ? 'EMPLOYEE_MANAGEMENT.BULK_SUBMITTING' : 'EMPLOYEE_MANAGEMENT.SUBMIT') | translate }}
+      </app-button>
+    </app-modal-footer>
+  </app-modal>
+</form>

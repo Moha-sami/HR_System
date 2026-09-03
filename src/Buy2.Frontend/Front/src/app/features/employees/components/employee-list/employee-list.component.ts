@@ -18,6 +18,7 @@ import { ModalFooterComponent } from '@app/shared/components/modal/modal-footer.
 import { Pagination } from '@app/shared/components/pagination/pagination';
 import { TableComponent, type ColumnDef } from '@app/shared/components/table/table.component';
 import { EmployeeService } from '../../services/employee.service';
+import { EmployeeBulkOnboardComponent } from '../employee-bulk-onboard/employee-bulk-onboard.component';
 import type {
   EmployeeFilterDto,
   PaginatedEmployeeListDto,
@@ -35,6 +36,7 @@ import type {
     Pagination,
     TableComponent,
     TranslatePipe,
+    EmployeeBulkOnboardComponent,
   ],
   templateUrl: './employee-list.component.html',
 })
@@ -73,11 +75,14 @@ export class EmployeeListComponent implements AfterViewInit, OnDestroy {
 
   // UI state
   readonly showDeleteModal = signal(false);
+  readonly showBulkOnboardModal = signal(false);
   readonly showSuccessModal = signal(false);
   readonly deletingEmployee = signal<EmployeeListRowDto | null>(null);
   readonly isDeleting = signal(false);
   readonly deleteError = signal<string | null>(null);
-  readonly successMessage = signal<'CREATE_SUCCESS_MESSAGE' | 'DELETE_SUCCESS_MESSAGE'>(
+  readonly successMessage = signal<
+    'CREATE_SUCCESS_MESSAGE' | 'DELETE_SUCCESS_MESSAGE' | 'BULK_ONBOARD_SUCCESS'
+  >(
     'CREATE_SUCCESS_MESSAGE',
   );
 
@@ -293,8 +298,22 @@ export class EmployeeListComponent implements AfterViewInit, OnDestroy {
   }
 
   // Navigation actions
-  navigateToCreate(): void {
-    this.router.navigate(['/employees/create']);
+  openBulkOnboardModal(): void {
+    this.showBulkOnboardModal.set(true);
+  }
+
+  closeBulkOnboardModal(): void {
+    this.showBulkOnboardModal.set(false);
+  }
+
+  onEmployeesCreated(): void {
+    this.loadEmployees();
+  }
+
+  onBulkOnboardingCompleted(): void {
+    this.showBulkOnboardModal.set(false);
+    this.successMessage.set('BULK_ONBOARD_SUCCESS');
+    this.showSuccessModal.set(true);
   }
 
   navigateToDetail(employee: EmployeeListRowDto): void {

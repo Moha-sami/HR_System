@@ -1,14 +1,18 @@
 import { inject, Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import type { Observable } from 'rxjs';
-import { switchMap } from 'rxjs/operators';
+import { forkJoin, map, of, switchMap } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import type { PaginatedEmployeeListDto, EmployeeFilterDto } from '../models/employee-list/employee-list';
 import { buildEmployeeQueryParams } from '../models/employee-list/employee-list';
-import { Job } from '@app/core/models/job';
-import { Role } from '@app/core/models/role.models';
+import { Job, JobPaginatedResponse } from '@app/core/models/job';
+import { Role, RolePaginatedResponse } from '@app/core/models/role.models';
 import { Site } from '@app/core/models/site.models';
 import { InsertEmployee } from '../models/insert-employee/insert-employee.models';
+import type {
+  BulkOnboardRequest,
+  BulkOnboardResult,
+} from '../models/bulk-onboard/bulk-onboard.models';
 
 const API_BASE = environment.baseUrl;
 
@@ -27,6 +31,20 @@ export class EmployeeService {
 
   getSites(): Observable<readonly Site[]> {
     return this.http.get<readonly Site[]>(`${API_BASE}/sites`);
+  }
+
+  /** SCRUM-276: load every active role from the real paginated roles endpoint. */
+  getBulkOnboardingRoles(): Observable<readonly Role[]> {
+    return this.getAllLookupPages<Role, RolePaginatedResponse>(`${API_BASE}/roles`, true);
+  }
+
+  /** SCRUM-276: load every job from the real paginated jobs endpoint. */
+  getBulkOnboardingJobs(): Observable<readonly Job[]> {
+    return this.getAllLookupPages<Job, JobPaginatedResponse>(`${API_BASE}/jobs`, false);
+  }
+
+  bulkOnboardEmployees(request: BulkOnboardRequest): Observable<BulkOnboardResult> {
+    return this.http.post<BulkOnboardResult>(`${API_BASE}/employees/bulk-onboard`, request);
   }
 
   // Create/Update employee using real API endpoints
@@ -78,5 +96,32 @@ export class EmployeeService {
 
   deleteEmployee(id: number): Observable<void> {
     return this.http.delete<void>(`${API_BASE}/employees/${id}`);
+  }
+
+  private getAllLookupPages<T, TResponse extends {
+    readonly items: readonly T[];
+    readonly totalPages: number;
+  }>(url: string, activeOnly: boolean): Observable<readonly T[]> {
+    let params = new HttpParams().set('pageNumber', '1').set('pageSize', '100');
+    if (activeOnly) params = params.set('isActive', 'true');
+
+    return this.http.get<TResponse>(url, { params }).pipe(
+      switchMap((firstPage) => {
+        if (firstPage.totalPages <= 1) return of(firstPage.items);
+
+        const remainingPages = Array.from(
+          { length: firstPage.totalPages - 1 },
+          (_, index) => index + 2,
+        ).map((pageNumber) =>
+          this.http.get<TResponse>(url, {
+            params: params.set('pageNumber', pageNumber.toString()),
+          }),
+        );
+
+        return forkJoin(remainingPages).pipe(
+          map((pages) => [firstPage.items, ...pages.map((page) => page.items)].flat()),
+        );
+      }),
+    );
   }
 }
