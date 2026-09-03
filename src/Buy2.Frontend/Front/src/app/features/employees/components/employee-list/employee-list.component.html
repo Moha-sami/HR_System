@@ -55,8 +55,8 @@
         {{ 'EMPLOYEE_MANAGEMENT.EXPORT_CSV' | translate }}
       </app-button>
 
-      <!-- Add Employee button -->
-      <app-button variant="primary" size="md" (clicked)="navigateToCreate()">
+      <!-- Add Employees button -->
+      <app-button variant="primary" size="md" (clicked)="openBulkOnboardModal()">
         <svg iconLeft class="inline w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
             stroke-linecap="round"
@@ -65,7 +65,7 @@
             d="M12 4v16m8-8H4"
           ></path>
         </svg>
-        {{ 'EMPLOYEE_MANAGEMENT.ADD_EMPLOYEE' | translate }}
+        {{ 'EMPLOYEE_MANAGEMENT.ADD_EMPLOYEES' | translate }}
       </app-button>
     </div>
   </div>
@@ -175,6 +175,14 @@
   </ng-template>
 
   <!-- Delete Modal -->
+  @if (showBulkOnboardModal()) {
+    <app-employee-bulk-onboard
+      (closed)="closeBulkOnboardModal()"
+      (employeesCreated)="onEmployeesCreated()"
+      (completed)="onBulkOnboardingCompleted()"
+    />
+  }
+
   @if (showDeleteModal() && deletingEmployee(); as employee) {
     <app-modal
       size="small"
