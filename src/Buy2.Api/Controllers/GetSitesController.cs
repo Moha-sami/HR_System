@@ -2,6 +2,7 @@ using Buy2.Application.DTOs;
 using Buy2.Application.DTOs.Sites;
 using Buy2.Application.Features.Sites.CreateSite;
 using Buy2.Application.Features.Sites.DeleteSite;
+using Buy2.Application.Features.Sites.Documents;
 using Buy2.Application.Features.Sites.GetSiteDetails;
 using Buy2.Application.Features.Sites.GetSites;
 using Buy2.Application.Features.Sites.Regions;
@@ -11,7 +12,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Buy2.Api.Controllers;
-
 [ApiController]
 [Route("api/v1/sites")]
 [Authorize]
@@ -151,5 +151,36 @@ public class GetSitesController : ControllerBase
         var command = new CreateRegionCommand(Name: dto.Name);
         var region = await _mediator.Send(command, cancellation);
         return Created($"/api/v1/sites/regions/{region}", region);
+    }
+
+    // Upload Documents
+    [HttpPost("{id}/documents")]
+    [Authorize(Roles = "Admin,Manager")]
+    [Consumes("multipart/form-data")]
+    [ProducesResponseType(typeof(DocumentDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<ActionResult<DocumentDto>> UploadDocument(int id, [FromForm] IFormFile file, CancellationToken cancellation)
+    {
+        var command = new UploadSiteDocumentCommand(id, file);
+        var document = await _mediator.Send(command, cancellation);
+        return Created($"/api/v1/sites/{id}/documents/{document.Id}", document);
+    }
+
+    // Delete Document
+    [HttpDelete("{id}/documents/{documentId}")]
+    [Authorize(Roles = "Admin,Manager")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<ActionResult> DeleteDocument(int id, int documentId, CancellationToken cancellation)
+    {
+        var command = new DeleteSiteDocumentCommand(id, documentId);
+        await _mediator.Send(command, cancellation);
+        return NoContent();
     }
 }
