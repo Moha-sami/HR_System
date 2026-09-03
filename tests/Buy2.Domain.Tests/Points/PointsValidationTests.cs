@@ -1,4 +1,4 @@
-﻿using Buy2.Application.DTOs.Points.DTOs;
+using Buy2.Application.DTOs.Points.DTOs;
 using Buy2.Application.Validators.Points;
 using FluentValidation.TestHelper;
 using Xunit;
@@ -16,13 +16,24 @@ public class PointsValidationTests
     [Theory]
     [InlineData("Add", 50)]
     [InlineData("Deduct", 50)]
-    [InlineData("Reward", 100)]
-    [InlineData("Deduction", -50)]
+    [InlineData("Add", 10000)]
+    [InlineData("Deduct", 500)]
     public void CreateManualTransaction_ValidPayload_ShouldNotHaveErrors(string type, decimal points)
     {
         var dto = new CreateManualPointsTransactionDto(1, type, points, "Performance award");
         var result = _manualValidator.TestValidate(dto);
         result.ShouldNotHaveAnyValidationErrors();
+    }
+
+    [Theory]
+    [InlineData("Reward", 100)]
+    [InlineData("Deduction", -50)]
+    [InlineData("InvalidType", 100)]
+    public void CreateManualTransaction_InvalidTypeOrPoints_ShouldHaveError(string type, decimal points)
+    {
+        var dto = new CreateManualPointsTransactionDto(1, type, points, "Performance award");
+        var result = _manualValidator.TestValidate(dto);
+        Assert.False(result.IsValid);
     }
 
     [Fact]

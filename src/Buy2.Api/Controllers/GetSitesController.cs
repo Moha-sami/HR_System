@@ -109,7 +109,7 @@ public class GetSitesController : ControllerBase
 
     // Get Sits Shifts
     [HttpGet("{id}/shifts")]
-    [ProducesResponseType(typeof(List<ShiftClaimsController>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(List<ShiftTabDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<List<ShiftTabDto>>> GetSiteShifts(int id, CancellationToken cancellation)
@@ -162,7 +162,7 @@ public class GetSitesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<ActionResult<DocumentDto>> UploadDocument(int id, [FromForm] IFormFile file, CancellationToken cancellation)
+    public async Task<ActionResult<DocumentDto>> UploadDocument(int id, IFormFile file, CancellationToken cancellation)
     {
         var command = new UploadSiteDocumentCommand(id, file);
         var document = await _mediator.Send(command, cancellation);
