@@ -2,7 +2,24 @@ namespace Buy2.Application.DTOs.Points.DTOs;
 
 public record PointsAutomationOverviewDto(
     string AutomationPeriod,
-    AutomationSettingCategoryDto PerformanceSettings,
-    AutomationSettingCategoryDto TaskSettings,
-    AutomationSettingCategoryDto AttendanceSettings
+    AutomationCategoryDto Performance,
+    TaskCategoryDto Tasks,
+    AttendanceCategoryDto TimeAndAttendance
+);
+
+public record AutomationCategoryDto(
+    string Category,
+    List<AutomationSettingCategoryDto> Rules
+);
+
+public record TaskCategoryDto(
+    string Category,
+    List<AutomationSettingCategoryDto> CompletionRules,
+    List<AutomationSettingCategoryDto> DeadlineRules
+);
+
+public record AttendanceCategoryDto(
+    string Category,
+    List<AutomationSettingCategoryDto> AttendanceRateRules,
+    List<AutomationSettingCategoryDto> LatenessRules
 );
