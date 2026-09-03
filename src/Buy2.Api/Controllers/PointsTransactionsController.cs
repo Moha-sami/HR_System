@@ -20,6 +20,7 @@ public class PointsTransactionsController : ControllerBase
     }
 
     [HttpGet]
+    [Authorize(Roles = "Admin,HR,SuperAdmin")]
     [ProducesResponseType(typeof(PaginatedPointsTransactionsResponseDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
