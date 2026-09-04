@@ -4,6 +4,7 @@ public class RewardRedemption : BaseEntity
 {
     public int RewardItemId { get; set; }
     public int EmployeeId { get; set; }
+    public string VoucherCode { get; set; } = null!;
     public int RewardVoucherId { get; set; }
     public DateTimeOffset RedeemedAt { get; set; }
     public Employee Employee { get; set; } = null!;
