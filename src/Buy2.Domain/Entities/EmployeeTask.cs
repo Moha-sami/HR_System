@@ -10,4 +10,5 @@ public class EmployeeTask : BaseEntity
     public string Description { get; set; } = string.Empty;
     public EmployeeTaskStatus Status { get; set; } = EmployeeTaskStatus.Todo;
     public DateTime? DueDate { get; set; }
+    public string Priority { get; set; } = "Medium";
 }

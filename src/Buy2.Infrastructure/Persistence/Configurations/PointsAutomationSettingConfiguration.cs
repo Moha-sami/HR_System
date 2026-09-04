@@ -32,11 +32,19 @@ public class PointsAutomationSettingConfiguration : IEntityTypeConfiguration<Poi
         builder.Property(p => p.UpdatedAt)
             .HasColumnType("datetimeoffset");
 
+        builder.Property(p => p.MetricId)
+            .HasColumnType("int");
+
         builder.HasIndex(p => new { p.Category, p.SubCategory }).IsUnique();
 
         builder.HasMany(p => p.Ranges)
             .WithOne(r => r.AutomationSetting)
             .HasForeignKey(r => r.AutomationSettingId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasOne(p => p.Metric)
+            .WithMany()
+            .HasForeignKey(p => p.MetricId)
+            .OnDelete(DeleteBehavior.SetNull);
     }
 }

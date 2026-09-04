@@ -9,6 +9,9 @@ public class PointsAutomationSetting : BaseEntity
     public AutomationPeriod AutomationPeriod { get; set; } = AutomationPeriod.Monthly;
     public bool IsEnabled { get; set; } = true;
     public DateTimeOffset? UpdatedAt { get; set; }
+    
+    public int? MetricId { get; set; }
 
     public ICollection<PointsAutomationRange> Ranges { get; set; } = new List<PointsAutomationRange>();
+    public PerformanceMetric? Metric { get; set; }
 }

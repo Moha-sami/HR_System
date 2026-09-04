@@ -12,6 +12,7 @@ public class PointsTransaction : BaseEntity
     public string? Comments { get; set; }
     public DateTimeOffset? EvaluationPeriodStart { get; set; }
     public DateTimeOffset? EvaluationPeriodEnd { get; set; }
+    public AutomationCategory? AutomationCategory { get; set; }
     public int? CreatedByUserId { get; set; }
     public new DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
 

@@ -1,4 +1,5 @@
 using Buy2.Domain.Entities;
+using Buy2.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -33,6 +34,11 @@ public class PointsTransactionConfiguration : IEntityTypeConfiguration<PointsTra
         builder.Property(p => p.EvaluationPeriodEnd)
             .HasColumnType("datetimeoffset");
 
+        builder.Property(p => p.AutomationCategory)
+            .HasConversion<string>()
+            .HasMaxLength(30)
+            .HasColumnType("varchar(30)");
+
         builder.Property(p => p.CreatedByUserId)
             .HasColumnType("int");
 
@@ -53,5 +59,9 @@ public class PointsTransactionConfiguration : IEntityTypeConfiguration<PointsTra
         builder.HasIndex(p => new { p.EmployeeId, p.CreatedAt });
         builder.HasIndex(p => p.TriggeredBy);
         builder.HasIndex(p => p.TransactionType);
+        
+        builder.HasIndex(p => new { p.EmployeeId, p.AutomationCategory, p.TriggeredBy, p.EvaluationPeriodStart, p.EvaluationPeriodEnd })
+            .IsUnique()
+            .HasDatabaseName("IX_PointsTransaction_Idempotency");
     }
 }
