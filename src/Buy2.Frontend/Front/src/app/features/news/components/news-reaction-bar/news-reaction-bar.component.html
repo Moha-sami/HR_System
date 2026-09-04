@@ -1,0 +1,13 @@
+<div class="reaction-bar">
+  @for (item of reactions; track item.key) {
+    <button
+      type="button"
+      class="reaction-chip"
+      [class.active]="myReaction() === item.key"
+      (click)="select($event, item.key)"
+    >
+      <span>{{ item.emoji }}</span>
+      <span>{{ countLabel(item.key) }}</span>
+    </button>
+  }
+</div>

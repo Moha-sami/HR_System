@@ -122,8 +122,21 @@
   margin: 0 0 20px;
 }
 
-.likes {
+.engagement {
   display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.comments-trigger {
+  border: none;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  font: inherit;
+  display: inline-flex;
   align-items: center;
   gap: 6px;
   color: #234199;

@@ -127,12 +127,24 @@
 
 .news-card {
   display: flex;
-  gap: 16px;
+  flex-direction: column;
+  gap: 12px;
   text-align: left;
   background: #fff;
   border: 1.5px solid #e8ecf4;
   border-radius: 16px;
   padding: 16px;
+  width: 100%;
+  color: inherit;
+}
+
+.news-card-hit {
+  display: flex;
+  gap: 16px;
+  text-align: left;
+  background: transparent;
+  border: none;
+  padding: 0;
   cursor: pointer;
   width: 100%;
   font: inherit;
@@ -211,11 +223,18 @@
   font-weight: 600;
 }
 
-.news-likes {
+.news-card-engagement {
   display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.news-comments-count {
+  display: inline-flex;
   align-items: center;
   gap: 6px;
-  margin: 10px 0 0;
   font-size: 0.85rem;
   font-weight: 600;
   color: #234199;

@@ -3,14 +3,16 @@ import { Router } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { ModalComponent } from '@app/shared/components/modal/modal.component';
 import { ModalBodyComponent } from '@app/shared/components/modal/modal-body.component';
-import { CURRENT_NEWS_AUTHOR, type NewsPost } from '../../models/news.models';
+import { CURRENT_NEWS_AUTHOR, toggleReaction, type NewsPost, type NewsReaction } from '../../models/news.models';
 import { NewsService } from '../../services/news.service';
 import { formatLikeCount, formatNewsDateTime, isImageAttachment } from '../../utils/news.utils';
+import { NewsCommentsModalComponent } from '../news-comments-modal/news-comments-modal.component';
+import { NewsReactionBarComponent } from '../news-reaction-bar/news-reaction-bar.component';
 
 @Component({
   selector: 'app-news-view',
   standalone: true,
-  imports: [TranslatePipe, ModalComponent, ModalBodyComponent],
+  imports: [TranslatePipe, ModalComponent, ModalBodyComponent, NewsCommentsModalComponent, NewsReactionBarComponent],
   templateUrl: './news-view.component.html',
   styleUrls: ['../../styles/news-dialog.css', './news-view.component.css'],
 })
@@ -30,6 +32,7 @@ export class NewsViewComponent implements OnInit {
   readonly isArchiving = signal(false);
   readonly actionError = signal<string | null>(null);
   readonly successKind = signal<'delete' | 'archive'>('delete');
+  readonly showComments = signal(false);
 
   ngOnInit(): void {
     this.loadPost();
@@ -163,8 +166,27 @@ export class NewsViewComponent implements OnInit {
     return post.updatedAt !== post.createdAt;
   }
 
-  likesLabel(post: NewsPost): string {
-    return formatLikeCount(post.likesCount);
+  commentsLabel(post: NewsPost): string {
+    return formatLikeCount(post.commentsCount ?? 0);
+  }
+
+  setPostReaction(key: NewsReaction): void {
+    const current = this.post();
+    if (!current) {
+      return;
+    }
+    const next = toggleReaction(current.reactionCounts, current.myReaction, key);
+    this.newsService.updatePost(current.id, next).subscribe({
+      next: (updated) => this.post.set({ ...current, ...updated, ...next }),
+    });
+  }
+
+  openComments(): void {
+    this.showComments.set(true);
+  }
+
+  onCommentsCount(count: number): void {
+    this.post.update((current) => (current ? { ...current, commentsCount: count } : current));
   }
 
   hasImage(post: NewsPost): boolean {

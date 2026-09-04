@@ -1,0 +1,218 @@
+<app-modal
+  size="large"
+  [showHeader]="false"
+  [showActions]="false"
+  [closeOnBackdrop]="!showDeleteModal() && !showSuccessModal()"
+  [closeOnEscape]="!showDeleteModal() && !showSuccessModal()"
+  (closed)="closePanel()"
+>
+  <app-modal-body>
+    <div class="comments-shell">
+      <div class="comments-header">
+        @if (view() === 'replies') {
+          <button type="button" class="comments-back" (click)="backToList()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="15 18 9 12 15 6"/>
+            </svg>
+            {{ 'COMMON.BACK' | translate }}
+          </button>
+          <h2 class="comments-title comments-title--center">{{ 'NEWS.REPLIES' | translate }}</h2>
+        } @else {
+          <h2 class="comments-title">{{ 'NEWS.COMMENTS' | translate }}</h2>
+        }
+      </div>
+
+      <div class="comments-list">
+        @if (loading()) {
+          <p class="comments-empty">{{ 'COMMON.LOADING' | translate }}</p>
+        } @else if (view() === 'list') {
+          @if (topLevelComments().length === 0) {
+            <p class="comments-empty">{{ 'NEWS.NO_COMMENTS' | translate }}</p>
+          }
+          @for (comment of topLevelComments(); track comment.id) {
+            <ng-container *ngTemplateOutlet="commentRow; context: { $implicit: comment, showReply: true }" />
+          }
+        } @else if (parentComment(); as parent) {
+          <ng-container *ngTemplateOutlet="commentRow; context: { $implicit: parent, showReply: false }" />
+          @if (repliesVisible() && threadReplies().length > 0) {
+            <div class="replies-box">
+              @for (reply of threadReplies(); track reply.id) {
+                <ng-container *ngTemplateOutlet="commentRow; context: { $implicit: reply, showReply: false }" />
+              }
+              <button type="button" class="link-btn" (click)="hideReplies()">{{ 'NEWS.HIDE_REPLIES' | translate }}</button>
+            </div>
+          } @else if (threadReplies().length > 0) {
+            <button type="button" class="link-btn" (click)="showReplies()">
+              {{ 'NEWS.VIEW_MORE_REPLIES' | translate : { count: threadReplies().length } }}
+            </button>
+          }
+        }
+      </div>
+
+      <div class="composer">
+        <input
+          class="composer-input"
+          type="text"
+          [ngModel]="composerText()"
+          (ngModelChange)="composerText.set($event)"
+          [placeholder]="view() === 'replies'
+            ? ('NEWS.REPLY_TO' | translate : { name: parentComment()?.authorName || '' })
+            : ('NEWS.ADD_COMMENT' | translate)"
+          (keyup.enter)="send()"
+        />
+        <button type="button" class="composer-send" (click)="send()" [disabled]="!composerText().trim()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="22" y1="2" x2="11" y2="13"/>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </app-modal-body>
+</app-modal>
+
+<ng-template #commentRow let-comment let-showReply="showReply">
+  <article class="comment" (click)="$event.stopPropagation()">
+    @if (comment.removedByAdmin) {
+      <div class="admin-removed">
+        <div class="admin-banner">{{ 'NEWS.REMOVED_BY_ADMIN' | translate }}</div>
+        <div class="kebab-wrap">
+          <button type="button" class="kebab" (click)="toggleMenu($event, comment.id)">
+            <span></span><span></span><span></span>
+          </button>
+          @if (openMenuId() === comment.id) {
+            <div class="kebab-menu">
+              <button type="button" class="kebab-item" (click)="restoreComment(comment)">
+                {{ 'NEWS.RESTORE_COMMENT' | translate }}
+              </button>
+              <button type="button" class="kebab-item kebab-item--danger" (click)="askPermanentDelete(comment)">
+                {{ 'NEWS.DELETE_PERMANENT' | translate }}
+              </button>
+            </div>
+          }
+        </div>
+      </div>
+    } @else {
+      <img class="comment-avatar" [src]="comment.authorAvatar" [alt]="comment.authorName" />
+      <div class="comment-main">
+        <div class="comment-top">
+          <strong>{{ comment.authorName }}</strong>
+          <span class="comment-time">{{ relative(comment) }}</span>
+          <div class="kebab-wrap">
+            <button type="button" class="kebab" (click)="toggleMenu($event, comment.id)">
+              <span></span><span></span><span></span>
+            </button>
+            @if (openMenuId() === comment.id) {
+              <div class="kebab-menu">
+                <button type="button" class="kebab-item" (click)="startEdit(comment)">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                    stroke="#234199" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                  {{ 'COMMON.EDIT' | translate }}
+                </button>
+                <button type="button" class="kebab-item kebab-item--danger" (click)="askDelete(comment)">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                    stroke="#e53e3e" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+                  {{ 'NEWS.DELETE_COMMENT' | translate }}
+                </button>
+              </div>
+            }
+          </div>
+        </div>
+
+        @if (editingId() === comment.id) {
+          <textarea class="edit-area" [ngModel]="editDraft()" (ngModelChange)="editDraft.set($event)"></textarea>
+          <div class="edit-actions">
+            <button type="button" class="btn-discard-text" (click)="cancelEdit()">{{ 'COMMON.DISCARD' | translate }}</button>
+            <button type="button" class="btn-update" (click)="saveEdit(comment)">{{ 'NEWS.UPDATE_COMMENT' | translate }}</button>
+          </div>
+        } @else {
+          <p class="comment-body">{{ comment.content }}</p>
+          <div class="comment-actions">
+            <app-news-reaction-bar
+              [counts]="comment.reactionCounts"
+              [myReaction]="comment.myReaction"
+              (picked)="setReaction(comment, $event)"
+            />
+            @if (showReply) {
+              <button type="button" class="action-chip" (click)="openReplies(comment)">
+                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                  stroke="#234199" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                {{ 'NEWS.REPLY' | translate }}
+              </button>
+            }
+          </div>
+          @if (showReply && repliesFor(comment).length > 0) {
+            <button type="button" class="link-btn" (click)="openReplies(comment)">
+              {{ 'NEWS.VIEW_MORE_REPLIES' | translate : { count: repliesFor(comment).length } }}
+            </button>
+          }
+        }
+      </div>
+    }
+  </article>
+</ng-template>
+
+@if (showDeleteModal()) {
+  <app-modal
+    size="small"
+    [closeOnBackdrop]="!isDeleting()"
+    [showHeader]="false"
+    [showActions]="false"
+    (closed)="closeDeleteModal()"
+  >
+    <app-modal-body>
+      <div class="news-dialog">
+        <div class="news-dialog-icon news-dialog-icon--danger">
+          <div class="news-dialog-icon-core">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="3 6 5 6 21 6"/>
+              <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+            </svg>
+          </div>
+        </div>
+        <h3 class="news-dialog-title">{{ (deleteKind() === 'permanent' ? 'NEWS.DELETE_PERMANENT_TITLE' : 'NEWS.DELETE_COMMENT_TITLE') | translate }}</h3>
+        <p class="news-dialog-text">{{ (deleteKind() === 'permanent' ? 'NEWS.DELETE_PERMANENT_MSG' : 'NEWS.DELETE_COMMENT_MSG') | translate }}</p>
+        <div class="news-dialog-actions">
+          <button class="news-dialog-btn news-dialog-btn--outline" type="button" [disabled]="isDeleting()" (click)="closeDeleteModal()">
+            {{ 'COMMON.CANCEL' | translate }}
+          </button>
+          <button class="news-dialog-btn news-dialog-btn--danger" type="button" [disabled]="isDeleting()" (click)="confirmDelete()">
+            {{ (deleteKind() === 'permanent' ? 'NEWS.DELETE_PERMANENT' : 'COMMON.DELETE') | translate }}
+          </button>
+        </div>
+      </div>
+    </app-modal-body>
+  </app-modal>
+}
+
+@if (showSuccessModal()) {
+  <app-modal
+    size="small"
+    [closeOnBackdrop]="true"
+    [showHeader]="false"
+    [showActions]="false"
+    (closed)="closeSuccessModal()"
+  >
+    <app-modal-body>
+      <div class="news-dialog">
+        <div class="news-dialog-icon news-dialog-icon--success">
+          <div class="news-dialog-icon-core">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="5 13 9 17 15 9"/>
+              <polyline points="9 13 13 17 20 8"/>
+            </svg>
+          </div>
+        </div>
+        <h3 class="news-dialog-title">{{ successTitleKey() | translate }}</h3>
+        <p class="news-dialog-text">{{ successMsgKey() | translate }}</p>
+        <button class="news-dialog-btn news-dialog-btn--got-it" type="button" (click)="closeSuccessModal()">
+          {{ 'NEWS.GOT_IT' | translate }}
+        </button>
+      </div>
+    </app-modal-body>
+  </app-modal>
+}

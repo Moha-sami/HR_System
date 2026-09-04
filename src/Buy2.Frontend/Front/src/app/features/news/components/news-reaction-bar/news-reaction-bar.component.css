@@ -1,0 +1,30 @@
+:host {
+  display: block;
+}
+
+.reaction-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.reaction-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  border-radius: 999px;
+  padding: 2px 8px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #4a5568;
+  cursor: pointer;
+}
+
+.reaction-chip.active,
+.reaction-chip:hover {
+  border-color: #234199;
+  background: #eef2ff;
+  color: #234199;
+}
