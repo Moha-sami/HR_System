@@ -53,6 +53,8 @@ public class Buy2DbContext : DbContext
     public DbSet<TaskList> TaskLists => Set<TaskList>();
     public DbSet<TaskAssignment> TaskAssignments => Set<TaskAssignment>();
     public DbSet<PayrollRecord> PayrollRecords => Set<PayrollRecord>();
+    public DbSet<RewardCategory> RewardCategories => Set<RewardCategory>();
+    public DbSet<RewardVoucher> RewardVouchers => Set<RewardVoucher>();
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
