@@ -1,7 +1,11 @@
 using System.Text;
+using Buy2.Api.Services.PointsAutomation;
 using Buy2.Application;
+using Buy2.Application.Features.Points.Automation;
 using Buy2.Infrastructure;
 using Buy2.Infrastructure.Persistence;
+using Hangfire;
+using Hangfire.SqlServer;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -106,6 +110,29 @@ builder.Services.AddApplicationServices();
 // Add Infrastructure Layer Services (DbContext, Repositories, UnitOfWork, JWT Generator)
 builder.Services.AddInfrastructureServices(builder.Configuration);
 
+// Points automation options (Hangfire dispatcher)
+builder.Services.Configure<PointsAutomationOptions>(
+    builder.Configuration.GetSection(PointsAutomationOptions.SectionName));
+
+// Hangfire background jobs (SQL Server storage)
+var hangfireConnectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+    ?? "Server=.;Database=HrSystemDb;Trusted_Connection=True;TrustServerCertificate=True";
+
+builder.Services.AddHangfire(configuration => configuration
+    .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+    .UseSimpleAssemblyNameTypeSerializer()
+    .UseRecommendedSerializerSettings()
+    .UseSqlServerStorage(hangfireConnectionString, new SqlServerStorageOptions
+    {
+        SchemaName = "hangfire",
+        QueuePollInterval = TimeSpan.FromSeconds(15),
+        JobExpirationCheckInterval = TimeSpan.FromHours(1),
+        CountersAggregateInterval = TimeSpan.FromMinutes(5),
+        PrepareSchemaIfNecessary = true
+    }));
+builder.Services.AddHangfireServer();
+builder.Services.AddScoped<PointsAutomationDispatcher>();
+
 var app = builder.Build();
 
 // Auto-Seed Database on Startup
@@ -146,5 +173,26 @@ app.UseAuthorization();
 
 app.MapHealthChecks("/health");
 app.MapControllers();
+
+// Hangfire dashboard (Admin roles only)
+app.UseHangfireDashboard("/hangfire", new DashboardOptions
+{
+    Authorization = new[] { new HangfireDashboardAuthFilter() }
+});
+
+// Daily points automation dispatcher (12:00 PM Africa/Cairo by default)
+var automationOptions = builder.Configuration
+    .GetSection(PointsAutomationOptions.SectionName)
+    .Get<PointsAutomationOptions>() ?? new PointsAutomationOptions();
+
+if (automationOptions.Enabled)
+{
+    var cairoTimeZone = CairoPeriodResolver.GetTimeZone(automationOptions.TimeZone);
+    RecurringJob.AddOrUpdate<PointsAutomationDispatcher>(
+        "points-automation-dispatcher",
+        dispatcher => dispatcher.DispatchDailyAsync(),
+        automationOptions.DailyDispatcherCron,
+        new RecurringJobOptions { TimeZone = cairoTimeZone });
+}
 
 app.Run();
