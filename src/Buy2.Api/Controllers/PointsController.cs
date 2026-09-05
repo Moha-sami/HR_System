@@ -1,5 +1,5 @@
 using Buy2.Application.DTOs.Points.DTOs;
-using Buy2.Application.Features.Points.ExecuteAutomationJob;
+using Buy2.Application.Features.Points.Automation.ExecuteAutomationNow;
 using Buy2.Application.Features.Points.GetAutomationRules;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -49,12 +49,12 @@ public class PointsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<ActionResult<AutomationJobResultDto>> ExecuteAutomationJob(
-        [FromBody] ExecuteAutomationJobDto request,
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<AutomationJobResultDto>> ExecuteAutomationNow(
+        [FromBody] ExecuteAutomationNowDto request,
         CancellationToken cancellationToken)
     {
-        var command = new ExecutePointsAutomationJobCommand(request);
-        var result = await _mediator.Send(command, cancellationToken);
+        var result = await _mediator.Send(new ExecuteAutomationNowCommand(request), cancellationToken);
 
         if (!result.IsSuccess)
         {
@@ -64,6 +64,11 @@ public class PointsController : ControllerBase
             }
 
             return BadRequest(new { message = result.ErrorMessage });
+        }
+
+        if (result.Data is null)
+        {
+            return Ok(new { message = result.Message ?? "Nothing to evaluate." });
         }
 
         return Ok(result.Data);

@@ -1,15 +1,14 @@
 using Buy2.Application.Common.Interfaces;
 using Buy2.Application.DTOs.Points.DTOs;
-using Buy2.Application.Features.Points.ExecuteAutomationJob;
-using Buy2.Application.Features.Points.ExecuteAutomationJob.Evaluators;
+using Buy2.Application.Features.Points.Automation.Evaluators;
 using Buy2.Domain.Entities;
 using Buy2.Domain.Enums;
-using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
-namespace Buy2.Application.Features.Points.ExecuteAutomationJob;
+namespace Buy2.Application.Features.Points.Automation;
 
-public class ExecutePointsAutomationJobCommandHandler : IRequestHandler<ExecutePointsAutomationJobCommand, ExecutePointsAutomationJobResult>
+public class PointsAutomationRunner : IPointsAutomationRunner
 {
     private readonly IRepository<PointsAutomationSetting> _automationSettingRepository;
     private readonly IRepository<Employee> _employeeRepository;
@@ -17,18 +16,22 @@ public class ExecutePointsAutomationJobCommandHandler : IRequestHandler<ExecuteP
     private readonly IRepository<EmployeeTask> _employeeTaskRepository;
     private readonly IRepository<PerformanceSubmission> _performanceSubmissionRepository;
     private readonly IRepository<PointsTransaction> _pointsTransactionRepository;
+    private readonly IRepository<PointsAutomationRun> _automationRunRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IEnumerable<IAutomationEvaluator> _evaluators;
+    private readonly ILogger<PointsAutomationRunner> _logger;
 
-    public ExecutePointsAutomationJobCommandHandler(
+    public PointsAutomationRunner(
         IRepository<PointsAutomationSetting> automationSettingRepository,
         IRepository<Employee> employeeRepository,
         IRepository<AttendanceRecord> attendanceRecordRepository,
         IRepository<EmployeeTask> employeeTaskRepository,
         IRepository<PerformanceSubmission> performanceSubmissionRepository,
         IRepository<PointsTransaction> pointsTransactionRepository,
+        IRepository<PointsAutomationRun> automationRunRepository,
         IUnitOfWork unitOfWork,
-        IEnumerable<IAutomationEvaluator> evaluators)
+        IEnumerable<IAutomationEvaluator> evaluators,
+        ILogger<PointsAutomationRunner> logger)
     {
         _automationSettingRepository = automationSettingRepository;
         _employeeRepository = employeeRepository;
@@ -36,49 +39,74 @@ public class ExecutePointsAutomationJobCommandHandler : IRequestHandler<ExecuteP
         _employeeTaskRepository = employeeTaskRepository;
         _performanceSubmissionRepository = performanceSubmissionRepository;
         _pointsTransactionRepository = pointsTransactionRepository;
+        _automationRunRepository = automationRunRepository;
         _unitOfWork = unitOfWork;
         _evaluators = evaluators;
+        _logger = logger;
     }
 
-    public async Task<ExecutePointsAutomationJobResult> Handle(ExecutePointsAutomationJobCommand request, CancellationToken cancellationToken)
+    public async Task<AutomationJobResultDto?> RunAsync(
+        AutomationPeriod period,
+        DateTimeOffset periodStartUtc,
+        DateTimeOffset periodEndUtc,
+        CancellationToken cancellationToken = default)
     {
-        var dto = request.Request;
         var executionId = Guid.NewGuid().ToString();
         var executedAt = DateTimeOffset.UtcNow;
 
-        var enabledSettings = await _automationSettingRepository.Query()
+        var settings = await _automationSettingRepository.Query()
             .AsNoTracking()
             .Include(s => s.Ranges)
-            .Where(s => s.IsEnabled)
+            .Where(s => s.IsEnabled && s.AutomationPeriod == period)
             .ToListAsync(cancellationToken);
 
-        if (!enabledSettings.Any())
+        if (!settings.Any())
         {
-            return new ExecutePointsAutomationJobResult(
-                IsSuccess: false,
-                ErrorMessage: "No enabled automation settings found.",
-                IsNotFound: true);
+            _logger.LogInformation(
+                "Points automation skipped for period {Period}: no enabled settings.",
+                period);
+            return null;
         }
 
-        var validationResult = ValidateRanges(enabledSettings);
+        var alreadyCompleted = await _automationRunRepository.Query()
+            .AsNoTracking()
+            .AnyAsync(
+                r => r.AutomationPeriod == period
+                    && r.PeriodStart == periodStartUtc
+                    && r.PeriodEnd == periodEndUtc
+                    && r.Status == AutomationRunStatus.Completed,
+                cancellationToken);
+
+        if (alreadyCompleted)
+        {
+            _logger.LogInformation(
+                "Points automation skipped for period {Period} [{Start} - {End}]: already completed.",
+                period, periodStartUtc, periodEndUtc);
+            return null;
+        }
+
+        var validationResult = ValidateRanges(settings);
         if (!validationResult.IsValid)
         {
-            return new ExecutePointsAutomationJobResult(
-                IsSuccess: false,
-                ErrorMessage: validationResult.ErrorMessage,
-                IsNotFound: false);
+            await RecordRunAsync(
+                period, periodStartUtc, periodEndUtc, executedAt,
+                AutomationRunStatus.Failed, 0, 0, validationResult.ErrorMessage,
+                cancellationToken);
+            throw new InvalidOperationException(validationResult.ErrorMessage);
         }
 
-        var automationPeriod = enabledSettings.First().AutomationPeriod;
-        var (periodStart, periodEnd) = ResolveEvaluationPeriod(automationPeriod);
+        var targetEmployees = await _employeeRepository.Query()
+            .AsNoTracking()
+            .Where(e => e.IsActive && !e.IsDeleted)
+            .ToListAsync(cancellationToken);
 
-        var targetEmployees = await ResolveTargetEmployees(dto.TargetEmployeeIds, cancellationToken);
         if (!targetEmployees.Any())
         {
-            return new ExecutePointsAutomationJobResult(
-                IsSuccess: false,
-                ErrorMessage: "No active employees found for evaluation.",
-                IsNotFound: true);
+            await RecordRunAsync(
+                period, periodStartUtc, periodEndUtc, executedAt,
+                AutomationRunStatus.Failed, 0, 0, "No active employees found for evaluation.",
+                cancellationToken);
+            throw new InvalidOperationException("No active employees found for evaluation.");
         }
 
         var employeeIds = targetEmployees.Select(e => e.Id).ToList();
@@ -87,8 +115,8 @@ public class ExecutePointsAutomationJobCommandHandler : IRequestHandler<ExecuteP
             .AsNoTracking()
             .Where(t => employeeIds.Contains(t.EmployeeId)
                 && t.TriggeredBy == "KPI Achievement"
-                && t.EvaluationPeriodStart == periodStart
-                && t.EvaluationPeriodEnd == periodEnd)
+                && t.EvaluationPeriodStart == periodStartUtc
+                && t.EvaluationPeriodEnd == periodEndUtc)
             .Select(t => new { t.EmployeeId, t.AutomationCategory })
             .ToListAsync(cancellationToken);
 
@@ -99,24 +127,24 @@ public class ExecutePointsAutomationJobCommandHandler : IRequestHandler<ExecuteP
         var attendanceRecords = await _attendanceRecordRepository.Query()
             .AsNoTracking()
             .Where(r => employeeIds.Contains(r.EmployeeId)
-                && r.Date >= periodStart.Date
-                && r.Date <= periodEnd.Date)
+                && r.Date >= periodStartUtc.Date
+                && r.Date <= periodEndUtc.Date)
             .ToListAsync(cancellationToken);
 
         var employeeTasks = await _employeeTaskRepository.Query()
             .AsNoTracking()
             .Where(t => employeeIds.Contains(t.EmployeeId)
                 && t.DueDate.HasValue
-                && t.DueDate.Value.Date >= periodStart.Date
-                && t.DueDate.Value.Date <= periodEnd.Date)
+                && t.DueDate.Value.Date >= periodStartUtc.Date
+                && t.DueDate.Value.Date <= periodEndUtc.Date)
             .ToListAsync(cancellationToken);
 
         var performanceSubmissions = await _performanceSubmissionRepository.Query()
             .AsNoTracking()
             .Include(s => s.PerformanceMetric)
             .Where(s => employeeIds.Contains(s.EmployeeId)
-                && s.SubmissionDate >= periodStart.Date
-                && s.SubmissionDate <= periodEnd.Date)
+                && s.SubmissionDate >= periodStartUtc.Date
+                && s.SubmissionDate <= periodEndUtc.Date)
             .ToListAsync(cancellationToken);
 
         var attendanceByEmployee = attendanceRecords.GroupBy(r => r.EmployeeId).ToDictionary(g => g.Key, g => g.ToList());
@@ -134,8 +162,8 @@ public class ExecutePointsAutomationJobCommandHandler : IRequestHandler<ExecuteP
         {
             foreach (var evaluator in _evaluators)
             {
-                var settings = enabledSettings.Where(s => s.Category == evaluator.Category).ToList();
-                if (!settings.Any())
+                var evaluatorSettings = settings.Where(s => s.Category == evaluator.Category).ToList();
+                if (!evaluatorSettings.Any())
                 {
                     continue;
                 }
@@ -155,14 +183,14 @@ public class ExecutePointsAutomationJobCommandHandler : IRequestHandler<ExecuteP
                     var context = new EvaluationContext
                     {
                         EmployeeId = employee.Id,
-                        PeriodStart = periodStart,
-                        PeriodEnd = periodEnd,
+                        PeriodStart = periodStartUtc,
+                        PeriodEnd = periodEndUtc,
                         AttendanceRecords = attendanceByEmployee.GetValueOrDefault(employee.Id, new List<AttendanceRecord>()),
                         Tasks = tasksByEmployee.GetValueOrDefault(employee.Id, new List<EmployeeTask>()),
                         Submissions = submissionsByEmployee.GetValueOrDefault(employee.Id, new List<PerformanceSubmission>())
                     };
 
-                    var (points, ruleEvaluations) = await evaluator.EvaluateAsync(context, settings, cancellationToken);
+                    var (points, ruleEvaluations) = await evaluator.EvaluateAsync(context, evaluatorSettings, cancellationToken);
 
                     if (points != 0 && ruleEvaluations.Any())
                     {
@@ -175,8 +203,8 @@ public class ExecutePointsAutomationJobCommandHandler : IRequestHandler<ExecuteP
                             TransactionType = transactionType,
                             TriggeredBy = "KPI Achievement",
                             Comments = $"{evaluator.Category} Automation",
-                            EvaluationPeriodStart = periodStart,
-                            EvaluationPeriodEnd = periodEnd,
+                            EvaluationPeriodStart = periodStartUtc,
+                            EvaluationPeriodEnd = periodEndUtc,
                             AutomationCategory = evaluator.Category,
                             CreatedAt = DateTimeOffset.UtcNow
                         };
@@ -191,8 +219,8 @@ public class ExecutePointsAutomationJobCommandHandler : IRequestHandler<ExecuteP
                             Category: evaluator.Category.ToString(),
                             PointsAmount: points,
                             TransactionId: transaction.Id,
-                            EvaluationPeriodStart: periodStart,
-                            EvaluationPeriodEnd: periodEnd,
+                            EvaluationPeriodStart: periodStartUtc,
+                            EvaluationPeriodEnd: periodEndUtc,
                             RuleEvaluations: ruleEvaluations
                         ));
 
@@ -202,6 +230,9 @@ public class ExecutePointsAutomationJobCommandHandler : IRequestHandler<ExecuteP
                 }
                 catch (Exception ex)
                 {
+                    _logger.LogWarning(ex,
+                        "Points automation evaluation failed for employee {EmployeeId}, category {Category}.",
+                        employee.Id, evaluator.Category);
                     employeeFailures.Add(new EmployeeAutomationFailureDto(
                         EmployeeId: employee.Id,
                         Category: evaluator.Category.ToString(),
@@ -213,6 +244,11 @@ public class ExecutePointsAutomationJobCommandHandler : IRequestHandler<ExecuteP
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
+        await RecordRunAsync(
+            period, periodStartUtc, periodEndUtc, executedAt,
+            AutomationRunStatus.Completed, targetEmployees.Count, transactionsCreated, null,
+            cancellationToken);
+
         var result = new AutomationJobResultDto(
             ExecutionId: executionId,
             ExecutedAt: executedAt,
@@ -223,56 +259,37 @@ public class ExecutePointsAutomationJobCommandHandler : IRequestHandler<ExecuteP
             SkippedEmployeeIds: skippedEmployeeIds,
             EmployeeFailures: employeeFailures,
             SuccessfulEvaluations: successfulEvaluations,
-            SummaryNotes: $"Automation executed for {targetEmployees.Count} employees across {_evaluators.Count()} categories. {skippedEmployeeIds.Count} skipped, {employeeFailures.Count} failures."
+            SummaryNotes: $"{period} automation executed for {targetEmployees.Count} employees across {_evaluators.Count()} categories. {skippedEmployeeIds.Count} skipped, {employeeFailures.Count} failures."
         );
 
-        return new ExecutePointsAutomationJobResult(IsSuccess: true, Data: result);
+        return result;
     }
 
-    private (DateTimeOffset, DateTimeOffset) ResolveEvaluationPeriod(AutomationPeriod period)
+    private async Task RecordRunAsync(
+        AutomationPeriod period,
+        DateTimeOffset periodStartUtc,
+        DateTimeOffset periodEndUtc,
+        DateTimeOffset executedAt,
+        AutomationRunStatus status,
+        int employeesEvaluated,
+        int transactionsCreated,
+        string? errorMessage,
+        CancellationToken cancellationToken)
     {
-        var now = DateTimeOffset.UtcNow;
-        var today = now.Date;
-
-        switch (period)
+        var run = new PointsAutomationRun
         {
-            case AutomationPeriod.Daily:
-                return (today, today.AddDays(1).AddTicks(-1));
-            case AutomationPeriod.Weekly:
-            {
-                var startOfWeek = today.AddDays(-(int)today.DayOfWeek);
-                return (startOfWeek, startOfWeek.AddDays(7).AddTicks(-1));
-            }
-            case AutomationPeriod.BiWeekly:
-            {
-                var epoch = new DateTime(2000, 1, 1);
-                var daysSinceEpoch = (today - epoch).Days;
-                var biWeekNumber = daysSinceEpoch / 14;
-                var biWeekStart = epoch.AddDays(biWeekNumber * 14);
-                return (biWeekStart, biWeekStart.AddDays(14).AddTicks(-1));
-            }
-            case AutomationPeriod.Monthly:
-            {
-                var startOfMonth = new DateTime(today.Year, today.Month, 1);
-                return (startOfMonth, startOfMonth.AddMonths(1).AddTicks(-1));
-            }
-            default:
-                return (today, today.AddDays(1).AddTicks(-1));
-        }
-    }
+            AutomationPeriod = period,
+            PeriodStart = periodStartUtc,
+            PeriodEnd = periodEndUtc,
+            Status = status,
+            EmployeesEvaluated = employeesEvaluated,
+            TransactionsCreated = transactionsCreated,
+            ExecutedAt = executedAt,
+            ErrorMessage = errorMessage
+        };
 
-    private async Task<List<Employee>> ResolveTargetEmployees(List<int>? targetEmployeeIds, CancellationToken cancellationToken)
-    {
-        var query = _employeeRepository.Query()
-            .AsNoTracking()
-            .Where(e => e.IsActive && !e.IsDeleted);
-
-        if (targetEmployeeIds != null && targetEmployeeIds.Any())
-        {
-            query = query.Where(e => targetEmployeeIds.Contains(e.Id));
-        }
-
-        return await query.ToListAsync(cancellationToken);
+        await _automationRunRepository.AddAsync(run);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
 
     private (bool IsValid, string? ErrorMessage) ValidateRanges(List<PointsAutomationSetting> settings)
@@ -285,7 +302,7 @@ public class ExecutePointsAutomationJobCommandHandler : IRequestHandler<ExecuteP
             }
 
             var ranges = setting.Ranges.OrderBy(r => r.FromValue ?? decimal.MinValue).ToList();
-            
+
             for (int i = 0; i < ranges.Count; i++)
             {
                 var current = ranges[i];
@@ -307,7 +324,7 @@ public class ExecutePointsAutomationJobCommandHandler : IRequestHandler<ExecuteP
                         .Select(r => r.TaskPriority!)
                         .Distinct()
                         .ToList();
-                    
+
                     if (!priorities.Any())
                     {
                         return (false, $"Deadline automation setting requires TaskPriority to be configured for at least one range.");

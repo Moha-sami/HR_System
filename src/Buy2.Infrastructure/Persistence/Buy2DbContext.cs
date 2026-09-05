@@ -21,6 +21,7 @@ public class Buy2DbContext : DbContext
     public DbSet<PointsTransaction> PointsTransactions => Set<PointsTransaction>();
     public DbSet<PointsAutomationSetting> PointsAutomationSettings => Set<PointsAutomationSetting>();
     public DbSet<PointsAutomationRange> PointsAutomationRanges => Set<PointsAutomationRange>();
+    public DbSet<PointsAutomationRun> PointsAutomationRuns => Set<PointsAutomationRun>();
     public DbSet<RewardItem> RewardItems => Set<RewardItem>();
     public DbSet<RewardRedemption> RewardRedemptions => Set<RewardRedemption>();
     public DbSet<Role> Roles => Set<Role>();
