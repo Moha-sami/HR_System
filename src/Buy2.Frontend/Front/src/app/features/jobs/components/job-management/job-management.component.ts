@@ -55,11 +55,11 @@ export class JobManagementComponent implements AfterViewInit {
   // =========================================================
 
   readonly jobs = signal<Job[]>([]);
-  // readonly showJobCreateModal = signal(false); // <-- REMOVE THIS
+  readonly totalCount = signal(0);
 
   readonly currentPage = signal(1);
 
-  readonly pageSize = 5;
+  readonly pageSize = 10;
 
   readonly searchTerm = signal('');
 
@@ -80,16 +80,16 @@ export class JobManagementComponent implements AfterViewInit {
 
   readonly columns = computed<ColumnDef[]>(() => [
     {
-      key: 'jobName',
+      key: 'title',
       label: this.translate.instant('JOB_MANAGEMENT.TABLE.JOB_NAME'),
     },
     {
-      key: 'jobDescription',
-      label: this.translate.instant('JOB_MANAGEMENT.TABLE.JOB_DESCRIPTION'),
+      key: 'departmentName',
+      label: 'Department',
       sortable: true,
     },
     {
-      key: 'numberOfEmployees',
+      key: 'assignedEmployeesCount',
       label: this.translate.instant('JOB_MANAGEMENT.TABLE.NUMBER_OF_EMPLOYEES'),
       sortable: true,
     },
@@ -131,28 +131,13 @@ export class JobManagementComponent implements AfterViewInit {
   // =========================================================
 
   readonly filteredJobs = computed(() => {
-
-    const search =
-      this.searchTerm()
-        .toLowerCase()
-        .trim();
-
+    const search = this.searchTerm().toLowerCase().trim();
     const data = this.jobs();
-
-    if (!search) {
-      return data;
-    }
-
+    if (!search) return data;
     return data.filter(job =>
-      (job.jobName ?? '')
-        .toLowerCase()
-        .includes(search)
-      ||
-      (job.jobDescription ?? '')
-        .toLowerCase()
-        .includes(search)
+      (job.title ?? '').toLowerCase().includes(search) ||
+      (job.departmentName ?? '').toLowerCase().includes(search)
     );
-
   });
 
 
@@ -160,35 +145,11 @@ export class JobManagementComponent implements AfterViewInit {
   // TOTAL PAGES
   // =========================================================
 
-  readonly totalPages = computed(() => {
+  readonly totalPages = computed(() =>
+    Math.max(1, Math.ceil(this.totalCount() / this.pageSize))
+  );
 
-    return Math.max(
-      1,
-      Math.ceil(
-        this.filteredJobs().length /
-        this.pageSize
-      )
-    );
-
-  });
-
-
-  // =========================================================
-  // DISPLAYED JOBS
-  // =========================================================
-
-  readonly displayedJobs = computed(() => {
-
-    const start =
-      (this.currentPage() - 1) *
-      this.pageSize;
-
-    return this.filteredJobs().slice(
-      start,
-      start + this.pageSize
-    );
-
-  });
+  readonly displayedJobs = computed(() => this.jobs());
 
 
   // =========================================================
@@ -196,30 +157,13 @@ export class JobManagementComponent implements AfterViewInit {
   // =========================================================
 
   loadJobs(): void {
-
-    this.jobService
-      .getJobs()
-      .subscribe({
-
-        next: (jobs) => {
-
-          this.jobs.set(jobs);
-
-          this.currentPage.set(1);
-
-        },
-
-        error: (error) => {
-
-          console.error(
-            'Error loading jobs:',
-            error
-          );
-
-        },
-
-      });
-
+    this.jobService.getJobs(this.currentPage(), this.pageSize).subscribe({
+      next: (response) => {
+        this.jobs.set(response.items as Job[]);
+        this.totalCount.set(response.totalCount);
+      },
+      error: (error) => console.error('Error loading jobs:', error),
+    });
   }
 
 
@@ -246,9 +190,8 @@ export class JobManagementComponent implements AfterViewInit {
   // =========================================================
 
   onPageChanged(page: number): void {
-
     this.currentPage.set(page);
-
+    this.loadJobs();
   }
 
 
@@ -308,19 +251,8 @@ export class JobManagementComponent implements AfterViewInit {
   // =========================================================
 
   onSortToggle(): void {
-
-    const sorted =
-      [...this.jobs()].sort((a, b) =>
-        (a.jobName ?? '')
-          .localeCompare(
-            b.jobName ?? ''
-          )
-      );
-
+    const sorted = [...this.jobs()].sort((a, b) => (a.title ?? '').localeCompare(b.title ?? ''));
     this.jobs.set(sorted);
-
-    this.currentPage.set(1);
-
   }
 
 
@@ -348,16 +280,11 @@ export class JobManagementComponent implements AfterViewInit {
     ];
 
 
-    const rows =
-      data.map(job => [
-
-        job.jobName ?? '',
-
-        job.jobDescription ?? '',
-
-        job.numberOfEmployees ?? '',
-
-      ]);
+    const rows = data.map(job => [
+      job.title ?? '',
+      job.departmentName ?? '',
+      job.assignedEmployeesCount ?? '',
+    ]);
 
 
     const csvContent = [
@@ -443,10 +370,7 @@ export class JobManagementComponent implements AfterViewInit {
 
   deleteJob(job: Job): void {
 
-    const confirmed =
-      window.confirm(
-        `Are you sure you want to delete "${job.jobName}"?`
-      );
+    const confirmed = window.confirm(`Are you sure you want to delete "${job.title}"?`);
 
 
     if (!confirmed) {
