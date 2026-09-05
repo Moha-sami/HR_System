@@ -88,21 +88,22 @@ public class ReassignUsersAndDeleteRoleCommandHandler : IRequestHandler<Reassign
             }
         }
 
-        await _unitOfWork.BeginTransactionAsync(cancellationToken);
-
-        foreach (var employee in assignedEmployees)
+        return await _unitOfWork.ExecuteInTransactionAsync(async () =>
         {
-            employee.RoleId = employeeTargetRoles[employee.Id];
-            _employeeRepository.Update(employee);
-        }
+            foreach (var employee in assignedEmployees)
+            {
+                employee.RoleId = employeeTargetRoles[employee.Id];
+                _employeeRepository.Update(employee);
+            }
 
-        role.IsActive = false;
-        role.UpdatedAt = DateTimeOffset.UtcNow;
-        _roleRepository.Update(role);
+            role.IsActive = false;
+            role.UpdatedAt = DateTimeOffset.UtcNow;
+            _roleRepository.Update(role);
 
-        await _unitOfWork.CommitTransactionAsync(cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return new RoleDeletionResultDto(true, request.Id, assignedEmployees.Count, "Role deleted and users reassigned successfully.");
+            return new RoleDeletionResultDto(true, request.Id, assignedEmployees.Count, "Role deleted and users reassigned successfully.");
+        }, cancellationToken);
     }
 
     private static Dictionary<int, int> BuildReassignmentMap(List<EmployeeReassignmentDto>? reassignments)
