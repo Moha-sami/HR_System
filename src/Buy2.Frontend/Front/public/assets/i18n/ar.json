@@ -342,7 +342,8 @@
       "PAYROLL": "تفاصيل الراتب",
       "ATTENDANCE": "الوقت والحضور",
       "DOCUMENTS": "المستندات",
-      "VIOLATIONS": "المخالفات"
+      "VIOLATIONS": "المخالفات",
+      "POINTS_REWARDS": "النقاط والمكافآت"
     },
     "HEADER": {
       "EMPLOYEE_CODE": "كود الموظف",
@@ -465,6 +466,33 @@
         "LOAD_FAILED": "فشل في تحميل تفاصيل المخالفة. يرجى المحاولة مرة أخرى.",
         "RESOLVE_FAILED": "فشل في حل المخالفة. يرجى المحاولة مرة أخرى.",
         "VIOLATION_RESOLVE_FAILED": "فشل في حل المخالفة. يرجى المحاولة مرة أخرى."
+      }
+    },
+    "POINTS_REWARDS": {
+      "CURRENT_BALANCE": "رصيد النقاط الحالي",
+      "TOTAL_POINTS_REDEEMED": "إجمالي النقاط المستبدلة",
+      "TOTAL_REWARDS_REDEEMED": "إجمالي المكافآت المستبدلة",
+      "TOTAL_REWARDS_COST": "إجمالي تكلفة المكافآت",
+      "FILTER_BY": "تصفية حسب",
+      "DATE": "التاريخ",
+      "TYPE": "النوع",
+      "ALL_TYPES": "كل الأنواع",
+      "TRIGGERED_BY": "تم التشغيل بواسطة",
+      "TRIGGERED_BY_PLACEHOLDER": "أدخل سبب التشغيل",
+      "SEARCH": "بحث",
+      "SEARCH_PLACEHOLDER": "ابحث في هذه الصفحة...",
+      "POINTS_VALUE": "قيمة النقاط",
+      "COMMENTS": "التعليقات",
+      "NO_TRANSACTIONS": "لا توجد معاملات",
+      "SUMMARY_LOADING": "جاري تحميل ملخص النقاط...",
+      "SUMMARY_ERROR": "فشل تحميل ملخص النقاط. يرجى المحاولة مرة أخرى.",
+      "TRANSACTIONS_LOADING": "جاري تحميل المعاملات...",
+      "TRANSACTIONS_ERROR": "فشل تحميل المعاملات. يرجى المحاولة مرة أخرى.",
+      "TYPES": {
+        "EARNED": "مكتسبة",
+        "REDEEMED": "مستبدلة",
+        "ADD": "إضافة",
+        "DEDUCT": "خصم"
       }
     }
   },

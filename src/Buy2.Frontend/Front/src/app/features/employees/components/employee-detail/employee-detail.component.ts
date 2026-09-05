@@ -20,7 +20,7 @@ export class EmployeeDetailComponent {
   readonly loadError = this.employeeDetailService.detailError;
 
   readonly activeTab = signal<
-    'information' | 'payroll' | 'attendance' | 'documents' | 'violations'
+    'information' | 'payroll' | 'attendance' | 'documents' | 'violations' | 'points-rewards'
   >('information');
 
   readonly tabs = [
@@ -29,6 +29,7 @@ export class EmployeeDetailComponent {
     { id: 'attendance', label: 'EMPLOYEE_DETAIL.TABS.ATTENDANCE' },
     { id: 'documents', label: 'EMPLOYEE_DETAIL.TABS.DOCUMENTS' },
     { id: 'violations', label: 'EMPLOYEE_DETAIL.TABS.VIOLATIONS' },
+    { id: 'points-rewards', label: 'EMPLOYEE_DETAIL.TABS.POINTS_REWARDS' },
   ] as const;
 
   constructor() {
@@ -42,7 +43,12 @@ export class EmployeeDetailComponent {
 
     this.route.firstChild?.url.subscribe((segments) => {
       const tab = segments[0]?.path as
-        'information' | 'payroll' | 'attendance' | 'documents' | 'violations';
+        | 'information'
+        | 'payroll'
+        | 'attendance'
+        | 'documents'
+        | 'violations'
+        | 'points-rewards';
       if (tab && this.tabs.some((t) => t.id === tab)) {
         this.activeTab.set(tab);
       }

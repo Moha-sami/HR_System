@@ -1,0 +1,105 @@
+@if (employee()) {
+  <section class="points-rewards-tab p-6">
+    <div class="mx-auto max-w-7xl space-y-6">
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        @if (summaryLoading()) {
+          @for (card of [1, 2, 3, 4]; track card) {
+            <div class="h-28 animate-pulse rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+              <div class="h-4 w-3/4 rounded bg-gray-200"></div>
+              <div class="mt-4 h-8 w-1/2 rounded bg-gray-100"></div>
+            </div>
+          }
+          <span class="sr-only">{{ 'EMPLOYEE_DETAIL.POINTS_REWARDS.SUMMARY_LOADING' | translate }}</span>
+        } @else if (summaryError()) {
+          <div class="col-span-full rounded-xl border border-red-200 bg-red-50 p-5 text-center text-red-700">
+            <p>{{ 'EMPLOYEE_DETAIL.POINTS_REWARDS.SUMMARY_ERROR' | translate }}</p>
+            <button type="button" class="mt-2 text-sm font-semibold underline" (click)="retrySummary()">
+              {{ 'COMMON.RETRY' | translate }}
+            </button>
+          </div>
+        } @else if (summary(); as data) {
+          <div class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+            <p class="text-sm font-medium text-gray-500">{{ 'EMPLOYEE_DETAIL.POINTS_REWARDS.CURRENT_BALANCE' | translate }}</p>
+            <p class="mt-2 text-3xl font-bold text-indigo-600">{{ data.currentBalance | number }}</p>
+          </div>
+          <div class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+            <p class="text-sm font-medium text-gray-500">{{ 'EMPLOYEE_DETAIL.POINTS_REWARDS.TOTAL_POINTS_REDEEMED' | translate }}</p>
+            <p class="mt-2 text-3xl font-bold text-red-600">{{ data.totalPointsRedeemed | number }}</p>
+          </div>
+          <div class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+            <p class="text-sm font-medium text-gray-500">{{ 'EMPLOYEE_DETAIL.POINTS_REWARDS.TOTAL_REWARDS_REDEEMED' | translate }}</p>
+            <p class="mt-2 text-3xl font-bold text-orange-500">{{ data.totalRewardsRedeemed | number }}</p>
+          </div>
+          <div class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+            <p class="text-sm font-medium text-gray-500">{{ 'EMPLOYEE_DETAIL.POINTS_REWARDS.TOTAL_REWARDS_COST' | translate }}</p>
+            <p class="mt-2 text-3xl font-bold text-green-600">{{ data.totalRewardsCostPoints | number }}</p>
+          </div>
+        }
+      </div>
+
+      <div class="space-y-4 rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+        <div class="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+          <div class="flex flex-1 flex-col gap-3 md:flex-row md:items-end">
+            <p class="pb-2.5 text-sm font-semibold text-gray-700">{{ 'EMPLOYEE_DETAIL.POINTS_REWARDS.FILTER_BY' | translate }}</p>
+            <label class="min-w-40">
+              <span class="mb-1 block text-xs font-medium text-gray-500">{{ 'EMPLOYEE_DETAIL.POINTS_REWARDS.DATE' | translate }}</span>
+              <input type="date" class="h-10 w-full rounded-lg border border-gray-300 bg-white px-3 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500" [ngModel]="selectedDate()" (ngModelChange)="selectedDate.set($event); onServerFilterChange()" [disabled]="transactionsLoading()" />
+            </label>
+            <label class="min-w-40">
+              <span class="mb-1 block text-xs font-medium text-gray-500">{{ 'EMPLOYEE_DETAIL.POINTS_REWARDS.TYPE' | translate }}</span>
+              <select class="h-10 w-full rounded-lg border border-gray-300 bg-white px-3 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500" [ngModel]="selectedType()" (ngModelChange)="selectedType.set($event); onServerFilterChange()" [disabled]="transactionsLoading()">
+                <option value="">{{ 'EMPLOYEE_DETAIL.POINTS_REWARDS.ALL_TYPES' | translate }}</option>
+                @for (type of transactionTypes; track type) {
+                  <option [value]="type">{{ 'EMPLOYEE_DETAIL.POINTS_REWARDS.TYPES.' + type.toUpperCase() | translate }}</option>
+                }
+              </select>
+            </label>
+            <label class="min-w-52 flex-1">
+              <span class="mb-1 block text-xs font-medium text-gray-500">{{ 'EMPLOYEE_DETAIL.POINTS_REWARDS.TRIGGERED_BY' | translate }}</span>
+              <input type="text" class="h-10 w-full rounded-lg border border-gray-300 bg-white px-3 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500" [placeholder]="'EMPLOYEE_DETAIL.POINTS_REWARDS.TRIGGERED_BY_PLACEHOLDER' | translate" [ngModel]="triggeredBy()" (ngModelChange)="triggeredBy.set($event)" (blur)="applyTriggeredByFilter()" (keydown)="onTriggeredByKeydown($event)" [disabled]="transactionsLoading()" />
+            </label>
+          </div>
+
+          <label class="relative block w-full xl:w-80">
+            <span class="sr-only">{{ 'EMPLOYEE_DETAIL.POINTS_REWARDS.SEARCH' | translate }}</span>
+            <svg aria-hidden="true" class="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3-3"/></svg>
+            <input type="search" class="h-10 w-full rounded-lg border border-gray-300 bg-white pe-3 ps-10 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500" [placeholder]="'EMPLOYEE_DETAIL.POINTS_REWARDS.SEARCH_PLACEHOLDER' | translate" [ngModel]="searchText()" (ngModelChange)="onSearchChange($event)" />
+          </label>
+        </div>
+
+        @if (transactionsError()) {
+          <div class="py-10 text-center text-red-600">
+            <p>{{ 'EMPLOYEE_DETAIL.POINTS_REWARDS.TRANSACTIONS_ERROR' | translate }}</p>
+            <button type="button" class="mt-2 text-sm font-semibold underline" (click)="loadTransactions()">{{ 'COMMON.RETRY' | translate }}</button>
+          </div>
+        } @else {
+          <app-table
+            [columns]="columns()"
+            [rows]="transactionsLoading() ? [] : visibleTransactions()"
+            [cellTemplates]="cellTemplates()"
+            [emptyMessage]="transactionsLoading() ? ('EMPLOYEE_DETAIL.POINTS_REWARDS.TRANSACTIONS_LOADING' | translate) : ('EMPLOYEE_DETAIL.POINTS_REWARDS.NO_TRANSACTIONS' | translate)"
+            size="md"
+          />
+        }
+
+        @if (!transactionsLoading() && !transactionsError() && (transactionsResponse()?.totalPages ?? 0) > 1) {
+          <div class="flex justify-center pt-2">
+            @for (key of [paginationKey()]; track key) {
+              <app-pagination [totalPages]="transactionsResponse()?.totalPages ?? 1" [initialPage]="currentPage()" (pageChanged)="changePage($event)" />
+            }
+          </div>
+        }
+      </div>
+
+      <ng-template #dateTemplate let-row="$implicit">
+        <span class="whitespace-nowrap text-sm text-gray-700">{{ formatDate(row.date) }}</span>
+      </ng-template>
+      <ng-template #amountTemplate let-row="$implicit">
+        <span class="font-semibold" [class.text-green-600]="row.amount > 0" [class.text-red-600]="row.amount < 0" [class.text-gray-700]="row.amount === 0">{{ formatAmount(row.amount) }}</span>
+      </ng-template>
+      <ng-template #nullableTemplate let-row="$implicit" let-column="column">
+        <span class="text-sm text-gray-600">{{ row[column.key] || '—' }}</span>
+      </ng-template>
+    </div>
+  </section>
+}

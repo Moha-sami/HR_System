@@ -1,5 +1,5 @@
 import { inject, Injectable, signal } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import type { Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import type {
@@ -20,12 +20,21 @@ import type {
   ViolationDetailDto,
   ResolveViolationDto,
 } from '../models/view-employee/employee-violations';
+import type {
+  EmployeePointsSummary,
+  EmployeePointsTransactionFilters,
+  PaginatedEmployeePointsTransactions,
+} from '../models/view-employee/employee-points';
 
 const API_BASE = environment.baseUrl;
 
 @Injectable({ providedIn: 'root' })
 export class EmployeeDetailService {
   private readonly http = inject(HttpClient);
+  private detailRequestId = 0;
+  private detailRequestedEmployeeId: number | null = null;
+  private pointsSummaryRequestId = 0;
+  private pointsTransactionsRequestId = 0;
 
   // Detail view store
   readonly detailEmployee = signal<EmployeeProfileDto | null>(null);
@@ -47,6 +56,14 @@ export class EmployeeDetailService {
   readonly violationDetailLoading = signal(false);
   readonly violationDetailError = signal<string | null>(null);
 
+  // Points & Rewards store
+  readonly pointsSummary = signal<EmployeePointsSummary | null>(null);
+  readonly pointsSummaryLoading = signal(false);
+  readonly pointsSummaryError = signal<string | null>(null);
+  readonly pointsTransactions = signal<PaginatedEmployeePointsTransactions | null>(null);
+  readonly pointsTransactionsLoading = signal(false);
+  readonly pointsTransactionsError = signal<string | null>(null);
+
   // Profile API
   getEmployeeProfile(id: number): Observable<EmployeeProfileDto> {
     return this.http.get<EmployeeProfileDto>(`${API_BASE}/employees/${id}`);
@@ -65,6 +82,29 @@ export class EmployeeDetailService {
     return this.http.get<AttendanceCalendarDto>(`${API_BASE}/employees/${id}/attendance/calendar`, {
       params: { month, year },
     });
+  }
+
+  getEmployeePointsSummary(id: number): Observable<EmployeePointsSummary> {
+    return this.http.get<EmployeePointsSummary>(`${API_BASE}/employees/${id}/points/summary`);
+  }
+
+  getEmployeePointsTransactions(
+    id: number,
+    filters: EmployeePointsTransactionFilters,
+  ): Observable<PaginatedEmployeePointsTransactions> {
+    let params = new HttpParams()
+      .set('page', filters.page.toString())
+      .set('pageSize', filters.pageSize.toString());
+
+    if (filters.type) params = params.set('type', filters.type);
+    if (filters.triggeredBy?.trim()) params = params.set('triggeredBy', filters.triggeredBy.trim());
+    if (filters.dateFrom) params = params.set('dateFrom', filters.dateFrom);
+    if (filters.dateTo) params = params.set('dateTo', filters.dateTo);
+
+    return this.http.get<PaginatedEmployeePointsTransactions>(
+      `${API_BASE}/employees/${id}/points/transactions`,
+      { params },
+    );
   }
 
   // Violations API
@@ -127,19 +167,26 @@ export class EmployeeDetailService {
 
   // Detail view store methods
   loadDetailEmployee(id: number): void {
-    if (this.detailLoading() || this.detailEmployee()?.id === id) {
+    if (
+      (!this.detailLoading() && this.detailEmployee()?.id === id) ||
+      (this.detailLoading() && this.detailRequestedEmployeeId === id)
+    ) {
       return;
     }
 
+    const requestId = ++this.detailRequestId;
+    this.detailRequestedEmployeeId = id;
     this.detailLoading.set(true);
     this.detailError.set(null);
 
     this.getEmployeeProfile(id).subscribe({
       next: (data) => {
+        if (requestId !== this.detailRequestId || this.detailRequestedEmployeeId !== id) return;
         this.detailEmployee.set(data);
         this.detailLoading.set(false);
       },
       error: () => {
+        if (requestId !== this.detailRequestId || this.detailRequestedEmployeeId !== id) return;
         this.detailError.set('EMPLOYEE_DETAIL.LOAD_FAILED');
         this.detailLoading.set(false);
       },
@@ -158,6 +205,52 @@ export class EmployeeDetailService {
       error: () => {
         this.attendanceError.set('EMPLOYEE_DETAIL.ATTENDANCE_LOAD_FAILED');
         this.attendanceLoading.set(false);
+      },
+    });
+  }
+
+  loadEmployeePointsSummary(id: number): void {
+    const requestId = ++this.pointsSummaryRequestId;
+    this.pointsSummary.set(null);
+    this.pointsSummaryLoading.set(true);
+    this.pointsSummaryError.set(null);
+
+    this.getEmployeePointsSummary(id).subscribe({
+      next: (data) => {
+        if (this.detailEmployee()?.id !== id || requestId !== this.pointsSummaryRequestId) return;
+        this.pointsSummary.set(data);
+        this.pointsSummaryLoading.set(false);
+      },
+      error: () => {
+        if (this.detailEmployee()?.id !== id || requestId !== this.pointsSummaryRequestId) return;
+        this.pointsSummaryError.set('EMPLOYEE_DETAIL.POINTS_REWARDS.SUMMARY_ERROR');
+        this.pointsSummaryLoading.set(false);
+      },
+    });
+  }
+
+  loadEmployeePointsTransactions(id: number, filters: EmployeePointsTransactionFilters): void {
+    const requestId = ++this.pointsTransactionsRequestId;
+    this.pointsTransactions.set(null);
+    this.pointsTransactionsLoading.set(true);
+    this.pointsTransactionsError.set(null);
+
+    this.getEmployeePointsTransactions(id, filters).subscribe({
+      next: (data) => {
+        if (
+          this.detailEmployee()?.id !== id ||
+          requestId !== this.pointsTransactionsRequestId
+        ) return;
+        this.pointsTransactions.set(data);
+        this.pointsTransactionsLoading.set(false);
+      },
+      error: () => {
+        if (
+          this.detailEmployee()?.id !== id ||
+          requestId !== this.pointsTransactionsRequestId
+        ) return;
+        this.pointsTransactionsError.set('EMPLOYEE_DETAIL.POINTS_REWARDS.TRANSACTIONS_ERROR');
+        this.pointsTransactionsLoading.set(false);
       },
     });
   }
@@ -203,6 +296,8 @@ export class EmployeeDetailService {
   }
 
   clearDetailEmployee(): void {
+    this.detailRequestId++;
+    this.detailRequestedEmployeeId = null;
     this.detailEmployee.set(null);
     this.detailLoading.set(false);
     this.detailError.set(null);
@@ -224,6 +319,17 @@ export class EmployeeDetailService {
     this.violationDetail.set(null);
     this.violationDetailLoading.set(false);
     this.violationDetailError.set(null);
+  }
+
+  clearEmployeePoints(): void {
+    this.pointsSummaryRequestId++;
+    this.pointsTransactionsRequestId++;
+    this.pointsSummary.set(null);
+    this.pointsSummaryLoading.set(false);
+    this.pointsSummaryError.set(null);
+    this.pointsTransactions.set(null);
+    this.pointsTransactionsLoading.set(false);
+    this.pointsTransactionsError.set(null);
   }
 
   updateDetailEmployee(partial: Partial<EmployeeProfileDto>): void {
