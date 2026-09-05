@@ -24,8 +24,18 @@ namespace Buy2.Infrastructure.Persistence.Configurations
                 .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasOne(r => r.RewardItem)
-                .WithMany()
+                .WithMany(i => i.Redemptions)
                 .HasForeignKey(r => r.RewardItemId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasOne(r => r.RewardVoucher)
+                .WithMany()
+                .HasForeignKey(r => r.RewardVoucherId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasOne(r => r.PointsTransaction)
+                .WithMany()
+                .HasForeignKey(r => r.PointTransactionId)
                 .OnDelete(DeleteBehavior.Restrict);
         }
     }
