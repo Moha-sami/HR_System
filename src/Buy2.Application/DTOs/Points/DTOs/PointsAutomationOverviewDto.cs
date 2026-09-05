@@ -9,17 +9,20 @@ public record PointsAutomationOverviewDto(
 
 public record AutomationCategoryDto(
     string Category,
+    string AutomationPeriod,
     List<AutomationSettingCategoryDto> Rules
 );
 
 public record TaskCategoryDto(
     string Category,
+    string AutomationPeriod,
     List<AutomationSettingCategoryDto> CompletionRules,
     List<AutomationSettingCategoryDto> DeadlineRules
 );
 
 public record AttendanceCategoryDto(
     string Category,
+    string AutomationPeriod,
     List<AutomationSettingCategoryDto> AttendanceRateRules,
     List<AutomationSettingCategoryDto> LatenessRules
 );

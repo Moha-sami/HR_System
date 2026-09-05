@@ -109,13 +109,13 @@ public class PointsValidationTests
     public void SaveSettings_ValidRangesAndPriorities_ShouldNotHaveErrors()
     {
         var dto = new SaveAutomationSettingsDto(
-            "Monthly",
             new List<AutomationSettingCategoryDto>
             {
                 new AutomationSettingCategoryDto(
                     1,
                     "Performance",
                     "Score",
+                    "Monthly",
                     true,
                     new List<AutomationRangeDto>
                     {
@@ -127,11 +127,12 @@ public class PointsValidationTests
                     2,
                     "Tasks",
                     "Deadlines",
+                    "Monthly",
                     true,
                     new List<AutomationRangeDto>
                     {
-                        new AutomationRangeDto(null, "Deduction", null, null, "Urgent", -30),
-                        new AutomationRangeDto(null, "Deduction", null, null, "High", -15)
+                        new AutomationRangeDto(null, "Deduction", 1m, 10m, "Urgent", -30),
+                        new AutomationRangeDto(null, "Deduction", 11m, 20m, "High", -15)
                     }
                 )
             }
@@ -145,13 +146,13 @@ public class PointsValidationTests
     public void SaveSettings_OverlappingRanges_ShouldHaveError()
     {
         var dto = new SaveAutomationSettingsDto(
-            "Weekly",
             new List<AutomationSettingCategoryDto>
             {
                 new AutomationSettingCategoryDto(
                     1,
                     "Performance",
                     "Score",
+                    "Weekly",
                     true,
                     new List<AutomationRangeDto>
                     {
@@ -170,18 +171,53 @@ public class PointsValidationTests
     public void SaveSettings_DuplicatePriority_ShouldHaveError()
     {
         var dto = new SaveAutomationSettingsDto(
-            "Daily",
             new List<AutomationSettingCategoryDto>
             {
                 new AutomationSettingCategoryDto(
                     1,
                     "Tasks",
                     "Overdue",
+                    "Daily",
                     true,
                     new List<AutomationRangeDto>
                     {
-                        new AutomationRangeDto(null, "Deduction", null, null, "Urgent", -20),
-                        new AutomationRangeDto(null, "Deduction", null, null, "Urgent", -30)
+                        new AutomationRangeDto(null, "Deduction", 1m, 10m, "Urgent", -20),
+                        new AutomationRangeDto(null, "Deduction", 11m, 20m, "Urgent", -30)
+                    }
+                )
+            }
+        );
+
+        var result = _saveSettingsValidator.TestValidate(dto);
+        result.ShouldHaveValidationErrorFor(x => x.Settings);
+    }
+
+    [Fact]
+    public void SaveSettings_MixedPeriodsWithinSameCategory_ShouldHaveError()
+    {
+        var dto = new SaveAutomationSettingsDto(
+            new List<AutomationSettingCategoryDto>
+            {
+                new AutomationSettingCategoryDto(
+                    1,
+                    "Performance",
+                    "Score",
+                    "Daily",
+                    true,
+                    new List<AutomationRangeDto>
+                    {
+                        new AutomationRangeDto(null, "Reward", 80m, 100m, null, 50)
+                    }
+                ),
+                new AutomationSettingCategoryDto(
+                    2,
+                    "Performance",
+                    "Bonus",
+                    "Weekly",
+                    true,
+                    new List<AutomationRangeDto>
+                    {
+                        new AutomationRangeDto(null, "Reward", 80m, 100m, null, 50)
                     }
                 )
             }
