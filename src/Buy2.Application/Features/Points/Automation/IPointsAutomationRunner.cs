@@ -6,6 +6,7 @@ namespace Buy2.Application.Features.Points.Automation;
 public interface IPointsAutomationRunner
 {
     Task<AutomationJobResultDto?> RunAsync(
+        AutomationCategory category,
         AutomationPeriod period,
         DateTimeOffset periodStartUtc,
         DateTimeOffset periodEndUtc,
