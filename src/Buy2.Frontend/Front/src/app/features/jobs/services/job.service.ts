@@ -1,42 +1,49 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
-export interface Job {
-  id: string;
-  jobName: string;
-  jobDescription: string;
-  numberOfEmployees: number;
-  department?: string;
-  qualifications?: string[];
-}
+import { Job, JobPaginatedResponse, JobDetail, JobEmployeePaginatedResponse } from '../../../core/models/job';
+import { environment } from '../../../../environments/environment';
+
+export type { Job };
 
 @Injectable({
   providedIn: 'root'
 })
 export class JobService {
-  private apiUrl = 'http://localhost:3000/jobs';
+  private apiUrl = `${environment.baseUrl}/jobs`;
+  private jsonServerUrl = `${environment.jsonServerUrl}`;
 
   constructor(private http: HttpClient) {}
 
-  getJobs(): Observable<Job[]> {
-    return this.http.get<Job[]>(this.apiUrl);
+  getJobs(pageNumber: number = 1, pageSize: number = 10): Observable<JobPaginatedResponse> {
+    const params = new HttpParams()
+      .set('pageNumber', pageNumber.toString())
+      .set('pageSize', pageSize.toString());
+    return this.http.get<JobPaginatedResponse>(this.apiUrl, { params });
   }
 
-  getJob(id: string): Observable<Job> {
-    return this.http.get<Job>(`${this.apiUrl}/${id}`);
+  getJob(id: number): Observable<JobDetail> {
+    return this.http.get<JobDetail>(`${this.apiUrl}/${id}`);
   }
 
-  createJob(job: Omit<Job, 'id'>): Observable<Job> {
-    return this.http.post<Job>(this.apiUrl, job);
+  getJobEmployees(id: number, pageNumber: number = 1, pageSize: number = 10): Observable<JobEmployeePaginatedResponse> {
+    const params = new HttpParams()
+      .set('pageNumber', pageNumber.toString())
+      .set('pageSize', pageSize.toString());
+    return this.http.get<JobEmployeePaginatedResponse>(`${this.apiUrl}/${id}/employees`, { params });
   }
 
-  updateJob(id: string, job: Partial<Job>): Observable<Job> {
-    return this.http.patch<Job>(`${this.apiUrl}/${id}`, job);
+  createJob(job: any): Observable<any> {
+    return this.http.post<any>(this.apiUrl, job);
   }
 
-  deleteJob(id: string): Observable<void> {
+  updateJob(id: number, job: any): Observable<any> {
+    return this.http.patch<any>(`${this.apiUrl}/${id}`, job);
+  }
+
+  deleteJob(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 

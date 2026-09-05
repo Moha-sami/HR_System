@@ -141,12 +141,12 @@ export class JobCreateComponent implements OnInit {
   }
 
   loadJob(id: string): void {
-    this.jobService.getJob(id).subscribe({
+    this.jobService.getJob(+id).subscribe({
       next: (job) => {
-        this.form.jobTitle = job.jobName;
-        this.form.jobDescription = job.jobDescription;
-        this.form.department = job.department || '';
-        this.form.qualifications = job.qualifications || [];
+        this.form.jobTitle = job.title;
+        this.form.jobDescription = job.description || '';
+        this.form.department = job.departmentName || '';
+        this.form.qualifications = [...job.requiredQualifications];
       },
       error: (err) => console.error('Failed to load job:', err)
     });
@@ -327,7 +327,7 @@ export class JobCreateComponent implements OnInit {
   onSubmit(): void {
     if (!this.isFormValid()) return;
 
-    const newJob: Omit<Job, 'id'> = {
+    const newJob: any = {
       jobName: this.form.jobTitle,
       jobDescription: this.form.jobDescription || `Department: ${this.form.department}`,
       department: this.form.department,
@@ -337,7 +337,7 @@ export class JobCreateComponent implements OnInit {
 
     if (this.isEditMode) {
       const jobId = this.id()!;
-      this.jobService.updateJob(jobId, newJob).subscribe({
+      this.jobService.updateJob(+jobId, newJob).subscribe({
         next: () => {
           this.showSuccessModal.set(true);
         },

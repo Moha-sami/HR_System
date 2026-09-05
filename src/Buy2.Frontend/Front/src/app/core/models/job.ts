@@ -25,3 +25,40 @@ export interface JobPaginatedResponse {
   readonly pageSize: number;
   readonly totalPages: number;
 }
+
+export interface JobDetail {
+  readonly id: number;
+  readonly title: string;
+  readonly departmentId: number;
+  readonly departmentName: string;
+  readonly seniorityLevel: string;
+  readonly description: string | null;
+  readonly requiredQualifications: readonly string[];
+  readonly experienceYearsMin: number;
+  readonly workModel: string;
+  readonly onlineWorkdays: readonly string[];
+  readonly offlineWorkdays: readonly string[];
+  readonly assignedEmployeesCount: number;
+  readonly isActive: boolean;
+  readonly createdAt: string;
+  readonly updatedAt: string | null;
+}
+
+export interface JobEmployee {
+  readonly id: number;
+  readonly employeeCode: string;
+  readonly fullName: string;
+  readonly email: string;
+  readonly departmentName: string;
+  readonly siteName: string;
+  readonly joinDate: string;
+  readonly profilePhotoUrl: string | null;
+}
+
+export interface JobEmployeePaginatedResponse {
+  readonly items: readonly JobEmployee[];
+  readonly totalCount: number;
+  readonly pageNumber: number;
+  readonly pageSize: number;
+  readonly totalPages: number;
+}
