@@ -17,6 +17,11 @@ public class EmployeeTaskConfiguration : IEntityTypeConfiguration<EmployeeTask>
             .HasConversion<string>()
             .HasColumnType("varchar(30)");
 
+        builder.Property(et => et.Priority)
+            .HasMaxLength(20)
+            .HasColumnType("varchar(20)")
+            .HasDefaultValue("Medium");
+
         builder.HasOne(et => et.Employee)
             .WithMany(e => e.Tasks)
             .HasForeignKey(et => et.EmployeeId)
