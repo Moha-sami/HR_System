@@ -40,7 +40,9 @@ public class GetPointsAutomationRulesQueryHandler : IRequestHandler<GetPointsAut
                 IsNotFound: true);
         }
 
-        var automationPeriod = settings.First().AutomationPeriod.ToString();
+        // Top-level kept for backward compatibility: distinct periods across categories.
+        var automationPeriod = string.Join(",",
+            settings.Select(s => s.AutomationPeriod.ToString()).Distinct());
 
         var performance = MapPerformance(settings);
         var tasks = MapTasks(settings);
@@ -62,9 +64,11 @@ public class GetPointsAutomationRulesQueryHandler : IRequestHandler<GetPointsAut
     {
         var performanceSettings = settings.Where(s => s.Category == AutomationCategory.Performance).ToList();
         var rules = performanceSettings.Select(MapSettingToDto).ToList();
+        var period = performanceSettings.Select(s => s.AutomationPeriod.ToString()).Distinct().FirstOrDefault() ?? "NotConfigured";
 
         return new AutomationCategoryDto(
             Category: "Performance",
+            AutomationPeriod: period,
             Rules: rules
         );
     }
@@ -83,8 +87,11 @@ public class GetPointsAutomationRulesQueryHandler : IRequestHandler<GetPointsAut
             .Select(MapSettingToDto)
             .ToList();
 
+        var period = taskSettings.Select(s => s.AutomationPeriod.ToString()).Distinct().FirstOrDefault() ?? "NotConfigured";
+
         return new TaskCategoryDto(
             Category: "Tasks",
+            AutomationPeriod: period,
             CompletionRules: completionRules,
             DeadlineRules: deadlineRules
         );
@@ -104,8 +111,11 @@ public class GetPointsAutomationRulesQueryHandler : IRequestHandler<GetPointsAut
             .Select(MapSettingToDto)
             .ToList();
 
+        var period = attendanceSettings.Select(s => s.AutomationPeriod.ToString()).Distinct().FirstOrDefault() ?? "NotConfigured";
+
         return new AttendanceCategoryDto(
             Category: "Time & Attendance",
+            AutomationPeriod: period,
             AttendanceRateRules: attendanceRateRules,
             LatenessRules: latenessRules
         );
@@ -128,6 +138,7 @@ public class GetPointsAutomationRulesQueryHandler : IRequestHandler<GetPointsAut
             Id: setting.Id,
             Category: setting.Category.ToString(),
             SubCategory: setting.SubCategory,
+            AutomationPeriod: setting.AutomationPeriod.ToString(),
             IsEnabled: setting.IsEnabled,
             Ranges: ranges
         );

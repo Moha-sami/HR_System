@@ -1,5 +1,6 @@
 using Buy2.Application.DTOs.Points.DTOs;
 using Buy2.Application.Features.Points.Automation.ExecuteAutomationNow;
+using Buy2.Application.Features.Points.Automation.SaveAutomationSettings;
 using Buy2.Application.Features.Points.GetAutomationRules;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -72,5 +73,32 @@ public class PointsController : ControllerBase
         }
 
         return Ok(result.Data);
+    }
+
+    [HttpPut("automation")]
+    [Authorize(Roles = "Admin,HRAdmin,SuperAdmin")]
+    [ProducesResponseType(typeof(PointsAutomationOverviewDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<ActionResult<PointsAutomationOverviewDto>> SaveAutomationSettings(
+        [FromBody] SaveAutomationSettingsDto request,
+        CancellationToken cancellationToken)
+    {
+        var saveResult = await _mediator.Send(new SaveAutomationSettingsCommand(request), cancellationToken);
+
+        if (!saveResult.IsSuccess)
+        {
+            return BadRequest(new { message = saveResult.ErrorMessage });
+        }
+
+        var queryResult = await _mediator.Send(new GetPointsAutomationRulesQuery(), cancellationToken);
+
+        if (!queryResult.IsSuccess || queryResult.Data is null)
+        {
+            return Ok(new { savedCount = saveResult.SavedCount });
+        }
+
+        return Ok(queryResult.Data);
     }
 }
