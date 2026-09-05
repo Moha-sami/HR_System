@@ -8,6 +8,11 @@ public class PointsAutomationRunConfiguration : IEntityTypeConfiguration<PointsA
 {
     public void Configure(EntityTypeBuilder<PointsAutomationRun> builder)
     {
+        builder.Property(p => p.Category)
+            .HasConversion<string>()
+            .HasMaxLength(50)
+            .HasColumnType("varchar(50)");
+
         builder.Property(p => p.AutomationPeriod)
             .IsRequired()
             .HasConversion<string>()
@@ -35,7 +40,7 @@ public class PointsAutomationRunConfiguration : IEntityTypeConfiguration<PointsA
         builder.Property(p => p.ErrorMessage)
             .HasMaxLength(2000);
 
-        builder.HasIndex(p => new { p.AutomationPeriod, p.PeriodStart, p.PeriodEnd })
+        builder.HasIndex(p => new { p.Category, p.PeriodStart, p.PeriodEnd })
             .IsUnique()
             .HasFilter("[Status] = 'Completed'")
             .HasDatabaseName("IX_PointsAutomationRun_Period");

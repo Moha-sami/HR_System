@@ -4,6 +4,7 @@ namespace Buy2.Domain.Entities;
 
 public class PointsAutomationRun : BaseEntity
 {
+    public AutomationCategory? Category { get; set; }
     public AutomationPeriod AutomationPeriod { get; set; }
     public DateTimeOffset PeriodStart { get; set; }
     public DateTimeOffset PeriodEnd { get; set; }
