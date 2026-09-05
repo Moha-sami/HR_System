@@ -60,6 +60,7 @@ export class JobManagementComponent implements AfterViewInit {
   readonly currentPage = signal(1);
 
   readonly pageSize = 10;
+
   readonly searchTerm = signal('');
 
 
@@ -130,16 +131,25 @@ export class JobManagementComponent implements AfterViewInit {
   // =========================================================
 
   readonly filteredJobs = computed(() => {
-    return this.jobs();
+    const search = this.searchTerm().toLowerCase().trim();
+    const data = this.jobs();
+    if (!search) return data;
+    return data.filter(job =>
+      (job.title ?? '').toLowerCase().includes(search) ||
+      (job.departmentName ?? '').toLowerCase().includes(search)
+    );
   });
 
-  readonly totalPages = computed(() => {
-    return Math.max(1, Math.ceil(this.totalCount() / this.pageSize));
-  });
 
-  readonly displayedJobs = computed(() => {
-    return this.jobs();
-  });
+  // =========================================================
+  // TOTAL PAGES
+  // =========================================================
+
+  readonly totalPages = computed(() =>
+    Math.max(1, Math.ceil(this.totalCount() / this.pageSize))
+  );
+
+  readonly displayedJobs = computed(() => this.jobs());
 
 
   // =========================================================
@@ -147,17 +157,13 @@ export class JobManagementComponent implements AfterViewInit {
   // =========================================================
 
   loadJobs(): void {
-    this.jobService
-      .getJobs(this.currentPage(), this.pageSize)
-      .subscribe({
-        next: (response) => {
-          this.jobs.set(response.items as Job[]);
-          this.totalCount.set(response.totalCount);
-        },
-        error: (error) => {
-          console.error('Error loading jobs:', error);
-        },
-      });
+    this.jobService.getJobs(this.currentPage(), this.pageSize).subscribe({
+      next: (response) => {
+        this.jobs.set(response.items as Job[]);
+        this.totalCount.set(response.totalCount);
+      },
+      error: (error) => console.error('Error loading jobs:', error),
+    });
   }
 
 
@@ -360,8 +366,7 @@ export class JobManagementComponent implements AfterViewInit {
 
   deleteJob(job: Job): void {
 
-    const confirmed =
-      window.confirm(`Are you sure you want to delete "${job.title}"?`);
+    const confirmed = window.confirm(`Are you sure you want to delete "${job.title}"?`);
 
 
     if (!confirmed) {

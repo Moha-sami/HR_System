@@ -68,14 +68,9 @@
 
         <!-- Job Title -->
         <div class="form-row">
-          <label class="form-label">Job Title</label>
+          <label class="form-label">Job Title *</label>
           <div class="form-field">
-            <input
-              type="text"
-              [(ngModel)]="form.jobTitle"
-              placeholder="Role Name"
-              class="form-input"
-            />
+            <input type="text" [(ngModel)]="form.jobTitle" placeholder="Role Name" class="form-input" />
           </div>
         </div>
 
@@ -83,12 +78,7 @@
         <div class="form-row">
           <label class="form-label">Job Description</label>
           <div class="form-field">
-            <input
-              type="text"
-              [(ngModel)]="form.jobDescription"
-              placeholder="Write description here"
-              class="form-input"
-            />
+            <textarea [(ngModel)]="form.jobDescription" rows="3" placeholder="Write description here" class="form-textarea"></textarea>
           </div>
         </div>
 
@@ -97,20 +87,12 @@
           <label class="form-label">Department</label>
           <div class="form-field">
             <div class="dropdown-wrapper">
-              <button
-                type="button"
-                (click)="toggleDepartmentDropdown()"
-                class="dropdown-toggle"
-                [class.open]="showDepartmentDropdown"
-              >
-                <span class="dropdown-value">
-                  {{ form.department || 'Department' }}
-                </span>
+              <button type="button" (click)="toggleDepartmentDropdown()" class="dropdown-toggle" [class.open]="showDepartmentDropdown">
+                <span class="dropdown-value">{{ form.departmentName || 'Select Department' }}</span>
                 <svg class="dropdown-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
                 </svg>
               </button>
-
               @if (showDepartmentDropdown) {
                 <div class="dropdown-menu">
                   <div class="dropdown-search">
@@ -118,22 +100,12 @@
                       <circle cx="11" cy="11" r="7" />
                       <path stroke-linecap="round" stroke-linejoin="round" d="m20 20-4-4" />
                     </svg>
-                    <input
-                      type="text"
-                      [(ngModel)]="searchDepartment"
-                      (input)="filterDepartments(searchDepartment)"
-                      placeholder="Search for department or create new ..."
-                      class="dropdown-search-input"
-                    />
+                    <input type="text" [(ngModel)]="searchDepartment" (input)="filterDepartments(searchDepartment)" placeholder="Search or create new..." class="dropdown-search-input" />
                   </div>
                   <div class="dropdown-options">
-                    @for (dept of filteredDepartments; track dept.id || dept) {
-                      <div
-                        class="dropdown-option"
-                        [class.selected]="form.department === (dept.name || dept)"
-                        (click)="selectDepartment(dept)"
-                      >
-                        {{ dept.name || dept }}
+                    @for (dept of filteredDepartments; track dept.id) {
+                      <div class="dropdown-option" [class.selected]="form.departmentId === dept.id" (click)="selectDepartment(dept)">
+                        {{ dept.name }}
                       </div>
                     }
                     @if (filteredDepartments.length === 0 && searchDepartment.trim()) {
@@ -148,101 +120,15 @@
           </div>
         </div>
 
-        <!-- Required Qualifications -->
+        <!-- Seniority Level -->
         <div class="form-row">
-          <label class="form-label">Required Qualifications</label>
-          <div class="form-field">
-            <div class="dropdown-wrapper">
-              <button
-                type="button"
-                (click)="toggleQualificationsDropdown()"
-                class="dropdown-toggle"
-                [class.open]="showQualificationsDropdown"
-              >
-                <span class="dropdown-value">
-                  @if (form.qualifications.length === 0) {
-                    Required Qualifications
-                  } @else {
-                    {{ form.qualifications.join(', ') }}
-                  }
-                </span>
-                <svg class="dropdown-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
-                </svg>
-              </button>
-
-              @if (showQualificationsDropdown) {
-                <div class="dropdown-menu qualification-menu">
-                  <div class="dropdown-search">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <circle cx="11" cy="11" r="7" />
-                      <path stroke-linecap="round" stroke-linejoin="round" d="m20 20-4-4" />
-                    </svg>
-                    <input
-                      type="text"
-                      [(ngModel)]="searchQualification"
-                      placeholder="Search for qualifications or create new ..."
-                      class="dropdown-search-input"
-                    />
-                  </div>
-                  <div class="dropdown-options">
-                    @for (qual of filteredQualifications; track qual.id || qual) {
-                      <label class="dropdown-option checkbox-option">
-                        <input
-                          type="checkbox"
-                          [checked]="form.qualifications.includes(qual.name || qual)"
-                          (change)="toggleQualification(qual)"
-                        />
-                        <span>{{ qual.name || qual }}</span>
-                      </label>
-                    }
-                    @if (filteredQualifications.length === 0 && searchQualification.trim()) {
-                      <div class="dropdown-option create-new" (click)="createNewQualification()">
-                        + Create "{{ searchQualification }}"
-                      </div>
-                    }
-                  </div>
-                </div>
-              }
-            </div>
-          </div>
-        </div>
-
-        <!-- Experience Level -->
-        <div class="form-row">
-          <label class="form-label">Experience Level</label>
+          <label class="form-label">Seniority Level *</label>
           <div class="form-field">
             <div class="select-wrapper">
-              <select
-                [(ngModel)]="form.experienceLevel"
-                class="form-select"
-              >
-                <option value="">Choose Experience Level</option>
-                <option value="entry">Entry Level (0-2 years)</option>
-                <option value="junior">Junior (2-4 years)</option>
-                <option value="mid">Mid Level (4-7 years)</option>
-                <option value="senior">Senior (7-10 years)</option>
-                <option value="lead">Lead (10+ years)</option>
-              </select>
-              <svg class="select-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
-              </svg>
-            </div>
-          </div>
-        </div>
-
-        <!-- Reporting Manager -->
-        <div class="form-row">
-          <label class="form-label">Reporting Manager</label>
-          <div class="form-field">
-            <div class="select-wrapper">
-              <select
-                [(ngModel)]="form.reportingManager"
-                class="form-select"
-              >
-                <option value="">Manager title</option>
-                @for (manager of managers; track manager) {
-                  <option [value]="manager">{{ manager }}</option>
+              <select [(ngModel)]="form.seniorityLevel" class="form-select">
+                <option value="">Choose Seniority Level</option>
+                @for (level of seniorityLevels; track level) {
+                  <option [value]="level">{{ level }}</option>
                 }
               </select>
               <svg class="select-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -252,6 +138,54 @@
           </div>
         </div>
 
+        <!-- Experience Years Min -->
+        <div class="form-row">
+          <label class="form-label">Min Experience (years)</label>
+          <div class="form-field">
+            <input type="number" [(ngModel)]="form.experienceYearsMin" min="0" placeholder="0" class="form-input short-input" />
+          </div>
+        </div>
+
+        <!-- Required Qualifications -->
+        <div class="form-row">
+          <label class="form-label">Required Qualifications</label>
+          <div class="form-field">
+            <!-- Added qualifications chips -->
+            @if (form.qualifications.length > 0) {
+              <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:8px;">
+                @for (qual of form.qualifications; track qual) {
+                  <span style="background:#eef1fa; color:#2b3990; border-radius:20px; padding:4px 12px; font-size:13px; display:flex; align-items:center; gap:6px;">
+                    {{ qual }}
+                    <button type="button" (click)="removeQualification(qual)" style="background:none;border:none;cursor:pointer;color:#888;font-size:14px;">×</button>
+                  </span>
+                }
+              </div>
+            }
+            <!-- Add new qualification -->
+            <div class="input-with-btn">
+              <input type="text" [(ngModel)]="qualificationInput" placeholder="Type qualification and press Add..." class="form-input" (keydown.enter)="addQualification()" />
+              <button type="button" class="btn-add" (click)="addQualification()">+ Add</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Active Status (Edit mode only) -->
+        @if (isEditMode) {
+          <div class="form-row">
+            <label class="form-label">Status</label>
+            <div class="form-field flex-radio-group">
+              <label class="radio-label">
+                <input type="radio" name="isActive" [(ngModel)]="form.isActive" [value]="true" class="form-radio" />
+                Active
+              </label>
+              <label class="radio-label">
+                <input type="radio" name="isActive" [(ngModel)]="form.isActive" [value]="false" class="form-radio" />
+                Inactive
+              </label>
+            </div>
+          </div>
+        }
+
       </div>
     }
 
@@ -260,82 +194,50 @@
     <!-- ===================================================== -->
     @if (activeTab === 'schedule') {
       <div class="form-section">
+
+        <!-- Work Model -->
         <div class="form-row">
-          <label class="form-label">Schedule Type</label>
+          <label class="form-label">Work Model *</label>
           <div class="form-field flex-radio-group">
-            <label class="radio-label">
-              <input type="radio" name="scheduleType" [(ngModel)]="form.scheduleType" value="fixed" class="form-radio" />
-              Fixed
-            </label>
-            <label class="radio-label">
-              <input type="radio" name="scheduleType" [(ngModel)]="form.scheduleType" value="shifts" class="form-radio" />
-              Shifts
-            </label>
+            @for (model of workModels; track model) {
+              <label class="radio-label">
+                <input type="radio" name="workModel" [(ngModel)]="form.workModel" [value]="model" class="form-radio" />
+                {{ model }}
+              </label>
+            }
           </div>
         </div>
 
-        <div class="form-row">
-          <label class="form-label">Check in</label>
-          <div class="form-field schedule-time-row">
-            <span class="time-label">From</span>
-            <input type="text" [(ngModel)]="form.checkInFrom" placeholder="e.g. 09:00" class="form-input time-input" />
-            <div class="select-wrapper time-am-pm-wrapper">
-              <select [(ngModel)]="form.checkInFromAmPm" class="form-select time-am-pm">
-                <option value="AM">AM</option>
-                <option value="PM">PM</option>
-              </select>
-              <svg class="select-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
-              </svg>
-            </div>
-            <span class="time-label">to</span>
-            <input type="text" [(ngModel)]="form.checkInTo" placeholder="e.g. 09:00" class="form-input time-input" />
-            <div class="select-wrapper time-am-pm-wrapper">
-              <select [(ngModel)]="form.checkInToAmPm" class="form-select time-am-pm">
-                <option value="AM">AM</option>
-                <option value="PM">PM</option>
-              </select>
-              <svg class="select-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
-              </svg>
+        <!-- Online Workdays -->
+        @if (form.workModel === 'Remote' || form.workModel === 'Hybrid') {
+          <div class="form-row">
+            <label class="form-label">Online Days</label>
+            <div class="form-field flex-radio-group" style="flex-wrap:wrap;">
+              @for (day of weekdays; track day) {
+                <label class="radio-label">
+                  <input type="checkbox" [checked]="form.onlineWorkdays.includes(day)" (change)="toggleOnlineWorkday(day)" class="form-radio" />
+                  {{ day.slice(0,3) }}
+                </label>
+              }
             </div>
           </div>
-        </div>
+        }
 
-        <div class="form-row">
-          <label class="form-label">Check out</label>
-          <div class="form-field schedule-time-row">
-            <span class="time-label">From</span>
-            <input type="text" [(ngModel)]="form.checkOutFrom" placeholder="e.g. 09:00" class="form-input time-input" />
-            <div class="select-wrapper time-am-pm-wrapper">
-              <select [(ngModel)]="form.checkOutFromAmPm" class="form-select time-am-pm">
-                <option value="AM">AM</option>
-                <option value="PM">PM</option>
-              </select>
-              <svg class="select-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
-              </svg>
-            </div>
-            <span class="time-label">to</span>
-            <input type="text" [(ngModel)]="form.checkOutTo" placeholder="e.g. 09:00" class="form-input time-input" />
-            <div class="select-wrapper time-am-pm-wrapper">
-              <select [(ngModel)]="form.checkOutToAmPm" class="form-select time-am-pm">
-                <option value="AM">AM</option>
-                <option value="PM">PM</option>
-              </select>
-              <svg class="select-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
-              </svg>
+        <!-- Offline Workdays -->
+        @if (form.workModel === 'OnSite' || form.workModel === 'Hybrid') {
+          <div class="form-row">
+            <label class="form-label">Office Days</label>
+            <div class="form-field flex-radio-group" style="flex-wrap:wrap;">
+              @for (day of weekdays; track day) {
+                <label class="radio-label">
+                  <input type="checkbox" [checked]="form.offlineWorkdays.includes(day)" (change)="toggleOfflineWorkday(day)" class="form-radio" />
+                  {{ day.slice(0,3) }}
+                </label>
+              }
             </div>
           </div>
-        </div>
+        }
 
-        <div class="form-row">
-          <label class="form-label">Hours per day</label>
-          <div class="form-field">
-            <input type="text" [(ngModel)]="form.hoursPerDay" placeholder="Hours here ..." class="form-input short-input" />
-          </div>
-        </div>
       </div>
     }
 

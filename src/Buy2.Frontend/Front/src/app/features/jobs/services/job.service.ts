@@ -1,8 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
-
 import { Job, JobPaginatedResponse, JobDetail, JobEmployeePaginatedResponse } from '../../../core/models/job';
 import { environment } from '../../../../environments/environment';
 
@@ -40,7 +38,7 @@ export class JobService {
   }
 
   updateJob(id: number, job: any): Observable<any> {
-    return this.http.patch<any>(`${this.apiUrl}/${id}`, job);
+    return this.http.put<any>(`${this.apiUrl}/${id}`, job);
   }
 
   deleteJob(id: number): Observable<void> {
@@ -48,18 +46,18 @@ export class JobService {
   }
 
   getDepartments(): Observable<any[]> {
-    return this.http.get<any[]>('http://localhost:3000/departments');
+    return this.http.get<any[]>(`${this.jsonServerUrl}/departments`);
   }
 
   createDepartment(department: any): Observable<any> {
-    return this.http.post<any>('http://localhost:3000/departments', department);
+    return this.http.post<any>(`${this.jsonServerUrl}/departments`, department);
   }
 
   getQualifications(): Observable<any[]> {
-    return this.http.get<any[]>('http://localhost:3000/qualifications');
+    return this.http.get<any[]>(`${this.jsonServerUrl}/qualifications`);
   }
 
   createQualification(qualification: any): Observable<any> {
-    return this.http.post<any>('http://localhost:3000/qualifications', qualification);
+    return this.http.post<any>(`${this.jsonServerUrl}/qualifications`, qualification);
   }
 }

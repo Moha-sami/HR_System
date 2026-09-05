@@ -1,7 +1,9 @@
 import { Component, inject, input, output, signal, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
-import { JobService, Job } from '../../services/job.service';
+import { Router, ActivatedRoute } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
+import { JobService } from '../../services/job.service';
+import { environment } from '../../../../../environments/environment';
 
 interface PerformanceMetric {
   name: string;
@@ -20,23 +22,23 @@ interface FixedTask {
   submissionTimeAmPm: string;
 }
 
+interface Department {
+  id: number;
+  name: string;
+}
+
 interface JobForm {
   jobTitle: string;
   jobDescription: string;
-  department: string;
+  departmentId: number | null;
+  departmentName: string;     // for display
+  seniorityLevel: string;
   qualifications: string[];
-  experienceLevel: string;
-  reportingManager: string;
-  scheduleType: string;
-  checkInFrom: string;
-  checkInFromAmPm: string;
-  checkInTo: string;
-  checkInToAmPm: string;
-  checkOutFrom: string;
-  checkOutFromAmPm: string;
-  checkOutTo: string;
-  checkOutToAmPm: string;
-  hoursPerDay: string;
+  experienceYearsMin: number;
+  workModel: string;
+  onlineWorkdays: string[];
+  offlineWorkdays: string[];
+  isActive: boolean;
   metrics: PerformanceMetric[];
   fixedTasks: FixedTask[];
 }
@@ -51,82 +53,61 @@ interface JobForm {
 export class JobCreateComponent implements OnInit {
   private readonly jobService = inject(JobService);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
+  private readonly http = inject(HttpClient);
 
   readonly close = output<void>();
   readonly id = input<string>(); // For edit mode
 
   isEditMode = false;
+  editJobId: number | null = null;
 
   activeTab: 'information' | 'schedule' | 'metrics' | 'tasks' = 'information';
 
   form: JobForm = {
     jobTitle: '',
     jobDescription: '',
-    department: '',
+    departmentId: null,
+    departmentName: '',
+    seniorityLevel: '',
     qualifications: [],
-    experienceLevel: '',
-    reportingManager: '',
-    scheduleType: 'fixed',
-    checkInFrom: '',
-    checkInFromAmPm: 'AM',
-    checkInTo: '',
-    checkInToAmPm: 'AM',
-    checkOutFrom: '',
-    checkOutFromAmPm: 'AM',
-    checkOutTo: '',
-    checkOutToAmPm: 'AM',
-    hoursPerDay: '',
+    experienceYearsMin: 0,
+    workModel: 'OnSite',
+    onlineWorkdays: [],
+    offlineWorkdays: [],
+    isActive: true,
     metrics: [],
     fixedTasks: [],
   };
 
   metricForm: PerformanceMetric = {
-    name: '',
-    description: '',
-    measure: '',
-    target: '',
-    weight: ''
+    name: '', description: '', measure: '', target: '', weight: ''
   };
 
   searchQualification = '';
+  qualificationInput = '';
   showQualificationsDropdown = false;
   showDepartmentDropdown = false;
   searchDepartment = '';
-  kpiInput = '';
   taskForm: FixedTask = {
-    name: '',
-    description: '',
-    steps: [],
-    repeat: 'Daily',
-    submissionTime: '',
-    submissionTimeAmPm: 'AM'
+    name: '', description: '', steps: [], repeat: 'Daily',
+    submissionTime: '', submissionTimeAmPm: 'AM'
   };
-
   taskStepInput = '';
 
-  departments: any[] = [];
-  availableQualifications: any[] = [];
-  filteredDepartments: any[] = [];
+  departments: Department[] = [];
+  filteredDepartments: Department[] = [];
+  availableQualifications: string[] = [];
 
-  readonly managers = [
-    'Ahmed Hassan',
-    'Sara Mohamed',
-    'Khalid Ali',
-    'Nora Ahmed',
-    'Omar Ibrahim',
-    'Layla Saleh'
-  ];
+  readonly seniorityLevels = ['Junior', 'Mid', 'Senior', 'Lead', 'Executive'];
+  readonly workModels = ['OnSite', 'Remote', 'Hybrid'];
+  readonly weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
   showSuccessModal = signal(false);
 
   ngOnInit(): void {
-    const jobId = this.id();
-    if (jobId) {
-      this.isEditMode = true;
-      this.loadJob(jobId);
-    }
-
-    this.jobService.getDepartments().subscribe({
+    // Load departments from real API
+    this.http.get<Department[]>(`${environment.baseUrl}/departments`).subscribe({
       next: (data) => {
         this.departments = data;
         this.filteredDepartments = data;
@@ -134,26 +115,36 @@ export class JobCreateComponent implements OnInit {
       error: (err) => console.error('Failed to load departments', err)
     });
 
-    this.jobService.getQualifications().subscribe({
-      next: (data) => this.availableQualifications = data,
-      error: (err) => console.error('Failed to load qualifications', err)
-    });
+    // Check route param for edit mode
+    const routeId = this.route.snapshot.paramMap.get('id') ?? this.id();
+    if (routeId) {
+      this.isEditMode = true;
+      this.editJobId = +routeId;
+      this.loadJob(+routeId);
+    }
   }
 
-  loadJob(id: string): void {
-    this.jobService.getJob(+id).subscribe({
+  loadJob(id: number): void {
+    this.jobService.getJob(id).subscribe({
       next: (job) => {
         this.form.jobTitle = job.title;
         this.form.jobDescription = job.description || '';
-        this.form.department = job.departmentName || '';
+        this.form.departmentId = job.departmentId;
+        this.form.departmentName = job.departmentName || '';
+        this.form.seniorityLevel = job.seniorityLevel || '';
         this.form.qualifications = [...job.requiredQualifications];
+        this.form.experienceYearsMin = job.experienceYearsMin;
+        this.form.workModel = job.workModel || 'OnSite';
+        this.form.onlineWorkdays = [...(job.onlineWorkdays || [])];
+        this.form.offlineWorkdays = [...(job.offlineWorkdays || [])];
+        this.form.isActive = job.isActive;
       },
       error: (err) => console.error('Failed to load job:', err)
     });
   }
 
   isFormValid(): boolean {
-    return !!this.form.jobTitle;
+    return !!this.form.jobTitle && !!this.form.seniorityLevel && !!this.form.workModel;
   }
 
   nextTab(): void {
@@ -183,34 +174,25 @@ export class JobCreateComponent implements OnInit {
 
   filterDepartments(search: string): void {
     const term = search.toLowerCase().trim();
-    if (!term) {
-      this.filteredDepartments = this.departments;
-    } else {
-      this.filteredDepartments = this.departments.filter(d =>
-        (d.name || d).toLowerCase().includes(term)
-      );
-    }
+    this.filteredDepartments = !term
+      ? this.departments
+      : this.departments.filter(d => d.name.toLowerCase().includes(term));
   }
 
-  selectDepartment(dept: any): void {
-    this.form.department = dept.name || dept;
+  selectDepartment(dept: Department): void {
+    this.form.departmentId = dept.id;
+    this.form.departmentName = dept.name;
     this.showDepartmentDropdown = false;
   }
 
   createNewDepartment(): void {
     const name = this.searchDepartment.trim();
-    if (name) {
-      this.jobService.createDepartment({ name }).subscribe({
-        next: (newDept) => {
-          this.departments.push(newDept);
-          this.filteredDepartments = this.departments;
-          this.form.department = newDept.name;
-          this.showDepartmentDropdown = false;
-          this.searchDepartment = '';
-        },
-        error: (err) => console.error('Failed to create department', err)
-      });
-    }
+    if (!name) return;
+    // For create: use newDepartmentName field (API supports it)
+    this.form.departmentId = null;
+    this.form.departmentName = name;
+    this.showDepartmentDropdown = false;
+    this.searchDepartment = '';
   }
 
   // ===== Qualifications =====
@@ -218,74 +200,58 @@ export class JobCreateComponent implements OnInit {
     this.showQualificationsDropdown = !this.showQualificationsDropdown;
   }
 
-  toggleQualification(qual: any): void {
-    const name = qual.name ? qual.name : qual;
-    if (this.form.qualifications.includes(name)) {
-      this.form.qualifications = this.form.qualifications.filter(q => q !== name);
-    } else {
-      this.form.qualifications.push(name);
+  addQualification(): void {
+    const q = this.qualificationInput.trim();
+    if (q && !this.form.qualifications.includes(q)) {
+      this.form.qualifications.push(q);
     }
-  }
-
-  get filteredQualifications(): any[] {
-    const search = this.searchQualification.toLowerCase().trim();
-    if (!search) return this.availableQualifications;
-    return this.availableQualifications.filter(q => {
-      const name = q.name ? q.name : q;
-      return name.toLowerCase().includes(search);
-    });
-  }
-
-  createNewQualification(): void {
-    const name = this.searchQualification.trim();
-    if (name) {
-      // Check if already exists
-      const exists = this.availableQualifications.some(q =>
-        (q.name || q).toLowerCase() === name.toLowerCase()
-      );
-
-      if (!exists) {
-        this.jobService.createQualification({ name }).subscribe({
-          next: (newQual) => {
-            this.availableQualifications.push(newQual);
-            this.form.qualifications.push(newQual.name);
-            this.searchQualification = '';
-            this.showQualificationsDropdown = false;
-          },
-          error: (err) => console.error('Failed to create qualification', err)
-        });
-      } else {
-        // If exists, just select it
-        const existing = this.availableQualifications.find(q =>
-          (q.name || q).toLowerCase() === name.toLowerCase()
-        );
-        if (existing) {
-          const existingName = existing.name || existing;
-          if (!this.form.qualifications.includes(existingName)) {
-            this.form.qualifications.push(existingName);
-          }
-          this.searchQualification = '';
-          this.showQualificationsDropdown = false;
-        }
-      }
-    }
+    this.qualificationInput = '';
   }
 
   removeQualification(qual: string): void {
     this.form.qualifications = this.form.qualifications.filter(q => q !== qual);
   }
 
+  get filteredQualifications(): string[] {
+    const search = this.searchQualification.toLowerCase().trim();
+    return !search ? this.availableQualifications
+      : this.availableQualifications.filter(q => q.toLowerCase().includes(search));
+  }
+
+  toggleQualification(qual: string): void {
+    if (this.form.qualifications.includes(qual)) {
+      this.form.qualifications = this.form.qualifications.filter(q => q !== qual);
+    } else {
+      this.form.qualifications.push(qual);
+    }
+  }
+
+  createNewQualification(): void {
+    const name = this.searchQualification.trim();
+    if (name && !this.form.qualifications.includes(name)) {
+      this.form.qualifications.push(name);
+      this.searchQualification = '';
+    }
+  }
+
+  // ===== Workdays toggles =====
+  toggleOnlineWorkday(day: string): void {
+    const idx = this.form.onlineWorkdays.indexOf(day);
+    if (idx > -1) this.form.onlineWorkdays.splice(idx, 1);
+    else this.form.onlineWorkdays.push(day);
+  }
+
+  toggleOfflineWorkday(day: string): void {
+    const idx = this.form.offlineWorkdays.indexOf(day);
+    if (idx > -1) this.form.offlineWorkdays.splice(idx, 1);
+    else this.form.offlineWorkdays.push(day);
+  }
+
   // ===== Metrics =====
   addPerformanceMetric(): void {
     if (this.metricForm.name) {
       this.form.metrics.push({ ...this.metricForm });
-      this.metricForm = {
-        name: '',
-        description: '',
-        measure: '',
-        target: '',
-        weight: ''
-      };
+      this.metricForm = { name: '', description: '', measure: '', target: '', weight: '' };
     }
   }
 
@@ -304,18 +270,8 @@ export class JobCreateComponent implements OnInit {
 
   addFixedTask(): void {
     if (this.taskForm.name) {
-      this.form.fixedTasks.push({
-        ...this.taskForm,
-        steps: [...this.taskForm.steps]
-      });
-      this.taskForm = {
-        name: '',
-        description: '',
-        steps: [],
-        repeat: 'Daily',
-        submissionTime: '',
-        submissionTimeAmPm: 'AM'
-      };
+      this.form.fixedTasks.push({ ...this.taskForm, steps: [...this.taskForm.steps] });
+      this.taskForm = { name: '', description: '', steps: [], repeat: 'Daily', submissionTime: '', submissionTimeAmPm: 'AM' };
     }
   }
 
@@ -327,27 +283,43 @@ export class JobCreateComponent implements OnInit {
   onSubmit(): void {
     if (!this.isFormValid()) return;
 
-    const newJob: any = {
-      jobName: this.form.jobTitle,
-      jobDescription: this.form.jobDescription || `Department: ${this.form.department}`,
-      department: this.form.department,
-      qualifications: this.form.qualifications,
-      numberOfEmployees: 0,
-    };
+    if (this.isEditMode && this.editJobId) {
+      // PUT /jobs/{id}
+      const updatePayload: any = {
+        title: this.form.jobTitle,
+        departmentId: this.form.departmentId ?? 0,
+        seniorityLevel: this.form.seniorityLevel,
+        description: this.form.jobDescription,
+        requiredQualifications: this.form.qualifications,
+        experienceYearsMin: this.form.experienceYearsMin,
+        workModel: this.form.workModel,
+        onlineWorkdays: this.form.onlineWorkdays,
+        offlineWorkdays: this.form.offlineWorkdays,
+        isActive: this.form.isActive,
+      };
 
-    if (this.isEditMode) {
-      const jobId = this.id()!;
-      this.jobService.updateJob(+jobId, newJob).subscribe({
-        next: () => {
-          this.showSuccessModal.set(true);
-        },
+      this.jobService.updateJob(this.editJobId, updatePayload).subscribe({
+        next: () => this.showSuccessModal.set(true),
         error: (err: unknown) => console.error('Update job failed:', err),
       });
     } else {
-      this.jobService.createJob(newJob).subscribe({
-        next: () => {
-          this.showSuccessModal.set(true);
-        },
+      // POST /jobs
+      const createPayload: any = {
+        title: this.form.jobTitle,
+        ...(this.form.departmentId
+          ? { departmentId: this.form.departmentId }
+          : { newDepartmentName: this.form.departmentName }),
+        seniorityLevel: this.form.seniorityLevel,
+        description: this.form.jobDescription,
+        requiredQualifications: this.form.qualifications,
+        experienceYearsMin: this.form.experienceYearsMin,
+        workModel: this.form.workModel,
+        onlineWorkdays: this.form.onlineWorkdays,
+        offlineWorkdays: this.form.offlineWorkdays,
+      };
+
+      this.jobService.createJob(createPayload).subscribe({
+        next: () => this.showSuccessModal.set(true),
         error: (err: unknown) => console.error('Create job failed:', err),
       });
     }
