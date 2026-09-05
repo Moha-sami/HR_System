@@ -84,29 +84,29 @@
   ],
   "regions": [
     {
-      "id": 1,
+      "id": "1",
       "name": "Cairo"
     },
     {
-      "id": 2,
+      "id": "2",
       "name": "Riyadh"
     },
     {
-      "id": 3,
+      "id": "3",
       "name": "Jeddah"
     },
     {
-      "id": 4,
+      "id": "4",
       "name": "Alexandria"
     },
     {
-      "id": 5,
+      "id": "5",
       "name": "Giza"
     }
   ],
   "sites": [
     {
-      "id": 1,
+      "id": "1",
       "siteName": "Downtown Campus",
       "address": "Sheikh Zayed, Giza",
       "regionId": 5,
@@ -118,7 +118,7 @@
       "createdAt": "2026-01-01T08:00:00Z"
     },
     {
-      "id": 2,
+      "id": "2",
       "siteName": "5th Settlement Branch",
       "address": "5th Settlement, Cairo",
       "regionId": 1,
@@ -130,7 +130,7 @@
       "createdAt": "2026-01-01T08:00:00Z"
     },
     {
-      "id": 3,
+      "id": "3",
       "siteName": "Nasr City Hub",
       "address": "Nasr City, Cairo",
       "regionId": 1,
@@ -1352,5 +1352,319 @@
       "redeemedAt": null,
       "employeeId": null
     }
-  ]
+  ],
+  "newsCategories": [
+    {
+      "id": "1",
+      "name": "Announcements"
+    },
+    {
+      "id": "2",
+      "name": "HR"
+    },
+    {
+      "id": "3",
+      "name": "Events"
+    },
+    {
+      "id": "4",
+      "name": "General"
+    }
+  ],
+  "newsPosts": [
+    {
+      "id": "1",
+      "title": "How to Write a Business Plan",
+      "body": "A practical guide to writing a business plan that leadership can act on. Cover your market, operations, and the metrics that matter.",
+      "category": "General",
+      "status": "published",
+      "publishAt": "2023-06-27T12:00:00.000Z",
+      "createdAt": "2023-06-27T12:00:00Z",
+      "updatedAt": "2026-09-04T14:37:26.449Z",
+      "createdBy": "Ahmed Mohamed",
+      "updatedBy": "Mohamed Ahmed",
+      "attachmentUrl": "https://picsum.photos/id/1015/800/400",
+      "attachmentName": "business-plan.jpg",
+      "reactionCounts": {
+        "like": 7900000,
+        "dislike": 210,
+        "laugh": 1800,
+        "wow": 640,
+        "heart": 4200,
+        "angry": 18
+      },
+      "myReaction": null,
+      "commentsCount": 8
+    },
+    {
+      "id": "3",
+      "title": "Q3 Town Hall Agenda",
+      "body": "Draft talking points for the upcoming company town hall. Topics include hiring, sites, and rewards.",
+      "category": "Announcements",
+      "status": "draft",
+      "publishAt": null,
+      "createdAt": "2023-06-20T08:00:00Z",
+      "updatedAt": "2023-06-21T10:00:00Z",
+      "createdBy": "Mohamed Ahmed",
+      "updatedBy": "Mohamed Ahmed",
+      "attachmentUrl": "",
+      "attachmentName": "",
+      "reactionCounts": {
+        "like": 0,
+        "dislike": 0,
+        "laugh": 0,
+        "wow": 0,
+        "heart": 0,
+        "angry": 0
+      },
+      "myReaction": null,
+      "commentsCount": 0
+    },
+    {
+      "id": "4",
+      "title": "Ramadan Working Hours",
+      "body": "Updated working hours will apply across all sites during Ramadan. Managers should brief their teams before the start date.",
+      "category": "HR",
+      "status": "published",
+      "publishAt": "2026-09-04T08:00:00.000Z",
+      "createdAt": "2026-09-01T11:00:00Z",
+      "updatedAt": "2026-09-04T14:38:29.729Z",
+      "createdBy": "Ahmed Mohamed",
+      "updatedBy": "Mohamed Ahmed",
+      "attachmentUrl": "https://picsum.photos/id/1043/800/400",
+      "attachmentName": "hours.jpg",
+      "reactionCounts": {
+        "like": 24,
+        "dislike": 1,
+        "laugh": 3,
+        "wow": 6,
+        "heart": 15,
+        "angry": 0
+      },
+      "myReaction": null,
+      "commentsCount": 1
+    },
+    {
+      "id": "5",
+      "title": "Legacy Benefits Notice",
+      "body": "This notice has been archived and is no longer shown to employees in the live feed.",
+      "category": "HR",
+      "status": "archived",
+      "publishAt": "2022-01-15T09:00:00Z",
+      "createdAt": "2022-01-15T09:00:00Z",
+      "updatedAt": "2023-01-02T12:00:00Z",
+      "createdBy": "Ahmed Mohamed",
+      "updatedBy": "Mohamed Ahmed",
+      "attachmentUrl": "",
+      "attachmentName": "",
+      "reactionCounts": {
+        "like": 1200,
+        "dislike": 8,
+        "laugh": 40,
+        "wow": 12,
+        "heart": 90,
+        "angry": 3
+      },
+      "myReaction": null,
+      "commentsCount": 0
+    },
+    {
+      "title": "Test Post",
+      "body": "The is Test Body description",
+      "category": "Announcements",
+      "status": "draft",
+      "publishAt": null,
+      "createdAt": "2026-09-04T14:20:07.761Z",
+      "updatedAt": "2026-09-04T14:20:07.761Z",
+      "createdBy": "Mohamed Ahmed",
+      "updatedBy": "Mohamed Ahmed",
+      "attachmentUrl": "",
+      "attachmentName": "",
+      "reactionCounts": {
+        "like": 0,
+        "dislike": 0,
+        "laugh": 0,
+        "wow": 0,
+        "heart": 0,
+        "angry": 0
+      },
+      "myReaction": null,
+      "commentsCount": 0,
+      "id": "-_6tr2TuJRA"
+    }
+  ],
+  "newsComments": [
+    {
+      "id": "c2",
+      "postId": "1",
+      "parentId": "",
+      "authorName": "Ahmed Mahmoud",
+      "authorAvatar": "/human-avatar.avif",
+      "content": "Lorem Ipsum is simply dummy text of the printing and typesetting industry.",
+      "createdAt": "2026-09-04T14:40:00Z",
+      "reactionCounts": {
+        "like": 7900000,
+        "dislike": 120,
+        "laugh": 840,
+        "wow": 56,
+        "heart": 2100,
+        "angry": 9
+      },
+      "myReaction": "like",
+      "removedByAdmin": false
+    },
+    {
+      "id": "c2a",
+      "postId": "1",
+      "parentId": "c2",
+      "authorName": "Ahmed Mahmoud",
+      "authorAvatar": "/human-avatar.avif",
+      "content": "Lorem Ipsum is simply dummy text of the printing and typesetting industry.",
+      "createdAt": "2026-09-04T14:41:00Z",
+      "reactionCounts": {
+        "like": 12,
+        "dislike": 1,
+        "laugh": 4,
+        "wow": 0,
+        "heart": 3,
+        "angry": 0
+      },
+      "myReaction": null,
+      "removedByAdmin": false
+    },
+    {
+      "id": "c2b",
+      "postId": "1",
+      "parentId": "c2",
+      "authorName": "Ahmed Mahmoud",
+      "authorAvatar": "/human-avatar.avif",
+      "content": "Lorem Ipsum is simply dummy text of the printing and typesetting industry.",
+      "createdAt": "2026-09-04T14:41:30Z",
+      "reactionCounts": {
+        "like": 4,
+        "dislike": 0,
+        "laugh": 2,
+        "wow": 1,
+        "heart": 0,
+        "angry": 0
+      },
+      "myReaction": null,
+      "removedByAdmin": false
+    },
+    {
+      "id": "c2c",
+      "postId": "1",
+      "parentId": "c2",
+      "authorName": "Ahmed Mahmoud",
+      "authorAvatar": "/human-avatar.avif",
+      "content": "Lorem Ipsum is simply dummy text of the printing and typesetting industry.",
+      "createdAt": "2026-09-04T14:42:00Z",
+      "reactionCounts": {
+        "like": 2,
+        "dislike": 0,
+        "laugh": 0,
+        "wow": 0,
+        "heart": 1,
+        "angry": 0
+      },
+      "myReaction": null,
+      "removedByAdmin": false
+    },
+    {
+      "id": "c2d",
+      "postId": "1",
+      "parentId": "c2",
+      "authorName": "Ahmed Mahmoud",
+      "authorAvatar": "/human-avatar.avif",
+      "content": "Lorem Ipsum is simply dummy text of the printing and typesetting industry.",
+      "createdAt": "2026-09-04T14:42:20Z",
+      "reactionCounts": {
+        "like": 1,
+        "dislike": 0,
+        "laugh": 0,
+        "wow": 0,
+        "heart": 1,
+        "angry": 0
+      },
+      "myReaction": "heart",
+      "removedByAdmin": false
+    },
+    {
+      "id": "c2e",
+      "postId": "1",
+      "parentId": "c2",
+      "authorName": "Ahmed Mahmoud",
+      "authorAvatar": "/human-avatar.avif",
+      "content": "Lorem Ipsum is simply dummy text of the printing and typesetting industry.",
+      "createdAt": "2026-09-04T14:42:40Z",
+      "reactionCounts": {
+        "like": 1,
+        "dislike": 0,
+        "laugh": 0,
+        "wow": 0,
+        "heart": 0,
+        "angry": 1
+      },
+      "myReaction": "like",
+      "removedByAdmin": false
+    },
+    {
+      "id": "c3",
+      "postId": "1",
+      "parentId": "",
+      "authorName": "Ahmed Mahmoud",
+      "authorAvatar": "/human-avatar.avif",
+      "content": "This comment has been removed by admin",
+      "createdAt": "2026-09-04T14:30:00Z",
+      "reactionCounts": {
+        "like": 0,
+        "dislike": 0,
+        "laugh": 0,
+        "wow": 0,
+        "heart": 0,
+        "angry": 0
+      },
+      "myReaction": null,
+      "removedByAdmin": true
+    },
+    {
+      "id": "c4",
+      "postId": "1",
+      "parentId": "",
+      "authorName": "Ahmed Mahmoud",
+      "authorAvatar": "/human-avatar.avif",
+      "content": "Lorem Ipsum is simply dummy text of the printing and typesetting industry.",
+      "createdAt": "2026-09-04T14:20:00Z",
+      "reactionCounts": {
+        "like": 7900000,
+        "dislike": 80,
+        "laugh": 320,
+        "wow": 44,
+        "heart": 1500,
+        "angry": 2
+      },
+      "myReaction": null,
+      "removedByAdmin": false
+    },
+    {
+      "id": "c5",
+      "postId": "4",
+      "parentId": "",
+      "authorName": "Ahmed Mahmoud",
+      "authorAvatar": "/human-avatar.avif",
+      "content": "Please share this with all site managers before Ramadan starts.",
+      "createdAt": "2026-09-04T12:00:00Z",
+      "reactionCounts": {
+        "like": 18,
+        "dislike": 0,
+        "laugh": 2,
+        "wow": 1,
+        "heart": 11,
+        "angry": 0
+      },
+      "myReaction": "heart",
+      "removedByAdmin": false
+    }
+  ],
+  "$schema": "./node_modules/json-server/schema.json"
 }

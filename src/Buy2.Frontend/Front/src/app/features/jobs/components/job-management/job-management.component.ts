@@ -127,7 +127,7 @@ export class JobManagementComponent implements AfterViewInit {
 
 
   // =========================================================
-  // FILTERED JOBS
+  // DISPLAYED JOBS (Filtered frontend on current page for now)
   // =========================================================
 
   readonly filteredJobs = computed(() => {
@@ -172,16 +172,12 @@ export class JobManagementComponent implements AfterViewInit {
   // =========================================================
 
   onSearch(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    this.searchTerm.set(input.value);
 
-    const input =
-      event.target as HTMLInputElement;
-
-    this.searchTerm.set(
-      input.value
-    );
-
+    // API doesn't seem to support search, so we just clear page to 1 and reload
     this.currentPage.set(1);
-
+    this.loadJobs();
   }
 
 

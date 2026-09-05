@@ -135,7 +135,12 @@ export const routes: Routes = [
       {
         path: 'points',
         loadChildren: () => import('./features/points/points.routes').then((m) => m.POINTS_ROUTES),
-      }
+      },
+
+      {
+        path: 'news',
+        loadChildren: () => import('./features/news/news.routes').then((m) => m.NEWS_ROUTES),
+      },
 
       // ──────────────────────────────────────────────────────────────────────
       // User Profile & Company Config

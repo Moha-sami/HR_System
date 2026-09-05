@@ -1,0 +1,103 @@
+<div class="news-page">
+  <div class="page-header">
+    <h1 class="page-title">{{ 'NEWS.TITLE' | translate }}</h1>
+  </div>
+
+  <div class="filters-bar">
+    <div class="filter-search">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+        stroke="#999" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input
+        type="text"
+        [placeholder]="'NEWS.SEARCH_PLACEHOLDER' | translate"
+        [ngModel]="searchQuery()"
+        (ngModelChange)="searchQuery.set($event)"
+      />
+    </div>
+
+    <div class="filter-region">
+      <select
+        [ngModel]="selectedStatus()"
+        (ngModelChange)="selectedStatus.set($event)">
+        <option value="">{{ 'NEWS.ALL_STATUSES' | translate }}</option>
+        <option value="published">{{ 'NEWS.STATUS_PUBLISHED' | translate }}</option>
+        <option value="scheduled">{{ 'NEWS.STATUS_SCHEDULED' | translate }}</option>
+        <option value="draft">{{ 'NEWS.STATUS_DRAFT' | translate }}</option>
+        <option value="archived">{{ 'NEWS.STATUS_ARCHIVED' | translate }}</option>
+      </select>
+    </div>
+
+    <button class="btn-create" type="button" (click)="navigateToCreate()">
+      {{ 'NEWS.CREATE_POST' | translate }}
+    </button>
+  </div>
+
+  @if (loading()) {
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>{{ 'COMMON.LOADING' | translate }}</p>
+    </div>
+  }
+
+  @if (loadError() && !loading()) {
+    <div class="error-state">
+      <p>{{ 'NEWS.LOAD_ERROR' | translate }}</p>
+      <button class="btn-retry" type="button" (click)="loadPosts()">{{ 'NEWS.RETRY' | translate }}</button>
+    </div>
+  }
+
+  @if (!loading() && !loadError() && filteredPosts().length === 0) {
+    <div class="empty-state">
+      <p>{{ 'NEWS.NO_POSTS' | translate }}</p>
+    </div>
+  }
+
+  @if (!loading() && !loadError() && filteredPosts().length > 0) {
+    <div class="news-grid">
+      @for (post of filteredPosts(); track post.id) {
+        <article class="news-card">
+          <button class="news-card-hit" type="button" (click)="openPost(post)">
+          <div class="news-thumb">
+            @if (thumbnail(post); as src) {
+              <img [src]="src" [alt]="post.title" />
+            } @else {
+              <div class="news-thumb-placeholder"></div>
+            }
+          </div>
+          <div class="news-card-body">
+            <span class="status-badge" [attr.data-status]="post.status">
+              {{ statusKey(post.status) | translate }}
+            </span>
+            <h3 class="news-card-title">{{ post.title }}</h3>
+            <p class="news-meta">
+              {{ 'NEWS.ADDED' | translate : addedLabel(post) }}
+            </p>
+            <p class="news-author">
+              {{ 'NEWS.CREATED_BY' | translate }}
+              <span>{{ post.createdBy }}</span>
+            </p>
+          </div>
+          </button>
+          @if (post.status === 'published') {
+            <div class="news-card-engagement">
+              <app-news-reaction-bar
+                [counts]="post.reactionCounts"
+                [myReaction]="post.myReaction"
+                (picked)="setPostReaction(post, $event)"
+              />
+              <span class="news-comments-count">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                </svg>
+                {{ commentsLabel(post) }}
+              </span>
+            </div>
+          }
+        </article>
+      }
+    </div>
+  }
+</div>

@@ -1,0 +1,252 @@
+<div class="news-form-page">
+  @if (showPreview()) {
+    <div class="preview-card">
+      <div class="preview-toolbar">
+        <button type="button" class="btn-back" (click)="closePreview()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+          {{ 'COMMON.BACK' | translate }}
+        </button>
+        <h2 class="preview-title">{{ previewTitle() }}</h2>
+      </div>
+      @if (previewAttachment() && previewIsImage()) {
+        <img class="preview-image" [src]="previewAttachment()" [alt]="previewTitle()" />
+      } @else if (previewAttachment()) {
+        <p class="pdf-link">{{ previewAttachmentName() || ('NEWS.PDF_ATTACHMENT' | translate) }}</p>
+      }
+      <p class="preview-body">{{ previewBody() }}</p>
+    </div>
+  } @else {
+    <div class="form-card">
+      <div class="form-toolbar">
+        <button type="button" class="btn-back" (click)="onBack()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+          {{ 'COMMON.BACK' | translate }}
+        </button>
+        <h1 class="form-title">
+          {{ (isEditMode ? 'NEWS.EDIT_TITLE' : 'NEWS.CREATE_TITLE') | translate }}
+        </h1>
+        <div class="form-actions">
+          <button type="button" class="btn-preview" (click)="onPreview()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+            {{ 'NEWS.PREVIEW' | translate }}
+          </button>
+          <button type="button" class="btn-draft" [disabled]="isSubmitting()" (click)="saveAsDraft()">
+            {{ 'NEWS.SAVE_AS_DRAFT' | translate }}
+          </button>
+          <button type="button" class="btn-publish" [disabled]="isSubmitting()" (click)="publish()">
+            @if (isSubmitting()) {
+              <span class="spinner-sm"></span>
+            } @else {
+              {{ 'NEWS.PUBLISH' | translate }}
+            }
+          </button>
+        </div>
+      </div>
+
+      @if (loadError()) {
+        <p class="submit-error">{{ 'NEWS.LOAD_ONE_ERROR' | translate }}</p>
+      } @else {
+        <form [formGroup]="form" novalidate>
+          <h2 class="section-title">{{ 'NEWS.POST_DETAILS' | translate }}</h2>
+
+          <label class="field">
+            <span class="field-label">{{ 'NEWS.TITLE_LABEL' | translate }} <em>*</em></span>
+            <input
+              type="text"
+              class="form-control"
+              [class.invalid]="isInvalid('title')"
+              formControlName="title"
+              [placeholder]="'NEWS.TITLE_PLACEHOLDER' | translate"
+            />
+            @if (isInvalid('title')) {
+              <small class="error-msg">{{ 'NEWS.TITLE_REQUIRED' | translate }}</small>
+            }
+          </label>
+
+          <label class="field">
+            <span class="field-label">{{ 'NEWS.BODY_LABEL' | translate }} <em>*</em></span>
+            <textarea
+              class="form-control form-textarea"
+              [class.invalid]="isInvalid('body')"
+              formControlName="body"
+              [placeholder]="'NEWS.BODY_PLACEHOLDER' | translate"
+            ></textarea>
+            @if (isInvalid('body')) {
+              <small class="error-msg">{{ 'NEWS.BODY_REQUIRED' | translate }}</small>
+            }
+          </label>
+
+          <label class="field">
+            <span class="field-label">{{ 'NEWS.CATEGORY' | translate }}</span>
+            <select class="form-control" formControlName="category">
+              <option value="">{{ 'NEWS.CATEGORY_SELECT' | translate }}</option>
+              @for (category of categories(); track category.id) {
+                <option [value]="category.name">{{ category.name }}</option>
+              }
+            </select>
+          </label>
+
+          <div class="field">
+            <span class="field-label">{{ 'NEWS.ATTACH_FILES' | translate }}</span>
+            <input id="news-file-input" type="file" accept=".pdf,.png,.jpg,.jpeg" hidden (change)="onFileSelected($event)" />
+            <div
+              class="upload-zone"
+              [class.dragging]="isDragging()"
+              [class.invalid]="!!attachmentError()"
+              (click)="triggerFilePicker()"
+              (dragover)="onDragOver($event)"
+              (dragleave)="onDragLeave()"
+              (drop)="onDrop($event)"
+            >
+              @if (form.value.attachmentUrl) {
+                @if (previewIsImage()) {
+                  <img class="upload-preview" [src]="form.value.attachmentUrl" alt="" />
+                }
+                <p class="upload-name">{{ form.value.attachmentName }}</p>
+                <button type="button" class="btn-remove" (click)="$event.stopPropagation(); removeAttachment()">
+                  {{ 'COMMON.DELETE' | translate }}
+                </button>
+              } @else {
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none"
+                  stroke="#234199" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                  <polyline points="17 8 12 3 7 8"/>
+                  <line x1="12" y1="3" x2="12" y2="15"/>
+                </svg>
+                <p>{{ 'NEWS.UPLOAD_HINT' | translate }}</p>
+                <small>{{ 'NEWS.UPLOAD_TYPES' | translate }}</small>
+              }
+            </div>
+            @if (attachmentError(); as err) {
+              <small class="error-msg">{{ err | translate }}</small>
+            }
+          </div>
+
+          <div class="datetime-row">
+            <label class="field">
+              <span class="field-label">{{ 'NEWS.PUBLISH_DATE' | translate }}</span>
+              <input type="date" class="form-control" formControlName="publishDate" />
+            </label>
+            <label class="field">
+              <span class="field-label">{{ 'NEWS.PUBLISH_TIME' | translate }}</span>
+              <input type="time" class="form-control" formControlName="publishTime" />
+            </label>
+          </div>
+
+          @if (submitError()) {
+            <p class="submit-error">{{ submitError() }}</p>
+          }
+        </form>
+      }
+    </div>
+  }
+</div>
+
+@if (showSuccessModal()) {
+  <app-modal
+    size="small"
+    [closeOnBackdrop]="true"
+    [showHeader]="false"
+    [showActions]="false"
+    (closed)="confirmSuccess()"
+  >
+    <app-modal-body>
+      <div class="news-dialog">
+        <div class="news-dialog-icon news-dialog-icon--success">
+          <div class="news-dialog-icon-core">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="5 13 9 17 15 9"/>
+              <polyline points="9 13 13 17 20 8"/>
+            </svg>
+          </div>
+        </div>
+        <h3 class="news-dialog-title">{{ successTitleKey() | translate }}</h3>
+        <p class="news-dialog-text">{{ successMsgKey() | translate }}</p>
+        <button class="news-dialog-btn news-dialog-btn--got-it" type="button" (click)="confirmSuccess()">
+          {{ 'NEWS.GOT_IT' | translate }}
+        </button>
+      </div>
+    </app-modal-body>
+  </app-modal>
+}
+
+@if (showUnsavedModal()) {
+  <app-modal
+    size="small"
+    [closeOnBackdrop]="false"
+    [showHeader]="false"
+    [showActions]="false"
+    (closed)="closeUnsaved()"
+  >
+    <app-modal-body>
+      <div class="news-dialog">
+        <div class="news-dialog-icon news-dialog-icon--danger">
+          <div class="news-dialog-icon-core">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"/>
+              <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </div>
+        </div>
+        <h3 class="news-dialog-title">{{ 'NEWS.UNSAVED_TITLE' | translate }}</h3>
+        <p class="news-dialog-text">{{ 'NEWS.UNSAVED_MSG' | translate }}</p>
+        <p class="news-dialog-text">{{ 'NEWS.UNSAVED_CONFIRM' | translate }}</p>
+        <div class="news-dialog-actions">
+          <button class="news-dialog-btn news-dialog-btn--outline-danger" type="button" (click)="discardUnsaved()">
+            {{ 'COMMON.DISCARD' | translate }}
+          </button>
+          <button class="news-dialog-btn news-dialog-btn--primary" type="button" [disabled]="isSubmitting()" (click)="saveUnsavedAsDraft()">
+            {{ 'COMMON.SAVE' | translate }}
+          </button>
+        </div>
+      </div>
+    </app-modal-body>
+  </app-modal>
+}
+
+@if (showErrorModal()) {
+  <app-modal
+    size="small"
+    [closeOnBackdrop]="true"
+    [showHeader]="false"
+    [showActions]="false"
+    (closed)="closeErrorModal()"
+  >
+    <app-modal-body>
+      <div class="news-dialog">
+        <div class="news-dialog-icon news-dialog-icon--warning">
+          <div class="news-dialog-icon-core">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+              <line x1="12" y1="9" x2="12" y2="13"/>
+              <line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+          </div>
+        </div>
+        <h3 class="news-dialog-title">{{ 'NEWS.EDIT_ERROR_TITLE' | translate }}</h3>
+        <p class="news-dialog-text">{{ 'NEWS.EDIT_ERROR_MSG' | translate }}</p>
+        <div class="news-dialog-actions">
+          <button class="news-dialog-btn news-dialog-btn--outline" type="button" (click)="closeErrorModal()">
+            {{ 'COMMON.CANCEL' | translate }}
+          </button>
+          <button class="news-dialog-btn news-dialog-btn--danger" type="button" (click)="retrySave()">
+            {{ 'NEWS.TRY_AGAIN' | translate }}
+          </button>
+        </div>
+      </div>
+    </app-modal-body>
+  </app-modal>
+}

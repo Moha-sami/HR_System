@@ -1,0 +1,274 @@
+:host {
+  display: contents;
+}
+
+.comments-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 520px;
+  max-height: min(72vh, 640px);
+}
+
+.comments-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  min-height: 32px;
+}
+
+.comments-title {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #1a1a2e;
+}
+
+.comments-title--center {
+  flex: 1;
+  text-align: center;
+  padding-right: 48px;
+}
+
+.comments-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: none;
+  background: transparent;
+  color: #234199;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.comments-list {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.comments-empty {
+  color: #888;
+  text-align: center;
+  padding: 32px 0;
+}
+
+.comment {
+  display: flex;
+  gap: 12px;
+  padding: 12px 0;
+}
+
+.comment-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.comment-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.comment-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.comment-top strong {
+  color: #1a1a2e;
+}
+
+.comment-time {
+  margin-left: auto;
+  color: #9aa0a6;
+  font-size: 0.78rem;
+}
+
+.kebab-wrap {
+  position: relative;
+}
+
+.kebab {
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: transparent;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  cursor: pointer;
+}
+
+.kebab span {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: #6b7280;
+}
+
+.kebab-menu {
+  position: absolute;
+  top: 28px;
+  right: 0;
+  z-index: 20;
+  min-width: 160px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  padding: 8px;
+}
+
+.kebab-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  border: none;
+  background: transparent;
+  padding: 8px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.88rem;
+  color: #1a1a2e;
+}
+
+.kebab-item:hover {
+  background: #f5f7fa;
+}
+
+.kebab-item--danger {
+  color: #e53e3e;
+}
+
+.comment-body {
+  margin: 6px 0 8px;
+  color: #4a5568;
+  font-size: 0.9rem;
+}
+
+.comment-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.action-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: none;
+  background: transparent;
+  color: #234199;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.link-btn {
+  border: none;
+  background: transparent;
+  color: #234199;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 8px 0 0;
+  font-size: 0.85rem;
+}
+
+.admin-removed {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.admin-banner {
+  flex: 1;
+  background: #fde8e8;
+  color: #c53030;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 0.88rem;
+}
+
+.replies-box {
+  margin-left: 52px;
+  padding: 8px 12px 12px;
+  border: 1px solid #eceff5;
+  border-radius: 12px;
+  background: #fafbfe;
+}
+
+.edit-area {
+  width: 100%;
+  min-height: 72px;
+  border: none;
+  border-radius: 10px;
+  background: #f3f4f6;
+  padding: 10px 12px;
+  resize: vertical;
+  font: inherit;
+}
+
+.edit-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.btn-discard-text {
+  border: none;
+  background: transparent;
+  color: #e53e3e;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-update {
+  border: none;
+  background: #234199;
+  color: #fff;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.composer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+  background: #f3f4f6;
+  border-radius: 999px;
+  padding: 8px 14px;
+}
+
+.composer-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 0.9rem;
+}
+
+.composer-send {
+  border: none;
+  background: transparent;
+  color: #234199;
+  display: inline-flex;
+  cursor: pointer;
+}
+
+.composer-send:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}

@@ -1,0 +1,223 @@
+.news-form-page {
+  width: 100%;
+  padding: 24px;
+}
+
+.form-card,
+.preview-card {
+  background: #fff;
+  border: 1.5px solid #e8ecf4;
+  border-radius: 16px;
+  padding: 24px 28px 32px;
+}
+
+.form-toolbar,
+.preview-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.form-title,
+.preview-title {
+  margin: 0;
+  flex: 1;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1a1a2e;
+}
+
+.form-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: auto;
+}
+
+.btn-back,
+.btn-preview {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: none;
+  background: transparent;
+  color: #234199;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+}
+
+.btn-draft {
+  border: none;
+  background: transparent;
+  color: #e53e3e;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-publish,
+.btn-ok {
+  padding: 9px 22px;
+  background: #234199;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.btn-publish:disabled,
+.btn-ok:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.section-title {
+  font-size: 1rem;
+  margin: 0 0 16px;
+  color: #1a1a2e;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.field-label {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #1a1a2e;
+}
+
+.field-label em {
+  color: #e53e3e;
+  font-style: normal;
+}
+
+.form-control {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  color: #333;
+  background: #fff;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.form-control:focus {
+  border-color: #234199;
+}
+
+.form-control.invalid,
+.upload-zone.invalid {
+  border-color: #e53e3e;
+}
+
+.form-textarea {
+  min-height: 140px;
+  resize: vertical;
+}
+
+.error-msg,
+.submit-error {
+  color: #e53e3e;
+  font-size: 0.78rem;
+}
+
+.upload-zone {
+  border: 1.5px dashed #d0d7e6;
+  border-radius: 12px;
+  padding: 28px 16px;
+  text-align: center;
+  color: #666;
+  cursor: pointer;
+}
+
+.upload-zone.dragging {
+  border-color: #234199;
+  background: #f5f8ff;
+}
+
+.upload-zone p {
+  margin: 8px 0 4px;
+  font-weight: 600;
+  color: #234199;
+}
+
+.upload-preview {
+  max-height: 120px;
+  border-radius: 8px;
+  display: block;
+  margin: 0 auto 8px;
+}
+
+.upload-name {
+  color: #333 !important;
+}
+
+.btn-remove {
+  border: none;
+  background: transparent;
+  color: #e53e3e;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.datetime-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.preview-image {
+  width: 100%;
+  max-height: 360px;
+  object-fit: cover;
+  border-radius: 12px;
+  margin-bottom: 16px;
+}
+
+.preview-body {
+  white-space: pre-wrap;
+  color: #4a5568;
+  line-height: 1.7;
+}
+
+.pdf-link {
+  color: #234199;
+  font-weight: 600;
+}
+
+.spinner-sm {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  display: inline-block;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 720px) {
+  .datetime-row,
+  .form-toolbar {
+    grid-template-columns: 1fr;
+  }
+
+  .form-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}
