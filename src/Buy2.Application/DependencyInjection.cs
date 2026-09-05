@@ -1,4 +1,5 @@
-using Buy2.Application.Features.Points.ExecuteAutomationJob.Evaluators;
+using Buy2.Application.Features.Points.Automation;
+using Buy2.Application.Features.Points.Automation.Evaluators;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -13,6 +14,7 @@ public static class DependencyInjection
         services.AddScoped<IAutomationEvaluator, AttendanceAutomationEvaluator>();
         services.AddScoped<IAutomationEvaluator, TaskAutomationEvaluator>();
         services.AddScoped<IAutomationEvaluator, PerformanceAutomationEvaluator>();
+        services.AddScoped<IPointsAutomationRunner, PointsAutomationRunner>();
 
         return services;
     }

@@ -1,9 +1,8 @@
 using Buy2.Application.DTOs.Points.DTOs;
-using Buy2.Application.Features.Points.ExecuteAutomationJob.Evaluators;
 using Buy2.Domain.Entities;
 using Buy2.Domain.Enums;
 
-namespace Buy2.Application.Features.Points.ExecuteAutomationJob.Evaluators;
+namespace Buy2.Application.Features.Points.Automation.Evaluators;
 
 public class PerformanceAutomationEvaluator : IAutomationEvaluator
 {
