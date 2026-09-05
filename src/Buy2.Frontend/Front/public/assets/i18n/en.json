@@ -342,7 +342,8 @@
       "PAYROLL": "Payroll Details",
       "ATTENDANCE": "Time & Attendance",
       "DOCUMENTS": "Documents",
-      "VIOLATIONS": "Violations"
+      "VIOLATIONS": "Violations",
+      "POINTS_REWARDS": "Points & Rewards"
     },
     "HEADER": {
       "EMPLOYEE_CODE": "Employee Code",
@@ -465,6 +466,33 @@
         "LOAD_FAILED": "Failed to load violation details. Please try again.",
         "RESOLVE_FAILED": "Failed to resolve violation. Please try again.",
         "VIOLATION_RESOLVE_FAILED": "Failed to resolve violation. Please try again."
+      }
+    },
+    "POINTS_REWARDS": {
+      "CURRENT_BALANCE": "Current Points balance",
+      "TOTAL_POINTS_REDEEMED": "Total Points redeemed",
+      "TOTAL_REWARDS_REDEEMED": "Total Rewards redeemed",
+      "TOTAL_REWARDS_COST": "Total Rewards cost",
+      "FILTER_BY": "Filter by",
+      "DATE": "Date",
+      "TYPE": "Type",
+      "ALL_TYPES": "All types",
+      "TRIGGERED_BY": "Triggered By",
+      "TRIGGERED_BY_PLACEHOLDER": "Enter trigger",
+      "SEARCH": "Search",
+      "SEARCH_PLACEHOLDER": "Search this page...",
+      "POINTS_VALUE": "Points Value",
+      "COMMENTS": "Comments",
+      "NO_TRANSACTIONS": "No transactions found",
+      "SUMMARY_LOADING": "Loading points summary...",
+      "SUMMARY_ERROR": "Failed to load points summary. Please try again.",
+      "TRANSACTIONS_LOADING": "Loading transactions...",
+      "TRANSACTIONS_ERROR": "Failed to load transactions. Please try again.",
+      "TYPES": {
+        "EARNED": "Earned",
+        "REDEEMED": "Redeemed",
+        "ADD": "Add",
+        "DEDUCT": "Deduct"
       }
     }
   },

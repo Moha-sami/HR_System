@@ -7,6 +7,7 @@ import { AttendanceTabComponent } from './components/employee-detail/tabs/attend
 import { DocumentsTabComponent } from './components/employee-detail/tabs/documents-tab/documents-tab.component';
 import { ViolationsTabComponent } from './components/employee-detail/tabs/violations-tab/violations-tab.component';
 import { ViolationDetailPageComponent } from './components/employee-detail/tabs/violations-tab/violation-detail-page.component';
+import { PointsRewardsTabComponent } from './components/employee-detail/tabs/points-rewards-tab/points-rewards-tab.component';
 
 export const EMPLOYEES_ROUTES: Routes = [
   { path: '', component: EmployeeListComponent },
@@ -19,6 +20,7 @@ export const EMPLOYEES_ROUTES: Routes = [
       { path: 'attendance', component: AttendanceTabComponent },
       { path: 'documents', component: DocumentsTabComponent },
       { path: 'violations', component: ViolationsTabComponent },
+      { path: 'points-rewards', component: PointsRewardsTabComponent },
       { path: 'violations/:violationId', component: ViolationDetailPageComponent },
       { path: '', redirectTo: 'information', pathMatch: 'full' },
     ],
