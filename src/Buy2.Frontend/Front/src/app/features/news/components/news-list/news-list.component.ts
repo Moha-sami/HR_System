@@ -2,14 +2,16 @@ import { Component, computed, inject, signal, type OnInit } from '@angular/core'
 import { Router } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { FormsModule } from '@angular/forms';
-import type { NewsPost, NewsPostStatus } from '../../models/news.models';
+import type { NewsPost, NewsPostStatus, NewsReaction } from '../../models/news.models';
+import { toggleReaction } from '../../models/news.models';
 import { NewsService } from '../../services/news.service';
 import { formatLikeCount, formatNewsDateTime, isImageAttachment } from '../../utils/news.utils';
+import { NewsReactionBarComponent } from '../news-reaction-bar/news-reaction-bar.component';
 
 @Component({
   selector: 'app-news-list',
   standalone: true,
-  imports: [TranslatePipe, FormsModule],
+  imports: [TranslatePipe, FormsModule, NewsReactionBarComponent],
   templateUrl: './news-list.component.html',
   styleUrl: './news-list.component.css',
 })
@@ -68,8 +70,19 @@ export class NewsListComponent implements OnInit {
     return formatNewsDateTime(post.createdAt);
   }
 
-  likesLabel(post: NewsPost): string {
-    return formatLikeCount(post.likesCount);
+  commentsLabel(post: NewsPost): string {
+    return formatLikeCount(post.commentsCount ?? 0);
+  }
+
+  setPostReaction(post: NewsPost, key: NewsReaction): void {
+    const next = toggleReaction(post.reactionCounts, post.myReaction, key);
+    this.newsService.updatePost(post.id, next).subscribe({
+      next: () => {
+        this.posts.update((posts) =>
+          posts.map((item) => (item.id === post.id ? { ...item, ...next } : item)),
+        );
+      },
+    });
   }
 
   thumbnail(post: NewsPost): string {

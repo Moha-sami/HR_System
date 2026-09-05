@@ -1385,7 +1385,16 @@
       "updatedBy": "Mohamed Ahmed",
       "attachmentUrl": "https://picsum.photos/id/1015/800/400",
       "attachmentName": "business-plan.jpg",
-      "likesCount": 7900000
+      "reactionCounts": {
+        "like": 7900000,
+        "dislike": 210,
+        "laugh": 1800,
+        "wow": 640,
+        "heart": 4200,
+        "angry": 18
+      },
+      "myReaction": null,
+      "commentsCount": 8
     },
     {
       "id": "3",
@@ -1400,7 +1409,16 @@
       "updatedBy": "Mohamed Ahmed",
       "attachmentUrl": "",
       "attachmentName": "",
-      "likesCount": 0
+      "reactionCounts": {
+        "like": 0,
+        "dislike": 0,
+        "laugh": 0,
+        "wow": 0,
+        "heart": 0,
+        "angry": 0
+      },
+      "myReaction": null,
+      "commentsCount": 0
     },
     {
       "id": "4",
@@ -1415,7 +1433,16 @@
       "updatedBy": "Mohamed Ahmed",
       "attachmentUrl": "https://picsum.photos/id/1043/800/400",
       "attachmentName": "hours.jpg",
-      "likesCount": 0
+      "reactionCounts": {
+        "like": 24,
+        "dislike": 1,
+        "laugh": 3,
+        "wow": 6,
+        "heart": 15,
+        "angry": 0
+      },
+      "myReaction": null,
+      "commentsCount": 1
     },
     {
       "id": "5",
@@ -1430,7 +1457,16 @@
       "updatedBy": "Mohamed Ahmed",
       "attachmentUrl": "",
       "attachmentName": "",
-      "likesCount": 1200
+      "reactionCounts": {
+        "like": 1200,
+        "dislike": 8,
+        "laugh": 40,
+        "wow": 12,
+        "heart": 90,
+        "angry": 3
+      },
+      "myReaction": null,
+      "commentsCount": 0
     },
     {
       "title": "Test Post",
@@ -1444,8 +1480,190 @@
       "updatedBy": "Mohamed Ahmed",
       "attachmentUrl": "",
       "attachmentName": "",
-      "likesCount": 0,
+      "reactionCounts": {
+        "like": 0,
+        "dislike": 0,
+        "laugh": 0,
+        "wow": 0,
+        "heart": 0,
+        "angry": 0
+      },
+      "myReaction": null,
+      "commentsCount": 0,
       "id": "-_6tr2TuJRA"
+    }
+  ],
+  "newsComments": [
+    {
+      "id": "c2",
+      "postId": "1",
+      "parentId": "",
+      "authorName": "Ahmed Mahmoud",
+      "authorAvatar": "/human-avatar.avif",
+      "content": "Lorem Ipsum is simply dummy text of the printing and typesetting industry.",
+      "createdAt": "2026-09-04T14:40:00Z",
+      "reactionCounts": {
+        "like": 7900000,
+        "dislike": 120,
+        "laugh": 840,
+        "wow": 56,
+        "heart": 2100,
+        "angry": 9
+      },
+      "myReaction": "like",
+      "removedByAdmin": false
+    },
+    {
+      "id": "c2a",
+      "postId": "1",
+      "parentId": "c2",
+      "authorName": "Ahmed Mahmoud",
+      "authorAvatar": "/human-avatar.avif",
+      "content": "Lorem Ipsum is simply dummy text of the printing and typesetting industry.",
+      "createdAt": "2026-09-04T14:41:00Z",
+      "reactionCounts": {
+        "like": 12,
+        "dislike": 1,
+        "laugh": 4,
+        "wow": 0,
+        "heart": 3,
+        "angry": 0
+      },
+      "myReaction": null,
+      "removedByAdmin": false
+    },
+    {
+      "id": "c2b",
+      "postId": "1",
+      "parentId": "c2",
+      "authorName": "Ahmed Mahmoud",
+      "authorAvatar": "/human-avatar.avif",
+      "content": "Lorem Ipsum is simply dummy text of the printing and typesetting industry.",
+      "createdAt": "2026-09-04T14:41:30Z",
+      "reactionCounts": {
+        "like": 4,
+        "dislike": 0,
+        "laugh": 2,
+        "wow": 1,
+        "heart": 0,
+        "angry": 0
+      },
+      "myReaction": null,
+      "removedByAdmin": false
+    },
+    {
+      "id": "c2c",
+      "postId": "1",
+      "parentId": "c2",
+      "authorName": "Ahmed Mahmoud",
+      "authorAvatar": "/human-avatar.avif",
+      "content": "Lorem Ipsum is simply dummy text of the printing and typesetting industry.",
+      "createdAt": "2026-09-04T14:42:00Z",
+      "reactionCounts": {
+        "like": 2,
+        "dislike": 0,
+        "laugh": 0,
+        "wow": 0,
+        "heart": 1,
+        "angry": 0
+      },
+      "myReaction": null,
+      "removedByAdmin": false
+    },
+    {
+      "id": "c2d",
+      "postId": "1",
+      "parentId": "c2",
+      "authorName": "Ahmed Mahmoud",
+      "authorAvatar": "/human-avatar.avif",
+      "content": "Lorem Ipsum is simply dummy text of the printing and typesetting industry.",
+      "createdAt": "2026-09-04T14:42:20Z",
+      "reactionCounts": {
+        "like": 1,
+        "dislike": 0,
+        "laugh": 0,
+        "wow": 0,
+        "heart": 1,
+        "angry": 0
+      },
+      "myReaction": "heart",
+      "removedByAdmin": false
+    },
+    {
+      "id": "c2e",
+      "postId": "1",
+      "parentId": "c2",
+      "authorName": "Ahmed Mahmoud",
+      "authorAvatar": "/human-avatar.avif",
+      "content": "Lorem Ipsum is simply dummy text of the printing and typesetting industry.",
+      "createdAt": "2026-09-04T14:42:40Z",
+      "reactionCounts": {
+        "like": 1,
+        "dislike": 0,
+        "laugh": 0,
+        "wow": 0,
+        "heart": 0,
+        "angry": 1
+      },
+      "myReaction": "like",
+      "removedByAdmin": false
+    },
+    {
+      "id": "c3",
+      "postId": "1",
+      "parentId": "",
+      "authorName": "Ahmed Mahmoud",
+      "authorAvatar": "/human-avatar.avif",
+      "content": "This comment has been removed by admin",
+      "createdAt": "2026-09-04T14:30:00Z",
+      "reactionCounts": {
+        "like": 0,
+        "dislike": 0,
+        "laugh": 0,
+        "wow": 0,
+        "heart": 0,
+        "angry": 0
+      },
+      "myReaction": null,
+      "removedByAdmin": true
+    },
+    {
+      "id": "c4",
+      "postId": "1",
+      "parentId": "",
+      "authorName": "Ahmed Mahmoud",
+      "authorAvatar": "/human-avatar.avif",
+      "content": "Lorem Ipsum is simply dummy text of the printing and typesetting industry.",
+      "createdAt": "2026-09-04T14:20:00Z",
+      "reactionCounts": {
+        "like": 7900000,
+        "dislike": 80,
+        "laugh": 320,
+        "wow": 44,
+        "heart": 1500,
+        "angry": 2
+      },
+      "myReaction": null,
+      "removedByAdmin": false
+    },
+    {
+      "id": "c5",
+      "postId": "4",
+      "parentId": "",
+      "authorName": "Ahmed Mahmoud",
+      "authorAvatar": "/human-avatar.avif",
+      "content": "Please share this with all site managers before Ramadan starts.",
+      "createdAt": "2026-09-04T12:00:00Z",
+      "reactionCounts": {
+        "like": 18,
+        "dislike": 0,
+        "laugh": 2,
+        "wow": 1,
+        "heart": 11,
+        "angry": 0
+      },
+      "myReaction": "heart",
+      "removedByAdmin": false
     }
   ],
   "$schema": "./node_modules/json-server/schema.json"

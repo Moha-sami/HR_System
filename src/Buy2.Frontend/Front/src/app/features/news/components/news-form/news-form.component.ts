@@ -8,6 +8,7 @@ import { ModalBodyComponent } from '@app/shared/components/modal/modal-body.comp
 import type { HasUnsavedChanges } from '../../guards/unsaved-changes.guard';
 import {
   CURRENT_NEWS_AUTHOR,
+  emptyReactionCounts,
   type CreateNewsPostDto,
   type NewsCategory,
   type NewsPost,
@@ -294,7 +295,9 @@ export class NewsFormComponent implements OnInit, HasUnsavedChanges {
       updatedBy: CURRENT_NEWS_AUTHOR,
       attachmentUrl: value.attachmentUrl ?? '',
       attachmentName: value.attachmentName ?? '',
-      likesCount: this.existingPost?.likesCount ?? 0,
+      reactionCounts: this.existingPost?.reactionCounts ?? emptyReactionCounts(),
+      myReaction: this.existingPost?.myReaction ?? null,
+      commentsCount: this.existingPost?.commentsCount ?? 0,
     };
 
     this.isSubmitting.set(true);
