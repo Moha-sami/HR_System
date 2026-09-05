@@ -58,16 +58,19 @@ public class ReassignAndDeleteJobCommandHandler : IRequestHandler<ReassignAndDel
             await ReassignEmployeesAsync(request.JobId, activeEmployees, request.Reassignments, fallbackJobId, cancellationToken);
         }
 
-        jobToDelete.IsDeleted = true;
-        jobToDelete.DeletedAt = DateTimeOffset.UtcNow;
+        return await _unitOfWork.ExecuteInTransactionAsync(async () =>
+        {
+            jobToDelete.IsDeleted = true;
+            jobToDelete.DeletedAt = DateTimeOffset.UtcNow;
 
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return new ReassignAndDeleteJobResponseDto(
-            Message: "Job role deleted successfully.",
-            ReassignedCount: reassignedCount,
-            DeletedJobId: request.JobId
-        );
+            return new ReassignAndDeleteJobResponseDto(
+                Message: "Job role deleted successfully.",
+                ReassignedCount: reassignedCount,
+                DeletedJobId: request.JobId
+            );
+        }, cancellationToken);
     }
 
     private async Task ReassignEmployeesAsync(
