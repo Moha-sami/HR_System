@@ -204,6 +204,16 @@ export class ViolationsTabComponent {
     this.sortDirection.set(event.direction);
   }
 
+  // Handle sort header click (toggle direction on same field, reset to asc on new field)
+  onSort(field: ViolationSortField): void {
+    if (this.sortField() === field) {
+      this.sortDirection.update((direction) => (direction === 'asc' ? 'desc' : 'asc'));
+    } else {
+      this.sortField.set(field);
+      this.sortDirection.set('asc');
+    }
+  }
+
   // Export violations
   onExport(): void {
     const emp = this.employee();
