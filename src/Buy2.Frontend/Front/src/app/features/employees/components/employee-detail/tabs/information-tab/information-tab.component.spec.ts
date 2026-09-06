@@ -160,6 +160,31 @@ describe('InformationTabComponent', () => {
     expect(component.jobForm().qualifications).toEqual([]);
   });
 
+  it('should canonicalize stored workday casing on prefill', () => {
+    mockEmployeeDetailService.detailEmployee.set({
+      ...mockEmployee,
+      jobDetails: {
+        ...mockEmployee.jobDetails,
+        onlineWorkdays: ['sunday', 'MONDAY'],
+        offlineWorkdays: ['tuesday'],
+      },
+    });
+    component.loadFormData();
+    expect(component.jobForm().onlineWorkdays).toEqual(['Sunday', 'Monday']);
+    expect(component.jobForm().offlineWorkdays).toEqual(['Tuesday']);
+    expect(component.isOnlineDay('Sunday')).toBe(true);
+    expect(component.isOfflineDay('Tuesday')).toBe(true);
+    expect(component.isOnlineDay('Friday')).toBe(false);
+  });
+
+  it('should toggle workdays without duplicating case variants', () => {
+    component.jobForm.set({ ...component.jobForm(), onlineWorkdays: ['sunday'] });
+    component.toggleJobOnlineDay('Sunday');
+    expect(component.jobForm().onlineWorkdays).toEqual([]);
+    component.toggleJobOnlineDay('Sunday');
+    expect(component.jobForm().onlineWorkdays).toEqual(['Sunday']);
+  });
+
   it('should format gender correctly', () => {
     expect(component.formatGender(1)).toBe('Male');
     expect(component.formatGender(2)).toBe('Female');

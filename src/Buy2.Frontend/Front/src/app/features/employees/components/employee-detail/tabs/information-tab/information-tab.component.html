@@ -377,7 +377,7 @@
                   <label class="inline-flex items-center gap-1 px-2 py-1 border border-gray-300 rounded-lg text-sm cursor-pointer">
                     <input
                       type="checkbox"
-                      [checked]="jobForm().onlineWorkdays.includes(day)"
+                      [checked]="isOnlineDay(day)"
                       (change)="toggleJobOnlineDay(day)"
                       class="accent-primary-600"
                     />
@@ -395,7 +395,7 @@
                   <label class="inline-flex items-center gap-1 px-2 py-1 border border-gray-300 rounded-lg text-sm cursor-pointer">
                     <input
                       type="checkbox"
-                      [checked]="jobForm().offlineWorkdays.includes(day)"
+                      [checked]="isOfflineDay(day)"
                       (change)="toggleJobOfflineDay(day)"
                       class="accent-primary-600"
                     />

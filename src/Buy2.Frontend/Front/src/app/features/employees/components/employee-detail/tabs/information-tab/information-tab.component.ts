@@ -126,6 +126,16 @@ export class InformationTabComponent implements OnInit {
   readonly weekDayValues: DayOfWeekCode[] = [6, 0, 1, 2, 3, 4, 5];
   readonly attendanceOptions = ['OnSite', 'Remote', 'Hybrid'];
 
+  /** Canonicalize a stored day name to the weekDays entry (case-insensitive). */
+  readonly canonicalDay = (value: string): string =>
+    this.weekDays.find((d) => d.toLowerCase() === value.toLowerCase()) ?? value;
+
+  readonly isOnlineDay = (day: string): boolean =>
+    this.jobForm().onlineWorkdays.some((d) => d.toLowerCase() === day.toLowerCase());
+
+  readonly isOfflineDay = (day: string): boolean =>
+    this.jobForm().offlineWorkdays.some((d) => d.toLowerCase() === day.toLowerCase());
+
   // Computed getters for employee data
   readonly employee = this.employeeDetailService.detailEmployee;
 
@@ -184,8 +194,8 @@ export class InformationTabComponent implements OnInit {
       experienceYears: emp.jobDetails.experienceYears || 0,
       jobType: emp.jobDetails.jobType || '',
       attendanceType: emp.jobDetails.attendanceType || '',
-      onlineWorkdays: [...(emp.jobDetails.onlineWorkdays || [])],
-      offlineWorkdays: [...(emp.jobDetails.offlineWorkdays || [])],
+      onlineWorkdays: (emp.jobDetails.onlineWorkdays || []).map((d) => this.canonicalDay(d)),
+      offlineWorkdays: (emp.jobDetails.offlineWorkdays || []).map((d) => this.canonicalDay(d)),
       qualifications: [...(emp.jobDetails.qualifications || [])],
     });
   }
@@ -324,8 +334,8 @@ export class InformationTabComponent implements OnInit {
   toggleJobOnlineDay(day: string): void {
     this.jobForm.update((form) => ({
       ...form,
-      onlineWorkdays: form.onlineWorkdays.includes(day)
-        ? form.onlineWorkdays.filter((d) => d !== day)
+      onlineWorkdays: form.onlineWorkdays.some((d) => d.toLowerCase() === day.toLowerCase())
+        ? form.onlineWorkdays.filter((d) => d.toLowerCase() !== day.toLowerCase())
         : [...form.onlineWorkdays, day],
     }));
   }
@@ -333,8 +343,8 @@ export class InformationTabComponent implements OnInit {
   toggleJobOfflineDay(day: string): void {
     this.jobForm.update((form) => ({
       ...form,
-      offlineWorkdays: form.offlineWorkdays.includes(day)
-        ? form.offlineWorkdays.filter((d) => d !== day)
+      offlineWorkdays: form.offlineWorkdays.some((d) => d.toLowerCase() === day.toLowerCase())
+        ? form.offlineWorkdays.filter((d) => d.toLowerCase() !== day.toLowerCase())
         : [...form.offlineWorkdays, day],
     }));
   }
