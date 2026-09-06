@@ -20,12 +20,11 @@ export class EmployeeDetailComponent {
   readonly loadError = this.employeeDetailService.detailError;
 
   readonly activeTab = signal<
-    'information' | 'payroll' | 'attendance' | 'documents' | 'violations' | 'points-rewards'
+    'information' | 'attendance' | 'documents' | 'violations' | 'points-rewards'
   >('information');
 
   readonly tabs = [
     { id: 'information', label: 'EMPLOYEE_DETAIL.TABS.INFORMATION' },
-    { id: 'payroll', label: 'EMPLOYEE_DETAIL.TABS.PAYROLL' },
     { id: 'attendance', label: 'EMPLOYEE_DETAIL.TABS.ATTENDANCE' },
     { id: 'documents', label: 'EMPLOYEE_DETAIL.TABS.DOCUMENTS' },
     { id: 'violations', label: 'EMPLOYEE_DETAIL.TABS.VIOLATIONS' },
@@ -44,7 +43,6 @@ export class EmployeeDetailComponent {
     this.route.firstChild?.url.subscribe((segments) => {
       const tab = segments[0]?.path as
         | 'information'
-        | 'payroll'
         | 'attendance'
         | 'documents'
         | 'violations'
