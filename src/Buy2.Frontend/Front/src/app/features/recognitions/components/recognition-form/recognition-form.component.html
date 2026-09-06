@@ -1,0 +1,71 @@
+<div class="page">
+  <div class="toolbar">
+    <div class="actions"><app-button variant="ghost" (clicked)="back()">‹ {{ 'RECOGNITIONS.BACK' | translate }}</app-button><h1>{{ (id() ? 'RECOGNITIONS.EDIT_TITLE' : 'RECOGNITIONS.CREATE_TITLE') | translate }}</h1></div>
+    <div class="actions">
+      <app-button variant="ghost" [disabled]="loading() || loadError() || reading()" (clicked)="showPreview()">{{ 'RECOGNITIONS.PREVIEW' | translate }}</app-button>
+      <app-button variant="secondary" [disabled]="saving() || reading() || loading() || loadError()" (clicked)="save('draft')">{{ 'RECOGNITIONS.SAVE_DRAFT' | translate }}</app-button>
+      <app-button variant="secondary" [disabled]="saving() || reading() || loading() || loadError()" (clicked)="save('archived')">{{ 'RECOGNITIONS.SAVE_ARCHIVE' | translate }}</app-button>
+      <app-button [loading]="saving()" [disabled]="saving() || reading() || loading() || loadError()" (clicked)="save('primary')">{{ (id() ? 'RECOGNITIONS.SAVE_CHANGES' : 'RECOGNITIONS.PUBLISH') | translate }}</app-button>
+    </div>
+  </div>
+  @if (loading()) { <p class="state">{{ 'RECOGNITIONS.LOADING' | translate }}</p> }
+  @else if (loadError()) { <div class="state"><p>{{ 'RECOGNITIONS.NOT_FOUND' | translate }}</p><app-button (clicked)="load()">{{ 'RECOGNITIONS.RETRY' | translate }}</app-button></div> }
+  @else {
+    <form class="card" [formGroup]="form" (ngSubmit)="save('primary')">
+      <h2>{{ 'RECOGNITIONS.POST_DETAILS' | translate }}</h2>
+      <fieldset [disabled]="saving()" style="border:0;padding:0;margin:0;min-width:0">
+        <label class="field"><span>{{ 'RECOGNITIONS.EMPLOYEE' | translate }} <b class="required">*</b></span>
+          <select formControlName="employeeId" [class.invalid]="invalid('employeeId')"><option value="">{{ 'RECOGNITIONS.SELECT_EMPLOYEE' | translate }}</option>@for (employee of employees(); track employee.id) { <option [value]="employee.id">{{ employee.firstName }} {{ employee.lastName }}</option> }</select>
+          @if (invalid('employeeId')) { <p class="error">{{ 'RECOGNITIONS.EMPLOYEE_REQUIRED' | translate }}</p> }
+        </label>
+        @if (lookupError()) { <p class="error">{{ 'RECOGNITIONS.LOOKUP_ERROR' | translate }}</p><app-button variant="ghost" (clicked)="loadEmployees()">{{ 'RECOGNITIONS.RETRY' | translate }}</app-button> }
+        <label class="field"><span>{{ 'RECOGNITIONS.TITLE_LABEL' | translate }} <b class="required">*</b></span><input formControlName="title" [class.invalid]="invalid('title')" [placeholder]="'RECOGNITIONS.TITLE_PLACEHOLDER' | translate" />@if (invalid('title')) { <p class="error">{{ 'RECOGNITIONS.TITLE_REQUIRED' | translate }}</p> }</label>
+        <label class="field"><span>{{ 'RECOGNITIONS.DESCRIPTION' | translate }} <b class="required">*</b></span><textarea formControlName="description" [class.invalid]="invalid('description')" [placeholder]="'RECOGNITIONS.DESCRIPTION_PLACEHOLDER' | translate"></textarea>@if (invalid('description')) { <p class="error">{{ 'RECOGNITIONS.DESCRIPTION_REQUIRED' | translate }}</p> }</label>
+        <label class="field"><span>{{ 'RECOGNITIONS.POINTS_LABEL' | translate }}</span><input type="number" min="0" step="any" formControlName="points" [class.invalid]="invalid('points')" />@if (invalid('points')) { <p class="error">{{ 'RECOGNITIONS.POINTS_ERROR' | translate }}</p> }</label>
+        <div class="field"><p class="upload-label">{{ 'RECOGNITIONS.ATTACH_FILES' | translate }}</p>
+          <input #fileInput type="file" hidden [accept]="accept" (change)="selected($event)" />
+          <div class="upload" [class.dragging]="dragging()" (dragover)="drag($event)" (dragleave)="dragging.set(false)" (drop)="drop($event)">
+            @if (form.controls.attachmentName.value) {
+              <div class="selected-file">
+                <svg class="selected-file-icon" aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6" /></svg>
+                <span class="selected-file-name">{{ form.controls.attachmentName.value }}</span>
+                <button class="remove-file" type="button" [disabled]="reading() || saving()" [attr.aria-label]="'RECOGNITIONS.REMOVE_FILE' | translate" [title]="'RECOGNITIONS.REMOVE_FILE' | translate" (click)="removeFile(fileInput)">
+                  <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="m6 6 12 12M18 6 6 18" /></svg>
+                </button>
+              </div>
+            } @else {
+            <span class="upload-icon" aria-hidden="true">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                <path d="M14 2v6h6M12 18v-7m-3 3 3-3 3 3" />
+              </svg>
+            </span>
+            <div class="upload-prompt"><button class="upload-trigger" type="button" [disabled]="reading() || saving()" (click)="fileInput.click()">{{ 'RECOGNITIONS.UPLOAD' | translate }}</button><span>{{ ' ' + ('RECOGNITIONS.UPLOAD_DROP' | translate) }}</span></div>
+            <p class="upload-hint">{{ 'RECOGNITIONS.FILE_HINT' | translate: {size: maxFileMiB} }}</p>
+            }
+            @if (reading()) { <p>{{ 'RECOGNITIONS.LOADING' | translate }}</p> }
+          </div>
+          @if (fileError()) { <p class="error">{{ fileError() | translate: {size: maxFileMiB} }}</p> }
+        </div>
+        <div class="row"><label class="field"><span>{{ 'RECOGNITIONS.PUBLISH_DATE' | translate }}</span><input type="date" formControlName="publishDate" /></label><label class="field"><span>{{ 'RECOGNITIONS.PUBLISH_TIME' | translate }}</span><input type="time" formControlName="publishTime" /></label></div>
+        @if (dateError()) { <p class="error">{{ 'RECOGNITIONS.DATE_ERROR' | translate }}</p> }
+      </fieldset>
+      @if (error()) { <p class="error" role="alert">{{ error() | translate }}</p> }
+    </form>
+  }
+</div>
+@if (preview(); as item) {
+  <app-modal size="large" [showHeader]="false" [showActions]="false" [showCloseButton]="false" (closed)="preview.set(null)"><app-modal-body>
+    <div class="toolbar"><h2>{{ 'RECOGNITIONS.PREVIEW' | translate }}</h2><app-button variant="ghost" (clicked)="preview.set(null)">{{ 'RECOGNITIONS.BACK' | translate }}</app-button></div>
+    <app-recognition-content [recognition]="item" [employeeName]="name()" />
+  </app-modal-body></app-modal>
+}
+@if (unsaved()) {
+  <app-modal size="small" [showCloseButton]="false" [closeOnBackdrop]="false" [closeOnEscape]="!saving()" (closed)="closeUnsaved()"><app-modal-body><div class="dialog">
+    <div class="illustration warning" aria-hidden="true">!</div><h2>{{ 'RECOGNITIONS.UNSAVED_TITLE' | translate }}</h2><p>{{ 'RECOGNITIONS.UNSAVED_MESSAGE' | translate }}</p>
+    <div class="actions"><app-button variant="secondary" [disabled]="saving()" (clicked)="discard()">{{ 'RECOGNITIONS.DISCARD' | translate }}</app-button><app-button [disabled]="saving()" [loading]="saving()" (clicked)="save('leave')">{{ 'RECOGNITIONS.SAVE' | translate }}</app-button><app-button variant="ghost" [disabled]="saving()" (clicked)="closeUnsaved()">{{ 'RECOGNITIONS.CANCEL' | translate }}</app-button></div>
+  </div></app-modal-body></app-modal>
+}
+@if (success()) {
+  <app-modal size="small" [showCloseButton]="false" (closed)="finish()"><app-modal-body><div class="dialog"><div class="illustration" aria-hidden="true">✓</div><h2>{{ ('RECOGNITIONS.' + success()) | translate }}</h2><app-button shape="full" (clicked)="finish()">{{ 'RECOGNITIONS.GOT_IT' | translate }}</app-button></div></app-modal-body></app-modal>
+}

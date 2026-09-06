@@ -1,0 +1,23 @@
+<div class="page">
+  <div class="toolbar"><div class="actions"><app-button variant="ghost" (clicked)="back()">‹ {{ 'RECOGNITIONS.BACK' | translate }}</app-button><h1>{{ 'RECOGNITIONS.VIEW_TITLE' | translate }}</h1></div>
+    @if (item(); as record) { <div class="actions">
+      <span class="badge" [attr.data-status]="record.status">{{ ('RECOGNITIONS.STATUS_' + record.status.toUpperCase()) | translate }}</span>
+      <app-button variant="ghost" [disabled]="busy()" (clicked)="edit()"><span aria-hidden="true">✎</span> {{ 'RECOGNITIONS.EDIT' | translate }}</app-button>
+      <app-button variant="ghost" [disabled]="busy()" (clicked)="ask('delete')"><span aria-hidden="true">×</span> {{ 'RECOGNITIONS.DELETE' | translate }}</app-button>
+      @if (record.status !== 'archived') { <app-button variant="ghost" [disabled]="busy()" (clicked)="ask('archive')"><span aria-hidden="true">▣</span> {{ 'RECOGNITIONS.ARCHIVE' | translate }}</app-button> }
+    </div> }
+  </div>
+  @if (loading()) { <p class="state">{{ 'RECOGNITIONS.LOADING' | translate }}</p> }
+  @else if (loadError()) { <div class="state"><p>{{ 'RECOGNITIONS.NOT_FOUND' | translate }}</p><app-button (clicked)="load()">{{ 'RECOGNITIONS.RETRY' | translate }}</app-button></div> }
+  @else if (item(); as record) { <div class="card"><app-recognition-content [recognition]="record" [employeeName]="name()" /></div> }
+</div>
+@if (confirmation(); as action) {
+  <app-modal size="small" [showCloseButton]="false" [closeOnBackdrop]="!busy()" [closeOnEscape]="!busy()" (closed)="close()"><app-modal-body><div class="dialog">
+    <div class="illustration warning" aria-hidden="true">!</div><h2>{{ (action === 'delete' ? 'RECOGNITIONS.DELETE_TITLE' : 'RECOGNITIONS.ARCHIVE_TITLE') | translate }}</h2><p>{{ (action === 'delete' ? 'RECOGNITIONS.DELETE_MESSAGE' : 'RECOGNITIONS.ARCHIVE_MESSAGE') | translate }}</p>
+    @if (error()) { <p class="error" role="alert">{{ error() | translate }}</p> }
+    <div class="actions"><app-button variant="secondary" [disabled]="busy()" (clicked)="close()">{{ 'RECOGNITIONS.CANCEL' | translate }}</app-button><app-button [variant]="action === 'delete' ? 'danger' : 'primary'" [disabled]="busy()" [loading]="busy()" (clicked)="confirm()">{{ (action === 'delete' ? 'RECOGNITIONS.DELETE' : 'RECOGNITIONS.ARCHIVE') | translate }}</app-button></div>
+  </div></app-modal-body></app-modal>
+}
+@if (success(); as action) {
+  <app-modal size="small" [showCloseButton]="false" (closed)="finish()"><app-modal-body><div class="dialog"><div class="illustration" aria-hidden="true">✓</div><h2>{{ (action === 'delete' ? 'RECOGNITIONS.DELETE_SUCCESS' : 'RECOGNITIONS.ARCHIVE_SUCCESS') | translate }}</h2><app-button shape="full" (clicked)="finish()">{{ 'RECOGNITIONS.GOT_IT' | translate }}</app-button></div></app-modal-body></app-modal>
+}
