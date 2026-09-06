@@ -87,9 +87,10 @@
               </label>
               <input
                 type="email"
-                [value]="emp.email"
-                class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-500"
-                readonly
+                [(ngModel)]="personalForm().email"
+                name="email"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                placeholder="name@example.com"
               />
             </div>
             <div>
@@ -109,8 +110,8 @@
               </label>
               <input
                 type="date"
-                [(ngModel)]="personalForm().dateOfBirth"
-                name="dateOfBirth"
+                [(ngModel)]="personalForm().birthdate"
+                name="birthdate"
                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
               />
             </div>
@@ -119,7 +120,7 @@
                 {{ 'EMPLOYEE_DETAIL.PERSONAL_INFO.GENDER' | translate }}
               </label>
               <select
-                [(ngModel)]="emp.personalInfo.gender"
+                [(ngModel)]="personalForm().gender"
                 name="gender"
                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
               >
@@ -127,42 +128,6 @@
                 <option [ngValue]="1">{{ 'Male' }}</option>
                 <option [ngValue]="2">{{ 'Female' }}</option>
               </select>
-            </div>
-            <div class="md:col-span-2">
-              <label class="block text-sm font-medium text-gray-700 mb-1">
-                {{ 'EMPLOYEE_DETAIL.PERSONAL_INFO.ADDRESS' | translate }}
-              </label>
-              <textarea
-                [(ngModel)]="personalForm().address"
-                name="address"
-                rows="2"
-                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                placeholder="{{ 'EMPLOYEE_DETAIL.PERSONAL_INFO.ADDRESS' | translate }}"
-              ></textarea>
-            </div>
-            <div class="md:col-span-2">
-              <label class="block text-sm font-medium text-gray-700 mb-1">
-                {{ 'EMPLOYEE_DETAIL.PERSONAL_INFO.EMERGENCY_CONTACT' | translate }}
-              </label>
-              <input
-                type="text"
-                [(ngModel)]="personalForm().emergencyContact"
-                name="emergencyContact"
-                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                placeholder="{{ 'EMPLOYEE_DETAIL.PERSONAL_INFO.EMERGENCY_CONTACT' | translate }}"
-              />
-            </div>
-            <div class="md:col-span-2">
-              <label class="block text-sm font-medium text-gray-700 mb-1">
-                {{ 'EMPLOYEE_DETAIL.PERSONAL_INFO.NATIONAL_ID' | translate }}
-              </label>
-              <input
-                type="text"
-                [(ngModel)]="personalForm().nationalId"
-                name="nationalId"
-                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                placeholder="{{ 'EMPLOYEE_DETAIL.PERSONAL_INFO.NATIONAL_ID' | translate }}"
-              />
             </div>
           </div>
 
@@ -207,7 +172,7 @@
           </div>
         </form>
       } @else {
-        <!-- Personal Info View Mode -->
+        <!-- Personal Info View Mode (API-backed fields only) -->
         <dl class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div class="md:col-span-2">
             <dt class="text-sm font-medium text-gray-500">
@@ -219,19 +184,19 @@
             <dt class="text-sm font-medium text-gray-500">
               {{ 'EMPLOYEE_DETAIL.PERSONAL_INFO.FULL_NAME' | translate }}
             </dt>
-            <dd class="mt-1 text-gray-900">{{ emp.fullName }}</dd>
+            <dd class="mt-1 text-gray-900">{{ emp.personalInfo.name || emp.fullName }}</dd>
           </div>
           <div>
             <dt class="text-sm font-medium text-gray-500">
               {{ 'EMPLOYEE_DETAIL.PERSONAL_INFO.PHONE' | translate }}
             </dt>
-            <dd class="mt-1 text-gray-900">{{ emp.phone }}</dd>
+            <dd class="mt-1 text-gray-900">{{ emp.personalInfo.phoneNumber || emp.phone }}</dd>
           </div>
           <div>
             <dt class="text-sm font-medium text-gray-500">
               {{ 'EMPLOYEE_DETAIL.PERSONAL_INFO.EMAIL' | translate }}
             </dt>
-            <dd class="mt-1 text-gray-900">{{ emp.email }}</dd>
+            <dd class="mt-1 text-gray-900">{{ emp.personalInfo.email || emp.email }}</dd>
           </div>
           <div>
             <dt class="text-sm font-medium text-gray-500">
@@ -256,24 +221,6 @@
               {{ 'EMPLOYEE_DETAIL.PERSONAL_INFO.GENDER' | translate }}
             </dt>
             <dd class="mt-1 text-gray-900">{{ formatGender(emp.personalInfo.gender) }}</dd>
-          </div>
-          <div class="md:col-span-2">
-            <dt class="text-sm font-medium text-gray-500">
-              {{ 'EMPLOYEE_DETAIL.PERSONAL_INFO.ADDRESS' | translate }}
-            </dt>
-            <dd class="mt-1 text-gray-900"><span class="text-gray-400">—</span></dd>
-          </div>
-          <div class="md:col-span-2">
-            <dt class="text-sm font-medium text-gray-500">
-              {{ 'EMPLOYEE_DETAIL.PERSONAL_INFO.EMERGENCY_CONTACT' | translate }}
-            </dt>
-            <dd class="mt-1 text-gray-900"><span class="text-gray-400">—</span></dd>
-          </div>
-          <div class="md:col-span-2">
-            <dt class="text-sm font-medium text-gray-500">
-              {{ 'EMPLOYEE_DETAIL.PERSONAL_INFO.NATIONAL_ID' | translate }}
-            </dt>
-            <dd class="mt-1 text-gray-900"><span class="text-gray-400">—</span></dd>
           </div>
         </dl>
       }
@@ -320,6 +267,15 @@
         </div>
       }
 
+      @if (lookupsError(); as lookupError) {
+        <div
+          class="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg text-amber-700 text-sm"
+          role="alert"
+        >
+          {{ lookupError | translate }}
+        </div>
+      }
+
       @if (jobEditing()) {
         <!-- Job Details Edit Mode -->
         <form (ngSubmit)="onJobSave()" class="space-y-4">
@@ -327,46 +283,18 @@
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">
                 {{ 'EMPLOYEE_DETAIL.JOB_DETAILS.JOB_TITLE' | translate }}
-                <span class="text-red-500">*</span>
               </label>
               <select
                 [(ngModel)]="jobForm().jobRoleId"
                 name="jobRoleId"
                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                required
               >
-                <option [ngValue]="0">
+                <option [ngValue]="null">
                   {{ 'EMPLOYEE_MANAGEMENT.SELECT_JOB_ROLE' | translate }}
                 </option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">
-                {{ 'EMPLOYEE_MANAGEMENT.SYSTEM_ROLE' | translate }}
-                <span class="text-red-500">*</span>
-              </label>
-              <select
-                [(ngModel)]="jobForm().roleId"
-                name="roleId"
-                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                required
-              >
-                <option [ngValue]="0">
-                  {{ 'EMPLOYEE_MANAGEMENT.SELECT_SYSTEM_ROLE' | translate }}
-                </option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">
-                {{ 'EMPLOYEE_MANAGEMENT.SITE' | translate }} <span class="text-red-500">*</span>
-              </label>
-              <select
-                [(ngModel)]="jobForm().siteId"
-                name="siteId"
-                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                required
-              >
-                <option [ngValue]="0">{{ 'EMPLOYEE_MANAGEMENT.SELECT_SITE' | translate }}</option>
+                @for (job of jobs(); track job.id) {
+                  <option [ngValue]="job.id">{{ job.title }}</option>
+                }
               </select>
             </div>
             <div>
@@ -378,9 +306,14 @@
                 name="directManagerId"
                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
               >
-                <option [ngValue]="0">
+                <option [ngValue]="null">
                   {{ 'EMPLOYEE_DETAIL.JOB_DETAILS.SELECT_MANAGER' | translate }}
                 </option>
+                @for (manager of managers(); track manager.id) {
+                  <option [ngValue]="manager.id">
+                    {{ manager.employeeName }} ({{ manager.employeeCode }})
+                  </option>
+                }
               </select>
             </div>
             <div>
@@ -424,31 +357,59 @@
               <label class="block text-sm font-medium text-gray-700 mb-1">
                 {{ 'EMPLOYEE_DETAIL.JOB_DETAILS.ATTENDANCE_TYPE' | translate }}
               </label>
-              <input
-                type="text"
+              <select
                 [(ngModel)]="jobForm().attendanceType"
                 name="attendanceType"
                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                placeholder="{{ 'EMPLOYEE_DETAIL.JOB_DETAILS.ATTENDANCE_TYPE' | translate }}"
-              />
+              >
+                <option value="">{{ 'COMMON.SELECT' | translate }}</option>
+                @for (option of attendanceOptions; track option) {
+                  <option [value]="option">{{ option }}</option>
+                }
+              </select>
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">
-                {{ 'EMPLOYEE_DETAIL.JOB_DETAILS.JOIN_DATE' | translate }}
+                {{ 'EMPLOYEE_DETAIL.JOB_DETAILS.ONLINE_WORKDAYS' | translate }}
               </label>
-              <input
-                type="date"
-                [(ngModel)]="jobForm().joinDate"
-                name="joinDate"
-                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-              />
+              <div class="flex flex-wrap gap-2">
+                @for (day of weekDays; track day) {
+                  <label class="inline-flex items-center gap-1 px-2 py-1 border border-gray-300 rounded-lg text-sm cursor-pointer">
+                    <input
+                      type="checkbox"
+                      [checked]="jobForm().onlineWorkdays.includes(day)"
+                      (change)="toggleJobOnlineDay(day)"
+                      class="accent-primary-600"
+                    />
+                    {{ day }}
+                  </label>
+                }
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">
+                {{ 'EMPLOYEE_DETAIL.JOB_DETAILS.OFFLINE_WORKDAYS' | translate }}
+              </label>
+              <div class="flex flex-wrap gap-2">
+                @for (day of weekDays; track day) {
+                  <label class="inline-flex items-center gap-1 px-2 py-1 border border-gray-300 rounded-lg text-sm cursor-pointer">
+                    <input
+                      type="checkbox"
+                      [checked]="jobForm().offlineWorkdays.includes(day)"
+                      (change)="toggleJobOfflineDay(day)"
+                      class="accent-primary-600"
+                    />
+                    {{ day }}
+                  </label>
+                }
+              </div>
             </div>
             <div class="md:col-span-2">
               <label class="block text-sm font-medium text-gray-700 mb-1">
                 {{ 'EMPLOYEE_DETAIL.JOB_DETAILS.QUALIFICATIONS' | translate }}
               </label>
               <div class="space-y-2">
-                @for (qual of emp.jobDetails.qualifications; track qual) {
+                @for (qual of jobForm().qualifications; track qual) {
                   <div class="flex items-center gap-2">
                     <input
                       type="text"
@@ -458,6 +419,7 @@
                     />
                     <button
                       type="button"
+                      (click)="removeQualification(qual)"
                       class="p-1 text-red-500 hover:bg-red-50 rounded focus:outline-none focus:ring-2 focus:ring-red-500"
                     >
                       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -532,7 +494,7 @@
           </div>
         </form>
       } @else {
-        <!-- Job Details View Mode -->
+        <!-- Job Details View Mode (API-backed fields only) -->
         <dl class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <dt class="text-sm font-medium text-gray-500">
@@ -584,9 +546,27 @@
           </div>
           <div>
             <dt class="text-sm font-medium text-gray-500">
-              {{ 'EMPLOYEE_DETAIL.JOB_DETAILS.JOIN_DATE' | translate }}
+              {{ 'EMPLOYEE_DETAIL.JOB_DETAILS.ONLINE_WORKDAYS' | translate }}
             </dt>
-            <dd class="mt-1 text-gray-900"><span class="text-gray-400">—</span></dd>
+            <dd class="mt-1 text-gray-900">
+              @if (emp.jobDetails.onlineWorkdays.length > 0) {
+                {{ emp.jobDetails.onlineWorkdays.join(', ') }}
+              } @else {
+                <span class="text-gray-400">—</span>
+              }
+            </dd>
+          </div>
+          <div>
+            <dt class="text-sm font-medium text-gray-500">
+              {{ 'EMPLOYEE_DETAIL.JOB_DETAILS.OFFLINE_WORKDAYS' | translate }}
+            </dt>
+            <dd class="mt-1 text-gray-900">
+              @if (emp.jobDetails.offlineWorkdays.length > 0) {
+                {{ emp.jobDetails.offlineWorkdays.join(', ') }}
+              } @else {
+                <span class="text-gray-400">—</span>
+              }
+            </dd>
           </div>
           <div class="md:col-span-2">
             <dt class="text-sm font-medium text-gray-500">
@@ -605,6 +585,287 @@
             </dd>
           </div>
         </dl>
+      }
+    </div>
+
+    <hr class="border-gray-200 my-6" />
+
+    <!-- Payroll Section (embedded; no separate payroll tab) -->
+    <div class="mb-6">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-xl font-semibold text-gray-900 flex items-center gap-2">
+          <svg
+            class="w-5 h-5 text-primary-600"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+            ></path>
+          </svg>
+          {{ 'EMPLOYEE_DETAIL.PAYROLL.TITLE' | translate }}
+        </h2>
+        @if (!payrollEditing()) {
+          <button
+            type="button"
+            (click)="togglePayrollEdit()"
+            class="px-4 py-2 text-sm font-medium text-primary-600 bg-primary-50 border border-primary-200 rounded-lg hover:bg-primary-100 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500"
+          >
+            {{ 'EMPLOYEE_DETAIL.ACTIONS.EDIT' | translate }}
+          </button>
+        }
+      </div>
+
+      @if (payrollSaveError(); as errorKey) {
+        <div
+          class="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm"
+          role="alert"
+        >
+          {{ errorKey | translate }}
+        </div>
+      }
+
+      @if (payrollEditing()) {
+        <!-- Payroll Edit Mode -->
+        @if (payrollLoading()) {
+          <p class="text-sm text-gray-500">{{ 'COMMON.LOADING' | translate }}</p>
+        } @else {
+          <form (ngSubmit)="onPayrollSave()" class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                  {{ 'EMPLOYEE_DETAIL.PAYROLL.SALARY_TYPE' | translate }}
+                </label>
+                <select
+                  [(ngModel)]="payrollForm().salaryType"
+                  name="salaryType"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                >
+                  <option [ngValue]="1">{{ 'EMPLOYEE_DETAIL.PAYROLL.FIXED' | translate }}</option>
+                  <option [ngValue]="2">{{ 'EMPLOYEE_DETAIL.PAYROLL.HOURLY' | translate }}</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                  {{ 'EMPLOYEE_DETAIL.PAYROLL.PAYMENT_AMOUNT' | translate }}
+                </label>
+                <input
+                  type="number"
+                  [(ngModel)]="payrollForm().paymentAmount"
+                  name="paymentAmount"
+                  min="0"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                  {{ 'EMPLOYEE_DETAIL.PAYROLL.PAYOUT_PERIOD' | translate }}
+                </label>
+                <input
+                  type="text"
+                  [(ngModel)]="payrollForm().payoutPeriod"
+                  name="payoutPeriod"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  placeholder="{{ 'EMPLOYEE_DETAIL.PAYROLL.PAYOUT_PERIOD' | translate }}"
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                  {{ 'EMPLOYEE_DETAIL.PAYROLL.PAYOUT_DAY' | translate }}
+                </label>
+                <input
+                  type="number"
+                  [(ngModel)]="payrollForm().payoutDay"
+                  name="payoutDay"
+                  min="1"
+                  max="31"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                  {{ 'EMPLOYEE_DETAIL.PAYROLL.WORK_WEEK_START' | translate }}
+                </label>
+                <select
+                  [(ngModel)]="payrollForm().workWeekStartDay"
+                  name="workWeekStartDay"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                >
+                  @for (day of weekDayValues; track day) {
+                    <option [ngValue]="day">{{ dayName(day) }}</option>
+                  }
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                  {{ 'EMPLOYEE_DETAIL.PAYROLL.WORK_WEEK_END' | translate }}
+                </label>
+                <select
+                  [(ngModel)]="payrollForm().workWeekEndDay"
+                  name="workWeekEndDay"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                >
+                  @for (day of weekDayValues; track day) {
+                    <option [ngValue]="day">{{ dayName(day) }}</option>
+                  }
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                  {{ 'EMPLOYEE_DETAIL.PAYROLL.OVERTIME_THRESHOLD' | translate }}
+                </label>
+                <input
+                  type="number"
+                  [(ngModel)]="payrollForm().overtimeThresholdHours"
+                  name="overtimeThresholdHours"
+                  min="0"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                  {{ 'EMPLOYEE_DETAIL.PAYROLL.OVERTIME_RATE' | translate }}
+                </label>
+                <input
+                  type="number"
+                  [(ngModel)]="payrollForm().overtimeRateMultiplier"
+                  name="overtimeRateMultiplier"
+                  min="0"
+                  step="0.1"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                />
+              </div>
+              <div class="md:col-span-2">
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                  {{ 'EMPLOYEE_DETAIL.PAYROLL.ASSIGNED_SITES' | translate }}
+                </label>
+                <div class="flex flex-wrap gap-2">
+                  @for (site of sites(); track site.id) {
+                    <label class="inline-flex items-center gap-1 px-2 py-1 border border-gray-300 rounded-lg text-sm cursor-pointer">
+                      <input
+                        type="checkbox"
+                        [checked]="payrollForm().assignedWorkSiteIds.includes(site.id)"
+                        (change)="togglePayrollSite(site.id)"
+                        class="accent-primary-600"
+                      />
+                      {{ site.siteName }}
+                    </label>
+                  } @empty {
+                    <span class="text-sm text-gray-400">{{ 'COMMON.NOT_AVAILABLE' | translate }}</span>
+                  }
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-6 flex justify-end gap-3">
+              <button
+                type="button"
+                (click)="cancelPayrollEdit()"
+                [disabled]="payrollSaving()"
+                class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500"
+              >
+                {{ 'EMPLOYEE_DETAIL.ACTIONS.CANCEL' | translate }}
+              </button>
+              <button
+                type="submit"
+                [disabled]="payrollSaving()"
+                class="px-4 py-2 text-sm font-medium text-white bg-primary-600 border border-primary-600 rounded-lg hover:bg-primary-700 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                @if (payrollSaving()) {
+                  <span class="flex items-center gap-2">
+                    <svg class="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                      <circle
+                        class="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        stroke-width="4"
+                        fill="none"
+                      ></circle>
+                      <path
+                        class="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
+                    </svg>
+                    {{ 'COMMON.LOADING' | translate }}
+                  </span>
+                } @else {
+                  {{ 'EMPLOYEE_DETAIL.ACTIONS.SAVE' | translate }}
+                }
+              </button>
+            </div>
+          </form>
+        }
+      } @else {
+        <!-- Payroll View Mode (embedded summary from profile response) -->
+        @if (emp.payroll; as payroll) {
+          <dl class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <dt class="text-sm font-medium text-gray-500">
+                {{ 'EMPLOYEE_DETAIL.PAYROLL.SALARY_TYPE' | translate }}
+              </dt>
+              <dd class="mt-1 text-gray-900">{{ formatSalaryType(payroll.salaryType) }}</dd>
+            </div>
+            <div>
+              <dt class="text-sm font-medium text-gray-500">
+                {{ 'EMPLOYEE_DETAIL.PAYROLL.PAYMENT_AMOUNT' | translate }}
+              </dt>
+              <dd class="mt-1 text-gray-900">{{ payroll.paymentAmount }}</dd>
+            </div>
+            <div>
+              <dt class="text-sm font-medium text-gray-500">
+                {{ 'EMPLOYEE_DETAIL.PAYROLL.PAYOUT_PERIOD' | translate }}
+              </dt>
+              <dd class="mt-1 text-gray-900">{{ payroll.payoutPeriod || '—' }}</dd>
+            </div>
+            <div>
+              <dt class="text-sm font-medium text-gray-500">
+                {{ 'EMPLOYEE_DETAIL.PAYROLL.PAYOUT_DAY' | translate }}
+              </dt>
+              <dd class="mt-1 text-gray-900">{{ payroll.payoutDay ?? '—' }}</dd>
+            </div>
+            <div>
+              <dt class="text-sm font-medium text-gray-500">
+                {{ 'EMPLOYEE_DETAIL.PAYROLL.WORK_WEEK' | translate }}
+              </dt>
+              <dd class="mt-1 text-gray-900">
+                {{ payroll.workWeekStartDay || '—' }} – {{ payroll.workWeekEndDay || '—' }}
+              </dd>
+            </div>
+            <div>
+              <dt class="text-sm font-medium text-gray-500">
+                {{ 'EMPLOYEE_DETAIL.PAYROLL.OVERTIME' | translate }}
+              </dt>
+              <dd class="mt-1 text-gray-900">
+                @if (payroll.overtimeEnabled) {
+                  {{ payroll.overtimeThresholdHours ?? '—' }}h × {{ payroll.overtimeRateMultiplier ?? '—' }}
+                } @else {
+                  <span class="text-gray-400">—</span>
+                }
+              </dd>
+            </div>
+            <div class="md:col-span-2">
+              <dt class="text-sm font-medium text-gray-500">
+                {{ 'EMPLOYEE_DETAIL.PAYROLL.ASSIGNED_SITES' | translate }}
+              </dt>
+              <dd class="mt-1 text-gray-900">
+                @if (payroll.assignedWorkSiteIds.length > 0) {
+                  {{ payroll.assignedWorkSiteIds.join(', ') }}
+                } @else {
+                  <span class="text-gray-400">—</span>
+                }
+              </dd>
+            </div>
+          </dl>
+        } @else {
+          <p class="text-sm text-gray-400 italic">{{ 'COMMON.NOT_AVAILABLE' | translate }}</p>
+        }
       }
     </div>
   </section>

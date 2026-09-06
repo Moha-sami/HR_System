@@ -4,7 +4,14 @@ import { of } from 'rxjs';
 import { EmployeeDetailComponent } from './employee-detail.component';
 import { EmployeeDetailService } from '../../services/employee-detail.service';
 import { TranslatePipe } from '@ngx-translate/core';
-import { signal } from '@angular/core';
+import { Pipe, type PipeTransform, signal } from '@angular/core';
+
+@Pipe({ name: 'translate', standalone: true })
+class MockTranslatePipe implements PipeTransform {
+  transform(value: string): string {
+    return value;
+  }
+}
 
 describe('EmployeeDetailComponent', () => {
   let component: EmployeeDetailComponent;
@@ -61,6 +68,7 @@ describe('EmployeeDetailComponent', () => {
     })
       .overrideComponent(EmployeeDetailComponent, {
         remove: { imports: [TranslatePipe] },
+        add: { imports: [MockTranslatePipe] },
       })
       .compileComponents();
 
@@ -73,13 +81,13 @@ describe('EmployeeDetailComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should have correct tabs configuration', () => {
+  it('should have correct tabs configuration (payroll lives inside information)', () => {
     expect(component.tabs.length).toBe(5);
     expect(component.tabs[0].id).toBe('information');
-    expect(component.tabs[1].id).toBe('payroll');
-    expect(component.tabs[2].id).toBe('attendance');
-    expect(component.tabs[3].id).toBe('documents');
-    expect(component.tabs[4].id).toBe('violations');
+    expect(component.tabs[1].id).toBe('attendance');
+    expect(component.tabs[2].id).toBe('documents');
+    expect(component.tabs[3].id).toBe('violations');
+    expect(component.tabs[4].id).toBe('points-rewards');
   });
 
   it('should format gender correctly', () => {
