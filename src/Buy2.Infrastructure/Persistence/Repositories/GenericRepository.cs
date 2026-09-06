@@ -20,18 +20,18 @@ public class GenericRepository<T> : IRepository<T> where T : BaseEntity
             : _context.Set<T>().AsQueryable();
     }
 
-    public async Task AddAsync(T entity) => await _context.AddAsync(entity);
+    public async Task AddAsync(T entity, CancellationToken cancellationToken = default) => await _context.AddAsync(entity, cancellationToken);
 
     public void Delete(T entity) => _context.Remove(entity);
 
-    public async Task<IEnumerable<T>> GetAllAsync()
+    public async Task<IEnumerable<T>> GetAllAsync(CancellationToken cancellationToken = default)
     {
-        return await _context.Set<T>().ToListAsync();
+        return await _context.Set<T>().ToListAsync(cancellationToken);
     }
 
-    public async Task<T?> GetByIdAsync(int id)
+    public async Task<T?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
-        return await _context.Set<T>().FindAsync(id);
+        return await _context.Set<T>().FindAsync([id], cancellationToken);
     }
 
     public async Task<bool> AnyAsync(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken = default)

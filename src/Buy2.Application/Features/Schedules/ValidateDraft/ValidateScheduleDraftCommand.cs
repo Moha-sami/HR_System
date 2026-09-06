@@ -20,7 +20,7 @@ public class ValidateScheduleDraftCommandHandler : IRequestHandler<ValidateSched
 
     public async Task<PreFlightValidationResultDto> Handle(ValidateScheduleDraftCommand command, CancellationToken cancellationToken)
     {
-        var result = await _scheduleValidationEngine.ValidateDraftAsync(command.Shifts);
+        var result = await _scheduleValidationEngine.ValidateDraftAsync(command.Shifts, cancellationToken);
 
         return result;
     }

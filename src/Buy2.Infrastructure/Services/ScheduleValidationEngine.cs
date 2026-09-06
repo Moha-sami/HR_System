@@ -4,7 +4,7 @@ using Buy2.Application.DTOs;
 namespace Buy2.Infrastructure.Services;
 public class ScheduleValidationEngine : IScheduleValidationEngine
 {
-    public Task<PreFlightValidationResultDto> ValidateDraftAsync(List<DraftShiftDto> shifts)
+    public Task<PreFlightValidationResultDto> ValidateDraftAsync(List<DraftShiftDto> shifts, CancellationToken cancellationToken = default)
     {
         return Task.FromResult
             (

@@ -20,13 +20,13 @@ public class ShiftClaimsController : ControllerBase
     [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<ActionResult<bool>> Create(int id, [FromBody] ClaimShiftCommand command)
+    public async Task<ActionResult<bool>> Create(int id, [FromBody] ClaimShiftCommand command, CancellationToken cancellationToken)
     {
         if (command.ShiftId != id)
         {
             return BadRequest("Shift Not Match");
         }
-        var result = await _mediator.Send(command);
+        var result = await _mediator.Send(command, cancellationToken);
 
         return Ok(result);
     }

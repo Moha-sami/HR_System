@@ -20,9 +20,9 @@ public class AuthPasswordResetController : ControllerBase
     [HttpPost("password/reset")]
     [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<bool>> ResetPassword([FromBody] ResetPasswordCommand command)
+    public async Task<ActionResult<bool>> ResetPassword([FromBody] ResetPasswordCommand command, CancellationToken cancellationToken)
     {
-        var result = await _mediator.Send(command);
+        var result = await _mediator.Send(command, cancellationToken);
         return Ok(result);
     }
 }
