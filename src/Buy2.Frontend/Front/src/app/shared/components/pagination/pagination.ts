@@ -14,6 +14,10 @@ export class Pagination implements OnChanges {
   totalPages = input<number>(1);
   initialPage = input<number>(1);
   pageChanged = output<number>();
+  navigationLabel = input('Pagination');
+  previousLabel = input('Previous page');
+  nextLabel = input('Next page');
+  pageLabel = input('Page');
 
   currentPage = signal(1);
 

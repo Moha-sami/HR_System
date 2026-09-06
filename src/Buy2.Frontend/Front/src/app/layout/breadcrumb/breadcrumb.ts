@@ -12,6 +12,9 @@ interface BreadcrumbItem {
 }
 
 const routeTranslationKeys: Record<string, string> = {
+  '/recognitions': 'LAYOUT.NAV.RECOGNITIONS',
+  '/recognitions/create': 'RECOGNITIONS.CREATE_TITLE',
+  '/recognitions/edit': 'RECOGNITIONS.EDIT_TITLE',
   '/dashboard': 'LAYOUT.NAV.DASHBOARD',
   '/employees': 'LAYOUT.NAV.EMPLOYEE_MANAGEMENT',
   '/employees/add': 'COMMON.CREATE',
@@ -58,6 +61,16 @@ export class BreadcrumbComponent {
   private buildBreadcrumbs(): void {
     const url = this.router.url;
     const segments = url.split('/').filter(Boolean);
+
+    if (segments[0] === 'recognitions') {
+      const detailKey = segments[1] === 'create' ? 'RECOGNITIONS.CREATE_TITLE'
+        : segments[1] === 'edit' ? 'RECOGNITIONS.EDIT_TITLE' : 'RECOGNITIONS.VIEW_TITLE';
+      this.items.set([
+        { label: '', url: '/recognitions', isActive: segments.length === 1, translationKey: 'LAYOUT.NAV.RECOGNITIONS' },
+        ...(segments.length > 1 ? [{ label: '', url, isActive: true, translationKey: detailKey }] : []),
+      ]);
+      return;
+    }
 
     if (segments.length === 0) {
       this.items.set([]);
