@@ -4,15 +4,14 @@ import type { Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import type {
   EmployeeProfileDto,
-  UpdatePersonalInfoRequestDto,
-  UpdatePersonalInfoWrapperDto,
-  UpdateJobDetailsRequestDto,
-  UpdateJobDetailsWrapperDto,
-} from '../models/view-employee/employee-profile';
-import type {
+  UpdatePersonalInfoRequest,
+  UpdateJobDetailsRequest,
+  UpdatePayrollProfileRequest,
   EmployeePayrollProfileDto,
-  UpdatePayrollProfileDto,
-} from '../models/view-employee/employee-payroll';
+  JobLookupResponse,
+  ManagerLookupResponse,
+  SiteLookupRow,
+} from '../models/view-employee/information-tab.models';
 import type { AttendanceCalendarDto } from '../models/view-employee/employee-attendance';
 import type {
   ViolationDto,
@@ -150,19 +149,41 @@ export class EmployeeDetailService {
     });
   }
 
-  // Update API methods
-  updatePersonalInfo(id: number, dto: UpdatePersonalInfoRequestDto): Observable<void> {
-    const wrapper: UpdatePersonalInfoWrapperDto = { dto };
-    return this.http.put<void>(`${API_BASE}/employees/${id}/personal`, wrapper);
+  // Update API methods (backend expects bare flat DTOs, no wrapper object)
+  updatePersonalInfo(id: number, dto: UpdatePersonalInfoRequest): Observable<void> {
+    return this.http.put<void>(`${API_BASE}/employees/${id}/personal`, dto);
   }
 
-  updateJobDetails(id: number, dto: UpdateJobDetailsRequestDto): Observable<void> {
-    const wrapper: UpdateJobDetailsWrapperDto = { dto };
-    return this.http.put<void>(`${API_BASE}/employees/${id}/job`, wrapper);
+  updateJobDetails(id: number, dto: UpdateJobDetailsRequest): Observable<void> {
+    return this.http.put<void>(`${API_BASE}/employees/${id}/job`, dto);
   }
 
-  updatePayrollProfile(id: number, dto: UpdatePayrollProfileDto): Observable<void> {
+  updatePayrollProfile(id: number, dto: UpdatePayrollProfileRequest): Observable<void> {
     return this.http.put<void>(`${API_BASE}/employees/${id}/payroll`, dto);
+  }
+
+  // Lookup APIs backing the Information Tab dropdowns
+  getJobsLookup(pageNumber = 1, pageSize = 100): Observable<JobLookupResponse> {
+    const params = new HttpParams()
+      .set('pageNumber', pageNumber.toString())
+      .set('pageSize', pageSize.toString());
+    return this.http.get<JobLookupResponse>(`${API_BASE}/jobs`, { params });
+  }
+
+  getEmployeesLookup(
+    page = 1,
+    pageSize = 50,
+    search?: string,
+  ): Observable<ManagerLookupResponse> {
+    let params = new HttpParams()
+      .set('page', page.toString())
+      .set('pageSize', pageSize.toString());
+    if (search?.trim()) params = params.set('search', search.trim());
+    return this.http.get<ManagerLookupResponse>(`${API_BASE}/employees`, { params });
+  }
+
+  getSitesLookup(): Observable<readonly SiteLookupRow[]> {
+    return this.http.get<readonly SiteLookupRow[]>(`${API_BASE}/sites`);
   }
 
   // Detail view store methods

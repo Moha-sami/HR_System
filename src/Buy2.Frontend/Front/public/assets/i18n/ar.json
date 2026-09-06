@@ -381,7 +381,9 @@
       "JOB_TYPE": "نوع الوظيفة",
       "ATTENDANCE_TYPE": "نوع الحضور",
       "JOIN_DATE": "تاريخ الانضمام",
-      "QUALIFICATIONS": "المؤهلات"
+      "QUALIFICATIONS": "المؤهلات",
+      "ONLINE_WORKDAYS": "أيام العمل عن بعد",
+      "OFFLINE_WORKDAYS": "أيام العمل حضورياً"
     },
     "ACTIONS": {
       "EDIT": "تعديل",
@@ -390,7 +392,8 @@
     },
     "MESSAGES": {
       "SAVE_SUCCESS": "تم حفظ التغييرات بنجاح.",
-      "SAVE_ERROR": "فشل في حفظ التغييرات. يرجى المحاولة مرة أخرى."
+      "SAVE_ERROR": "فشل في حفظ التغييرات. يرجى المحاولة مرة أخرى.",
+      "LOOKUP_ERROR": "فشل تحميل بيانات القوائم"
     },
     "COMING_SOON": "قريباً",
     "NOT_AVAILABLE": "غير متاح",
@@ -495,6 +498,22 @@
         "ADD": "إضافة",
         "DEDUCT": "خصم"
       }
+    },
+    "PAYROLL": {
+      "TITLE": "الرواتب",
+      "SALARY_TYPE": "نوع الراتب",
+      "FIXED": "ثابت",
+      "HOURLY": "بالساعة",
+      "PAYMENT_AMOUNT": "مبلغ الدفع",
+      "PAYOUT_PERIOD": "فترة الصرف",
+      "PAYOUT_DAY": "يوم الصرف",
+      "WORK_WEEK_START": "بداية أسبوع العمل",
+      "WORK_WEEK_END": "نهاية أسبوع العمل",
+      "WORK_WEEK": "أسبوع العمل",
+      "OVERTIME": "العمل الإضافي",
+      "OVERTIME_THRESHOLD": "حد العمل الإضافي (ساعات)",
+      "OVERTIME_RATE": "مضاعف أجر العمل الإضافي",
+      "ASSIGNED_SITES": "مواقع العمل المسندة"
     }
   },
   "SITE_MANAGEMENT": {
@@ -835,5 +854,5 @@
   "PREVIOUS_PAGE": "الصفحة السابقة",
   "NEXT_PAGE": "الصفحة التالية",
   "PAGE": "صفحة"
-}
+  }
 }

@@ -381,7 +381,9 @@
       "JOB_TYPE": "Job Type",
       "ATTENDANCE_TYPE": "Attendance Type",
       "JOIN_DATE": "Join Date",
-      "QUALIFICATIONS": "Qualifications"
+      "QUALIFICATIONS": "Qualifications",
+      "ONLINE_WORKDAYS": "Online workdays",
+      "OFFLINE_WORKDAYS": "Offline workdays"
     },
     "ACTIONS": {
       "EDIT": "Edit",
@@ -390,7 +392,8 @@
     },
     "MESSAGES": {
       "SAVE_SUCCESS": "Changes saved successfully.",
-      "SAVE_ERROR": "Failed to save changes. Please try again."
+      "SAVE_ERROR": "Failed to save changes. Please try again.",
+      "LOOKUP_ERROR": "Failed to load lookup data"
     },
     "COMING_SOON": "Coming Soon",
     "NOT_AVAILABLE": "Not Available",
@@ -495,6 +498,22 @@
         "ADD": "Add",
         "DEDUCT": "Deduct"
       }
+    },
+    "PAYROLL": {
+      "TITLE": "Payroll",
+      "SALARY_TYPE": "Salary type",
+      "FIXED": "Fixed",
+      "HOURLY": "Hourly",
+      "PAYMENT_AMOUNT": "Payment amount",
+      "PAYOUT_PERIOD": "Payout period",
+      "PAYOUT_DAY": "Payout day",
+      "WORK_WEEK_START": "Work week start",
+      "WORK_WEEK_END": "Work week end",
+      "WORK_WEEK": "Work week",
+      "OVERTIME": "Overtime",
+      "OVERTIME_THRESHOLD": "Overtime threshold (hours)",
+      "OVERTIME_RATE": "Overtime rate multiplier",
+      "ASSIGNED_SITES": "Assigned work sites"
     }
   },
   "SITE_MANAGEMENT": {
@@ -835,5 +854,5 @@
   "PREVIOUS_PAGE": "Previous page",
   "NEXT_PAGE": "Next page",
   "PAGE": "Page"
-}
+  }
 }
