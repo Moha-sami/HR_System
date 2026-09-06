@@ -33,7 +33,7 @@ public class CreateRegionCommandHandler : IRequestHandler<CreateRegionCommand, i
 
         var region = new Region { Name = name, IsActive = true };
 
-        await _regionRepository.AddAsync(region);
+        await _regionRepository.AddAsync(region, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return region.Id;

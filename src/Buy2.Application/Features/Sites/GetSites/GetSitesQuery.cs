@@ -18,7 +18,7 @@ public class GetSitesQueryHandler : IRequestHandler<GetSitesQuery, List<SiteDto>
 
     public async Task<List<SiteDto>> Handle(GetSitesQuery request, CancellationToken cancellationToken)
     {
-        var sites = await _siteRepository.GetAllAsync();
+        var sites = await _siteRepository.GetAllAsync(cancellationToken);
         return sites.Select(s => new SiteDto(
             s.Id,
             s.SiteName,

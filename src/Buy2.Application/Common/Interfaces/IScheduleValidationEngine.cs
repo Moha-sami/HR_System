@@ -4,5 +4,5 @@ namespace Buy2.Application.Common.Interfaces;
 
 public interface IScheduleValidationEngine
 {
-    Task<PreFlightValidationResultDto> ValidateDraftAsync(List<DraftShiftDto> shifts);
+    Task<PreFlightValidationResultDto> ValidateDraftAsync(List<DraftShiftDto> shifts, CancellationToken cancellationToken = default);
 }

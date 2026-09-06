@@ -40,7 +40,7 @@ public class CreateDepartmentCommandHandler : IRequestHandler<CreateDepartmentCo
             CreatedAt = DateTimeOffset.UtcNow
         };
 
-        await _departmentRepository.AddAsync(department);
+        await _departmentRepository.AddAsync(department, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return new DepartmentDto(

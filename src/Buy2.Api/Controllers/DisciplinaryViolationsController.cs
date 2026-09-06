@@ -21,14 +21,14 @@ public class DisciplinaryViolationsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<ActionResult<int>> LogViolation(int id, [FromBody] LogDisciplinaryViolationCommand command)
+    public async Task<ActionResult<int>> LogViolation(int id, [FromBody] LogDisciplinaryViolationCommand command, CancellationToken cancellationToken)
     {
         if (id != command.EmployeeId)
         {
             return BadRequest("Employee ID mismatch.");
         }
 
-        var violationId = await _mediator.Send(command);
+        var violationId = await _mediator.Send(command, cancellationToken);
 
         return Ok(violationId);
     }

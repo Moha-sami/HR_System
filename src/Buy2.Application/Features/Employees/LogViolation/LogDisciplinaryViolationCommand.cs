@@ -32,7 +32,7 @@ public class LogDisciplinaryViolationCommandHandler : IRequestHandler<LogDiscipl
 
     public async Task<int> Handle(LogDisciplinaryViolationCommand command, CancellationToken cancellationToken)
     {
-        var employeeId = await _employeeRepository.GetByIdAsync(command.EmployeeId);
+        var employeeId = await _employeeRepository.GetByIdAsync(command.EmployeeId, cancellationToken);
         if(employeeId is null)
         {
             throw new ValidationException("Employee not found!");
@@ -45,7 +45,7 @@ public class LogDisciplinaryViolationCommandHandler : IRequestHandler<LogDiscipl
             Description = command.Description
         };
 
-        await _disciplinaryViolationRepository.AddAsync(violation);
+        await _disciplinaryViolationRepository.AddAsync(violation, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return violation.Id;

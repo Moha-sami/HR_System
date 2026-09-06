@@ -43,7 +43,7 @@ public class CreateJobCommandHandler : IRequestHandler<CreateJobCommand, JobResp
 
         var job = CreateJobRole(dto, departmentId);
 
-        await _jobRepository.AddAsync(job);
+        await _jobRepository.AddAsync(job, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return CreateJobResponse(job, dto);
@@ -130,7 +130,7 @@ public class CreateJobCommandHandler : IRequestHandler<CreateJobCommand, JobResp
                 Name = dto.NewDepartmentName,
                 IsActive = true
             };
-            await _departmentRepository.AddAsync(dept);
+            await _departmentRepository.AddAsync(dept, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
             return dept.Id;
         }

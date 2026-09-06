@@ -18,7 +18,7 @@ public class GetOpenShiftsQueryHandler : IRequestHandler<GetOpenShiftsQuery, Lis
 
     public async Task<List<ShiftDto>> Handle(GetOpenShiftsQuery request, CancellationToken cancellationToken)
     {
-        var shifts = await _shiftRepository.GetAllAsync();
+        var shifts = await _shiftRepository.GetAllAsync(cancellationToken);
         return shifts
             .Where(s => s.IsPublished && s.EmployeeId == null && s.StartTime > DateTimeOffset.UtcNow)
             .Select(s => new ShiftDto(

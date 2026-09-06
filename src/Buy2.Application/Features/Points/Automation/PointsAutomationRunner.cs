@@ -237,7 +237,7 @@ public class PointsAutomationRunner : IPointsAutomationRunner
                         CreatedAt = DateTimeOffset.UtcNow
                     };
 
-                    await _pointsTransactionRepository.AddAsync(transaction);
+                    await _pointsTransactionRepository.AddAsync(transaction, cancellationToken);
 
                     if (points > 0) totalPointsAwarded += points;
                     else totalPointsDeducted += Math.Abs(points);
@@ -317,7 +317,7 @@ public class PointsAutomationRunner : IPointsAutomationRunner
             ErrorMessage = errorMessage
         };
 
-        await _automationRunRepository.AddAsync(run);
+        await _automationRunRepository.AddAsync(run, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
 

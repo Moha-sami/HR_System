@@ -22,9 +22,9 @@ public class DeleteRoleController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<IActionResult> DeleteRole(int id)
+    public async Task<IActionResult> DeleteRole(int id, CancellationToken cancellationToken)
     {
-        var deleted = await _mediator.Send(new DeleteRoleCommand(id));
+        var deleted = await _mediator.Send(new DeleteRoleCommand(id), cancellationToken);
         return deleted ? NoContent() : NotFound();
     }
 }

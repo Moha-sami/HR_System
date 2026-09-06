@@ -23,10 +23,10 @@ public class ScheduleValidationController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<ActionResult<PreFlightValidationResultDto>> ValidateDraft([FromBody] List<DraftShiftDto> shifts)
+    public async Task<ActionResult<PreFlightValidationResultDto>> ValidateDraft([FromBody] List<DraftShiftDto> shifts, CancellationToken cancellationToken)
     {
         var command = new ValidateScheduleDraftCommand(shifts);
-        var result = await _mediator.Send(command);
+        var result = await _mediator.Send(command, cancellationToken);
 
         return Ok(result);
     }

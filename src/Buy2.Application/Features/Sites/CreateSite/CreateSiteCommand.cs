@@ -122,7 +122,7 @@ public class CreateSiteCommandHandler : IRequestHandler<CreateSiteCommand, int>
             OperationalHours = operationalHours
         };
 
-        await _siteRepository.AddAsync(site);
+        await _siteRepository.AddAsync(site, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return site.Id;

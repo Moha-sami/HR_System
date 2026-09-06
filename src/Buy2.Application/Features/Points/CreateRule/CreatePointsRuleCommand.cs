@@ -32,7 +32,7 @@ public class CreatePointsRuleCommandHandler : IRequestHandler<CreatePointsRuleCo
             PointValue = request.PointsValue
         };
 
-        await _pointsRuleRepository.AddAsync(rule);
+        await _pointsRuleRepository.AddAsync(rule, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return rule.Id;

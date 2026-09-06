@@ -92,7 +92,7 @@ public class OnboardEmployeeCommandHandler : IRequestHandler<OnboardEmployeeComm
         int assignedRoleId;
         if (command.RoleId.HasValue && command.RoleId.Value > 0)
         {
-            var role = await _roleRepository.GetByIdAsync(command.RoleId.Value);
+            var role = await _roleRepository.GetByIdAsync(command.RoleId.Value, cancellationToken);
             if (role == null)
             {
                 throw new ValidationException($"Role ID '{command.RoleId.Value}' not found.");
@@ -132,7 +132,7 @@ public class OnboardEmployeeCommandHandler : IRequestHandler<OnboardEmployeeComm
         int assignedJobRoleId;
         if (command.JobRoleId.HasValue && command.JobRoleId.Value > 0)
         {
-            var jobRole = await _jobRoleRepository.GetByIdAsync(command.JobRoleId.Value);
+            var jobRole = await _jobRoleRepository.GetByIdAsync(command.JobRoleId.Value, cancellationToken);
             if (jobRole == null)
             {
                 throw new ValidationException($"Job Role ID '{command.JobRoleId.Value}' not found.");
@@ -163,7 +163,7 @@ public class OnboardEmployeeCommandHandler : IRequestHandler<OnboardEmployeeComm
         int assignedSiteId;
         if (command.SiteId.HasValue && command.SiteId.Value > 0)
         {
-            var site = await _siteRepository.GetByIdAsync(command.SiteId.Value);
+            var site = await _siteRepository.GetByIdAsync(command.SiteId.Value, cancellationToken);
             if (site == null)
             {
                 throw new ValidationException($"Site ID '{command.SiteId.Value}' not found.");
@@ -220,7 +220,7 @@ public class OnboardEmployeeCommandHandler : IRequestHandler<OnboardEmployeeComm
             PasswordHash = passwordHash
         };
 
-        await _employeeRepository.AddAsync(employee);
+        await _employeeRepository.AddAsync(employee, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return employee.Id;
