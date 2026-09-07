@@ -1,4 +1,4 @@
-﻿using Buy2.Domain.Entities;
+using Buy2.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -12,7 +12,7 @@ public class RewardCategoryConfiguration : IEntityTypeConfiguration<RewardCatego
             .HasColumnType("nvarchar(100)");
 
         builder.HasMany(e => e.RewardItems)
-            .WithOne()
+            .WithOne(r => r.Category)
             .HasForeignKey(r => r.CategoryId)
             .OnDelete(DeleteBehavior.Cascade);
     }

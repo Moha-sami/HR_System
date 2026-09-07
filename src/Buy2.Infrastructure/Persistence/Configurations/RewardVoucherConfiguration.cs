@@ -1,4 +1,4 @@
-﻿using Buy2.Domain.Entities;
+using Buy2.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -16,8 +16,8 @@ public class RewardVoucherConfiguration : IEntityTypeConfiguration<RewardVoucher
         builder.Property(r => r.Status)
             .IsRequired();
 
-        builder.HasOne<RewardItem>()
-            .WithMany()
+        builder.HasOne(r => r.RewardItem)
+            .WithMany(i => i.Vouchers)
             .HasForeignKey(r => r.RewardItemId)
             .OnDelete(DeleteBehavior.Cascade);
     }

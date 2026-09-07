@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Buy2.Infrastructure.Migrations
 {
     [DbContext(typeof(Buy2DbContext))]
-    [Migration("20260905204801_AddRewardEntitiesAndVouchers")]
+    [Migration("20260907064610_AddRewardEntitiesAndVouchers")]
     partial class AddRewardEntitiesAndVouchers
     {
         /// <inheritdoc />
@@ -542,6 +542,13 @@ namespace Buy2.Infrastructure.Migrations
                     b.Property<int>("EmployeeId")
                         .HasColumnType("int");
 
+                    b.Property<string>("Priority")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)")
+                        .HasDefaultValue("Medium");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasColumnType("varchar(30)");
@@ -955,6 +962,60 @@ namespace Buy2.Infrastructure.Migrations
                     b.ToTable("PointsAutomationRanges");
                 });
 
+            modelBuilder.Entity("Buy2.Domain.Entities.PointsAutomationRun", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AutomationPeriod")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)");
+
+                    b.Property<string>("Category")
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("EmployeesEvaluated")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ErrorMessage")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<DateTimeOffset>("ExecutedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset>("PeriodEnd")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset>("PeriodStart")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)");
+
+                    b.Property<int>("TransactionsCreated")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Category", "PeriodStart", "PeriodEnd")
+                        .IsUnique()
+                        .HasDatabaseName("IX_PointsAutomationRun_Period")
+                        .HasFilter("[Status] = 'Completed'");
+
+                    b.ToTable("PointsAutomationRuns");
+                });
+
             modelBuilder.Entity("Buy2.Domain.Entities.PointsAutomationSetting", b =>
                 {
                     b.Property<int>("Id")
@@ -981,6 +1042,9 @@ namespace Buy2.Infrastructure.Migrations
                         .HasColumnType("bit")
                         .HasDefaultValue(true);
 
+                    b.Property<int?>("MetricId")
+                        .HasColumnType("int");
+
                     b.Property<string>("SubCategory")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -990,6 +1054,8 @@ namespace Buy2.Infrastructure.Migrations
                         .HasColumnType("datetimeoffset");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("MetricId");
 
                     b.HasIndex("Category", "SubCategory")
                         .IsUnique();
@@ -1058,6 +1124,10 @@ namespace Buy2.Infrastructure.Migrations
                     b.Property<int>("Amount")
                         .HasColumnType("int");
 
+                    b.Property<string>("AutomationCategory")
+                        .HasMaxLength(30)
+                        .HasColumnType("varchar(30)");
+
                     b.Property<string>("Comments")
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)");
@@ -1099,6 +1169,11 @@ namespace Buy2.Infrastructure.Migrations
                     b.HasIndex("TriggeredBy");
 
                     b.HasIndex("EmployeeId", "CreatedAt");
+
+                    b.HasIndex("EmployeeId", "AutomationCategory", "TriggeredBy", "EvaluationPeriodStart", "EvaluationPeriodEnd")
+                        .IsUnique()
+                        .HasDatabaseName("IX_PointsTransaction_Idempotency")
+                        .HasFilter("[AutomationCategory] IS NOT NULL AND [EvaluationPeriodStart] IS NOT NULL AND [EvaluationPeriodEnd] IS NOT NULL");
 
                     b.ToTable("PointsTransactions");
                 });
@@ -1310,14 +1385,16 @@ namespace Buy2.Infrastructure.Migrations
 
                     b.Property<string>("Category")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<bool>("RequiresDates")
                         .HasColumnType("bit");
@@ -1367,9 +1444,6 @@ namespace Buy2.Infrastructure.Migrations
                     b.Property<int>("CategoryId")
                         .HasColumnType("int");
 
-                    b.Property<int>("CategoryId1")
-                        .HasColumnType("int");
-
                     b.Property<int>("CostInPoints")
                         .HasColumnType("int");
 
@@ -1403,8 +1477,6 @@ namespace Buy2.Infrastructure.Migrations
 
                     b.HasIndex("CategoryId");
 
-                    b.HasIndex("CategoryId1");
-
                     b.ToTable("RewardItems");
                 });
 
@@ -1425,9 +1497,6 @@ namespace Buy2.Infrastructure.Migrations
                     b.Property<int>("PointTransactionId")
                         .HasColumnType("int");
 
-                    b.Property<int>("PointsTransactionId")
-                        .HasColumnType("int");
-
                     b.Property<DateTimeOffset>("RedeemedAt")
                         .HasColumnType("datetimeoffset");
 
@@ -1435,9 +1504,6 @@ namespace Buy2.Infrastructure.Migrations
                         .HasColumnType("int");
 
                     b.Property<int>("RewardVoucherId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("RewardVoucherId1")
                         .HasColumnType("int");
 
                     b.Property<string>("VoucherCode")
@@ -1451,13 +1517,9 @@ namespace Buy2.Infrastructure.Migrations
 
                     b.HasIndex("PointTransactionId");
 
-                    b.HasIndex("PointsTransactionId");
-
                     b.HasIndex("RewardItemId");
 
                     b.HasIndex("RewardVoucherId");
-
-                    b.HasIndex("RewardVoucherId1");
 
                     b.HasIndex("VoucherCode")
                         .IsUnique();
@@ -1486,17 +1548,12 @@ namespace Buy2.Infrastructure.Migrations
                     b.Property<int>("RewardItemId")
                         .HasColumnType("int");
 
-                    b.Property<int>("RewardItemId1")
-                        .HasColumnType("int");
-
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
                     b.HasIndex("RewardItemId");
-
-                    b.HasIndex("RewardItemId1");
 
                     b.ToTable("RewardVouchers");
                 });
@@ -2231,6 +2288,16 @@ namespace Buy2.Infrastructure.Migrations
                     b.Navigation("AutomationSetting");
                 });
 
+            modelBuilder.Entity("Buy2.Domain.Entities.PointsAutomationSetting", b =>
+                {
+                    b.HasOne("Buy2.Domain.Entities.PerformanceMetric", "Metric")
+                        .WithMany()
+                        .HasForeignKey("MetricId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Metric");
+                });
+
             modelBuilder.Entity("Buy2.Domain.Entities.PointsTransaction", b =>
                 {
                     b.HasOne("Buy2.Domain.Entities.Employee", "Employee")
@@ -2307,15 +2374,9 @@ namespace Buy2.Infrastructure.Migrations
 
             modelBuilder.Entity("Buy2.Domain.Entities.RewardItem", b =>
                 {
-                    b.HasOne("Buy2.Domain.Entities.RewardCategory", null)
+                    b.HasOne("Buy2.Domain.Entities.RewardCategory", "Category")
                         .WithMany("RewardItems")
                         .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Buy2.Domain.Entities.RewardCategory", "Category")
-                        .WithMany()
-                        .HasForeignKey("CategoryId1")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -2330,16 +2391,10 @@ namespace Buy2.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Buy2.Domain.Entities.PointsTransaction", null)
+                    b.HasOne("Buy2.Domain.Entities.PointsTransaction", "PointsTransaction")
                         .WithMany()
                         .HasForeignKey("PointTransactionId")
                         .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("Buy2.Domain.Entities.PointsTransaction", "PointsTransaction")
-                        .WithMany()
-                        .HasForeignKey("PointsTransactionId")
-                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("Buy2.Domain.Entities.RewardItem", "RewardItem")
@@ -2348,16 +2403,10 @@ namespace Buy2.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Buy2.Domain.Entities.RewardVoucher", null)
+                    b.HasOne("Buy2.Domain.Entities.RewardVoucher", "RewardVoucher")
                         .WithMany()
                         .HasForeignKey("RewardVoucherId")
                         .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("Buy2.Domain.Entities.RewardVoucher", "RewardVoucher")
-                        .WithMany()
-                        .HasForeignKey("RewardVoucherId1")
-                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Employee");
@@ -2371,15 +2420,9 @@ namespace Buy2.Infrastructure.Migrations
 
             modelBuilder.Entity("Buy2.Domain.Entities.RewardVoucher", b =>
                 {
-                    b.HasOne("Buy2.Domain.Entities.RewardItem", null)
-                        .WithMany()
-                        .HasForeignKey("RewardItemId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("Buy2.Domain.Entities.RewardItem", "RewardItem")
                         .WithMany("Vouchers")
-                        .HasForeignKey("RewardItemId1")
+                        .HasForeignKey("RewardItemId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
