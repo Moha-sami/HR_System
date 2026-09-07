@@ -4,6 +4,7 @@ using Buy2.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Buy2.Infrastructure.Migrations
 {
     [DbContext(typeof(Buy2DbContext))]
-    partial class Buy2DbContextModelSnapshot : ModelSnapshot
+    [Migration("20260905204801_AddRewardEntitiesAndVouchers")]
+    partial class AddRewardEntitiesAndVouchers
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -539,13 +542,6 @@ namespace Buy2.Infrastructure.Migrations
                     b.Property<int>("EmployeeId")
                         .HasColumnType("int");
 
-                    b.Property<string>("Priority")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(20)
-                        .HasColumnType("varchar(20)")
-                        .HasDefaultValue("Medium");
-
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasColumnType("varchar(30)");
@@ -959,60 +955,6 @@ namespace Buy2.Infrastructure.Migrations
                     b.ToTable("PointsAutomationRanges");
                 });
 
-            modelBuilder.Entity("Buy2.Domain.Entities.PointsAutomationRun", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("AutomationPeriod")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("varchar(20)");
-
-                    b.Property<string>("Category")
-                        .HasMaxLength(50)
-                        .HasColumnType("varchar(50)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("EmployeesEvaluated")
-                        .HasColumnType("int");
-
-                    b.Property<string>("ErrorMessage")
-                        .HasMaxLength(2000)
-                        .HasColumnType("nvarchar(2000)");
-
-                    b.Property<DateTimeOffset>("ExecutedAt")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<DateTimeOffset>("PeriodEnd")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<DateTimeOffset>("PeriodStart")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("varchar(20)");
-
-                    b.Property<int>("TransactionsCreated")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Category", "PeriodStart", "PeriodEnd")
-                        .IsUnique()
-                        .HasDatabaseName("IX_PointsAutomationRun_Period")
-                        .HasFilter("[Status] = 'Completed'");
-
-                    b.ToTable("PointsAutomationRuns");
-                });
-
             modelBuilder.Entity("Buy2.Domain.Entities.PointsAutomationSetting", b =>
                 {
                     b.Property<int>("Id")
@@ -1039,9 +981,6 @@ namespace Buy2.Infrastructure.Migrations
                         .HasColumnType("bit")
                         .HasDefaultValue(true);
 
-                    b.Property<int?>("MetricId")
-                        .HasColumnType("int");
-
                     b.Property<string>("SubCategory")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -1051,8 +990,6 @@ namespace Buy2.Infrastructure.Migrations
                         .HasColumnType("datetimeoffset");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("MetricId");
 
                     b.HasIndex("Category", "SubCategory")
                         .IsUnique();
@@ -1121,10 +1058,6 @@ namespace Buy2.Infrastructure.Migrations
                     b.Property<int>("Amount")
                         .HasColumnType("int");
 
-                    b.Property<string>("AutomationCategory")
-                        .HasMaxLength(30)
-                        .HasColumnType("varchar(30)");
-
                     b.Property<string>("Comments")
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)");
@@ -1166,11 +1099,6 @@ namespace Buy2.Infrastructure.Migrations
                     b.HasIndex("TriggeredBy");
 
                     b.HasIndex("EmployeeId", "CreatedAt");
-
-                    b.HasIndex("EmployeeId", "AutomationCategory", "TriggeredBy", "EvaluationPeriodStart", "EvaluationPeriodEnd")
-                        .IsUnique()
-                        .HasDatabaseName("IX_PointsTransaction_Idempotency")
-                        .HasFilter("[AutomationCategory] IS NOT NULL AND [EvaluationPeriodStart] IS NOT NULL AND [EvaluationPeriodEnd] IS NOT NULL");
 
                     b.ToTable("PointsTransactions");
                 });
@@ -2301,16 +2229,6 @@ namespace Buy2.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("AutomationSetting");
-                });
-
-            modelBuilder.Entity("Buy2.Domain.Entities.PointsAutomationSetting", b =>
-                {
-                    b.HasOne("Buy2.Domain.Entities.PerformanceMetric", "Metric")
-                        .WithMany()
-                        .HasForeignKey("MetricId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.Navigation("Metric");
                 });
 
             modelBuilder.Entity("Buy2.Domain.Entities.PointsTransaction", b =>
