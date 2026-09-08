@@ -14,6 +14,9 @@ public class Site : BaseEntity
     public string Instructions { get; set; } = string.Empty;
     public int MaxCapacity { get; set; }
 
+    public bool IsSmartAssignmentEnabled { get; set; } = true;
+    public bool IsSmartPostingEnabled { get; set; } = true;
+
     public int RegionId { get; set; }
     public Region Region { get; set; } = null!;
 

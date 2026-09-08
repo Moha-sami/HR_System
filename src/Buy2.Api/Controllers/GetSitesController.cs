@@ -4,9 +4,11 @@ using Buy2.Application.Features.Sites.CreateSite;
 using Buy2.Application.Features.Sites.DeleteSite;
 using Buy2.Application.Features.Sites.Documents;
 using Buy2.Application.Features.Sites.GetSiteDetails;
+using Buy2.Application.Features.Sites.GetSiteShiftsOverview;
 using Buy2.Application.Features.Sites.GetSites;
 using Buy2.Application.Features.Sites.Regions;
 using Buy2.Application.Features.Sites.UpdateSite;
+using Buy2.Application.Features.Sites.UpdateSiteAutomationSettings;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -31,6 +33,21 @@ public class GetSitesController : ControllerBase
     public async Task<ActionResult<List<SiteDto>>> GetSites(CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(new GetSitesQuery(), cancellationToken);
+        return Ok(result);
+    }
+
+    // Get Site Shifts Overview
+    [HttpGet("shifts-overview")]
+    [ProducesResponseType(typeof(List<SiteShiftCoverageOverviewDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult<List<SiteShiftCoverageOverviewDto>>> GetSiteShiftsOverview(
+        [FromQuery] int? regionId,
+        [FromQuery] string? search,
+        [FromQuery] CoverageHealthStatus? coverageStatus,
+        CancellationToken cancellationToken)
+    {
+        var query = new GetSiteShiftsOverviewQuery(regionId, search, coverageStatus);
+        var result = await _mediator.Send(query, cancellationToken);
         return Ok(result);
     }
 
@@ -67,6 +84,23 @@ public class GetSitesController : ControllerBase
         );
         var site = await _mediator.Send(command, cancellation);
         return Ok(site);
+    }
+
+    // Update Site Automation Settings
+    [HttpPatch("{id}/automation-settings")]
+    [Authorize(Roles = "Admin,Manager")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult> UpdateSiteAutomationSettings(
+        int id,
+        [FromBody] UpdateSiteAutomationSettingsDto dto,
+        CancellationToken cancellation)
+    {
+        var command = new UpdateSiteAutomationSettingsCommand(id, dto.IsSmartAssignmentEnabled, dto.IsSmartPostingEnabled);
+        await _mediator.Send(command, cancellation);
+        return Ok();
     }
 
     // Deletion Check
