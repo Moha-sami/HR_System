@@ -52,6 +52,15 @@ All AI assistants (Claude Code, Antigravity, Cursor, Roo-Code) **MUST** strictly
      ```bash
      octaflow pr
      ```
-   - This synchronizes the feature branch to remote (`git push -u origin <branch>`), generates the PR via `gh pr create` with `.agent_artifacts/PR_SUMMARY.md`, records `.agent_artifacts/04_git_pr.json`, and outputs the clickable PR URL.
+   - **PR Title (Strict Convention)**:
+     Format: `<SCRUM_NUMBER>: <Ticket Title>`
+     Example: `SCRUM-342: Shift Employee Candidate Pool Search & Profile Preview (Backend)`
+   - **PR Description (Strict Convention)**:
+     Must include a short, clear description of what was done:
+     - `## Description`: 2-3 sentence overview of what was implemented or resolved.
+     - `### What was done`: Concise bullet points of all endpoints, handlers, entities, and tests added.
+     - `### Verification`: Confirmation of 100% test pass rate and 0 compiler warnings.
+     - `### ⚡ OctaFlow Verification Report`: Token and gate metrics table.
+   - `octaflow pr` automatically synchronizes the feature branch to remote (`git push -u origin <branch>`), opens the PR via `gh pr create` with `.agent_artifacts/PR_SUMMARY.md`, records `.agent_artifacts/04_git_pr.json`, and outputs the clickable PR URL.
    - **Never** mark a task as completed without creating the PR and returning the PR link to the user.
 
