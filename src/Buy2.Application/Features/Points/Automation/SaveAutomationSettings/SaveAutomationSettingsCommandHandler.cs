@@ -152,7 +152,7 @@ public class SaveAutomationSettingsCommandHandler : IRequestHandler<SaveAutomati
                     }).ToList()
                 };
 
-                await _automationSettingRepository.AddAsync(created);
+                await _automationSettingRepository.AddAsync(created, cancellationToken);
             }
             else
             {
@@ -175,7 +175,7 @@ public class SaveAutomationSettingsCommandHandler : IRequestHandler<SaveAutomati
                         ToValue = range.ToValue,
                         TaskPriority = range.TaskPriority,
                         PointsValue = range.PointsValue
-                    });
+                    }, cancellationToken);
                 }
             }
         }

@@ -63,7 +63,7 @@ public class UpdateSiteCommandHandler : IRequestHandler<UpdateSiteCommand, int>
             throw new ValidationException("A site with this name already exists.");
         }
 
-        var getRegion = await _regionRepository.GetByIdAsync(command.RegionId);
+        var getRegion = await _regionRepository.GetByIdAsync(command.RegionId, cancellation);
         if (getRegion is null)
         {
             throw new ValidationException("Selected region does not exist.");

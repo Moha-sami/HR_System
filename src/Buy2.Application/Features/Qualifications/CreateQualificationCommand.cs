@@ -39,7 +39,7 @@ public class CreateQualificationCommandHandler : IRequestHandler<CreateQualifica
             CreatedAt = DateTimeOffset.UtcNow
         };
 
-        await _qualificationRepository.AddAsync(qualification);
+        await _qualificationRepository.AddAsync(qualification, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return new QualificationDto(

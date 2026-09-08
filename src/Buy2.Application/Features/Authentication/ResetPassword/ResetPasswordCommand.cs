@@ -17,7 +17,7 @@ public class ResetPasswordCommandHandler : IRequestHandler<ResetPasswordCommand,
 
     public async Task<bool> Handle(ResetPasswordCommand request, CancellationToken cancellationToken)
     {
-        var employees = await _employeeRepository.GetAllAsync();
+        var employees = await _employeeRepository.GetAllAsync(cancellationToken);
         var employee = employees.FirstOrDefault(e => e.Email == request.Email);
 
         if (employee is null)

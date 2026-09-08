@@ -31,7 +31,7 @@ public class UpdateJobCommandHandler : IRequestHandler<UpdateJobCommand, JobResp
 
     public async Task<JobResponseDto> Handle(UpdateJobCommand request, CancellationToken cancellationToken)
     {
-        var job = await _jobRepository.GetByIdAsync(request.Id);
+        var job = await _jobRepository.GetByIdAsync(request.Id, cancellationToken);
         if (job == null)
             throw new KeyNotFoundException("Job not found.");
 

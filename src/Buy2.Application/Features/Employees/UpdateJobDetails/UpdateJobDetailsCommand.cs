@@ -32,7 +32,7 @@ public class UpdateJobDetailsCommandHandler : IRequestHandler<UpdateJobDetailsCo
 
     public async Task<UpdateJobDetailsResult> Handle(UpdateJobDetailsCommand request, CancellationToken cancellationToken)
     {
-        var employee = await _employeeRepository.GetByIdAsync(request.EmployeeId);
+        var employee = await _employeeRepository.GetByIdAsync(request.EmployeeId, cancellationToken);
 
         if (employee is null || employee.IsDeleted)
         {
@@ -44,7 +44,7 @@ public class UpdateJobDetailsCommandHandler : IRequestHandler<UpdateJobDetailsCo
 
         if (dto.JobRoleId.HasValue)
         {
-            jobRoleToUpdate = await _jobRoleRepository.GetByIdAsync(dto.JobRoleId.Value);
+            jobRoleToUpdate = await _jobRoleRepository.GetByIdAsync(dto.JobRoleId.Value, cancellationToken);
             if (jobRoleToUpdate is null)
             {
                 return UpdateJobDetailsResult.BadRequest($"JobRole with ID {dto.JobRoleId.Value} does not exist.");
@@ -59,7 +59,7 @@ public class UpdateJobDetailsCommandHandler : IRequestHandler<UpdateJobDetailsCo
                 return UpdateJobDetailsResult.BadRequest("An employee cannot be their own direct manager.");
             }
 
-            var manager = await _employeeRepository.GetByIdAsync(dto.DirectManagerId.Value);
+            var manager = await _employeeRepository.GetByIdAsync(dto.DirectManagerId.Value, cancellationToken);
             if (manager is null || manager.IsDeleted)
             {
                 return UpdateJobDetailsResult.BadRequest($"Direct manager with ID {dto.DirectManagerId.Value} does not exist or has been deleted.");
@@ -102,7 +102,7 @@ public class UpdateJobDetailsCommandHandler : IRequestHandler<UpdateJobDetailsCo
         {
             if (jobRoleToUpdate is null && employee.JobRoleId > 0)
             {
-                jobRoleToUpdate = await _jobRoleRepository.GetByIdAsync(employee.JobRoleId);
+                jobRoleToUpdate = await _jobRoleRepository.GetByIdAsync(employee.JobRoleId, cancellationToken);
             }
 
             if (jobRoleToUpdate is not null)

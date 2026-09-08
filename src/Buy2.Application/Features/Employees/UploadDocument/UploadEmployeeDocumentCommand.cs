@@ -30,7 +30,7 @@ public class UploadEmployeeDocumentCommandHandler : IRequestHandler<UploadEmploy
 
     public async Task<int> Handle(UploadEmployeeDocumentCommand command, CancellationToken cancellationToken)
     {
-        var employee = await _employeeRepository.GetByIdAsync(command.EmployeeId);
+        var employee = await _employeeRepository.GetByIdAsync(command.EmployeeId, cancellationToken);
         if (employee is null)
         {
             throw new ValidationException($"Employee with Id {command.EmployeeId} does not exist.");
@@ -43,7 +43,7 @@ public class UploadEmployeeDocumentCommandHandler : IRequestHandler<UploadEmploy
             StorageUrl = command.StorageUrl
         };
 
-        await _employeeDocumentRepository.AddAsync(employeeDocument);
+        await _employeeDocumentRepository.AddAsync(employeeDocument, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return employeeDocument.Id;

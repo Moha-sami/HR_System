@@ -50,7 +50,7 @@ public class CreateRoleCommandHandler : IRequestHandler<CreateRoleCommand, Creat
             CreatedAt = DateTime.UtcNow
         };
 
-        await _roleRepository.AddAsync(role);
+        await _roleRepository.AddAsync(role, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         var roleDetailsDto = new RoleDetailsDto(
