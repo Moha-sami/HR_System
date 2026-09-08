@@ -76,4 +76,25 @@ All AI assistants (Claude Code, Antigravity, Cursor, Roo-Code) **MUST** strictly
    - View active project instincts with `octaflow instincts`.
    - All instincts are automatically injected into `.agent_artifacts/context.json` at task start (`octaflow start`), ensuring no subagent repeats past mistakes.
 
+10. **Frontend & UI Verification with Playwright CLI (`@playwright/cli`)**:
+   - For all frontend, Angular, and UI component tasks, agents **MUST** use `playwright-cli` as the default verification tool.
+   - **Never** dump raw HTML or giant accessibility DOM trees into the chat context.
+   - Use ref-based interaction:
+     ```bash
+     playwright-cli open http://localhost:4200
+     playwright-cli fill e1 "test@example.com"
+     playwright-cli click e3
+     playwright-cli screenshot .agent_artifacts/ui_verification.png
+     ```
+   - This ensures full browser E2E verification with 80-90% token savings compared to heavy browser MCP dumps.
 
+11. **Headroom Context & Log Compression**:
+    - Use `octaflow compress` to filter noisy terminal, build, or test outputs before passing them into agent context or summaries.
+    - Automatically removes ANSI escapes, deduplicates repetitive logs, and retains decisive failure stacks (40-60% token reduction).
+
+12. **Task Observer Auto-Learning Loop**:
+    - OctaFlow self-healing recovery loop (`octaflow/core/recovery.py`) continuously observes build/test failures.
+    - When errors repeat or get fixed, Task Observer automatically persists discovered rules into project instincts (`.octaflow_instincts.json`).
+
+13. **Prompt Master Instruction Structuring**:
+    - Use `prompt-master` skill to generate structured, load-bearing prompts with explicit boundaries, concrete verification criteria, and zero token fluff when spawning subagents or authoring task specs.
