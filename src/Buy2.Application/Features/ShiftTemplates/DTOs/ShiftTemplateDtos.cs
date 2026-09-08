@@ -2,7 +2,11 @@ namespace Buy2.Application.Features.ShiftTemplates.DTOs;
 
 public record ShiftTemplateFilterQueryDto(
     string? SearchTerm = null,
-    string SortDir = "desc",
+    string? SortDir = null,
+    string? NameSort = null,
+    string? CreationSort = null,
+    string? UpdatedSort = null,
+    string? NumberOfAssignedSort = null,
     int PageNumber = 1,
     int PageSize = 10
 );

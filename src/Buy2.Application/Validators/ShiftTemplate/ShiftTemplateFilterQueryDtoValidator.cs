@@ -16,9 +16,30 @@ public class ShiftTemplateFilterQueryDtoValidator : AbstractValidator<ShiftTempl
             .WithMessage("PageSize must be between 1 and 100.");
 
         RuleFor(x => x.SortDir)
-            .Must(s => string.IsNullOrWhiteSpace(s)
-                || s.Equals("asc", StringComparison.OrdinalIgnoreCase)
-                || s.Equals("desc", StringComparison.OrdinalIgnoreCase))
+            .Must(BeValidSortDirection)
             .WithMessage("SortDir must be one of: asc, desc.");
+
+        RuleFor(x => x.NameSort)
+            .Must(BeValidSortDirection)
+            .WithMessage("NameSort must be one of: asc, desc.");
+
+        RuleFor(x => x.CreationSort)
+            .Must(BeValidSortDirection)
+            .WithMessage("CreationSort must be one of: asc, desc.");
+
+        RuleFor(x => x.UpdatedSort)
+            .Must(BeValidSortDirection)
+            .WithMessage("UpdatedSort must be one of: asc, desc.");
+
+        RuleFor(x => x.NumberOfAssignedSort)
+            .Must(BeValidSortDirection)
+            .WithMessage("NumberOfAssignedSort must be one of: asc, desc.");
+    }
+
+    private static bool BeValidSortDirection(string? value)
+    {
+        return string.IsNullOrWhiteSpace(value)
+            || value.Equals("asc", StringComparison.OrdinalIgnoreCase)
+            || value.Equals("desc", StringComparison.OrdinalIgnoreCase);
     }
 }
