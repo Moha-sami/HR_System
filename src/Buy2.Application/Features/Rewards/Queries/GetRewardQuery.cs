@@ -1,4 +1,4 @@
-﻿using Buy2.Application.Common.Interfaces;
+using Buy2.Application.Common.Interfaces;
 using Buy2.Application.DTOs.Rewards.DTOs;
 using Buy2.Domain.Entities;
 using Buy2.Domain.Enums;
@@ -58,7 +58,7 @@ public class GetRewardQueryHandler : IRequestHandler<GetRewardQuery, PageResultD
             "name" => query.SortDescending
                 ? rewardQuery.OrderByDescending(r => r.RewardName)
                 : rewardQuery.OrderBy(r => r.RewardName),
-            "cost" => query.SortDescending
+            "cost" or "points" => query.SortDescending
                 ? rewardQuery.OrderByDescending(r => r.CostInPoints)
                 : rewardQuery.OrderBy(r => r.CostInPoints),
             "price" => query.SortDescending
@@ -82,10 +82,13 @@ public class GetRewardQueryHandler : IRequestHandler<GetRewardQuery, PageResultD
 
         var totalCount = await rewardQuery.CountAsync(cancellation);
 
+        var page = query.Page < 1 ? 1 : query.Page;
+        var pageSize = query.PageSize < 1 ? 10 : query.PageSize;
+
         // Pagination
         var reward = await rewardQuery
-            .Skip((query.Page - 1) * query.PageSize)
-            .Take(query.PageSize)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
             .Select(r => new RewardListDto(
                     r.Id,
                     r.RewardName,
@@ -102,8 +105,8 @@ public class GetRewardQueryHandler : IRequestHandler<GetRewardQuery, PageResultD
             (
                 reward,
                 totalCount,
-                query.Page,
-                query.PageSize
+                page,
+                pageSize
             );
     }
 }
