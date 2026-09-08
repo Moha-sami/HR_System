@@ -91,3 +91,40 @@ public record ReallocateAndDeleteSiteDto(
     List<EmployeeSiteReassignmentDto> EmployeeSiteReassignments
 );
 public record EmployeeSiteReassignmentDto(int EmployeeId, int NewSiteId);
+
+public enum CoverageHealthStatus
+{
+    Full,
+    Partial,
+    Critical,
+    NoShifts
+}
+
+public record DayCoverageStatusDto(
+    DateOnly Date,
+    CoverageHealthStatus Status,
+    int TotalShifts,
+    int OpenShifts,
+    int FilledShifts
+);
+
+public record SiteShiftCoverageOverviewDto(
+    int SiteId,
+    string SiteName,
+    string RegionName,
+    string Address,
+    bool IsSmartAssignmentEnabled,
+    bool IsSmartPostingEnabled,
+    List<DayCoverageStatusDto> Days
+)
+{
+    public int Id => SiteId;
+}
+
+public record UpdateSiteAutomationSettingsDto(
+    bool? IsSmartAssignmentEnabled,
+    bool? IsSmartPostingEnabled
+);
+
+public record SiteSmartSettingsResponseDto(int SiteId, bool IsSmartAssignmentEnabled, bool IsSmartPostingEnabled);
+

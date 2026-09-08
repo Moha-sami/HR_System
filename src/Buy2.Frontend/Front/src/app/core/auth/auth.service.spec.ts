@@ -8,6 +8,18 @@ import { environment } from '../../../environments/environment';
 
 const AUTH_URL = `${environment.baseUrl}/auth`;
 
+/** Expiry one hour in the future (seconds since epoch, as JWT `exp`). */
+function futureExp(): number {
+  return Math.floor(Date.now() / 1000) + 3600;
+}
+
+/** Unsigned fake JWT carrying the given payload (base64url-encoded). */
+function fakeJwt(payload: Record<string, unknown>): string {
+  const encode = (value: unknown): string =>
+    btoa(JSON.stringify(value)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  return `${encode({ alg: 'none' })}.${encode(payload)}.signature`;
+}
+
 describe('AuthService', () => {
   let service: AuthService;
   let httpMock: HttpTestingController;

@@ -1,0 +1,21 @@
+@let item = recognition();
+<div class="detail-grid">
+  <div>
+    <div class="person"><span class="avatar" aria-hidden="true">{{ initials() }}</span><strong>{{ employeeName() || ('RECOGNITIONS.UNKNOWN_EMPLOYEE' | translate) }}</strong></div>
+    <div class="row metadata">
+      <div><p class="muted">{{ 'RECOGNITIONS.PUBLISH_DATE' | translate }}</p><p>{{ date(item.publishAt) }}</p></div>
+      <div><p class="muted">{{ 'RECOGNITIONS.TIME' | translate }}</p><p>{{ date(item.publishAt, true) }}</p></div>
+    </div>
+    <p class="muted">{{ 'RECOGNITIONS.TITLE_LABEL' | translate }}</p><h2>{{ item.title }}</h2>
+    <p class="muted">{{ 'RECOGNITIONS.DESCRIPTION' | translate }}</p><p class="description">{{ item.description }}</p>
+    @if (item.attachmentUrl) {
+      @if (image()) { <img class="attachment" [src]="item.attachmentUrl" [alt]="item.attachmentName || ('RECOGNITIONS.ATTACHMENT' | translate)" /> }
+      <p><a [href]="item.attachmentUrl" [download]="item.attachmentName || 'attachment'">{{ item.attachmentName || ('RECOGNITIONS.ATTACHMENT' | translate) }}</a></p>
+    }
+  </div>
+  <aside class="points-card">{{ 'RECOGNITIONS.POINTS' | translate }}<strong>{{ points() }}</strong></aside>
+</div>
+<div class="row metadata">
+  <div><p class="muted">{{ 'RECOGNITIONS.CREATED_BY' | translate }}</p><p>{{ item.createdBy }}</p><p class="muted">{{ date(item.createdAt) }} · {{ date(item.createdAt, true) }}</p></div>
+  <div><p class="muted">{{ 'RECOGNITIONS.UPDATED_BY' | translate }}</p><p>{{ item.updatedBy }}</p><p class="muted">{{ date(item.updatedAt) }} · {{ date(item.updatedAt, true) }}</p></div>
+</div>

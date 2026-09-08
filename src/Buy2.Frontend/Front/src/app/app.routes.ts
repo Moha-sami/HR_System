@@ -138,6 +138,11 @@ export const routes: Routes = [
       },
 
       {
+        path: 'recognitions',
+        loadChildren: () => import('./features/recognitions/recognitions.routes').then(m => m.RECOGNITIONS_ROUTES),
+      },
+
+      {
         path: 'news',
         loadChildren: () => import('./features/news/news.routes').then((m) => m.NEWS_ROUTES),
       },

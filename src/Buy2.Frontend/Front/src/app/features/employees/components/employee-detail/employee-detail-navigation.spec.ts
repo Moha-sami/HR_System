@@ -6,7 +6,7 @@ import { provideTranslateService, TranslateService } from '@ngx-translate/core';
 import { EmployeeDetailComponent } from './employee-detail.component';
 import { EMPLOYEES_ROUTES } from '../../employees.routes';
 import { EmployeeDetailService } from '../../services/employee-detail.service';
-import type { EmployeeProfileDto } from '../../models/view-employee/employee-profile';
+import type { EmployeeProfileDto } from '../../models/view-employee/information-tab.models';
 
 @Component({ standalone: true, template: '' })
 class EmptyChild {}
@@ -15,8 +15,9 @@ describe('Employee Detail navigation semantics', () => {
   beforeEach(() => {
     const employee: EmployeeProfileDto = {
       id: 1, employeeCode: 'E1', fullName: 'Employee', phone: '', email: '', location: '', profilePhotoUrl: null,
-      stats: { totalPoints: 0, totalTasks: 0, totalGifts: 0 }, personalInfo: { birthdate: null, gender: null },
-      jobDetails: { title: '', department: '', seniorityLevel: '', experienceYears: 0, directManagerName: null, jobType: '', qualifications: [] },
+      stats: { totalPoints: 0, totalTasks: 0, totalGifts: 0 }, personalInfo: { name: 'Employee', email: '', phoneNumber: '', birthdate: null, gender: null },
+      jobDetails: { title: '', department: '', seniorityLevel: '', experienceYears: 0, directManagerName: null, jobType: '', qualifications: [], attendanceType: '', onlineWorkdays: [], offlineWorkdays: [], jobRoleId: null, directManagerId: null },
+      payroll: null,
     };
     TestBed.configureTestingModule({ providers: [
       provideTranslateService(),
@@ -45,7 +46,7 @@ describe('Employee Detail navigation semantics', () => {
     expect(nav.querySelector('[role="tablist"], [role="tab"], [aria-selected], [aria-controls]')).toBeNull();
     const links = Array.from(nav.querySelectorAll('a'));
     expect(links.map(link => link.getAttribute('href'))).toEqual([
-      'information', 'performance', 'payroll', 'attendance', 'documents', 'violations', 'points-rewards',
+      'information', 'performance', 'attendance', 'documents', 'violations', 'points-rewards',
     ].map(path => `/employees/1/${path}`));
     for (const link of links) {
       expect(link.textContent?.trim()).toBeTruthy();

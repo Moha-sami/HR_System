@@ -3,7 +3,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideTranslateService, TranslateService } from '@ngx-translate/core';
 import { EmployeeDetailService } from '../../../../services/employee-detail.service';
-import type { EmployeeProfileDto } from '../../../../models/view-employee/employee-profile';
+import type { EmployeeProfileDto } from '../../../../models/view-employee/information-tab.models';
 import type { EmployeePerformanceTask, EmployeePerformanceTaskStatus } from '../../../../models/view-employee/employee-performance-task';
 import { environment } from '../../../../../../../environments/environment';
 import { PerformanceTabComponent } from './performance-tab.component';

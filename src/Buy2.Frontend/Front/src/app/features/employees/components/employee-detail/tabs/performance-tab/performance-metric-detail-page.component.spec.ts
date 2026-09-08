@@ -5,7 +5,7 @@ import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/route
 import { BehaviorSubject } from 'rxjs';
 import { provideTranslateService, TranslateService } from '@ngx-translate/core';
 import { EmployeeDetailService } from '../../../../services/employee-detail.service';
-import type { EmployeeProfileDto } from '../../../../models/view-employee/employee-profile';
+import type { EmployeeProfileDto } from '../../../../models/view-employee/information-tab.models';
 import type { EmployeePerformanceMetricDetail } from '../../../../models/view-employee/employee-performance-metric';
 import { environment } from '../../../../../../../environments/environment';
 import { PerformanceMetricDetailPageComponent } from './performance-metric-detail-page.component';

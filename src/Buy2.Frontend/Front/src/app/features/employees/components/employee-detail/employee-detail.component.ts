@@ -22,7 +22,6 @@ export class EmployeeDetailComponent {
   readonly tabs = [
     { id: 'information', label: 'EMPLOYEE_DETAIL.TABS.INFORMATION' },
     { id: 'performance', label: 'EMPLOYEE_DETAIL.TABS.PERFORMANCE' },
-    { id: 'payroll', label: 'EMPLOYEE_DETAIL.TABS.PAYROLL' },
     { id: 'attendance', label: 'EMPLOYEE_DETAIL.TABS.ATTENDANCE' },
     { id: 'documents', label: 'EMPLOYEE_DETAIL.TABS.DOCUMENTS' },
     { id: 'violations', label: 'EMPLOYEE_DETAIL.TABS.VIOLATIONS' },
@@ -41,6 +40,7 @@ export class EmployeeDetailComponent {
         this.employeeDetailService.clearDetailEmployee();
       }
     });
+
 
   }
 
