@@ -2,6 +2,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Buy2.Application.DTOs.Schedules;
 using Buy2.Application.Features.Schedules.Candidates;
+using Buy2.Application.Features.Schedules.GetEmployeeShiftPreview;
 using Buy2.Application.Features.Schedules.GetShiftCandidateEmployees;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -64,4 +65,25 @@ public class ShiftCandidatesController : ControllerBase
         }
         return Ok(result);
     }
+
+    [HttpGet("/api/v1/shifts/employees/{employeeId:int}/preview")]
+    [Authorize(Roles = "Admin,Manager,OperationsManager")]
+    [ProducesResponseType(typeof(ShiftCandidatePreviewDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<ActionResult<ShiftCandidatePreviewDto>> GetEmployeeShiftPreview(
+        [FromRoute] int employeeId,
+        [FromQuery] int? siteId = null,
+        CancellationToken cancellationToken = default)
+    {
+        var query = new GetEmployeeShiftPreviewQuery(employeeId, siteId);
+        var result = await _mediator.Send(query, cancellationToken);
+        if (result == null)
+        {
+            return NotFound(new { message = $"Employee with ID {employeeId} was not found." });
+        }
+        return Ok(result);
+    }
 }
+
