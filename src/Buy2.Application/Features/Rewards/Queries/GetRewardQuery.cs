@@ -58,7 +58,7 @@ public class GetRewardQueryHandler : IRequestHandler<GetRewardQuery, PageResultD
             "name" => query.SortDescending
                 ? rewardQuery.OrderByDescending(r => r.RewardName)
                 : rewardQuery.OrderBy(r => r.RewardName),
-            "points" => query.SortDescending
+            "cost" => query.SortDescending
                 ? rewardQuery.OrderByDescending(r => r.CostInPoints)
                 : rewardQuery.OrderBy(r => r.CostInPoints),
             "price" => query.SortDescending

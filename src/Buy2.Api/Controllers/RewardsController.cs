@@ -8,7 +8,7 @@ namespace Buy2.Api.Controllers;
 
 [ApiController]
 [Authorize]
-[Route("api/v1/Rewards")]
+[Route("api/v1/rewards")]
 public class RewardsController : ControllerBase
 {
     private readonly ISender _mediator;
@@ -17,10 +17,11 @@ public class RewardsController : ControllerBase
         _mediator = mediator;
     }
     [HttpGet]
+    [Authorize(Roles = "Admin,Manager")]
     [ProducesResponseType(typeof(PageResultDto<RewardListDto>),StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<ActionResult<PageResultDto<RewardListDto>>> GetRewards(GetRewardQuery query, CancellationToken cancellation)
+    public async Task<ActionResult<PageResultDto<RewardListDto>>> GetRewards([FromQuery] GetRewardQuery query, CancellationToken cancellation)
     {
         var result = await _mediator.Send(query, cancellation);
         return Ok(result);

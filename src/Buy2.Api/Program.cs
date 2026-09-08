@@ -18,7 +18,7 @@ builder.Services.AddControllers();
 // Configure CORS Policy
 builder.Services.AddCors(options =>
 {
-    options.ddPolicy("AllowFrontend", policy =>
+    options.AddPolicy("AllowFrontend", policy =>
     {
         policy.SetIsOriginAllowed(_ => true)
             .AllowAnyHeader()
