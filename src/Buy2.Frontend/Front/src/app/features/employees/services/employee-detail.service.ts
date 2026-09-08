@@ -1,5 +1,5 @@
 import { inject, Injectable, signal } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
 import type { Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import type {
@@ -25,6 +25,13 @@ import type {
   PaginatedEmployeePointsTransactions,
 } from '../models/view-employee/employee-points';
 
+import type {
+  EmployeePerformanceOverview,
+  PerformanceFilters,
+} from '../models/view-employee/employee-performance';
+import type { EmployeePerformanceMetricDetail } from '../models/view-employee/employee-performance-metric';
+import type { EmployeePerformanceTask } from '../models/view-employee/employee-performance-task';
+
 const API_BASE = environment.baseUrl;
 
 @Injectable({ providedIn: 'root' })
@@ -34,6 +41,20 @@ export class EmployeeDetailService {
   private detailRequestedEmployeeId: number | null = null;
   private pointsSummaryRequestId = 0;
   private pointsTransactionsRequestId = 0;
+  private performanceOverviewRequestId = 0;
+  private performanceMetricDetailRequestId = 0;
+  private performanceTasksRequestId = 0;
+  private performanceEmployeeId: number | null = null;
+
+  readonly performanceOverview = signal<EmployeePerformanceOverview | null>(null);
+  readonly performanceOverviewLoading = signal(false);
+  readonly performanceOverviewError = signal<HttpErrorResponse | null>(null);
+  readonly performanceMetricDetail = signal<EmployeePerformanceMetricDetail | null>(null);
+  readonly performanceMetricDetailLoading = signal(false);
+  readonly performanceMetricDetailError = signal<HttpErrorResponse | null>(null);
+  readonly performanceTasks = signal<readonly EmployeePerformanceTask[] | null>(null);
+  readonly performanceTasksLoading = signal(false);
+  readonly performanceTasksError = signal<HttpErrorResponse | null>(null);
 
   // Detail view store
   readonly detailEmployee = signal<EmployeeProfileDto | null>(null);
@@ -104,6 +125,135 @@ export class EmployeeDetailService {
       `${API_BASE}/employees/${id}/points/transactions`,
       { params },
     );
+  }
+
+  getPerformanceOverview(
+    employeeId: number,
+    filters?: PerformanceFilters,
+  ): Observable<EmployeePerformanceOverview> {
+    return this.http.get<EmployeePerformanceOverview>(
+      `${API_BASE}/employees/${employeeId}/performance/overview`,
+      { params: this.performanceParams(filters) },
+    );
+  }
+
+  getPerformanceMetricDetail(
+    employeeId: number,
+    metricId: number,
+    filters?: PerformanceFilters,
+  ): Observable<EmployeePerformanceMetricDetail> {
+    return this.http.get<EmployeePerformanceMetricDetail>(
+      `${API_BASE}/employees/${employeeId}/performance/metrics/${metricId}`,
+      { params: this.performanceParams(filters) },
+    );
+  }
+
+  private performanceParams(filters: PerformanceFilters = {}): HttpParams {
+    let params = new HttpParams();
+    for (const key of ['period', 'from', 'to'] as const) {
+      const value = filters[key]?.trim();
+      if (value) params = params.set(key, value);
+    }
+    if (filters.days !== undefined) params = params.set('days', filters.days);
+    return params;
+  }
+
+  loadPerformanceOverview(employeeId: number, filters?: PerformanceFilters): void {
+    this.setPerformanceEmployee(employeeId);
+    const requestId = ++this.performanceOverviewRequestId;
+    this.performanceOverview.set(null);
+    this.performanceOverviewLoading.set(true);
+    this.performanceOverviewError.set(null);
+    this.getPerformanceOverview(employeeId, filters).subscribe({
+      next: (data) => {
+        if (requestId !== this.performanceOverviewRequestId) return;
+        this.performanceOverview.set(data);
+        this.performanceOverviewLoading.set(false);
+      },
+      error: (error: HttpErrorResponse) => {
+        if (requestId !== this.performanceOverviewRequestId) return;
+        this.performanceOverviewError.set(error);
+        this.performanceOverviewLoading.set(false);
+      },
+    });
+  }
+
+  loadPerformanceMetricDetail(
+    employeeId: number,
+    metricId: number,
+    filters?: PerformanceFilters,
+  ): void {
+    this.setPerformanceEmployee(employeeId);
+    const requestId = ++this.performanceMetricDetailRequestId;
+    this.performanceMetricDetail.set(null);
+    this.performanceMetricDetailLoading.set(true);
+    this.performanceMetricDetailError.set(null);
+    this.getPerformanceMetricDetail(employeeId, metricId, filters).subscribe({
+      next: (data) => {
+        if (requestId !== this.performanceMetricDetailRequestId) return;
+        this.performanceMetricDetail.set(data);
+        this.performanceMetricDetailLoading.set(false);
+      },
+      error: (error: HttpErrorResponse) => {
+        if (requestId !== this.performanceMetricDetailRequestId) return;
+        this.performanceMetricDetailError.set(error);
+        this.performanceMetricDetailLoading.set(false);
+      },
+    });
+  }
+
+  getEmployeePerformanceTasks(employeeId: number): Observable<EmployeePerformanceTask[]> {
+    return this.http.get<EmployeePerformanceTask[]>(`${API_BASE}/employees/${employeeId}/tasks`);
+  }
+
+  loadEmployeePerformanceTasks(employeeId: number): void {
+    this.setPerformanceEmployee(employeeId);
+    const requestId = ++this.performanceTasksRequestId;
+    this.performanceTasks.set(null);
+    this.performanceTasksLoading.set(true);
+    this.performanceTasksError.set(null);
+    this.getEmployeePerformanceTasks(employeeId).subscribe({
+      next: (data) => {
+        if (requestId !== this.performanceTasksRequestId) return;
+        this.performanceTasks.set(data);
+        this.performanceTasksLoading.set(false);
+      },
+      error: (error: HttpErrorResponse) => {
+        if (requestId !== this.performanceTasksRequestId) return;
+        this.performanceTasksError.set(error);
+        this.performanceTasksLoading.set(false);
+      },
+    });
+  }
+
+  clearEmployeePerformanceTasks(): void {
+    this.performanceTasksRequestId++;
+    this.performanceTasks.set(null);
+    this.performanceTasksLoading.set(false);
+    this.performanceTasksError.set(null);
+  }
+
+  private setPerformanceEmployee(employeeId: number): void {
+    if (this.performanceEmployeeId === employeeId) return;
+    // Invalidate independent request counters when the shared employee context changes.
+    this.clearPerformanceOverview();
+    this.clearPerformanceMetricDetail();
+    this.clearEmployeePerformanceTasks();
+    this.performanceEmployeeId = employeeId;
+  }
+
+  clearPerformanceOverview(): void {
+    this.performanceOverviewRequestId++;
+    this.performanceOverview.set(null);
+    this.performanceOverviewLoading.set(false);
+    this.performanceOverviewError.set(null);
+  }
+
+  clearPerformanceMetricDetail(): void {
+    this.performanceMetricDetailRequestId++;
+    this.performanceMetricDetail.set(null);
+    this.performanceMetricDetailLoading.set(false);
+    this.performanceMetricDetailError.set(null);
   }
 
   // Violations API
@@ -188,6 +338,7 @@ export class EmployeeDetailService {
 
   // Detail view store methods
   loadDetailEmployee(id: number): void {
+    this.setPerformanceEmployee(id);
     if (
       (!this.detailLoading() && this.detailEmployee()?.id === id) ||
       (this.detailLoading() && this.detailRequestedEmployeeId === id)
@@ -317,6 +468,10 @@ export class EmployeeDetailService {
   }
 
   clearDetailEmployee(): void {
+    this.clearPerformanceOverview();
+    this.clearPerformanceMetricDetail();
+    this.clearEmployeePerformanceTasks();
+    this.performanceEmployeeId = null;
     this.detailRequestId++;
     this.detailRequestedEmployeeId = null;
     this.detailEmployee.set(null);

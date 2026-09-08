@@ -21,7 +21,7 @@ public class UpdateEmployeePersonalInfoCommandHandler : IRequestHandler<UpdateEm
 
     public async Task<bool> Handle(UpdateEmployeePersonalInfoCommand request, CancellationToken cancellationToken)
     {
-        var employee = await _employeeRepository.GetByIdAsync(request.EmployeeId);
+        var employee = await _employeeRepository.GetByIdAsync(request.EmployeeId, cancellationToken);
 
         if (employee is null || employee.IsDeleted)
         {

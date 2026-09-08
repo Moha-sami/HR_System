@@ -21,7 +21,7 @@ public class DeleteEmployeeCommandHandler : IRequestHandler<DeleteEmployeeComman
 
     public async Task<bool> Handle(DeleteEmployeeCommand request, CancellationToken cancellationToken)
     {
-        var employee = await _employeeRepository.GetByIdAsync(request.Id);
+        var employee = await _employeeRepository.GetByIdAsync(request.Id, cancellationToken);
 
         if (employee is null || employee.IsDeleted)
         {

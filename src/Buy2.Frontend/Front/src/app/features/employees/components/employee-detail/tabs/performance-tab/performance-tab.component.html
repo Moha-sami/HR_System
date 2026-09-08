@@ -1,0 +1,223 @@
+<section id="panel-performance" aria-labelledby="tab-performance">
+  <h2>{{ 'EMPLOYEE_DETAIL.PERFORMANCE.TITLE' | translate }}</h2>
+  <div class="my-4 flex flex-wrap items-center gap-3">
+    <button type="button" [disabled]="!canNavigate()" (click)="navigatePeriod(-1)"
+      [attr.aria-label]="'EMPLOYEE_DETAIL.PERFORMANCE.PREVIOUS_PERIOD' | translate"
+      class="rounded border px-3 py-2 disabled:opacity-50">‹</button>
+    <label for="performance-period">{{ 'EMPLOYEE_DETAIL.PERFORMANCE.PERIOD' | translate }}</label>
+    <select id="performance-period" [value]="rangeLabel() ? 'custom' : selectedPeriod()" (change)="selectPeriod($event)"
+      class="rounded border px-3 py-2">
+      @if (rangeLabel(); as label) {
+        <option value="custom" disabled>{{ label }}</option>
+      }
+      @for (period of periods; track period.value) {
+        <option [value]="period.value">
+          {{ ('EMPLOYEE_DETAIL.PERFORMANCE.' + period.label) | translate }}
+        </option>
+      }
+    </select>
+    <button type="button" [disabled]="!canNavigate()" (click)="navigatePeriod(1)"
+      [attr.aria-label]="'EMPLOYEE_DETAIL.PERFORMANCE.NEXT_PERIOD' | translate"
+      class="rounded border px-3 py-2 disabled:opacity-50">›</button>
+  </div>
+  @if (loading()) {
+    <p role="status">{{ 'EMPLOYEE_DETAIL.PERFORMANCE.LOADING' | translate }}</p>
+  } @else if (error()) {
+    <div role="alert">
+      <p>{{ 'EMPLOYEE_DETAIL.PERFORMANCE.LOAD_ERROR' | translate }}</p>
+      <button type="button" (click)="retry()" class="mt-2 rounded border px-3 py-2">
+        {{ 'EMPLOYEE_DETAIL.PERFORMANCE.RETRY' | translate }}
+      </button>
+    </div>
+  } @else if (overview(); as data) {
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+      <article class="min-w-0 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm" aria-labelledby="performance-metrics-title">
+        <h3 id="performance-metrics-title" class="text-lg font-semibold text-gray-900">
+          {{ 'EMPLOYEE_DETAIL.PERFORMANCE.PERFORMANCE_METRICS' | translate }}
+        </h3>
+        <div class="my-6 flex flex-wrap items-center justify-center gap-6">
+          <svg viewBox="0 0 120 120" class="h-40 w-40 shrink-0" aria-hidden="true" focusable="false">
+            <circle cx="60" cy="60" r="48" fill="none" stroke="currentColor" stroke-width="16" class="text-gray-100" />
+            <circle cx="60" cy="60" r="48" fill="none" stroke="currentColor" stroke-width="16"
+              class="text-primary-600" pathLength="100" [attr.stroke-dasharray]="scoreProgress() + ' 100'"
+              transform="rotate(-90 60 60)" />
+          </svg>
+          <div class="min-w-0 text-center">
+            <p id="performance-score-label" class="text-sm text-gray-500">{{ 'EMPLOYEE_DETAIL.PERFORMANCE.PERFORMANCE_SCORE' | translate }}</p>
+            <p class="mt-2 break-words text-4xl font-semibold tabular-nums text-gray-900">{{ data.overallWeightedScore }}</p>
+            <p class="mt-3 text-sm font-medium text-primary-700">{{ ratingKey() | translate }}</p>
+          </div>
+        </div>
+        <div role="progressbar" aria-labelledby="performance-score-label" aria-valuemin="0" aria-valuemax="100"
+          [attr.aria-valuenow]="scoreProgress()" [attr.aria-valuetext]="data.overallWeightedScore"
+          class="h-2 overflow-hidden rounded-full bg-gray-100">
+          <div class="h-full rounded-full bg-primary-600" [style.width.%]="scoreProgress()"></div>
+        </div>
+        <div class="mt-2 flex justify-between text-xs tabular-nums text-gray-500"><span>0</span><span>100</span></div>
+      </article>
+
+      <article class="min-w-0 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm" aria-labelledby="task-completion-title">
+        <h3 id="task-completion-title" class="text-lg font-semibold text-gray-900">
+          {{ 'EMPLOYEE_DETAIL.PERFORMANCE.TASK_COMPLETION_RATE' | translate }}
+        </h3>
+        <div class="mt-8 space-y-8">
+          <div>
+            <div class="mb-3 flex flex-wrap items-center justify-between gap-2 text-sm">
+              <span id="deadline-compliance-label" class="text-gray-600">{{ 'EMPLOYEE_DETAIL.PERFORMANCE.DEADLINE_COMPLIANCE' | translate }}</span>
+              <span class="font-semibold tabular-nums text-gray-900">{{ displayPercentage(data.tasksSummary.deadlineCompliancePercentage) }}%</span>
+            </div>
+            <div role="progressbar" aria-labelledby="deadline-compliance-label" aria-valuemin="0" aria-valuemax="100"
+              [attr.aria-valuenow]="clampProgress(data.tasksSummary.deadlineCompliancePercentage)"
+              [attr.aria-valuetext]="displayPercentage(data.tasksSummary.deadlineCompliancePercentage) + '%'"
+              class="h-2 overflow-hidden rounded-full bg-gray-100">
+              <div class="h-full rounded-full bg-primary-600" [style.width.%]="clampProgress(data.tasksSummary.deadlineCompliancePercentage)"></div>
+            </div>
+          </div>
+          <div>
+            <div class="mb-3 flex flex-wrap items-center justify-between gap-2 text-sm">
+              <span id="completion-rate-label" class="text-gray-600">{{ 'EMPLOYEE_DETAIL.PERFORMANCE.TASK_COMPLETION_RATE' | translate }}</span>
+              <span class="font-semibold tabular-nums text-gray-900">{{ displayPercentage(completionRate()) }}%</span>
+            </div>
+            <div role="progressbar" aria-labelledby="completion-rate-label" aria-valuemin="0" aria-valuemax="100"
+              [attr.aria-valuenow]="clampProgress(completionRate())" [attr.aria-valuetext]="displayPercentage(completionRate()) + '%'"
+              class="h-2 overflow-hidden rounded-full bg-gray-100">
+              <div class="h-full rounded-full bg-primary-600" [style.width.%]="clampProgress(completionRate())"></div>
+            </div>
+          </div>
+        </div>
+        <dl class="mt-6 flex flex-wrap justify-between gap-4 border-t border-gray-100 pt-4 text-sm">
+          <div><dt class="text-gray-500">{{ 'EMPLOYEE_DETAIL.PERFORMANCE.COMPLETED_TASKS' | translate }}</dt><dd class="mt-1 font-semibold tabular-nums text-gray-900">{{ data.tasksSummary.completedCount }}</dd></div>
+          <div><dt class="text-gray-500">{{ 'EMPLOYEE_DETAIL.PERFORMANCE.TOTAL_TASKS' | translate }}</dt><dd class="mt-1 font-semibold tabular-nums text-gray-900">{{ data.tasksSummary.totalTasks }}</dd></div>
+        </dl>
+      </article>
+    </div>
+    <section class="mt-6" aria-labelledby="performance-achievements-title">
+      <h3 id="performance-achievements-title" class="mb-4 text-lg font-semibold text-gray-900">
+        {{ 'EMPLOYEE_DETAIL.PERFORMANCE.ACHIEVEMENTS' | translate }}
+      </h3>
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        @for (achievement of data.achievements; track $index) {
+          <article class="min-w-0 rounded-2xl border border-gray-200 bg-white p-5 text-center shadow-sm">
+            <div class="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-primary-50 text-primary-600">
+              @if (achievementIcon(achievement.iconUrl); as icon) {
+                <img [src]="icon" alt="" loading="lazy" referrerpolicy="no-referrer"
+                  class="h-10 w-10 object-contain" (error)="onAchievementIconError(icon)" />
+              } @else {
+                <svg viewBox="0 0 24 24" class="h-8 w-8" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true" focusable="false">
+                  <path d="M8 3h8v5a4 4 0 0 1-8 0V3Zm0 2H4v2a4 4 0 0 0 4 4m8-6h4v2a4 4 0 0 1-4 4M12 12v6m-4 3h8m-6-3h4v3h-4z" />
+                </svg>
+              }
+            </div>
+            <h4 class="break-words font-semibold text-gray-900">{{ achievement.title }}</h4>
+            <p class="mt-2 break-words text-sm text-gray-500">{{ achievement.description }}</p>
+            @if (achievement.pointsAwarded !== 0) {
+              <p class="mt-3 text-sm font-medium text-primary-700">
+                {{ 'EMPLOYEE_DETAIL.PERFORMANCE.POINTS_AWARDED' | translate }}: {{ achievement.pointsAwarded }}
+              </p>
+            }
+            <p class="mt-2 text-xs text-gray-500">
+              {{ 'EMPLOYEE_DETAIL.PERFORMANCE.EARNED_ON' | translate }}:
+              <time [attr.datetime]="achievement.earnedAt">{{ formatPerformanceDate(achievement.earnedAt) }}</time>
+            </p>
+          </article>
+        } @empty {
+          <p class="col-span-full rounded-xl border border-gray-200 bg-white p-6 text-sm text-gray-500">
+            {{ 'EMPLOYEE_DETAIL.PERFORMANCE.NO_ACHIEVEMENTS' | translate }}
+          </p>
+        }
+      </div>
+    </section>
+
+    <section class="mt-6 min-w-0 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm" aria-labelledby="performance-history-title">
+      <h3 id="performance-history-title" class="mb-6 text-lg font-semibold text-gray-900">
+        {{ 'EMPLOYEE_DETAIL.PERFORMANCE.PERFORMANCE_HISTORY' | translate }}
+      </h3>
+      @if (data.chartTrendPoints.length > 0) {
+        <div role="region" tabindex="0" [attr.aria-label]="'EMPLOYEE_DETAIL.PERFORMANCE.PERFORMANCE_CHART' | translate"
+          class="overflow-x-auto rounded focus-visible:outline-2 focus-visible:outline-primary-600">
+          <ul dir="ltr" class="flex w-full list-none gap-3 p-0 pb-2">
+            @for (point of data.chartTrendPoints; track $index) {
+              <li dir="auto" class="min-w-16 flex-1 text-center">
+                <span class="sr-only">{{ formatPerformanceDate(point.date) }} — {{ 'EMPLOYEE_DETAIL.PERFORMANCE.SCORE' | translate }}: {{ point.score }}</span>
+                <div aria-hidden="true" class="mb-2 text-xs font-medium tabular-nums text-gray-700">{{ point.score }}</div>
+                <div class="flex h-48 items-end justify-center border-b border-gray-200"
+                  [attr.title]="formatPerformanceDate(point.date) + ', ' + ('EMPLOYEE_DETAIL.PERFORMANCE.SCORE' | translate) + ': ' + point.score">
+                  <div class="w-full max-w-12 rounded-t bg-primary-500" [style.height.%]="clampProgress(point.score)" aria-hidden="true"></div>
+                </div>
+                <div aria-hidden="true" class="mt-3 min-h-10 text-xs text-gray-500">
+                  @if (showChartDate($index, data.chartTrendPoints.length)) {
+                    <time [attr.datetime]="point.date">{{ formatPerformanceDate(point.date) }}</time>
+                  }
+                </div>
+              </li>
+            }
+          </ul>
+        </div>
+      } @else {
+        <p class="py-8 text-center text-sm text-gray-500">{{ 'EMPLOYEE_DETAIL.PERFORMANCE.NO_PERFORMANCE_DATA' | translate }}</p>
+      }
+    </section>
+  }
+  <section class="mt-6" aria-labelledby="employee-tasks-title">
+    <h3 id="employee-tasks-title" class="mb-4 text-lg font-semibold text-gray-900">
+      {{ 'EMPLOYEE_DETAIL.PERFORMANCE.EMPLOYEE_TASKS' | translate }}
+    </h3>
+    @if (tasksLoading()) {
+      <p role="status" class="rounded-xl border border-gray-200 bg-white p-6 text-sm text-gray-500">
+        {{ 'EMPLOYEE_DETAIL.PERFORMANCE.TASKS_LOADING' | translate }}
+      </p>
+    } @else if (tasksError()) {
+      <div role="alert" class="rounded-xl border border-gray-200 bg-white p-6">
+        <p class="text-sm text-red-600">{{ 'EMPLOYEE_DETAIL.PERFORMANCE.TASKS_LOAD_ERROR' | translate }}</p>
+        <button type="button" (click)="retryTasks()" class="mt-3 rounded border px-3 py-2">
+          {{ 'EMPLOYEE_DETAIL.PERFORMANCE.RETRY' | translate }}
+        </button>
+      </div>
+    } @else if (tasks(); as employeeTasks) {
+      @if (employeeTasks.length === 0) {
+        <p class="rounded-xl border border-gray-200 bg-white p-6 text-sm text-gray-500">
+          {{ 'EMPLOYEE_DETAIL.PERFORMANCE.NO_EMPLOYEE_TASKS' | translate }}
+        </p>
+      } @else {
+        <div role="region" tabindex="0" aria-labelledby="employee-tasks-title"
+          class="overflow-x-auto rounded-xl pb-3 focus-visible:outline-2 focus-visible:outline-primary-600">
+          <div class="grid grid-cols-5 gap-4" style="min-width: 1120px">
+            @for (column of taskColumns(); track column.status) {
+              <section class="min-w-0 rounded-xl border border-gray-200 bg-gray-100 p-3"
+                [attr.aria-labelledby]="'task-status-' + column.status">
+                <div class="mb-4 flex items-center justify-between gap-2">
+                  <h4 [id]="'task-status-' + column.status" class="text-sm font-semibold text-gray-900">
+                    {{ ('EMPLOYEE_DETAIL.PERFORMANCE.' + column.label) | translate }}
+                  </h4>
+                  <span class="rounded-full bg-white px-2 py-1 text-xs font-medium tabular-nums text-gray-600">{{ column.tasks.length }}</span>
+                </div>
+                <ul class="space-y-3">
+                  @for (task of column.tasks; track task.id) {
+                    <li>
+                      <article class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
+                        <h5 class="break-words text-sm font-semibold text-gray-900">{{ task.title }}</h5>
+                        @if (task.description?.trim()) {
+                          <p class="mt-2 whitespace-pre-line break-words text-sm text-gray-500">{{ task.description }}</p>
+                        }
+                        @if (task.dueDate) {
+                          <p class="mt-3 text-xs text-gray-500">
+                            {{ 'EMPLOYEE_DETAIL.PERFORMANCE.DUE_DATE' | translate }}:
+                            <time [attr.datetime]="task.dueDate">{{ formatPerformanceDate(task.dueDate) }}</time>
+                          </p>
+                        }
+                      </article>
+                    </li>
+                  } @empty {
+                    <li class="py-4 text-center text-xs text-gray-500">
+                      {{ 'EMPLOYEE_DETAIL.PERFORMANCE.NO_TASKS_IN_STATUS' | translate }}
+                    </li>
+                  }
+                </ul>
+              </section>
+            }
+          </div>
+        </div>
+      }
+    }
+  </section>
+</section>

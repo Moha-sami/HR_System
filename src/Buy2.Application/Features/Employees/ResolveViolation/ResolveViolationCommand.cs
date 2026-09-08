@@ -33,7 +33,7 @@ public class ResolveViolationCommandHandler : IRequestHandler<ResolveViolationCo
 
     public async Task<ResolveViolationResult> Handle(ResolveViolationCommand request, CancellationToken cancellationToken)
     {
-        var employee = await _employeeRepository.GetByIdAsync(request.EmployeeId);
+        var employee = await _employeeRepository.GetByIdAsync(request.EmployeeId, cancellationToken);
         if (employee is null || employee.IsDeleted)
         {
             return ResolveViolationResult.NotFound($"Employee with ID {request.EmployeeId} was not found.");

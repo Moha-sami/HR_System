@@ -269,7 +269,7 @@ public class BulkOnboardCommandHandler : IRequestHandler<BulkOnboardCommand, Bul
         // 4. Save valid employees in batch
         foreach (var emp in validEmployees)
         {
-            await _employeeRepository.AddAsync(emp);
+            await _employeeRepository.AddAsync(emp, cancellationToken);
         }
 
         if (validEmployees.Count > 0)

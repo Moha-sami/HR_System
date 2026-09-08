@@ -20,13 +20,13 @@ public class EmployeeDocumentsController : ControllerBase
     [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<ActionResult<int>> Upload(int id, [FromBody] UploadEmployeeDocumentCommand command)
+    public async Task<ActionResult<int>> Upload(int id, [FromBody] UploadEmployeeDocumentCommand command, CancellationToken cancellationToken)
     {
         if (id != command.EmployeeId)
         {
             return BadRequest("Employee Id Does Not Match!");
         }
-        var documentId = await _mediator.Send(command);
+        var documentId = await _mediator.Send(command, cancellationToken);
 
         return Ok(documentId);
     }

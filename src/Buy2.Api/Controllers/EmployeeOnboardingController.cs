@@ -22,9 +22,9 @@ public class EmployeeOnboardingController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<ActionResult<int>> Onboard(OnboardEmployeeCommand command)
+    public async Task<ActionResult<int>> Onboard(OnboardEmployeeCommand command, CancellationToken cancellationToken)
     {
-        var employeeId = await _mediator.Send(command);
+        var employeeId = await _mediator.Send(command, cancellationToken);
 
         return Created($"/api/v1/employees/{employeeId}", employeeId);
     }

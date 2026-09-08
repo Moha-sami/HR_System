@@ -27,7 +27,7 @@ public class ClaimShiftCommandHandler : IRequestHandler<ClaimShiftCommand, bool>
 
     public async Task<bool> Handle(ClaimShiftCommand command, CancellationToken cancellationToken)
     {
-        var shift = await _shiftRepository.GetByIdAsync(command.ShiftId);
+        var shift = await _shiftRepository.GetByIdAsync(command.ShiftId, cancellationToken);
 
         if (shift is null)
         {
@@ -50,7 +50,7 @@ public class ClaimShiftCommandHandler : IRequestHandler<ClaimShiftCommand, bool>
             OvertimeJustification = command.OvertimeJustification
         };
 
-        await _shiftClaimRepositroy.AddAsync(shiftClam);
+        await _shiftClaimRepositroy.AddAsync(shiftClam, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return true;

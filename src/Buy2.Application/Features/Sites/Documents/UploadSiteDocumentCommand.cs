@@ -92,7 +92,7 @@ public class UploadSiteDocumentCommandHandler : IRequestHandler<UploadSiteDocume
             UploadedAt = DateTimeOffset.UtcNow
         };
 
-        await _siteDocumentRepository.AddAsync(document);
+        await _siteDocumentRepository.AddAsync(document, cancellation);
         await _unitOfWork.SaveChangesAsync(cancellation);
 
         var url = $"/api/v1/sites/{command.SiteId}/documents/{document.Id}";

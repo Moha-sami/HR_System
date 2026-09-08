@@ -161,7 +161,7 @@ public class UpdatePayrollProfileCommandHandler : IRequestHandler<UpdatePayrollP
 
         if (isNewPayroll)
         {
-            await _payrollProfileRepository.AddAsync(payroll);
+            await _payrollProfileRepository.AddAsync(payroll, cancellationToken);
             employee.PayrollProfile = payroll;
         }
         else

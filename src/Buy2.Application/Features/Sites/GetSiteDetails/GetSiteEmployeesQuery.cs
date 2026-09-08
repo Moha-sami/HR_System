@@ -20,7 +20,7 @@ public class GetSiteEmployeesQueryHandler : IRequestHandler<GetSiteEmployeesQuer
     {
         var site = await _siteRepository
             .Query(false)
-            .AnyAsync(s => s.Id == query.SiteId);
+            .AnyAsync(s => s.Id == query.SiteId, cancellation);
         if (!site)
         {
             throw new KeyNotFoundException("Site not found.");

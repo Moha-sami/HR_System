@@ -77,7 +77,7 @@ public class CreateManualPointsTransactionCommandHandler : IRequestHandler<Creat
             CreatedAt = DateTimeOffset.UtcNow
         };
 
-        await _pointsTransactionRepository.AddAsync(transaction);
+        await _pointsTransactionRepository.AddAsync(transaction, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return new CreateManualPointsTransactionResult(

@@ -32,7 +32,7 @@ public class PointsAutomationDispatcher
 
     [DisableConcurrentExecution(3600)]
     [AutomaticRetry(Attempts = 0)]
-    public async Task DispatchDailyAsync()
+    public async Task DispatchDailyAsync(CancellationToken cancellationToken = default)
     {
         if (!_options.Enabled)
         {
@@ -47,7 +47,7 @@ public class PointsAutomationDispatcher
             .AsNoTracking()
             .Where(s => s.IsEnabled)
             .Select(s => new { s.Category, s.AutomationPeriod })
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
 
         foreach (var group in enabledSettings.GroupBy(s => s.Category))
         {
@@ -65,7 +65,7 @@ public class PointsAutomationDispatcher
 
             try
             {
-                await RunCategoryCatchUpAsync(category, period, todayCairo, cairoTimeZone);
+                await RunCategoryCatchUpAsync(category, period, todayCairo, cairoTimeZone, cancellationToken);
             }
             catch (Exception ex)
             {
@@ -80,7 +80,8 @@ public class PointsAutomationDispatcher
         AutomationCategory category,
         AutomationPeriod period,
         DateOnly todayCairo,
-        TimeZoneInfo cairoTimeZone)
+        TimeZoneInfo cairoTimeZone,
+        CancellationToken cancellationToken = default)
     {
         var maxWindows = Math.Max(1, _options.MaxCatchUpWindowsPerPeriod);
 
@@ -97,7 +98,7 @@ public class PointsAutomationDispatcher
                     && r.Status == AutomationRunStatus.Completed)
                 .OrderByDescending(r => r.PeriodEnd)
                 .Select(r => (DateTimeOffset?)r.PeriodEnd)
-                .FirstOrDefaultAsync();
+                .FirstOrDefaultAsync(cancellationToken);
 
             DateOnly? anchorEndCairo = lastCompletedEndUtc.HasValue
                 ? CairoPeriodResolver.ToCairoDate(lastCompletedEndUtc.Value, cairoTimeZone)
@@ -115,7 +116,7 @@ public class PointsAutomationDispatcher
                 "Points automation starting for category {Category} period {Period} [{Start} - {End}].",
                 category, period, window.StartUtc, window.EndUtc);
 
-            var result = await _runner.RunAsync(category, period, window.StartUtc, window.EndUtc);
+            var result = await _runner.RunAsync(category, period, window.StartUtc, window.EndUtc, cancellationToken);
 
             if (result is null)
             {

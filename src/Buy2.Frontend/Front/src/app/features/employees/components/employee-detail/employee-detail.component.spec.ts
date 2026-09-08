@@ -82,12 +82,9 @@ describe('EmployeeDetailComponent', () => {
   });
 
   it('should have correct tabs configuration (payroll lives inside information)', () => {
-    expect(component.tabs.length).toBe(5);
-    expect(component.tabs[0].id).toBe('information');
-    expect(component.tabs[1].id).toBe('attendance');
-    expect(component.tabs[2].id).toBe('documents');
-    expect(component.tabs[3].id).toBe('violations');
-    expect(component.tabs[4].id).toBe('points-rewards');
+    expect(component.tabs.map(tab => tab.id)).toEqual([
+      'information', 'performance', 'attendance', 'documents', 'violations', 'points-rewards',
+    ]);
   });
 
   it('should format gender correctly', () => {
