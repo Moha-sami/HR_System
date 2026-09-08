@@ -9,6 +9,7 @@ using Buy2.Application.Features.Sites.GetSites;
 using Buy2.Application.Features.Sites.Regions;
 using Buy2.Application.Features.Sites.UpdateSite;
 using Buy2.Application.Features.Sites.UpdateSiteAutomationSettings;
+using Buy2.Application.Features.Sites.UpdateSiteSmartSettings;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -102,6 +103,24 @@ public class GetSitesController : ControllerBase
         await _mediator.Send(command, cancellation);
         return Ok();
     }
+
+    // Update Site Smart Settings
+    [HttpPatch("{siteId}/smart-settings")]
+    [Authorize(Roles = "Admin,Manager,OperationsManager")]
+    [ProducesResponseType(typeof(SiteSmartSettingsResponseDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<SiteSmartSettingsResponseDto>> UpdateSiteSmartSettings(
+        int siteId,
+        [FromBody] UpdateSiteAutomationSettingsDto dto,
+        CancellationToken cancellation)
+    {
+        var command = new UpdateSiteSmartSettingsCommand(siteId, dto.IsSmartAssignmentEnabled, dto.IsSmartPostingEnabled);
+        var result = await _mediator.Send(command, cancellation);
+        return Ok(result);
+    }
+
 
     // Deletion Check
     [HttpGet("{id}/deletion-check")]

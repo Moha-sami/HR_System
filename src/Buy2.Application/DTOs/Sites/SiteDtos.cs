@@ -124,4 +124,7 @@ public record SiteShiftCoverageOverviewDto(
 public record UpdateSiteAutomationSettingsDto(
     bool? IsSmartAssignmentEnabled,
     bool? IsSmartPostingEnabled
-);
+);
+
+public record SiteSmartSettingsResponseDto(int SiteId, bool IsSmartAssignmentEnabled, bool IsSmartPostingEnabled);
+
