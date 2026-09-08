@@ -22,3 +22,45 @@ public record ShiftTemplatePaginatedResponseDto<T>(
     int PageSize,
     int TotalPages
 );
+
+public record CreateShiftTemplateBlockDto(
+    string StartTime,
+    string EndTime,
+    int JobRoleId,
+    int AssignedUserId
+);
+
+public record CreateShiftTemplateDto(
+    string Name,
+    List<int> SiteIds,
+    string StartTime,
+    string EndTime,
+    List<CreateShiftTemplateBlockDto> ShiftBlocks
+);
+
+public record ShiftTemplateSiteItemDto(
+    int SiteId,
+    string SiteName
+);
+
+public record ShiftTemplateBlockDetailsDto(
+    int Id,
+    string StartTime,
+    string EndTime,
+    int JobRoleId,
+    string JobRoleTitle,
+    int AssignedUserId,
+    string AssignedUserName
+);
+
+public record ShiftTemplateDetailsDto(
+    int Id,
+    string Name,
+    string StartTime,
+    string EndTime,
+    string CreationDate,
+    string LastUpdated,
+    int NumberOfAssignedSites,
+    List<ShiftTemplateSiteItemDto> Sites,
+    List<ShiftTemplateBlockDetailsDto> ShiftBlocks
+);
