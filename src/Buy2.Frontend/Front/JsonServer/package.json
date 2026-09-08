@@ -1,0 +1,16 @@
+{
+  "name": "hr-system-mock-api",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Mock JSON API for the HR System frontend (jobs, rewards, points lookups).",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "json-server --watch data.json --host 0.0.0.0 --port ${PORT:-3000}"
+  },
+  "dependencies": {
+    "json-server": "^1.0.0-beta.3"
+  }
+}
