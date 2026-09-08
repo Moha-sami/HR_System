@@ -45,3 +45,11 @@ public record RewardUpdateDto(
     string HowToRedeem,
     string TermsOfUse
 );
+
+// Page Result
+public record PageResultDto<T>(
+    ICollection<T> Items,
+    int TotalCount,
+    int Page,
+    int PageSize
+);
