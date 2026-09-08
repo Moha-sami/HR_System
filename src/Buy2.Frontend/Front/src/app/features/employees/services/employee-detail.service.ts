@@ -1,18 +1,17 @@
 import { inject, Injectable, signal } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
 import type { Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import type {
   EmployeeProfileDto,
-  UpdatePersonalInfoRequestDto,
-  UpdatePersonalInfoWrapperDto,
-  UpdateJobDetailsRequestDto,
-  UpdateJobDetailsWrapperDto,
-} from '../models/view-employee/employee-profile';
-import type {
+  UpdatePersonalInfoRequest,
+  UpdateJobDetailsRequest,
+  UpdatePayrollProfileRequest,
   EmployeePayrollProfileDto,
-  UpdatePayrollProfileDto,
-} from '../models/view-employee/employee-payroll';
+  JobLookupResponse,
+  ManagerLookupResponse,
+  SiteLookupRow,
+} from '../models/view-employee/information-tab.models';
 import type { AttendanceCalendarDto } from '../models/view-employee/employee-attendance';
 import type {
   ViolationDto,
@@ -20,12 +19,42 @@ import type {
   ViolationDetailDto,
   ResolveViolationDto,
 } from '../models/view-employee/employee-violations';
+import type {
+  EmployeePointsSummary,
+  EmployeePointsTransactionFilters,
+  PaginatedEmployeePointsTransactions,
+} from '../models/view-employee/employee-points';
+
+import type {
+  EmployeePerformanceOverview,
+  PerformanceFilters,
+} from '../models/view-employee/employee-performance';
+import type { EmployeePerformanceMetricDetail } from '../models/view-employee/employee-performance-metric';
+import type { EmployeePerformanceTask } from '../models/view-employee/employee-performance-task';
 
 const API_BASE = environment.baseUrl;
 
 @Injectable({ providedIn: 'root' })
 export class EmployeeDetailService {
   private readonly http = inject(HttpClient);
+  private detailRequestId = 0;
+  private detailRequestedEmployeeId: number | null = null;
+  private pointsSummaryRequestId = 0;
+  private pointsTransactionsRequestId = 0;
+  private performanceOverviewRequestId = 0;
+  private performanceMetricDetailRequestId = 0;
+  private performanceTasksRequestId = 0;
+  private performanceEmployeeId: number | null = null;
+
+  readonly performanceOverview = signal<EmployeePerformanceOverview | null>(null);
+  readonly performanceOverviewLoading = signal(false);
+  readonly performanceOverviewError = signal<HttpErrorResponse | null>(null);
+  readonly performanceMetricDetail = signal<EmployeePerformanceMetricDetail | null>(null);
+  readonly performanceMetricDetailLoading = signal(false);
+  readonly performanceMetricDetailError = signal<HttpErrorResponse | null>(null);
+  readonly performanceTasks = signal<readonly EmployeePerformanceTask[] | null>(null);
+  readonly performanceTasksLoading = signal(false);
+  readonly performanceTasksError = signal<HttpErrorResponse | null>(null);
 
   // Detail view store
   readonly detailEmployee = signal<EmployeeProfileDto | null>(null);
@@ -47,6 +76,14 @@ export class EmployeeDetailService {
   readonly violationDetailLoading = signal(false);
   readonly violationDetailError = signal<string | null>(null);
 
+  // Points & Rewards store
+  readonly pointsSummary = signal<EmployeePointsSummary | null>(null);
+  readonly pointsSummaryLoading = signal(false);
+  readonly pointsSummaryError = signal<string | null>(null);
+  readonly pointsTransactions = signal<PaginatedEmployeePointsTransactions | null>(null);
+  readonly pointsTransactionsLoading = signal(false);
+  readonly pointsTransactionsError = signal<string | null>(null);
+
   // Profile API
   getEmployeeProfile(id: number): Observable<EmployeeProfileDto> {
     return this.http.get<EmployeeProfileDto>(`${API_BASE}/employees/${id}`);
@@ -65,6 +102,158 @@ export class EmployeeDetailService {
     return this.http.get<AttendanceCalendarDto>(`${API_BASE}/employees/${id}/attendance/calendar`, {
       params: { month, year },
     });
+  }
+
+  getEmployeePointsSummary(id: number): Observable<EmployeePointsSummary> {
+    return this.http.get<EmployeePointsSummary>(`${API_BASE}/employees/${id}/points/summary`);
+  }
+
+  getEmployeePointsTransactions(
+    id: number,
+    filters: EmployeePointsTransactionFilters,
+  ): Observable<PaginatedEmployeePointsTransactions> {
+    let params = new HttpParams()
+      .set('page', filters.page.toString())
+      .set('pageSize', filters.pageSize.toString());
+
+    if (filters.type) params = params.set('type', filters.type);
+    if (filters.triggeredBy?.trim()) params = params.set('triggeredBy', filters.triggeredBy.trim());
+    if (filters.dateFrom) params = params.set('dateFrom', filters.dateFrom);
+    if (filters.dateTo) params = params.set('dateTo', filters.dateTo);
+
+    return this.http.get<PaginatedEmployeePointsTransactions>(
+      `${API_BASE}/employees/${id}/points/transactions`,
+      { params },
+    );
+  }
+
+  getPerformanceOverview(
+    employeeId: number,
+    filters?: PerformanceFilters,
+  ): Observable<EmployeePerformanceOverview> {
+    return this.http.get<EmployeePerformanceOverview>(
+      `${API_BASE}/employees/${employeeId}/performance/overview`,
+      { params: this.performanceParams(filters) },
+    );
+  }
+
+  getPerformanceMetricDetail(
+    employeeId: number,
+    metricId: number,
+    filters?: PerformanceFilters,
+  ): Observable<EmployeePerformanceMetricDetail> {
+    return this.http.get<EmployeePerformanceMetricDetail>(
+      `${API_BASE}/employees/${employeeId}/performance/metrics/${metricId}`,
+      { params: this.performanceParams(filters) },
+    );
+  }
+
+  private performanceParams(filters: PerformanceFilters = {}): HttpParams {
+    let params = new HttpParams();
+    for (const key of ['period', 'from', 'to'] as const) {
+      const value = filters[key]?.trim();
+      if (value) params = params.set(key, value);
+    }
+    if (filters.days !== undefined) params = params.set('days', filters.days);
+    return params;
+  }
+
+  loadPerformanceOverview(employeeId: number, filters?: PerformanceFilters): void {
+    this.setPerformanceEmployee(employeeId);
+    const requestId = ++this.performanceOverviewRequestId;
+    this.performanceOverview.set(null);
+    this.performanceOverviewLoading.set(true);
+    this.performanceOverviewError.set(null);
+    this.getPerformanceOverview(employeeId, filters).subscribe({
+      next: (data) => {
+        if (requestId !== this.performanceOverviewRequestId) return;
+        this.performanceOverview.set(data);
+        this.performanceOverviewLoading.set(false);
+      },
+      error: (error: HttpErrorResponse) => {
+        if (requestId !== this.performanceOverviewRequestId) return;
+        this.performanceOverviewError.set(error);
+        this.performanceOverviewLoading.set(false);
+      },
+    });
+  }
+
+  loadPerformanceMetricDetail(
+    employeeId: number,
+    metricId: number,
+    filters?: PerformanceFilters,
+  ): void {
+    this.setPerformanceEmployee(employeeId);
+    const requestId = ++this.performanceMetricDetailRequestId;
+    this.performanceMetricDetail.set(null);
+    this.performanceMetricDetailLoading.set(true);
+    this.performanceMetricDetailError.set(null);
+    this.getPerformanceMetricDetail(employeeId, metricId, filters).subscribe({
+      next: (data) => {
+        if (requestId !== this.performanceMetricDetailRequestId) return;
+        this.performanceMetricDetail.set(data);
+        this.performanceMetricDetailLoading.set(false);
+      },
+      error: (error: HttpErrorResponse) => {
+        if (requestId !== this.performanceMetricDetailRequestId) return;
+        this.performanceMetricDetailError.set(error);
+        this.performanceMetricDetailLoading.set(false);
+      },
+    });
+  }
+
+  getEmployeePerformanceTasks(employeeId: number): Observable<EmployeePerformanceTask[]> {
+    return this.http.get<EmployeePerformanceTask[]>(`${API_BASE}/employees/${employeeId}/tasks`);
+  }
+
+  loadEmployeePerformanceTasks(employeeId: number): void {
+    this.setPerformanceEmployee(employeeId);
+    const requestId = ++this.performanceTasksRequestId;
+    this.performanceTasks.set(null);
+    this.performanceTasksLoading.set(true);
+    this.performanceTasksError.set(null);
+    this.getEmployeePerformanceTasks(employeeId).subscribe({
+      next: (data) => {
+        if (requestId !== this.performanceTasksRequestId) return;
+        this.performanceTasks.set(data);
+        this.performanceTasksLoading.set(false);
+      },
+      error: (error: HttpErrorResponse) => {
+        if (requestId !== this.performanceTasksRequestId) return;
+        this.performanceTasksError.set(error);
+        this.performanceTasksLoading.set(false);
+      },
+    });
+  }
+
+  clearEmployeePerformanceTasks(): void {
+    this.performanceTasksRequestId++;
+    this.performanceTasks.set(null);
+    this.performanceTasksLoading.set(false);
+    this.performanceTasksError.set(null);
+  }
+
+  private setPerformanceEmployee(employeeId: number): void {
+    if (this.performanceEmployeeId === employeeId) return;
+    // Invalidate independent request counters when the shared employee context changes.
+    this.clearPerformanceOverview();
+    this.clearPerformanceMetricDetail();
+    this.clearEmployeePerformanceTasks();
+    this.performanceEmployeeId = employeeId;
+  }
+
+  clearPerformanceOverview(): void {
+    this.performanceOverviewRequestId++;
+    this.performanceOverview.set(null);
+    this.performanceOverviewLoading.set(false);
+    this.performanceOverviewError.set(null);
+  }
+
+  clearPerformanceMetricDetail(): void {
+    this.performanceMetricDetailRequestId++;
+    this.performanceMetricDetail.set(null);
+    this.performanceMetricDetailLoading.set(false);
+    this.performanceMetricDetailError.set(null);
   }
 
   // Violations API
@@ -110,36 +299,66 @@ export class EmployeeDetailService {
     });
   }
 
-  // Update API methods
-  updatePersonalInfo(id: number, dto: UpdatePersonalInfoRequestDto): Observable<void> {
-    const wrapper: UpdatePersonalInfoWrapperDto = { dto };
-    return this.http.put<void>(`${API_BASE}/employees/${id}/personal`, wrapper);
+  // Update API methods (backend expects bare flat DTOs, no wrapper object)
+  updatePersonalInfo(id: number, dto: UpdatePersonalInfoRequest): Observable<void> {
+    return this.http.put<void>(`${API_BASE}/employees/${id}/personal`, dto);
   }
 
-  updateJobDetails(id: number, dto: UpdateJobDetailsRequestDto): Observable<void> {
-    const wrapper: UpdateJobDetailsWrapperDto = { dto };
-    return this.http.put<void>(`${API_BASE}/employees/${id}/job`, wrapper);
+  updateJobDetails(id: number, dto: UpdateJobDetailsRequest): Observable<void> {
+    return this.http.put<void>(`${API_BASE}/employees/${id}/job`, dto);
   }
 
-  updatePayrollProfile(id: number, dto: UpdatePayrollProfileDto): Observable<void> {
+  updatePayrollProfile(id: number, dto: UpdatePayrollProfileRequest): Observable<void> {
     return this.http.put<void>(`${API_BASE}/employees/${id}/payroll`, dto);
+  }
+
+  // Lookup APIs backing the Information Tab dropdowns
+  getJobsLookup(pageNumber = 1, pageSize = 100): Observable<JobLookupResponse> {
+    const params = new HttpParams()
+      .set('pageNumber', pageNumber.toString())
+      .set('pageSize', pageSize.toString());
+    return this.http.get<JobLookupResponse>(`${API_BASE}/jobs`, { params });
+  }
+
+  getEmployeesLookup(
+    page = 1,
+    pageSize = 50,
+    search?: string,
+  ): Observable<ManagerLookupResponse> {
+    let params = new HttpParams()
+      .set('page', page.toString())
+      .set('pageSize', pageSize.toString());
+    if (search?.trim()) params = params.set('search', search.trim());
+    return this.http.get<ManagerLookupResponse>(`${API_BASE}/employees`, { params });
+  }
+
+  getSitesLookup(): Observable<readonly SiteLookupRow[]> {
+    return this.http.get<readonly SiteLookupRow[]>(`${API_BASE}/sites`);
   }
 
   // Detail view store methods
   loadDetailEmployee(id: number): void {
-    if (this.detailLoading() || this.detailEmployee()?.id === id) {
+    this.setPerformanceEmployee(id);
+    if (
+      (!this.detailLoading() && this.detailEmployee()?.id === id) ||
+      (this.detailLoading() && this.detailRequestedEmployeeId === id)
+    ) {
       return;
     }
 
+    const requestId = ++this.detailRequestId;
+    this.detailRequestedEmployeeId = id;
     this.detailLoading.set(true);
     this.detailError.set(null);
 
     this.getEmployeeProfile(id).subscribe({
       next: (data) => {
+        if (requestId !== this.detailRequestId || this.detailRequestedEmployeeId !== id) return;
         this.detailEmployee.set(data);
         this.detailLoading.set(false);
       },
       error: () => {
+        if (requestId !== this.detailRequestId || this.detailRequestedEmployeeId !== id) return;
         this.detailError.set('EMPLOYEE_DETAIL.LOAD_FAILED');
         this.detailLoading.set(false);
       },
@@ -158,6 +377,52 @@ export class EmployeeDetailService {
       error: () => {
         this.attendanceError.set('EMPLOYEE_DETAIL.ATTENDANCE_LOAD_FAILED');
         this.attendanceLoading.set(false);
+      },
+    });
+  }
+
+  loadEmployeePointsSummary(id: number): void {
+    const requestId = ++this.pointsSummaryRequestId;
+    this.pointsSummary.set(null);
+    this.pointsSummaryLoading.set(true);
+    this.pointsSummaryError.set(null);
+
+    this.getEmployeePointsSummary(id).subscribe({
+      next: (data) => {
+        if (this.detailEmployee()?.id !== id || requestId !== this.pointsSummaryRequestId) return;
+        this.pointsSummary.set(data);
+        this.pointsSummaryLoading.set(false);
+      },
+      error: () => {
+        if (this.detailEmployee()?.id !== id || requestId !== this.pointsSummaryRequestId) return;
+        this.pointsSummaryError.set('EMPLOYEE_DETAIL.POINTS_REWARDS.SUMMARY_ERROR');
+        this.pointsSummaryLoading.set(false);
+      },
+    });
+  }
+
+  loadEmployeePointsTransactions(id: number, filters: EmployeePointsTransactionFilters): void {
+    const requestId = ++this.pointsTransactionsRequestId;
+    this.pointsTransactions.set(null);
+    this.pointsTransactionsLoading.set(true);
+    this.pointsTransactionsError.set(null);
+
+    this.getEmployeePointsTransactions(id, filters).subscribe({
+      next: (data) => {
+        if (
+          this.detailEmployee()?.id !== id ||
+          requestId !== this.pointsTransactionsRequestId
+        ) return;
+        this.pointsTransactions.set(data);
+        this.pointsTransactionsLoading.set(false);
+      },
+      error: () => {
+        if (
+          this.detailEmployee()?.id !== id ||
+          requestId !== this.pointsTransactionsRequestId
+        ) return;
+        this.pointsTransactionsError.set('EMPLOYEE_DETAIL.POINTS_REWARDS.TRANSACTIONS_ERROR');
+        this.pointsTransactionsLoading.set(false);
       },
     });
   }
@@ -203,6 +468,12 @@ export class EmployeeDetailService {
   }
 
   clearDetailEmployee(): void {
+    this.clearPerformanceOverview();
+    this.clearPerformanceMetricDetail();
+    this.clearEmployeePerformanceTasks();
+    this.performanceEmployeeId = null;
+    this.detailRequestId++;
+    this.detailRequestedEmployeeId = null;
     this.detailEmployee.set(null);
     this.detailLoading.set(false);
     this.detailError.set(null);
@@ -224,6 +495,17 @@ export class EmployeeDetailService {
     this.violationDetail.set(null);
     this.violationDetailLoading.set(false);
     this.violationDetailError.set(null);
+  }
+
+  clearEmployeePoints(): void {
+    this.pointsSummaryRequestId++;
+    this.pointsTransactionsRequestId++;
+    this.pointsSummary.set(null);
+    this.pointsSummaryLoading.set(false);
+    this.pointsSummaryError.set(null);
+    this.pointsTransactions.set(null);
+    this.pointsTransactionsLoading.set(false);
+    this.pointsTransactionsError.set(null);
   }
 
   updateDetailEmployee(partial: Partial<EmployeeProfileDto>): void {

@@ -2,8 +2,16 @@ import { type ComponentFixture, TestBed } from '@angular/core/testing';
 import { of, type Observable } from 'rxjs';
 import { ViolationsTabComponent } from './violations-tab.component';
 import { EmployeeDetailService } from '../../../../services/employee-detail.service';
-import { TranslatePipe } from '@ngx-translate/core';
-import { signal } from '@angular/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
+import { Router } from '@angular/router';
+import { Pipe, type PipeTransform, signal } from '@angular/core';
+
+@Pipe({ name: 'translate', standalone: true })
+class MockTranslatePipe implements PipeTransform {
+  transform(value: string): string {
+    return value;
+  }
+}
 
 describe('ViolationsTabComponent', () => {
   let component: ViolationsTabComponent;
@@ -64,10 +72,15 @@ describe('ViolationsTabComponent', () => {
 
     await TestBed.configureTestingModule({
       imports: [ViolationsTabComponent],
-      providers: [{ provide: EmployeeDetailService, useValue: mockEmployeeDetailService }],
+      providers: [
+        { provide: EmployeeDetailService, useValue: mockEmployeeDetailService },
+        { provide: TranslateService, useValue: { instant: (key: string) => key, onLangChange: of({}) } },
+        { provide: Router, useValue: { navigate: () => Promise.resolve(true) } },
+      ],
     })
       .overrideComponent(ViolationsTabComponent, {
         remove: { imports: [TranslatePipe] },
+        add: { imports: [MockTranslatePipe] },
       })
       .compileComponents();
 

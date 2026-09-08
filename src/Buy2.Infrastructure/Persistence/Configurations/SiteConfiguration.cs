@@ -43,6 +43,11 @@ namespace Buy2.Infrastructure.Persistence.Configurations
                 .IsRequired()
                 .HasColumnType("int");
 
+            builder.Property(s => s.IsSmartAssignmentEnabled)
+                .HasDefaultValue(true);
+            builder.Property(s => s.IsSmartPostingEnabled)
+                .HasDefaultValue(true);
+
             builder.HasMany<Employee>()
                 .WithOne(e => e.Site)
                 .HasForeignKey(e => e.SiteId)

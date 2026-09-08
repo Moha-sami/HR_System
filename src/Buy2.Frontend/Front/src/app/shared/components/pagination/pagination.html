@@ -1,12 +1,13 @@
-<nav class="flex items-center gap-2" aria-label="Pagination">
+<nav class="flex items-center gap-2" [attr.aria-label]="navigationLabel()">
   <app-button
     variant="ghost"
     size="sm"
     shape="circle"
     [disabled]="currentPage() === 1"
     (clicked)="previousPage()"
-    aria-label="Previous page"
+    [attr.aria-label]="previousLabel()"
   >
+    <span class="sr-only">{{ previousLabel() }}</span>
     <svg aria-hidden="true" viewBox="0 0 24 24" class="size-4" fill="none" stroke="currentColor" stroke-width="2">
       <path stroke-linecap="round" stroke-linejoin="round" d="m15 18-6-6 6-6" />
     </svg>
@@ -20,9 +21,10 @@
         variant="ghost"
         size="sm"
         [attr.aria-current]="currentPage() === page ? 'page' : null"
-        [attr.aria-label]="'Page ' + page"
+        [attr.aria-label]="pageLabel() + ' ' + page"
         (clicked)="changePage(page)"
       >
+        <span class="sr-only">{{ pageLabel() }} </span>
         {{ page }}
       </app-button>
     }
@@ -34,8 +36,9 @@
     shape="circle"
     [disabled]="currentPage() === validTotalPages()"
     (clicked)="nextPage()"
-    aria-label="Next page"
+    [attr.aria-label]="nextLabel()"
   >
+    <span class="sr-only">{{ nextLabel() }}</span>
     <svg aria-hidden="true" viewBox="0 0 24 24" class="size-4" fill="none" stroke="currentColor" stroke-width="2">
       <path stroke-linecap="round" stroke-linejoin="round" d="m9 18 6-6-6-6" />
     </svg>

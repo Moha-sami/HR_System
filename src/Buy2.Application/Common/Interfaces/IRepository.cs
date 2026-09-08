@@ -3,7 +3,7 @@ using System.Linq.Expressions;
 
 namespace Buy2.Application.Common.Interfaces
 {
-    public interface IRepository<T> where T : BaseEntity
+    public interface IRepository<T> where T : class
     {
         IQueryable<T> Query(bool asNoTracking = true);
         Task<T?> GetByIdAsync(int id, CancellationToken cancellationToken = default);

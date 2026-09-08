@@ -1,0 +1,21 @@
+<div class="page">
+  <div class="toolbar"><h1>{{ 'RECOGNITIONS.TITLE' | translate }}</h1></div>
+  <div class="card">
+    <div class="controls">
+      <input class="search" #searchInput [placeholder]="'RECOGNITIONS.SEARCH' | translate" [attr.aria-label]="'RECOGNITIONS.SEARCH' | translate" (input)="search(searchInput.value)" />
+      <label><span>{{ 'RECOGNITIONS.SORT' | translate }}</span><select #sortInput (change)="order(sortInput.value)"><option value="newest">{{ 'RECOGNITIONS.NEWEST' | translate }}</option><option value="oldest">{{ 'RECOGNITIONS.OLDEST' | translate }}</option><option value="title">{{ 'RECOGNITIONS.TABLE_TITLE' | translate }}</option><option value="employee">{{ 'RECOGNITIONS.EMPLOYEE' | translate }}</option></select></label>
+      <label><span>{{ 'RECOGNITIONS.FILTER' | translate }}</span><select #filterInput (change)="filter(filterInput.value)"><option value="">{{ 'RECOGNITIONS.ALL_STATUSES' | translate }}</option>@for (status of statuses; track status) { <option [value]="status">{{ ('RECOGNITIONS.STATUS_' + status.toUpperCase()) | translate }}</option> }</select></label>
+      <app-button (clicked)="create()">+ {{ 'RECOGNITIONS.CREATE_TITLE' | translate }}</app-button>
+    </div>
+    @if (loading()) { <p class="state">{{ 'RECOGNITIONS.LOADING' | translate }}</p> }
+    @else if (error()) { <div class="state"><p>{{ 'RECOGNITIONS.LOAD_ERROR' | translate }}</p><app-button (clicked)="load()">{{ 'RECOGNITIONS.RETRY' | translate }}</app-button></div> }
+    @else {
+      <div class="table-scroll"><app-table [columns]="columns()" [rows]="rows()" [cellTemplates]="templates()" [emptyMessage]="'RECOGNITIONS.EMPTY' | translate" /></div>
+      <div class="pagination"><app-pagination [totalPages]="totalPages()" [initialPage]="page()" [navigationLabel]="'RECOGNITIONS.PAGINATION' | translate" [previousLabel]="'RECOGNITIONS.PREVIOUS_PAGE' | translate" [nextLabel]="'RECOGNITIONS.NEXT_PAGE' | translate" [pageLabel]="'RECOGNITIONS.PAGE' | translate" (pageChanged)="page.set($event)" /></div>
+    }
+  </div>
+</div>
+<ng-template #dateCell let-item><span>{{ date(item) }}</span><div class="muted">{{ date(item, true) }}</div></ng-template>
+<ng-template #pointsCell let-item>{{ points(item.points) }}</ng-template>
+<ng-template #statusCell let-item><span class="badge" [attr.data-status]="item.status">{{ ('RECOGNITIONS.STATUS_' + item.status.toUpperCase()) | translate }}</span></ng-template>
+<ng-template #actionCell let-item><app-button variant="ghost" size="sm" (clicked)="open(item.id)">{{ 'RECOGNITIONS.VIEW_DETAILS' | translate }}</app-button></ng-template>

@@ -1404,6 +1404,26 @@ namespace Buy2.Infrastructure.Migrations
                     b.ToTable("RequestTypes");
                 });
 
+            modelBuilder.Entity("Buy2.Domain.Entities.RewardCategory", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("RewardCategories");
+                });
+
             modelBuilder.Entity("Buy2.Domain.Entities.RewardItem", b =>
                 {
                     b.Property<int>("Id")
@@ -1415,17 +1435,44 @@ namespace Buy2.Infrastructure.Migrations
                     b.Property<int>("AvailableStock")
                         .HasColumnType("int");
 
+                    b.Property<string>("BannerImageUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("CategoryId")
+                        .HasColumnType("int");
+
                     b.Property<int>("CostInPoints")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("HowToRedeem")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
+                    b.Property<decimal>("MonetaryValue")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<string>("RewardName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("TermsOfUse")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CategoryId");
 
                     b.ToTable("RewardItems");
                 });
@@ -1444,10 +1491,16 @@ namespace Buy2.Infrastructure.Migrations
                     b.Property<int>("EmployeeId")
                         .HasColumnType("int");
 
+                    b.Property<int>("PointTransactionId")
+                        .HasColumnType("int");
+
                     b.Property<DateTimeOffset>("RedeemedAt")
                         .HasColumnType("datetimeoffset");
 
                     b.Property<int>("RewardItemId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("RewardVoucherId")
                         .HasColumnType("int");
 
                     b.Property<string>("VoucherCode")
@@ -1459,12 +1512,47 @@ namespace Buy2.Infrastructure.Migrations
 
                     b.HasIndex("EmployeeId");
 
+                    b.HasIndex("PointTransactionId");
+
                     b.HasIndex("RewardItemId");
+
+                    b.HasIndex("RewardVoucherId");
 
                     b.HasIndex("VoucherCode")
                         .IsUnique();
 
                     b.ToTable("RewardRedemptions");
+                });
+
+            modelBuilder.Entity("Buy2.Domain.Entities.RewardVoucher", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("BatchId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("RewardItemId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RewardItemId");
+
+                    b.ToTable("RewardVouchers");
                 });
 
             modelBuilder.Entity("Buy2.Domain.Entities.Role", b =>
@@ -1651,6 +1739,16 @@ namespace Buy2.Infrastructure.Migrations
                     b.Property<string>("Instructions")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsSmartAssignmentEnabled")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
+                    b.Property<bool>("IsSmartPostingEnabled")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
 
                     b.Property<double>("Latitude")
                         .HasPrecision(9, 6)
@@ -2281,6 +2379,17 @@ namespace Buy2.Infrastructure.Migrations
                     b.Navigation("RequestType");
                 });
 
+            modelBuilder.Entity("Buy2.Domain.Entities.RewardItem", b =>
+                {
+                    b.HasOne("Buy2.Domain.Entities.RewardCategory", "Category")
+                        .WithMany("RewardItems")
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Category");
+                });
+
             modelBuilder.Entity("Buy2.Domain.Entities.RewardRedemption", b =>
                 {
                     b.HasOne("Buy2.Domain.Entities.Employee", "Employee")
@@ -2289,13 +2398,40 @@ namespace Buy2.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Buy2.Domain.Entities.RewardItem", "RewardItem")
+                    b.HasOne("Buy2.Domain.Entities.PointsTransaction", "PointsTransaction")
                         .WithMany()
+                        .HasForeignKey("PointTransactionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Buy2.Domain.Entities.RewardItem", "RewardItem")
+                        .WithMany("Redemptions")
                         .HasForeignKey("RewardItemId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("Buy2.Domain.Entities.RewardVoucher", "RewardVoucher")
+                        .WithMany()
+                        .HasForeignKey("RewardVoucherId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.Navigation("Employee");
+
+                    b.Navigation("PointsTransaction");
+
+                    b.Navigation("RewardItem");
+
+                    b.Navigation("RewardVoucher");
+                });
+
+            modelBuilder.Entity("Buy2.Domain.Entities.RewardVoucher", b =>
+                {
+                    b.HasOne("Buy2.Domain.Entities.RewardItem", "RewardItem")
+                        .WithMany("Vouchers")
+                        .HasForeignKey("RewardItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("RewardItem");
                 });
@@ -2505,6 +2641,18 @@ namespace Buy2.Infrastructure.Migrations
             modelBuilder.Entity("Buy2.Domain.Entities.Region", b =>
                 {
                     b.Navigation("Sites");
+                });
+
+            modelBuilder.Entity("Buy2.Domain.Entities.RewardCategory", b =>
+                {
+                    b.Navigation("RewardItems");
+                });
+
+            modelBuilder.Entity("Buy2.Domain.Entities.RewardItem", b =>
+                {
+                    b.Navigation("Redemptions");
+
+                    b.Navigation("Vouchers");
                 });
 
             modelBuilder.Entity("Buy2.Domain.Entities.Role", b =>

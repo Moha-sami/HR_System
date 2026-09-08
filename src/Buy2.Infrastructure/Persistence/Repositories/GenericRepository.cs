@@ -5,7 +5,7 @@ using System.Linq.Expressions;
 
 namespace Buy2.Infrastructure.Persistence.Repositories;
 
-public class GenericRepository<T> : IRepository<T> where T : BaseEntity
+public class GenericRepository<T> : IRepository<T> where T : class
 {
     private readonly Buy2DbContext _context;
     public GenericRepository(Buy2DbContext context)
