@@ -13,16 +13,25 @@ public class ShiftTemplateConfiguration : IEntityTypeConfiguration<ShiftTemplate
             .HasMaxLength(100)
             .HasColumnType("nvarchar(100)");
 
-        builder.Property(st => st.Location)
-            .HasMaxLength(200)
-            .HasColumnType("nvarchar(200)");
-
-        builder.Property(st => st.DaysOfWeekJson)
-            .HasColumnType("nvarchar(max)");
-
         builder.HasOne(st => st.Organization)
             .WithMany()
             .HasForeignKey(st => st.OrganizationId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(st => st.LastUpdatedByEmployee)
+            .WithMany()
+            .HasForeignKey(st => st.LastUpdatedByEmployeeId)
+            .IsRequired(false)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.HasMany(st => st.ShiftBlocks)
+            .WithOne(b => b.ShiftTemplate)
+            .HasForeignKey(b => b.ShiftTemplateId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasMany(st => st.ShiftTemplateSites)
+            .WithOne(x => x.ShiftTemplate)
+            .HasForeignKey(x => x.ShiftTemplateId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

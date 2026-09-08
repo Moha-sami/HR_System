@@ -70,7 +70,8 @@ public class SiteDetailsTests
         using var context = CreateDbContext();
         var siteRepo = new GenericRepository<Site>(context);
         var shiftRepo = new GenericRepository<ShiftEntity>(context);
-        var handler = new GetSiteShiftsQueryHandler(siteRepo, shiftRepo);
+        var shiftBlockRepo = new GenericRepository<ShiftBlock>(context);
+        var handler = new GetSiteShiftsQueryHandler(siteRepo, shiftRepo, shiftBlockRepo);
 
         await Assert.ThrowsAsync<KeyNotFoundException>(() =>
             handler.Handle(new GetSiteShiftsQuery(999), CancellationToken.None));
@@ -81,7 +82,7 @@ public class SiteDetailsTests
     {
         using var context = CreateDbContext();
         var site = new Site { Id = 1, SiteName = "Cairo HQ" };
-        var template = new ShiftTemplate { Id = 1, Name = "Morning Shift", RequiredHeadcount = 5 };
+        var template = new ShiftTemplate { Id = 1, Name = "Morning Shift" };
         var role = new JobRole { Id = 1, Title = "Security Officer", DepartmentId = 1 };
         var shift = new ShiftEntity
         {
@@ -103,7 +104,8 @@ public class SiteDetailsTests
 
         var siteRepo = new GenericRepository<Site>(context);
         var shiftRepo = new GenericRepository<ShiftEntity>(context);
-        var handler = new GetSiteShiftsQueryHandler(siteRepo, shiftRepo);
+        var shiftBlockRepo = new GenericRepository<ShiftBlock>(context);
+        var handler = new GetSiteShiftsQueryHandler(siteRepo, shiftRepo, shiftBlockRepo);
 
         var result = await handler.Handle(new GetSiteShiftsQuery(1), CancellationToken.None);
 
@@ -113,7 +115,7 @@ public class SiteDetailsTests
         Assert.True(result[0].IsSmartPostingEnabled);
         Assert.Single(result[0].Roles);
         Assert.Equal("Security Officer", result[0].Roles[0].RoleName);
-        Assert.Equal(5, result[0].Roles[0].RequiredHeadcount);
+        Assert.Equal(1, result[0].Roles[0].RequiredHeadcount);
     }
 
     [Fact]
