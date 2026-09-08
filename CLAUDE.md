@@ -98,3 +98,7 @@ All AI assistants (Claude Code, Antigravity, Cursor, Roo-Code) **MUST** strictly
 
 13. **Prompt Master Instruction Structuring**:
     - Use `prompt-master` skill to generate structured, load-bearing prompts with explicit boundaries, concrete verification criteria, and zero token fluff when spawning subagents or authoring task specs.
+
+14. **Graphify AST Codebase Knowledge Graph**:
+    - When investigating architecture, dependencies, or entity-to-handler call chains, agents **MUST** query `graphify-out/graph.json` or use `/graphify` instead of performing brute-force multi-file regex searches.
+    - Run `octaflow graph` to compile deterministic Tree-Sitter AST relations with zero token overhead.
