@@ -10,19 +10,21 @@ public static class ShiftTemplateMapper
         return new ShiftTemplateDetailsDto(
             template.Id,
             template.Name,
-            ShiftTimeHelper.FormatTime(template.StartTime),
-            ShiftTimeHelper.FormatTime(template.EndTime),
             ShiftTimeHelper.FormatDate(template.CreatedAt),
             template.UpdatedAt.HasValue
                 ? ShiftTimeHelper.FormatDate(template.UpdatedAt.Value)
                 : ShiftTimeHelper.FormatDate(template.CreatedAt),
-            template.ShiftTemplateSites.Count,
+            template.LastUpdatedByEmployeeId,
+            ShiftTimeHelper.FormatTime(template.StartTime),
+            ShiftTimeHelper.FormatTime(template.EndTime),
             template.ShiftTemplateSites
-                .Select(s => new ShiftTemplateSiteItemDto(
+                .OrderBy(s => s.SiteId)
+                .Select(s => new ShiftTemplateSiteRefDto(
                     s.SiteId,
                     s.Site?.SiteName ?? string.Empty))
                 .ToList(),
             template.ShiftBlocks
+                .OrderBy(b => b.Id)
                 .Select(b => new ShiftTemplateBlockDetailsDto(
                     b.Id,
                     ShiftTimeHelper.FormatTime(b.StartTime),

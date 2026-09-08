@@ -51,14 +51,9 @@ public class ShiftTemplatesController : ControllerBase
     {
         var result = await _mediator.Send(new GetShiftTemplateByIdQuery(id), cancellationToken);
 
-        if (result.IsNotFound)
-        {
-            return NotFound(new { message = result.ErrorMessage });
-        }
-
         if (!result.IsSuccess)
         {
-            return BadRequest(new { message = result.ErrorMessage });
+            return NotFound(new { message = result.ErrorMessage });
         }
 
         return Ok(result.Value);
