@@ -64,3 +64,19 @@ public record ShiftTemplateDetailsDto(
     List<ShiftTemplateSiteRefDto> Sites,
     List<ShiftTemplateBlockDetailsDto> ShiftBlocks
 );
+
+public record UpdateShiftTemplateBlockDto(
+    int Id,
+    string StartTime,
+    string EndTime,
+    int JobRoleId,
+    int AssignedUserId
+);
+
+public record UpdateShiftTemplateDto(
+    string Name,
+    List<int> SiteIds,
+    string StartTime,
+    string EndTime,
+    List<UpdateShiftTemplateBlockDto> ShiftBlocks
+);

@@ -3,6 +3,7 @@ using Buy2.Application.Features.ShiftTemplates.CreateShiftTemplate;
 using Buy2.Application.Features.ShiftTemplates.DTOs;
 using Buy2.Application.Features.ShiftTemplates.GetShiftTemplateById;
 using Buy2.Application.Features.ShiftTemplates.GetShiftTemplates;
+using Buy2.Application.Features.ShiftTemplates.UpdateShiftTemplate;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -85,6 +86,41 @@ public class ShiftTemplatesController : ControllerBase
         }
 
         return CreatedAtAction(nameof(GetShiftTemplateById), new { id = result.Value!.Id }, result.Value);
+    }
+
+    [HttpPut("{id:int}")]
+    [Authorize(Roles = "HRAdmin,Admin,SuperAdmin")]
+    [ProducesResponseType(typeof(ShiftTemplateDetailsDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<IActionResult> UpdateShiftTemplate(
+        [FromRoute] int id,
+        [FromBody] UpdateShiftTemplateDto dto,
+        CancellationToken cancellationToken)
+    {
+        var result = await _mediator.Send(
+            new UpdateShiftTemplateCommand(id, dto, GetActorEmployeeId()),
+            cancellationToken);
+
+        if (result.IsNotFound)
+        {
+            return NotFound(new { message = result.ErrorMessage });
+        }
+
+        if (result.IsConflict)
+        {
+            return Conflict(new { message = result.ErrorMessage });
+        }
+
+        if (!result.IsSuccess)
+        {
+            return BadRequest(new { message = result.ErrorMessage });
+        }
+
+        return Ok(result.Value);
     }
 
     private int? GetActorEmployeeId()
