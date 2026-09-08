@@ -64,3 +64,16 @@ All AI assistants (Claude Code, Antigravity, Cursor, Roo-Code) **MUST** strictly
    - `octaflow pr` automatically synchronizes the feature branch to remote (`git push -u origin <branch>`), opens the PR via `gh pr create` with `.agent_artifacts/PR_SUMMARY.md`, records `.agent_artifacts/04_git_pr.json`, and outputs the clickable PR URL.
    - **Never** mark a task as completed without creating the PR and returning the PR link to the user.
 
+8. **AgentShield Secret & Credential Leak Protection**:
+   - `octaflow pr` automatically runs AgentShield regex scanning on `git diff` for API keys, AWS credentials, JWT tokens, and private keys.
+   - Any detected secret leak blocks the PR immediately. Run `octaflow shield` to test your diff on demand.
+
+9. **Persistent Project Instincts & Cross-Ticket Memory**:
+   - When discovering a project-specific architectural convention or fixing a recurring anti-pattern, persist it:
+     ```bash
+     octaflow learn "<rule or architecture insight>" --category <category>
+     ```
+   - View active project instincts with `octaflow instincts`.
+   - All instincts are automatically injected into `.agent_artifacts/context.json` at task start (`octaflow start`), ensuring no subagent repeats past mistakes.
+
+

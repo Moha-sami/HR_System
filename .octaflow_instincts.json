@@ -1,0 +1,12 @@
+[
+  {
+    "rule": "EF Core read-only queries must use .AsNoTracking() to prevent tracking memory overhead",
+    "category": "efcore",
+    "created_at": "2026-09-08T22:30:15.256968+00:00"
+  },
+  {
+    "rule": "UnitOfWork SaveChangesAsync must execute within execution strategy for retries",
+    "category": "persistence",
+    "created_at": "2026-09-08T22:30:15.662970+00:00"
+  }
+]
