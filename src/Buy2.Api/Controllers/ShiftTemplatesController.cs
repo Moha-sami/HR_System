@@ -1,4 +1,7 @@
+using System.Security.Claims;
+using Buy2.Application.Features.ShiftTemplates.CreateShiftTemplate;
 using Buy2.Application.Features.ShiftTemplates.DTOs;
+using Buy2.Application.Features.ShiftTemplates.GetShiftTemplateById;
 using Buy2.Application.Features.ShiftTemplates.GetShiftTemplates;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -35,5 +38,63 @@ public class ShiftTemplatesController : ControllerBase
         }
 
         return Ok(result.Value);
+    }
+
+    [HttpGet("{id:int}")]
+    [ProducesResponseType(typeof(ShiftTemplateDetailsDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> GetShiftTemplateById(
+        [FromRoute] int id,
+        CancellationToken cancellationToken)
+    {
+        var result = await _mediator.Send(new GetShiftTemplateByIdQuery(id), cancellationToken);
+
+        if (result.IsNotFound)
+        {
+            return NotFound(new { message = result.ErrorMessage });
+        }
+
+        if (!result.IsSuccess)
+        {
+            return BadRequest(new { message = result.ErrorMessage });
+        }
+
+        return Ok(result.Value);
+    }
+
+    [HttpPost]
+    [Authorize(Roles = "HRAdmin,Admin,SuperAdmin")]
+    [ProducesResponseType(typeof(ShiftTemplateDetailsDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<IActionResult> CreateShiftTemplate(
+        [FromBody] CreateShiftTemplateDto dto,
+        CancellationToken cancellationToken)
+    {
+        var result = await _mediator.Send(
+            new CreateShiftTemplateCommand(dto, GetActorEmployeeId()),
+            cancellationToken);
+
+        if (result.IsConflict)
+        {
+            return Conflict(new { message = result.ErrorMessage });
+        }
+
+        if (!result.IsSuccess)
+        {
+            return BadRequest(new { message = result.ErrorMessage });
+        }
+
+        return CreatedAtAction(nameof(GetShiftTemplateById), new { id = result.Value!.Id }, result.Value);
+    }
+
+    private int? GetActorEmployeeId()
+    {
+        var raw = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        return int.TryParse(raw, out var employeeId) ? employeeId : null;
     }
 }
