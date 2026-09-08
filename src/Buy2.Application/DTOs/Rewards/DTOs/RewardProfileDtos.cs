@@ -1,4 +1,4 @@
-﻿namespace Buy2.Application.DTOs.Rewards.DTOs;
+namespace Buy2.Application.DTOs.Rewards.DTOs;
 
 // Reward Profile List
 public record RewardProfileListDto(
@@ -16,9 +16,9 @@ public record RewardProfileListDto(
 
 // Reward KPI Statistics Card:
 public record RewardKpiStatistics(
-    int RedempationCount,
+    int RedemptionCount,
     int AvailableStock,
-    decimal TotalCose,
+    decimal TotalCost,
     int TopRedeemed,
     int PointsValue
 );
@@ -29,7 +29,7 @@ public record RewardRedemptionAnalyticsChartDto(
     int TotalRedemptions
 );
 // Reward Transaction History Log:
-public record RewaredTransactionHistoryLogDto(
+public record RewardTransactionHistoryLogDto(
     int TransactionId,
     string EmployeeName,
     DateTimeOffset Date,

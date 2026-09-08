@@ -1,8 +1,8 @@
-﻿using Buy2.Application.DTOs.Rewards.DTOs;
+using Buy2.Application.DTOs.Rewards.DTOs;
 using FluentValidation;
 using System.Runtime.CompilerServices;
 
-namespace Buy2.Application.Validators.Rewarsds;
+namespace Buy2.Application.Validators.Rewards;
 
 public class BulkVoucherUploadDtoValidator : AbstractValidator<RewardBulkExcelUpload>
 {
