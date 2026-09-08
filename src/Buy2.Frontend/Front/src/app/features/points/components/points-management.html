@@ -8,8 +8,12 @@
     </span>
   </ng-template>
 
+  <ng-template #typeTemplate let-row>
+    <span class="text-sm text-neutral-700">{{ typeLabel(row.transactionType) }}</span>
+  </ng-template>
+
   <ng-template #triggeredByTemplate let-row>
-    <span class="text-sm text-neutral-700">{{ row.triggeredBy }}</span>
+    <span class="text-sm text-neutral-700">{{ triggerLabel(row.triggeredBy) }}</span>
   </ng-template>
 
   <div class="flex items-center justify-between gap-4">
@@ -100,8 +104,8 @@
           {{ 'POINTS.TRIGGERED_BY' | translate }}
         </option>
 
-        @for (trigger of availableTriggers(); track trigger) {
-          <option [value]="trigger">{{ trigger }}</option>
+        @for (trigger of triggerOptions; track trigger) {
+          <option [value]="trigger">{{ triggerLabel(trigger) }}</option>
         }
       </select>
 
@@ -114,8 +118,8 @@
           {{ 'POINTS.TYPE' | translate }}
         </option>
 
-        @for (type of availableTypes(); track type) {
-          <option [value]="type">{{ type }}</option>
+        @for (type of typeOptions; track type) {
+          <option [value]="type">{{ typeLabel(type) }}</option>
         }
       </select>
     </div>
@@ -149,12 +153,22 @@
     </app-button>
   </div>
 
+  @if (loadError()) {
+    <div class="flex flex-wrap items-center gap-3 rounded-lg bg-red-50 p-4 text-sm text-red-700" role="alert">
+      <span>{{ 'POINTS.LIST_LOAD_FAILED' | translate }}</span>
+      <app-button variant="primary-light" size="sm" (clicked)="loadTransactions()">
+        {{ 'POINTS.RETRY' | translate }}
+      </app-button>
+    </div>
+  }
+
   <app-table
     [columns]="columns()"
-    [rows]="paginatedTransactions()"
+    [rows]="transactions()"
     [cellTemplates]="cellTemplates()"
     size="sm"
-    [emptyMessage]="'POINTS.NO_TRANSACTIONS' | translate"
+    [emptyMessage]="(loading() ? 'POINTS.LOADING' : 'POINTS.NO_TRANSACTIONS') | translate"
+    (sortChange)="onSortChange($event)"
   />
 
   <div class="flex justify-center">

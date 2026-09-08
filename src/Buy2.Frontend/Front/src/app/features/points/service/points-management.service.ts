@@ -1,24 +1,49 @@
 import { inject, Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { forkJoin, map, type Observable } from 'rxjs';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { map, type Observable } from 'rxjs';
 
 import { environment } from '../../../../environments/environment';
+import { EmployeeService } from '../../employees/services/employee.service';
 import type {
+  CreateManualPointsTransactionResult,
   CreatePointsTransactionInput,
+  PaginatedPointsTransactions,
   PointTableRow,
   PointsEmployee,
-  PointsTransactionResponse,
+  PointsTransactionFilter,
+  PointsTransactionListItem,
 } from '../models/points-transaction';
 
-interface EmployeeResponse {
-  id: string | number;
-  firstName: string;
-  lastName: string;
-}
+const TRANSACTIONS_API = `${environment.baseUrl}/points/transactions`;
 
-interface PointsRuleResponse {
-  id: string | number;
-  ruleKey: string;
+export function buildPointsTransactionParams(filter: PointsTransactionFilter): HttpParams {
+  let params = new HttpParams()
+    .set('pageNumber', filter.pageNumber.toString())
+    .set('pageSize', filter.pageSize.toString());
+
+  if (filter.searchTerm?.trim()) {
+    params = params.set('searchTerm', filter.searchTerm.trim());
+  }
+  if (filter.triggeredBy?.trim()) {
+    params = params.set('triggeredBy', filter.triggeredBy.trim());
+  }
+  if (filter.transactionType) {
+    params = params.set('transactionType', filter.transactionType);
+  }
+  if (filter.sortBy) {
+    params = params.set('sortBy', filter.sortBy);
+  }
+  if (filter.sortDir) {
+    params = params.set('sortDir', filter.sortDir);
+  }
+  if (filter.month != null) {
+    params = params.set('month', filter.month.toString());
+  }
+  if (filter.year != null) {
+    params = params.set('year', filter.year.toString());
+  }
+
+  return params;
 }
 
 @Injectable({
@@ -26,81 +51,67 @@ interface PointsRuleResponse {
 })
 export class PointsManagementService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = environment.jsonServerUrl;
+  private readonly employeeService = inject(EmployeeService);
 
-  getTransactions(): Observable<PointTableRow[]> {
-    return forkJoin({
-      transactions: this.http.get<PointsTransactionResponse[]>(
-        `${this.apiUrl}/pointsTransactions`
-      ),
-      employees: this.http.get<EmployeeResponse[]>(`${this.apiUrl}/employees`),
-      rules: this.http.get<PointsRuleResponse[]>(`${this.apiUrl}/pointsRules`),
-    }).pipe(
-      map(({ transactions, employees, rules }) =>
-        transactions.map((transaction) => {
-          const employee = employees.find(
-            (item) => String(item.id) === String(transaction.employeeId)
-          );
-
-          const rule = rules.find(
-            (item) => String(item.id) === String(transaction.pointsRuleId)
-          );
-
-          const createdAt = new Date(transaction.createdAt);
-
-          return {
-            id: String(transaction.id),
-            name: employee
-              ? `${employee.firstName} ${employee.lastName}`
-              : 'Unknown employee',
-            date: this.formatDate(createdAt),
-            time: this.formatTime(createdAt),
-            month: transaction.createdAt.slice(0, 7),
-            createdAt: transaction.createdAt,
-            type: this.formatType(transaction.transactionType),
-            points: transaction.amount,
-            triggeredBy: rule
-              ? this.formatRuleName(rule.ruleKey)
-              : 'Manual adjustment',
-            transactionType: transaction.transactionType,
-            comments: transaction.comments?.trim() || '—',
-          };
-        })
-      )
-    );
+  getTransactions(
+    filter: PointsTransactionFilter,
+  ): Observable<{ items: PointTableRow[]; totalCount: number; pageNumber: number; pageSize: number; totalPages: number }> {
+    return this.http
+      .get<PaginatedPointsTransactions>(TRANSACTIONS_API, {
+        params: buildPointsTransactionParams(filter),
+      })
+      .pipe(
+        map((response) => ({
+          items: response.items.map((item) => this.toTableRow(item)),
+          totalCount: response.totalCount,
+          pageNumber: response.pageNumber,
+          pageSize: response.pageSize,
+          totalPages: response.totalPages,
+        })),
+      );
   }
 
-  getEmployees(): Observable<PointsEmployee[]> {
-    return this.http.get<EmployeeResponse[]>(`${this.apiUrl}/employees`).pipe(
-      map((employees) =>
-        employees.map((employee) => ({
-          id: String(employee.id),
-          firstName: employee.firstName,
-          lastName: employee.lastName,
-        }))
-      )
-    );
+  getEmployees(search?: string): Observable<PointsEmployee[]> {
+    return this.employeeService
+      .getEmployeesPaginated({
+        page: 1,
+        pageSize: 20,
+        search: search?.trim() || null,
+      })
+      .pipe(
+        map((response) =>
+          response.items.map((employee) => ({
+            id: employee.id,
+            employeeName: employee.employeeName,
+          })),
+        ),
+      );
   }
 
   createTransaction(
-    input: CreatePointsTransactionInput
-  ): Observable<PointsTransactionResponse> {
-    const amount =
-      input.type === 'Add' ? Math.abs(input.pointsValue) : -Math.abs(input.pointsValue);
-
-    const payload: Omit<PointsTransactionResponse, 'id'> = {
-      employeeId: Number(input.employeeId) || input.employeeId,
-      pointsRuleId: null,
-      amount,
-      transactionType: 'ManualAdjustment',
+    input: CreatePointsTransactionInput,
+  ): Observable<CreateManualPointsTransactionResult> {
+    return this.http.post<CreateManualPointsTransactionResult>(TRANSACTIONS_API, {
+      employeeId: input.employeeId,
+      transactionType: input.transactionType,
+      pointsValue: input.pointsValue,
       comments: input.comments.trim(),
-      createdAt: new Date().toISOString(),
-    };
+    });
+  }
 
-    return this.http.post<PointsTransactionResponse>(
-      `${this.apiUrl}/pointsTransactions`,
-      payload
-    );
+  private toTableRow(item: PointsTransactionListItem): PointTableRow {
+    const createdAt = new Date(item.createdAt);
+
+    return {
+      id: item.id,
+      employeeName: item.employeeName,
+      date: this.formatDate(createdAt),
+      time: this.formatTime(createdAt),
+      transactionType: item.transactionType,
+      points: item.points,
+      triggeredBy: item.triggeredBy,
+      comments: item.comments?.trim() || '—',
+    };
   }
 
   private formatDate(date: Date): string {
@@ -115,25 +126,5 @@ export class PointsManagementService {
         hour12: true,
       })
       .toLowerCase();
-  }
-
-  private formatType(transactionType: string): string {
-    switch (transactionType) {
-      case 'Credit':
-      case 'Debit':
-        return 'Event';
-      case 'ManualAdjustment':
-        return 'Manual';
-      default:
-        return transactionType;
-    }
-  }
-
-  private formatRuleName(ruleKey: string): string {
-    return ruleKey
-      .toLowerCase()
-      .split('_')
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(' ');
   }
 }

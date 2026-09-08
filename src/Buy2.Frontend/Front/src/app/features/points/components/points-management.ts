@@ -1,15 +1,16 @@
 import {
   Component,
   computed,
-  effect,
   inject,
   signal,
+  type OnDestroy,
   type TemplateRef,
   viewChild,
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
+import { Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
 
 import { LanguageService } from '../../../core/services/language.service';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
@@ -19,7 +20,28 @@ import {
   type CellContext,
   type ColumnDef,
 } from '../../../shared/components/table/table.component';
+import type {
+  PointTableRow,
+  PointsSortBy,
+  PointsSortDirection,
+  PointsTransactionType,
+} from '../models/points-transaction';
 import { PointsManagementService } from '../service/points-management.service';
+
+const TYPE_OPTIONS: readonly PointsTransactionType[] = ['Add', 'Deduct', 'Earned', 'Redeemed'];
+const TYPE_I18N: Record<PointsTransactionType, string> = {
+  Add: 'POINTS.TYPES.ADD',
+  Deduct: 'POINTS.TYPES.DEDUCT',
+  Earned: 'POINTS.TYPES.EARNED',
+  Redeemed: 'POINTS.TYPES.REDEEMED',
+};
+const SORT_MAP: Record<string, PointsSortBy> = {
+  employeeName: 'EmployeeName',
+  date: 'CreatedAt',
+  time: 'CreatedAt',
+  transactionType: 'TransactionType',
+  points: 'Points',
+};
 
 @Component({
   selector: 'app-points-management',
@@ -28,17 +50,24 @@ import { PointsManagementService } from '../service/points-management.service';
   templateUrl: './points-management.html',
   styleUrl: './points-management.css',
 })
-export class PointsManagement {
+export class PointsManagement implements OnDestroy {
   private readonly pointsService = inject(PointsManagementService);
   private readonly translate = inject(TranslateService);
   private readonly languageService = inject(LanguageService);
   private readonly router = inject(Router);
+
+  private readonly destroy$ = new Subject<void>();
+  private readonly searchSubject = new Subject<string>();
+  private loadRequestId = 0;
 
   private readonly pointsTemplate =
     viewChild<TemplateRef<CellContext>>('pointsTemplate');
 
   private readonly triggeredByTemplate =
     viewChild<TemplateRef<CellContext>>('triggeredByTemplate');
+
+  private readonly typeTemplate =
+    viewChild<TemplateRef<CellContext>>('typeTemplate');
 
   private readonly columnLabels = toSignal(
     this.translate.stream([
@@ -65,8 +94,31 @@ export class PointsManagement {
     }
   );
 
-  readonly transactions = toSignal(this.pointsService.getTransactions(), {
-    initialValue: [],
+  readonly transactions = signal<PointTableRow[]>([]);
+  readonly totalCount = signal(0);
+  readonly loading = signal(false);
+  readonly loadError = signal(false);
+
+  readonly searchTerm = signal('');
+  readonly selectedMonth = signal(this.currentMonthKey());
+  readonly selectedTrigger = signal('');
+  readonly selectedType = signal<PointsTransactionType | ''>('');
+  readonly sortBy = signal<PointsSortBy>('CreatedAt');
+  readonly sortDir = signal<PointsSortDirection>('Desc');
+
+  readonly pageSize = 10;
+  readonly currentPage = signal(1);
+  readonly totalPages = signal(1);
+
+  readonly typeOptions = TYPE_OPTIONS;
+  readonly triggerOptions = ['ManualAdjustment'] as const;
+
+  readonly availableMonths = computed(() => {
+    const selected = this.selectedMonth();
+    const months = new Set(this.rollingMonthKeys(24));
+    months.add(selected);
+    months.add(this.currentMonthKey());
+    return [...months].sort((first, second) => second.localeCompare(first));
   });
 
   readonly columns = computed<ColumnDef[]>(() => {
@@ -79,7 +131,7 @@ export class PointsManagement {
         width: '0.7fr',
       },
       {
-        key: 'name',
+        key: 'employeeName',
         label: labels['POINTS.TABLE.NAME'],
         width: '1.2fr',
         sortable: true,
@@ -97,10 +149,11 @@ export class PointsManagement {
         sortable: true,
       },
       {
-        key: 'type',
+        key: 'transactionType',
         label: labels['POINTS.TABLE.TYPE'],
         width: '0.9fr',
         sortable: true,
+        template: 'type',
       },
       {
         key: 'points',
@@ -126,6 +179,7 @@ export class PointsManagement {
   readonly cellTemplates = computed(() => {
     const pointsTemplate = this.pointsTemplate();
     const triggeredByTemplate = this.triggeredByTemplate();
+    const typeTemplate = this.typeTemplate();
     const templates = new Map<string, TemplateRef<CellContext>>();
 
     if (pointsTemplate) {
@@ -136,124 +190,98 @@ export class PointsManagement {
       templates.set('triggeredBy', triggeredByTemplate);
     }
 
+    if (typeTemplate) {
+      templates.set('type', typeTemplate);
+    }
+
     return templates;
   });
 
-  readonly searchTerm = signal('');
-  readonly selectedMonth = signal(this.currentMonthKey());
-  readonly selectedTrigger = signal('');
-  readonly selectedType = signal('');
-
-  readonly pageSize = 5;
-  readonly currentPage = signal(1);
-
-  readonly availableMonths = computed(() => {
-    const months = new Set(
-      this.transactions().map((transaction) => transaction.month)
-    );
-    months.add(this.currentMonthKey());
-    months.add(this.selectedMonth());
-
-    return [...months].sort((first, second) => second.localeCompare(first));
-  });
-
-  readonly availableTriggers = computed(() =>
-    [
-      ...new Set(this.transactions().map((transaction) => transaction.triggeredBy)),
-    ].sort()
-  );
-
-  readonly availableTypes = computed(() =>
-    [...new Set(this.transactions().map((transaction) => transaction.type))].sort()
-  );
-
-  readonly filteredTransactions = computed(() => {
-    const search = this.searchTerm().trim().toLowerCase();
-    const month = this.selectedMonth();
-    const trigger = this.selectedTrigger();
-    const type = this.selectedType();
-
-    return this.transactions().filter((transaction) => {
-      const matchesSearch =
-        !search ||
-        transaction.name.toLowerCase().includes(search) ||
-        transaction.id.includes(search);
-
-      const matchesMonth = transaction.month === month;
-      const matchesTrigger = !trigger || transaction.triggeredBy === trigger;
-      const matchesType = !type || transaction.type === type;
-
-      return matchesSearch && matchesMonth && matchesTrigger && matchesType;
-    });
-  });
-
-  readonly totalPages = computed(() =>
-    Math.max(1, Math.ceil(this.filteredTransactions().length / this.pageSize))
-  );
-
-  readonly paginatedTransactions = computed(() => {
-    const start = (this.currentPage() - 1) * this.pageSize;
-    return this.filteredTransactions().slice(start, start + this.pageSize);
-  });
-
-  private monthInitialized = false;
-
   constructor() {
-    effect(() => {
-      const totalPages = this.totalPages();
-      if (this.currentPage() > totalPages) {
-        this.currentPage.set(totalPages);
-      }
-    });
+    this.searchSubject
+      .pipe(debounceTime(300), distinctUntilChanged(), takeUntil(this.destroy$))
+      .subscribe((search) => {
+        this.searchTerm.set(search);
+        this.currentPage.set(1);
+        this.loadTransactions();
+      });
 
-    // If the current month has no rows, land on the latest month with data
-    // so the default view is not empty with mock data.
-    effect(() => {
-      const transactions = this.transactions();
-      if (this.monthInitialized || transactions.length === 0) {
-        return;
-      }
+    this.loadTransactions();
+  }
 
-      this.monthInitialized = true;
-      const currentMonth = this.currentMonthKey();
-      const hasCurrentMonth = transactions.some(
-        (transaction) => transaction.month === currentMonth
-      );
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
 
-      if (!hasCurrentMonth) {
-        const latestMonth = [
-          ...new Set(transactions.map((transaction) => transaction.month)),
-        ].sort((first, second) => second.localeCompare(first))[0];
+  loadTransactions(): void {
+    const requestId = ++this.loadRequestId;
+    this.loading.set(true);
+    this.loadError.set(false);
 
-        if (latestMonth) {
-          this.selectedMonth.set(latestMonth);
-        }
-      }
-    });
+    const [year, month] = this.selectedMonth().split('-').map(Number);
+
+    this.pointsService
+      .getTransactions({
+        pageNumber: this.currentPage(),
+        pageSize: this.pageSize,
+        searchTerm: this.searchTerm() || null,
+        triggeredBy: this.selectedTrigger() || null,
+        transactionType: this.selectedType() || null,
+        sortBy: this.sortBy(),
+        sortDir: this.sortDir(),
+        month,
+        year,
+      })
+      .subscribe({
+        next: (response) => {
+          if (requestId !== this.loadRequestId) {
+            return;
+          }
+
+          this.transactions.set(response.items);
+          this.totalCount.set(response.totalCount);
+          this.totalPages.set(Math.max(1, response.totalPages));
+          this.loading.set(false);
+        },
+        error: () => {
+          if (requestId !== this.loadRequestId) {
+            return;
+          }
+
+          this.transactions.set([]);
+          this.totalCount.set(0);
+          this.totalPages.set(1);
+          this.loadError.set(true);
+          this.loading.set(false);
+        },
+      });
   }
 
   updateSearch(event: Event): void {
     const input = event.target as HTMLInputElement;
-    this.searchTerm.set(input.value);
-    this.currentPage.set(1);
+    this.searchSubject.next(input.value);
   }
 
   updateTrigger(event: Event): void {
     const select = event.target as HTMLSelectElement;
     this.selectedTrigger.set(select.value);
     this.currentPage.set(1);
+    this.loadTransactions();
   }
 
   updateType(event: Event): void {
     const select = event.target as HTMLSelectElement;
-    this.selectedType.set(select.value);
+    this.selectedType.set((select.value as PointsTransactionType) || '');
     this.currentPage.set(1);
+    this.loadTransactions();
   }
 
   updateSelectedMonth(event: Event): void {
     const select = event.target as HTMLSelectElement;
     this.selectedMonth.set(select.value);
     this.currentPage.set(1);
+    this.loadTransactions();
   }
 
   shiftMonth(offset: number): void {
@@ -263,10 +291,23 @@ export class PointsManagement {
       `${next.getFullYear()}-${String(next.getMonth() + 1).padStart(2, '0')}`
     );
     this.currentPage.set(1);
+    this.loadTransactions();
   }
 
   changePage(page: number): void {
+    if (page < 1 || page > this.totalPages() || page === this.currentPage()) {
+      return;
+    }
+
     this.currentPage.set(page);
+    this.loadTransactions();
+  }
+
+  onSortChange(event: { column: string; direction: 'asc' | 'desc' }): void {
+    this.sortBy.set(SORT_MAP[event.column] ?? 'CreatedAt');
+    this.sortDir.set(event.direction === 'asc' ? 'Asc' : 'Desc');
+    this.currentPage.set(1);
+    this.loadTransactions();
   }
 
   navigateToAddTransaction(): void {
@@ -285,6 +326,19 @@ export class PointsManagement {
     return this.formatMonth(month);
   }
 
+  typeLabel(type: string): string {
+    const key = TYPE_I18N[type as PointsTransactionType];
+    return key ? this.translate.instant(key) : type;
+  }
+
+  triggerLabel(trigger: string): string {
+    if (trigger === 'ManualAdjustment') {
+      return this.translate.instant('POINTS.TRIGGER.MANUAL_ADJUSTMENT');
+    }
+
+    return trigger;
+  }
+
   formatPoints(points: number): string {
     if (points > 0) {
       return `+ ${points}`;
@@ -298,6 +352,14 @@ export class PointsManagement {
   private currentMonthKey(): string {
     const now = new Date();
     return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  }
+
+  private rollingMonthKeys(count: number): string[] {
+    const now = new Date();
+    return Array.from({ length: count }, (_, index) => {
+      const date = new Date(now.getFullYear(), now.getMonth() - index, 1);
+      return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+    });
   }
 
   private formatMonth(month: string): string {
