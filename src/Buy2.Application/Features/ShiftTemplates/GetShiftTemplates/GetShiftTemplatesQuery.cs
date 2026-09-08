@@ -5,6 +5,7 @@ using Buy2.Application.Features.ShiftTemplates.Validators;
 using Buy2.Domain.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 namespace Buy2.Application.Features.ShiftTemplates.GetShiftTemplates;
 
@@ -49,10 +50,7 @@ public class GetShiftTemplatesQueryHandler
 
         var totalCount = await query.CountAsync(cancellationToken);
 
-        var isAscending = string.Equals(filter.SortDir, "asc", StringComparison.OrdinalIgnoreCase);
-        query = isAscending
-            ? query.OrderBy(t => t.CreatedAt).ThenBy(t => t.Id)
-            : query.OrderByDescending(t => t.CreatedAt).ThenByDescending(t => t.Id);
+        query = ApplySorting(query, filter);
 
         var templates = await query
             .Skip((page - 1) * pageSize)
@@ -74,4 +72,89 @@ public class GetShiftTemplatesQueryHandler
         return Result<ShiftTemplatePaginatedResponseDto<ShiftTemplateListItemDto>>.Success(
             new ShiftTemplatePaginatedResponseDto<ShiftTemplateListItemDto>(items, totalCount, page, pageSize, totalPages));
     }
+
+    private static IQueryable<ShiftTemplate> ApplySorting(
+        IQueryable<ShiftTemplate> query,
+        ShiftTemplateFilterQueryDto filter)
+    {
+        var specs = BuildSortSpecs(filter);
+
+        IOrderedQueryable<ShiftTemplate>? ordered = null;
+        foreach (var spec in specs)
+        {
+            ordered = ApplySortSpec(query, ordered, spec);
+        }
+
+        return specs[0].Ascending
+            ? ordered!.ThenBy(t => t.Id)
+            : ordered!.ThenByDescending(t => t.Id);
+    }
+
+    private static List<ShiftTemplateSortSpec> BuildSortSpecs(ShiftTemplateFilterQueryDto filter)
+    {
+        // Legacy SortDir is kept as a fallback for the creation sort only.
+        var creationRaw = FirstSentValue(filter.CreationSort, filter.SortDir);
+        var specs = new List<ShiftTemplateSortSpec>(4)
+        {
+            new(ShiftTemplateSortKey.Creation, IsAscending(creationRaw), HasValue(creationRaw)),
+            new(ShiftTemplateSortKey.Updated, IsAscending(filter.UpdatedSort), HasValue(filter.UpdatedSort)),
+            new(ShiftTemplateSortKey.Name, IsAscending(filter.NameSort), HasValue(filter.NameSort)),
+            new(ShiftTemplateSortKey.Assigned, IsAscending(filter.NumberOfAssignedSort), HasValue(filter.NumberOfAssignedSort)),
+        };
+
+        return specs.OrderByDescending(s => s.Explicit).ToList();
+    }
+
+    private static IOrderedQueryable<ShiftTemplate> ApplySortSpec(
+        IQueryable<ShiftTemplate> query,
+        IOrderedQueryable<ShiftTemplate>? ordered,
+        ShiftTemplateSortSpec spec)
+    {
+        return spec.Key switch
+        {
+            ShiftTemplateSortKey.Creation => OrderWith(query, ordered, t => t.CreatedAt, spec.Ascending),
+            ShiftTemplateSortKey.Updated => OrderWith(query, ordered, t => t.UpdatedAt, spec.Ascending),
+            ShiftTemplateSortKey.Name => OrderWith(query, ordered, t => t.Name, spec.Ascending),
+            _ => OrderWith(query, ordered, t => t.ShiftTemplateSites.Count, spec.Ascending),
+        };
+    }
+
+    private static IOrderedQueryable<ShiftTemplate> OrderWith<TKey>(
+        IQueryable<ShiftTemplate> query,
+        IOrderedQueryable<ShiftTemplate>? ordered,
+        Expression<Func<ShiftTemplate, TKey>> keySelector,
+        bool ascending)
+    {
+        if (ordered is null)
+        {
+            return ascending ? query.OrderBy(keySelector) : query.OrderByDescending(keySelector);
+        }
+
+        return ascending ? ordered.ThenBy(keySelector) : ordered.ThenByDescending(keySelector);
+    }
+
+    private static bool IsAscending(string? sortDir)
+    {
+        return string.Equals(sortDir, "asc", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool HasValue(string? sortDir)
+    {
+        return !string.IsNullOrWhiteSpace(sortDir);
+    }
+
+    private static string? FirstSentValue(string? primary, string? fallback)
+    {
+        return HasValue(primary) ? primary : fallback;
+    }
+
+    private enum ShiftTemplateSortKey
+    {
+        Creation,
+        Updated,
+        Name,
+        Assigned
+    }
+
+    private sealed record ShiftTemplateSortSpec(ShiftTemplateSortKey Key, bool Ascending, bool Explicit);
 }
