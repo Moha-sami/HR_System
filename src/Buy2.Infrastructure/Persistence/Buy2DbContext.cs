@@ -49,6 +49,8 @@ public class Buy2DbContext : DbContext
     public DbSet<SupportTicket> SupportTickets => Set<SupportTicket>();
     public DbSet<Notification> Notifications => Set<Notification>();
     public DbSet<ShiftTemplate> ShiftTemplates => Set<ShiftTemplate>();
+    public DbSet<ShiftBlock> ShiftBlocks => Set<ShiftBlock>();
+    public DbSet<ShiftTemplateSite> ShiftTemplateSites => Set<ShiftTemplateSite>();
     public DbSet<RequestType> RequestTypes => Set<RequestType>();
     public DbSet<Request> Requests => Set<Request>();
     public DbSet<TaskList> TaskLists => Set<TaskList>();
