@@ -1,5 +1,6 @@
 using Buy2.Application.Features.Points.Automation;
 using Buy2.Application.Features.Points.Automation.Evaluators;
+using Buy2.Application.Features.ShiftTemplates.UpdateShiftTemplate;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -15,6 +16,7 @@ public static class DependencyInjection
         services.AddScoped<IAutomationEvaluator, TaskAutomationEvaluator>();
         services.AddScoped<IAutomationEvaluator, PerformanceAutomationEvaluator>();
         services.AddScoped<IPointsAutomationRunner, PointsAutomationRunner>();
+        services.AddScoped<ShiftTemplateUpdateService>();
 
         return services;
     }

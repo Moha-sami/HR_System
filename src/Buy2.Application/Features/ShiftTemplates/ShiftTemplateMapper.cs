@@ -31,7 +31,8 @@ public static class ShiftTemplateMapper
                     b.JobRole?.Title ?? string.Empty,
                     b.EmployeeId,
                     BuildEmployeeName(b.Employee)))
-                .ToList()
+                .ToList(),
+            template.LastUpdatedByEmployeeId
         );
     }
 
