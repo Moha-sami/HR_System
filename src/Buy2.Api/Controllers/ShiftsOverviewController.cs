@@ -1,4 +1,5 @@
 using Buy2.Application.DTOs.Schedules;
+using Buy2.Application.Features.Schedules.GetDailyShiftSchedule;
 using Buy2.Application.Features.Schedules.GetSiteShiftsOverview;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -29,6 +30,21 @@ public class ShiftsOverviewController : ControllerBase
         CancellationToken cancellationToken = default)
     {
         var query = new GetSiteShiftsOverviewQuery(search, regionId, page, pageSize);
+        var result = await _mediator.Send(query, cancellationToken);
+        return Ok(result);
+    }
+
+    [HttpGet("/api/v1/shifts/daily")]
+    [ProducesResponseType(typeof(DailyShiftScheduleResponseDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<DailyShiftScheduleResponseDto>> GetDailyShiftSchedule(
+        [FromQuery] int siteId,
+        [FromQuery] DateOnly date,
+        CancellationToken cancellationToken = default)
+    {
+        var query = new GetDailyShiftScheduleQuery(siteId, date);
         var result = await _mediator.Send(query, cancellationToken);
         return Ok(result);
     }
