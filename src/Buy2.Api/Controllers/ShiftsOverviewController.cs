@@ -3,6 +3,7 @@ using Buy2.Application.Features.Schedules.AssignEmployeeToShift;
 using Buy2.Application.Features.Schedules.CreateShiftBlock;
 using Buy2.Application.Features.Schedules.GetDailyShiftSchedule;
 using Buy2.Application.Features.Schedules.GetSiteShiftsOverview;
+using Buy2.Application.Features.Schedules.UnassignOrDeleteShiftBlock;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -88,6 +89,23 @@ public class ShiftsOverviewController : ControllerBase
             dto.EmployeeId,
             dto.ConfirmOverride,
             dto.OverrideReason);
+        var result = await _mediator.Send(command, cancellationToken);
+        return Ok(result);
+    }
+
+    [HttpDelete("/api/v1/shifts/blocks/{id}/assign")]
+    [ProducesResponseType(typeof(UnassignOrDeleteShiftBlockResponseDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<UnassignOrDeleteShiftBlockResponseDto>> UnassignOrDeleteShiftBlock(
+        [FromRoute] int id,
+        [FromQuery] ShiftBlockRemovalAction action = ShiftBlockRemovalAction.UnassignOnly,
+        [FromQuery] bool confirmPublishedDeletion = false,
+        CancellationToken cancellationToken = default)
+    {
+        var command = new UnassignOrDeleteShiftBlockCommand(id, action, confirmPublishedDeletion);
         var result = await _mediator.Send(command, cancellationToken);
         return Ok(result);
     }
