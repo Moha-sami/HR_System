@@ -1,4 +1,5 @@
 using Buy2.Application.DTOs.Schedules;
+using Buy2.Application.Features.Schedules.CreateShiftBlock;
 using Buy2.Application.Features.Schedules.GetDailyShiftSchedule;
 using Buy2.Application.Features.Schedules.GetSiteShiftsOverview;
 using MediatR;
@@ -47,5 +48,26 @@ public class ShiftsOverviewController : ControllerBase
         var query = new GetDailyShiftScheduleQuery(siteId, date);
         var result = await _mediator.Send(query, cancellationToken);
         return Ok(result);
+    }
+
+    [HttpPost("/api/v1/shifts/blocks")]
+    [ProducesResponseType(typeof(ShiftBlockResponseDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ShiftBlockResponseDto>> CreateShiftBlock(
+        [FromBody] CreateShiftBlockRequestDto dto,
+        CancellationToken cancellationToken = default)
+    {
+        var command = new CreateShiftBlockCommand(
+            dto.SiteId,
+            dto.Date,
+            dto.StartTime,
+            dto.EndTime,
+            dto.JobRoleId,
+            dto.DispatchPolicy);
+        var result = await _mediator.Send(command, cancellationToken);
+        return Created($"/api/v1/shifts/blocks/{result.ShiftId}", result);
     }
 }
