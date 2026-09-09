@@ -1,38 +1,77 @@
-export type PointsTransactionKind = 'Credit' | 'Debit' | 'ManualAdjustment';
+export type PointsTransactionType = 'Add' | 'Deduct' | 'Earned' | 'Redeemed';
+export type ManualPointsTransactionType = 'Add' | 'Deduct';
+export type PointsSortDirection = 'Asc' | 'Desc';
+export type PointsSortBy =
+  | 'CreatedAt'
+  | 'Date'
+  | 'TransactionType'
+  | 'Points'
+  | 'Amount'
+  | 'EmployeeName';
 
 export interface PointsEmployee {
-  id: string;
-  firstName: string;
-  lastName: string;
+  readonly id: number;
+  readonly employeeName: string;
 }
 
 export interface CreatePointsTransactionInput {
-  employeeId: string | number;
-  pointsValue: number;
-  type: 'Add' | 'Deduct';
-  comments: string;
+  readonly employeeId: number;
+  readonly transactionType: ManualPointsTransactionType;
+  readonly pointsValue: number;
+  readonly comments: string;
 }
 
-export interface PointsTransactionResponse {
-  id: string | number;
-  employeeId: string | number;
-  pointsRuleId: string | number | null;
-  amount: number;
-  transactionType: PointsTransactionKind | string;
-  createdAt: string;
-  comments?: string;
+export interface CreateManualPointsTransactionResult {
+  readonly isSuccess: boolean;
+  readonly transactionId?: number | null;
+  readonly errorMessage?: string | null;
+  readonly isNotFound?: boolean;
+}
+
+export interface PointsTransactionFilter {
+  readonly pageNumber: number;
+  readonly pageSize: number;
+  readonly searchTerm?: string | null;
+  readonly triggeredBy?: string | null;
+  readonly transactionType?: PointsTransactionType | null;
+  readonly sortBy?: PointsSortBy | null;
+  readonly sortDir?: PointsSortDirection | null;
+  readonly month?: number | null;
+  readonly year?: number | null;
+}
+
+export interface PointsTransactionListItem {
+  readonly id: number;
+  readonly employeeId: number;
+  readonly employeeName: string;
+  readonly employeeCode: string;
+  readonly departmentName: string;
+  readonly siteName: string;
+  readonly avatarUrl: string | null;
+  readonly date: string;
+  readonly time: string;
+  readonly transactionType: string;
+  readonly points: number;
+  readonly triggeredBy: string;
+  readonly comments: string | null;
+  readonly createdAt: string;
+}
+
+export interface PaginatedPointsTransactions {
+  readonly items: readonly PointsTransactionListItem[];
+  readonly totalCount: number;
+  readonly pageNumber: number;
+  readonly pageSize: number;
+  readonly totalPages: number;
 }
 
 export interface PointTableRow {
-  id: string;
-  name: string;
-  date: string;
-  time: string;
-  month: string;
-  createdAt: string;
-  type: string;
-  points: number;
-  triggeredBy: string;
-  transactionType: string;
-  comments: string;
+  readonly id: number;
+  readonly employeeName: string;
+  readonly date: string;
+  readonly time: string;
+  readonly transactionType: string;
+  readonly points: number;
+  readonly triggeredBy: string;
+  readonly comments: string;
 }

@@ -169,6 +169,18 @@
     "SEARCH_PLACEHOLDER": "Search by employee name or ID",
     "ADD_TRANSACTION": "Add Transaction",
     "NO_TRANSACTIONS": "No point transactions found",
+    "LOADING": "Loading transactions...",
+    "LIST_LOAD_FAILED": "Could not load point transactions.",
+    "RETRY": "Retry",
+    "TYPES": {
+      "ADD": "Add",
+      "DEDUCT": "Deduct",
+      "EARNED": "Earned",
+      "REDEEMED": "Redeemed"
+    },
+    "TRIGGER": {
+      "MANUAL_ADJUSTMENT": "Manual adjustment"
+    },
     "FORM": {
       "EMPLOYEE_NAME": "Employee Name",
       "EMPLOYEE_SEARCH_PLACEHOLDER": "Search by ID or name",
@@ -182,7 +194,10 @@
       "COMMENTS_PLACEHOLDER": "Reason",
       "DISCARD": "Discard",
       "COMPLETE": "Complete",
-      "SUCCESS_MESSAGE": "Transaction Added Successfully!"
+      "SUCCESS_MESSAGE": "Transaction Added Successfully!",
+      "SUBMIT_ERROR": "Could not add the transaction.",
+      "POINTS_RANGE": "Points must be between 50 and 10,000.",
+      "COMMENTS_LENGTH": "Comments must be between 3 and 1,000 characters."
     },
     "TABLE": {
       "ID": "ID",

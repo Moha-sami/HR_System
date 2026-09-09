@@ -169,6 +169,18 @@
     "SEARCH_PLACEHOLDER": "ابحث باسم الموظف أو الرقم التعريفي",
     "ADD_TRANSACTION": "إضافة معاملة",
     "NO_TRANSACTIONS": "لا توجد معاملات نقاط",
+    "LOADING": "جاري تحميل المعاملات...",
+    "LIST_LOAD_FAILED": "تعذر تحميل معاملات النقاط.",
+    "RETRY": "إعادة المحاولة",
+    "TYPES": {
+      "ADD": "إضافة",
+      "DEDUCT": "خصم",
+      "EARNED": "مكتسبة",
+      "REDEEMED": "مستبدلة"
+    },
+    "TRIGGER": {
+      "MANUAL_ADJUSTMENT": "تعديل يدوي"
+    },
     "FORM": {
       "EMPLOYEE_NAME": "اسم الموظف",
       "EMPLOYEE_SEARCH_PLACEHOLDER": "البحث بالرقم أو الاسم",
@@ -182,7 +194,10 @@
       "COMMENTS_PLACEHOLDER": "السبب",
       "DISCARD": "تجاهل",
       "COMPLETE": "إكمال",
-      "SUCCESS_MESSAGE": "تمت إضافة المعاملة بنجاح!"
+      "SUCCESS_MESSAGE": "تمت إضافة المعاملة بنجاح!",
+      "SUBMIT_ERROR": "تعذر إضافة المعاملة.",
+      "POINTS_RANGE": "يجب أن تكون النقاط بين 50 و 10,000.",
+      "COMMENTS_LENGTH": "يجب أن تكون التعليقات بين 3 و 1,000 حرف."
     },
     "TABLE": {
       "ID": "الرقم",
