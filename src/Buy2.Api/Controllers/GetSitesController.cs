@@ -7,6 +7,7 @@ using Buy2.Application.Features.Sites.GetSiteDetails;
 using Buy2.Application.Features.Sites.GetSiteShiftsOverview;
 using Buy2.Application.Features.Sites.GetSites;
 using Buy2.Application.Features.Sites.Regions;
+using Buy2.Application.Features.Sites.SetSiteDayOff;
 using Buy2.Application.Features.Sites.UpdateSite;
 using Buy2.Application.Features.Sites.UpdateSiteAutomationSettings;
 using Buy2.Application.Features.Sites.UpdateSiteSmartSettings;
@@ -235,5 +236,24 @@ public class GetSitesController : ControllerBase
         var command = new DeleteSiteDocumentCommand(id, documentId);
         await _mediator.Send(command, cancellation);
         return NoContent();
+    }
+
+    // Toggle Site Day-Off Status
+    [HttpPut("{siteId}/dates/{date}/day-off")]
+    [Authorize(Roles = "Admin,Manager,OperationsManager")]
+    [ProducesResponseType(typeof(SetSiteDayOffResponseDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<SetSiteDayOffResponseDto>> SetSiteDayOff(
+        [FromRoute] int siteId,
+        [FromRoute] DateOnly date,
+        [FromBody] SetSiteDayOffRequestDto dto,
+        CancellationToken cancellationToken = default)
+    {
+        var command = new SetSiteDayOffCommand(siteId, date, dto.IsDayOff);
+        var result = await _mediator.Send(command, cancellationToken);
+        return Ok(result);
     }
 }
