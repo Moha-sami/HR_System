@@ -42,6 +42,21 @@ public record CreateShiftTemplateDto(
     List<CreateShiftTemplateBlockDto> ShiftBlocks
 );
 
+public record UpdateShiftTemplateBlockDto(
+    int Id,
+    string StartTime,
+    string EndTime,
+    int JobRoleId,
+    int AssignedUserId
+);
+
+public record UpdateShiftTemplateDto(
+    string Name,
+    List<int> SiteIds,
+    string StartTime,
+    string EndTime,
+    List<UpdateShiftTemplateBlockDto> ShiftBlocks
+);
 public record ShiftTemplateSiteItemDto(
     int SiteId,
     string SiteName
@@ -66,5 +81,6 @@ public record ShiftTemplateDetailsDto(
     string LastUpdated,
     int NumberOfAssignedSites,
     List<ShiftTemplateSiteItemDto> Sites,
-    List<ShiftTemplateBlockDetailsDto> ShiftBlocks
+    List<ShiftTemplateBlockDetailsDto> ShiftBlocks,
+    int? LastUpdatedByEmployeeId = null
 );
