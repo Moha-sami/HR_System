@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using Buy2.Application.Features.ShiftTemplates.CreateShiftTemplate;
+using Buy2.Application.Features.ShiftTemplates.DeleteShiftTemplate;
 using Buy2.Application.Features.ShiftTemplates.DTOs;
 using Buy2.Application.Features.ShiftTemplates.GetShiftTemplateById;
 using Buy2.Application.Features.ShiftTemplates.GetShiftTemplates;
@@ -126,6 +127,28 @@ public class ShiftTemplatesController : ControllerBase
         }
 
         return Ok(result.Value);
+    }
+
+    [HttpDelete("{id:int}")]
+    [Authorize(Roles = "HRAdmin,Admin,SuperAdmin")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> DeleteShiftTemplate(
+        [FromRoute] int id,
+        CancellationToken cancellationToken)
+    {
+        var result = await _mediator.Send(
+            new DeleteShiftTemplateCommand(id),
+            cancellationToken);
+
+        if (result.IsNotFound)
+        {
+            return NotFound(new { message = result.ErrorMessage });
+        }
+
+        return NoContent();
     }
 
     private int? GetActorEmployeeId()
