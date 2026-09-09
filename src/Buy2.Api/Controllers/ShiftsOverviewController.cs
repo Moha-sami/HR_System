@@ -1,4 +1,5 @@
 using Buy2.Application.DTOs.Schedules;
+using Buy2.Application.Features.Schedules.AssignEmployeeToShift;
 using Buy2.Application.Features.Schedules.CreateShiftBlock;
 using Buy2.Application.Features.Schedules.GetDailyShiftSchedule;
 using Buy2.Application.Features.Schedules.GetSiteShiftsOverview;
@@ -69,5 +70,25 @@ public class ShiftsOverviewController : ControllerBase
             dto.DispatchPolicy);
         var result = await _mediator.Send(command, cancellationToken);
         return Created($"/api/v1/shifts/blocks/{result.ShiftId}", result);
+    }
+
+    [HttpPost("/api/v1/shifts/blocks/{id}/assign")]
+    [ProducesResponseType(typeof(AssignEmployeeToShiftResponseDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<AssignEmployeeToShiftResponseDto>> AssignEmployee(
+        [FromRoute] int id,
+        [FromBody] AssignEmployeeToShiftRequestDto dto,
+        CancellationToken cancellationToken = default)
+    {
+        var command = new AssignEmployeeToShiftCommand(
+            id,
+            dto.EmployeeId,
+            dto.ConfirmOverride,
+            dto.OverrideReason);
+        var result = await _mediator.Send(command, cancellationToken);
+        return Ok(result);
     }
 }
