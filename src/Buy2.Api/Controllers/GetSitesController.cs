@@ -5,6 +5,7 @@ using Buy2.Application.Features.Sites.DeleteSite;
 using Buy2.Application.Features.Sites.Documents;
 using Buy2.Application.Features.Sites.GetSiteDetails;
 using Buy2.Application.Features.Sites.GetSiteShiftsOverview;
+using Buy2.Application.Features.Sites.GetSiteShiftTemplates;
 using Buy2.Application.Features.Sites.GetSites;
 using Buy2.Application.Features.Sites.Regions;
 using Buy2.Application.Features.Sites.SetSiteDayOff;
@@ -170,6 +171,36 @@ public class GetSitesController : ControllerBase
     {
         var shifts = await _mediator.Send(new GetSiteShiftsQuery(id), cancellation);
         return Ok(shifts);
+    }
+
+    // Get Site Shift Templates
+    // NOTE: {siteId} is intentionally unconstrained (no :int) so that a
+    // malformed id (e.g. "abc") fails model binding and yields 400, not 404.
+    [HttpGet("{siteId}/shift-templates")]
+    [Authorize(Roles = "HRAdmin,Admin,Manager,HR,SuperAdmin")]
+    [ProducesResponseType(typeof(List<SiteShiftTemplateDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetSiteShiftTemplates(
+        [FromRoute] int siteId,
+        [FromQuery] string? search,
+        CancellationToken cancellation)
+    {
+        var result = await _mediator.Send(new GetSiteShiftTemplatesQuery(siteId, search), cancellation);
+
+        if (result.IsNotFound)
+        {
+            return NotFound(new { message = result.ErrorMessage });
+        }
+
+        if (!result.IsSuccess)
+        {
+            return BadRequest(new { message = result.ErrorMessage });
+        }
+
+        return Ok(result.Value);
     }
 
     // Get Sits Employees
