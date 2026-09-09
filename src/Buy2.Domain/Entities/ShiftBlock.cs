@@ -6,7 +6,7 @@ public class ShiftBlock : BaseEntity
     public TimeSpan StartTime { get; set; }
     public TimeSpan EndTime { get; set; }
     public int JobRoleId { get; set; }
-    public int EmployeeId { get; set; }
+    public int? EmployeeId { get; set; }
 
     public ShiftTemplate? ShiftTemplate { get; set; }
     public JobRole? JobRole { get; set; }

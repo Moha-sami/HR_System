@@ -24,7 +24,8 @@ public static class ShiftTemplateAssignmentValidator
         int? excludeTemplateId,
         CancellationToken cancellationToken)
     {
-        var query = shiftBlockRepository.Query().Where(b => employeeIds.Contains(b.EmployeeId));
+        var query = shiftBlockRepository.Query()
+            .Where(b => b.EmployeeId.HasValue && employeeIds.Contains(b.EmployeeId.Value));
         if (excludeTemplateId.HasValue)
         {
             query = query.Where(b => b.ShiftTemplateId != excludeTemplateId.Value);

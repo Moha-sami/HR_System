@@ -68,7 +68,7 @@ public record ShiftTemplateBlockDetailsDto(
     string EndTime,
     int JobRoleId,
     string JobRoleTitle,
-    int AssignedUserId,
+    int? AssignedUserId,
     string AssignedUserName
 );
 
@@ -83,4 +83,9 @@ public record ShiftTemplateDetailsDto(
     List<ShiftTemplateSiteItemDto> Sites,
     List<ShiftTemplateBlockDetailsDto> ShiftBlocks,
     int? LastUpdatedByEmployeeId = null
+);
+
+public record DuplicateShiftTemplateResponseDto(
+    int Id,
+    string Name
 );

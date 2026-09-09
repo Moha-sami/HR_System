@@ -2,6 +2,7 @@ using System.Security.Claims;
 using Buy2.Application.Features.ShiftTemplates.CreateShiftTemplate;
 using Buy2.Application.Features.ShiftTemplates.DeleteShiftTemplate;
 using Buy2.Application.Features.ShiftTemplates.DTOs;
+using Buy2.Application.Features.ShiftTemplates.DuplicateShiftTemplate;
 using Buy2.Application.Features.ShiftTemplates.GetShiftTemplateById;
 using Buy2.Application.Features.ShiftTemplates.GetShiftTemplates;
 using Buy2.Application.Features.ShiftTemplates.UpdateShiftTemplate;
@@ -127,6 +128,45 @@ public class ShiftTemplatesController : ControllerBase
         }
 
         return Ok(result.Value);
+    }
+
+    [HttpPost("{id}/duplicate")]
+    [Authorize(Roles = "HRAdmin,Admin,SuperAdmin")]
+    [ProducesResponseType(typeof(DuplicateShiftTemplateResponseDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<IActionResult> DuplicateShiftTemplate(
+        [FromRoute] string id,
+        CancellationToken cancellationToken)
+    {
+        if (!int.TryParse(id, out var templateId))
+        {
+            return BadRequest(new { message = "Template ID must be a valid integer." });
+        }
+
+        var result = await _mediator.Send(
+            new DuplicateShiftTemplateCommand(templateId, GetActorEmployeeId()),
+            cancellationToken);
+
+        if (result.IsNotFound)
+        {
+            return NotFound(new { message = result.ErrorMessage });
+        }
+
+        if (result.IsConflict)
+        {
+            return Conflict(new { message = result.ErrorMessage });
+        }
+
+        if (!result.IsSuccess)
+        {
+            return BadRequest(new { message = result.ErrorMessage });
+        }
+
+        return CreatedAtAction(nameof(GetShiftTemplateById), new { id = result.Value!.Id }, result.Value);
     }
 
     [HttpDelete("{id:int}")]
