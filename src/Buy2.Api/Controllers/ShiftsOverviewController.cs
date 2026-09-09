@@ -1,5 +1,6 @@
 using Buy2.Application.DTOs.Schedules;
 using Buy2.Application.Features.Schedules.AssignEmployeeToShift;
+using Buy2.Application.Features.Schedules.AutoFillDailyShifts;
 using Buy2.Application.Features.Schedules.CreateShiftBlock;
 using Buy2.Application.Features.Schedules.GetDailyShiftSchedule;
 using Buy2.Application.Features.Schedules.GetSiteShiftsOverview;
@@ -106,6 +107,21 @@ public class ShiftsOverviewController : ControllerBase
         CancellationToken cancellationToken = default)
     {
         var command = new UnassignOrDeleteShiftBlockCommand(id, action, confirmPublishedDeletion);
+        var result = await _mediator.Send(command, cancellationToken);
+        return Ok(result);
+    }
+
+    [HttpPost("/api/v1/shifts/auto-fill")]
+    [ProducesResponseType(typeof(AutoFillDailyShiftsResponseDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<AutoFillDailyShiftsResponseDto>> AutoFillDailyShifts(
+        [FromBody] AutoFillDailyShiftsRequestDto dto,
+        CancellationToken cancellationToken = default)
+    {
+        var command = new AutoFillDailyShiftsCommand(dto.SiteId, dto.Date);
         var result = await _mediator.Send(command, cancellationToken);
         return Ok(result);
     }
