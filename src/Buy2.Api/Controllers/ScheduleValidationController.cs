@@ -1,4 +1,6 @@
 using Buy2.Application.DTOs;
+using Buy2.Application.DTOs.Schedules;
+using Buy2.Application.Features.Schedules.PreflightCopyShifts;
 using Buy2.Application.Features.Schedules.ValidateDraft;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -8,7 +10,7 @@ namespace Buy2.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/schedules/validate-draft")]
-[Authorize(Roles = "Admin,Manager")]
+[Authorize(Roles = "Admin,Manager,OperationsManager")]
 public class ScheduleValidationController : ControllerBase
 {
     private readonly ISender _mediator;
@@ -19,6 +21,7 @@ public class ScheduleValidationController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = "Admin,Manager")]
     [ProducesResponseType(typeof(PreFlightValidationResultDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -29,5 +32,38 @@ public class ScheduleValidationController : ControllerBase
         var result = await _mediator.Send(command, cancellationToken);
 
         return Ok(result);
+    }
+
+    [HttpPost("/api/v1/shifts/copy/preflight")]
+    [Authorize(Roles = "Admin,Manager,OperationsManager")]
+    [ProducesResponseType(typeof(PreflightCopyShiftsResponseDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<ActionResult<PreflightCopyShiftsResponseDto>> PreflightCopyShifts(
+        [FromBody] PreflightCopyShiftsRequestDto request,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var query = new PreflightCopyShiftsQuery(
+                request.SiteId,
+                request.SourceDate,
+                request.TargetDates,
+                request.RecurringDays,
+                request.WeekCount);
+
+            var result = await _mediator.Send(query, cancellationToken);
+            return Ok(result);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 }
