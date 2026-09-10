@@ -1,5 +1,7 @@
 using Buy2.Application.DTOs;
+using Buy2.Application.DTOs.Schedules;
 using Buy2.Application.DTOs.Sites;
+using Buy2.Application.Features.Schedules.ApplyTemplate;
 using Buy2.Application.Features.Sites.CreateSite;
 using Buy2.Application.Features.Sites.DeleteSite;
 using Buy2.Application.Features.Sites.Documents;
@@ -286,5 +288,36 @@ public class GetSitesController : ControllerBase
         var command = new SetSiteDayOffCommand(siteId, date, dto.IsDayOff);
         var result = await _mediator.Send(command, cancellationToken);
         return Ok(result);
+    }
+
+    // Apply Shift Template to Site Date
+    [HttpPost("{siteId}/dates/{date}/apply-template")]
+    [Authorize(Roles = "Admin,Manager,OperationsManager")]
+    [ProducesResponseType(typeof(ApplyTemplateResponseDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> ApplyTemplate(
+        [FromRoute] int siteId,
+        [FromRoute] DateOnly date,
+        [FromBody] ApplyTemplateRequestDto dto,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await _mediator.Send(
+            new ApplyTemplateCommand(siteId, date, dto.TemplateId, dto.Keep),
+            cancellationToken);
+
+        if (result.IsNotFound)
+        {
+            return NotFound(new { message = result.ErrorMessage });
+        }
+
+        if (!result.IsSuccess)
+        {
+            return BadRequest(new { message = result.ErrorMessage });
+        }
+
+        return Ok(result.Value);
     }
 }
