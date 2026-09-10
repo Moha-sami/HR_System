@@ -1,9 +1,9 @@
-﻿namespace Buy2.Domain.Enums
+namespace Buy2.Domain.Enums
 {
     public enum ShiftStatus
     {
-        Draft=0,
+        Draft = 0,
         Published = 1,
-        
+        PendingHrApproval = 2
     }
 }
