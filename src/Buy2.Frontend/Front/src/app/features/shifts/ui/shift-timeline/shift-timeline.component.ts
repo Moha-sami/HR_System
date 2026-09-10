@@ -11,8 +11,8 @@ import {
 
 export type { TimelineBlock };
 
-const LANE_HEIGHT = 56;
-const BAR_HEIGHT = 44;
+const LANE_HEIGHT = 88;
+const BAR_HEIGHT = 78;
 
 interface BarView {
   id: string | number;

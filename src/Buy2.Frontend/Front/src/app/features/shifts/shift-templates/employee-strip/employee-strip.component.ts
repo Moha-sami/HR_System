@@ -86,6 +86,30 @@ export class EmployeeStripComponent {
     return this.assignedIds().includes(id);
   }
 
+  private static readonly AVATAR_TONES = [
+    'bg-primary-50 text-primary-700',
+    'bg-success-50 text-success-700',
+    'bg-warning-100 text-warning-800',
+    'bg-error-50 text-error-800',
+  ];
+
+  /** Initials avatar text derived from the employee name (any script). */
+  avatarInitials(name: string): string {
+    const parts = name.trim().split(/\s+/).filter(Boolean);
+    if (parts.length === 0) return '?';
+    const first = parts[0].codePointAt(0) ?? 0;
+    const last = parts.length > 1 ? (parts[parts.length - 1].codePointAt(0) ?? 0) : 0;
+    return (String.fromCodePoint(first) + (last ? String.fromCodePoint(last) : '')).toUpperCase();
+  }
+
+  /** Deterministic avatar tint per role, drawn from existing tokens. */
+  avatarTone(roleTitle: string): string {
+    let hash = 0;
+    for (const ch of roleTitle) hash = (hash * 31 + (ch.codePointAt(0) ?? 0)) | 0;
+    const tones = EmployeeStripComponent.AVATAR_TONES;
+    return tones[Math.abs(hash) % tones.length];
+  }
+
   riskBadgeClass(token: string): string {
     switch (token) {
       case 'TopPerformer':

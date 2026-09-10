@@ -49,7 +49,7 @@
       <!-- Block bars -->
       @for (bar of bars(); track bar.id) {
         <div
-          class="timeline-bar absolute flex items-center justify-between gap-2 rounded-md border px-3"
+          class="timeline-bar absolute flex flex-col justify-center gap-1 rounded-lg border px-3"
           cdkDropList
           [cdkDropListData]="bar.id"
           (cdkDropListDropped)="onBarDrop($event)"
@@ -62,14 +62,16 @@
           [style.inset-inline-start.%]="bar.startPct"
           [style.width.%]="bar.widthPct"
         >
-          <div class="min-w-0 truncate text-sm">
-            <span class="font-medium text-neutral-800">{{ bar.label }}</span>
-            <span class="ml-2 text-xs text-neutral-500">{{ bar.time }}</span>
+          <div class="min-w-0 truncate leading-tight">
             @if (bar.assigneeName) {
-              <span class="ml-2 truncate text-xs font-medium text-primary-700">{{ bar.assigneeName }}</span>
+              <p class="truncate text-sm font-semibold text-neutral-900">{{ bar.assigneeName }}</p>
+              <p class="truncate text-xs text-neutral-500">{{ bar.label }} · {{ bar.time }}</p>
+            } @else {
+              <p class="truncate text-sm font-semibold text-neutral-800">{{ bar.label }}</p>
+              <p class="truncate text-xs text-neutral-500">{{ bar.time }}</p>
             }
           </div>
-          <div class="flex shrink-0 items-center gap-1">
+          <div class="flex shrink-0 items-center justify-end gap-1">
             <button
               type="button"
               class="rounded p-1 text-primary-600 hover:bg-primary-50"
@@ -102,6 +104,7 @@
             </button>
           </div>
         </div>
+
       }
 
       @if (blocks().length === 0) {
