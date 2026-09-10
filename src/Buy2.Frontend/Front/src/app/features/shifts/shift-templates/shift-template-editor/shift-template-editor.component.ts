@@ -10,12 +10,13 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
-import { forkJoin, Subject, takeUntil } from 'rxjs';
+import { Subject, takeUntil } from 'rxjs';
+import { CdkDragDrop, CdkDropList, CdkDropListGroup } from '@angular/cdk/drag-drop';
 import { ShiftsLookupsService } from '../../data-access/services/shifts-lookups.service';
 import { ShiftTemplateService } from '../../data-access/services/shift-template.service';
 import type {
+  ShiftCandidateEmployee,
   ShiftsJobRoleLookup,
-  ShiftsSiteEmployee,
   ShiftsSiteLookup,
 } from '../../data-access/models/shifts-lookups.models';
 import type {
@@ -25,6 +26,7 @@ import type {
 import { ButtonComponent } from '@app/shared/components/button/button.component';
 import { ModalComponent } from '@app/shared/components/modal/modal.component';
 import { ModalBodyComponent } from '@app/shared/components/modal/modal-body.component';
+import { EmployeeStripComponent } from '../employee-strip/employee-strip.component';
 import {
   formatBackendTime,
   parseBackendTime,
@@ -48,8 +50,9 @@ export interface WorkingBlock {
 
 /**
  * Ticket #327: shared create/edit form with a block builder row.
- * Inline validation mirrors every server rule; timeline (#328) and the
- * employee strip with drag-and-drop (#329) land in later tickets.
+ * Ticket #329: employee strip (primary assignment path) with drag-and-drop
+ * onto builder rows; the row picker remains as the accessible fallback.
+ * Timeline drops (#328) land in a later ticket.
  */
 @Component({
   selector: 'app-shift-template-editor',
@@ -61,6 +64,9 @@ export interface WorkingBlock {
     ButtonComponent,
     ModalComponent,
     ModalBodyComponent,
+    EmployeeStripComponent,
+    CdkDropListGroup,
+    CdkDropList,
   ],
   templateUrl: './shift-template-editor.component.html',
 })
@@ -91,7 +97,8 @@ export class ShiftTemplateEditorComponent implements OnInit {
   // ── Lookups ─────────────────────────────────────────────────────────────
   readonly sites = signal<ShiftsSiteLookup[]>([]);
   readonly roles = signal<ShiftsJobRoleLookup[]>([]);
-  readonly employees = signal<ShiftsSiteEmployee[]>([]);
+  /** Picker options, fed by the strip's loaded pages (single fetch path). */
+  readonly employees = signal<ShiftCandidateEmployee[]>([]);
 
   // ── Working blocks ──────────────────────────────────────────────────────
   readonly blocks = signal<WorkingBlock[]>([]);
@@ -142,6 +149,62 @@ export class ShiftTemplateEditorComponent implements OnInit {
     this.sitesOpen.set(false);
   }
 
+  // ── Employee strip (#329) ─────────────────────────────────────────────
+  /** Ids currently assigned, so the strip can mark those cards. */
+  readonly assignedIds = computed(() =>
+    this.blocks()
+      .map((b) => b.assignedUserId)
+      .filter((id): id is number => id !== null),
+  );
+
+  /** Strip pages feed the fallback picker; page 1 resets the options. */
+  onStripPage(event: { page: number; items: ShiftCandidateEmployee[] }): void {
+    if (event.page === 1) {
+      this.employees.set(event.items);
+      return;
+    }
+    this.employees.update((employees) => {
+      const seen = new Map(employees.map((e) => [e.id, e]));
+      for (const emp of event.items) seen.set(emp.id, emp);
+      return [...seen.values()];
+    });
+  }
+
+  /**
+   * Drop (or move) a strip card onto a builder row. A drop replaces the
+   * row's assignee; an employee on another row moves (backend rejects
+   * duplicates across blocks).
+   */
+  onDrop(event: CdkDragDrop<WorkingBlock, WorkingBlock, ShiftCandidateEmployee>): void {
+    const employee = event.item.data;
+    const target = event.container.data;
+    if (!employee || !target) return;
+    this.blocks.update((blocks) =>
+      blocks.map((b) => {
+        if (b.clientId === target.clientId) {
+          return { ...b, assignedUserId: employee.id, assignedUserName: employee.fullName };
+        }
+        if (b.assignedUserId === employee.id) {
+          return { ...b, assignedUserId: null, assignedUserName: null };
+        }
+        return b;
+      }),
+    );
+  }
+
+  unassignBlock(block: WorkingBlock): void {
+    this.blocks.update((blocks) =>
+      blocks.map((b) =>
+        b.clientId === block.clientId
+          ? { ...b, assignedUserId: null, assignedUserName: null }
+          : b,
+      ),
+    );
+    if (this.rowEmployeeId() !== null && this.editingClientId() === block.clientId) {
+      this.rowEmployeeId.set(null);
+    }
+  }
+
   // ── Lookups ─────────────────────────────────────────────────────────────
   private loadLookups(): void {
     this.lookups
@@ -152,24 +215,6 @@ export class ShiftTemplateEditorComponent implements OnInit {
       .getJobRoles()
       .pipe(takeUntil(this.destroy$))
       .subscribe({ next: (roles) => this.roles.set(roles), error: () => {} });
-  }
-
-  reloadEmployees(): void {
-    const ids = this.selectedSiteIds();
-    if (ids.length === 0) {
-      this.employees.set([]);
-      return;
-    }
-    forkJoin(ids.map((id) => this.lookups.getSiteEmployees(id)))
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (pages) => {
-          const seen = new Map<number, ShiftsSiteEmployee>();
-          for (const page of pages) for (const emp of page) seen.set(emp.employeeId, emp);
-          this.employees.set([...seen.values()]);
-        },
-        error: () => {},
-      });
   }
 
   // ── Edit prefill ────────────────────────────────────────────────────────
@@ -211,7 +256,6 @@ export class ShiftTemplateEditorComponent implements OnInit {
               };
             }),
           );
-          this.reloadEmployees();
           this.loading.set(false);
         },
         error: () => {
@@ -232,7 +276,6 @@ export class ShiftTemplateEditorComponent implements OnInit {
     this.selectedSiteIds.update((ids) =>
       ids.includes(siteId) ? ids.filter((id) => id !== siteId) : [...ids, siteId],
     );
-    this.reloadEmployees();
   }
 
   // ── Shift range ─────────────────────────────────────────────────────────
@@ -256,7 +299,7 @@ export class ShiftTemplateEditorComponent implements OnInit {
     const roleId = this.rowRoleId() as number;
     const role = this.roles().find((r) => r.id === roleId);
     const employeeId = this.rowEmployeeId();
-    const employee = employeeId !== null ? this.employees().find((e) => e.employeeId === employeeId) : undefined;
+    const employee = employeeId !== null ? this.employees().find((e) => e.id === employeeId) : undefined;
 
     const editing = this.editingClientId();
     if (editing !== null) {

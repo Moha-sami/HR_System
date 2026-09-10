@@ -1,14 +1,16 @@
 import { type ComponentFixture, TestBed } from '@angular/core/testing';
-import { NO_ERRORS_SCHEMA, Pipe, type PipeTransform } from '@angular/core';
+import { NO_ERRORS_SCHEMA, Component, Pipe, input, output, type PipeTransform } from '@angular/core';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting, HttpTestingController } from '@angular/common/http/testing';
 import { Router, ActivatedRoute, convertToParamMap } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
-import { ShiftTemplateEditorComponent } from './shift-template-editor.component';
+import type { CdkDragDrop } from '@angular/cdk/drag-drop';
+import { ShiftTemplateEditorComponent, type WorkingBlock } from './shift-template-editor.component';
+import { EmployeeStripComponent } from '../employee-strip/employee-strip.component';
 import type { ShiftTemplateDetails } from '../../data-access/models/shift-template.models';
 import type {
+  ShiftCandidateEmployee,
   ShiftsJobRoleLookup,
-  ShiftsSiteEmployee,
   ShiftsSiteLookup,
 } from '../../data-access/models/shifts-lookups.models';
 
@@ -19,6 +21,14 @@ class MockTranslatePipe implements PipeTransform {
   }
 }
 
+/** Strip stub: assignment state is driven through onStripPage, not gestures. */
+@Component({ selector: 'app-employee-strip', standalone: true, template: '' })
+class StubStripComponent {
+  readonly siteIds = input<number[]>([]);
+  readonly assignedIds = input<number[]>([]);
+  readonly pageLoaded = output<{ page: number; items: ShiftCandidateEmployee[] }>();
+}
+
 const SITES: ShiftsSiteLookup[] = [
   { id: 1, siteName: 'Cairo' },
   { id: 2, siteName: 'Giza' },
@@ -26,8 +36,17 @@ const SITES: ShiftsSiteLookup[] = [
 
 const ROLES: ShiftsJobRoleLookup[] = [{ id: 10, title: 'Cashier' }];
 
-const EMPLOYEES: ShiftsSiteEmployee[] = [
-  { employeeId: 100, fullName: 'Sara', roleName: 'Cashier' },
+const EMPLOYEES: ShiftCandidateEmployee[] = [
+  {
+    id: 100, employeeCode: 'E100', fullName: 'Sara', roleTitle: 'Cashier',
+    jobRoleId: 10, weeklyCompletedHours: 20, ratingScore: 4.6,
+    riskStatusToken: 'TopPerformer', isPreferredForSite: true,
+  },
+  {
+    id: 101, employeeCode: 'E101', fullName: 'Omar', roleTitle: 'Guard',
+    jobRoleId: 11, weeklyCompletedHours: 40, ratingScore: 3.5,
+    riskStatusToken: 'OvertimeRisk', isPreferredForSite: false,
+  },
 ];
 
 const DETAILS: ShiftTemplateDetails = {
@@ -73,8 +92,8 @@ describe('ShiftTemplateEditorComponent', () => {
       ],
     })
       .overrideComponent(ShiftTemplateEditorComponent, {
-        remove: { imports: [TranslatePipe] },
-        add: { imports: [MockTranslatePipe] },
+        remove: { imports: [TranslatePipe, EmployeeStripComponent] },
+        add: { imports: [MockTranslatePipe, StubStripComponent] },
       })
       .compileComponents();
 
@@ -86,7 +105,7 @@ describe('ShiftTemplateEditorComponent', () => {
 
   function flushLookups(): void {
     httpMock.expectOne((r) => r.url.endsWith('/sites')).flush(SITES);
-    httpMock.expectOne((r) => r.url.endsWith('/job-roles')).flush(ROLES);
+    httpMock.expectOne((r) => r.url.endsWith('/jobs')).flush({ items: ROLES });
     fixture.detectChanges();
   }
 
@@ -94,8 +113,24 @@ describe('ShiftTemplateEditorComponent', () => {
     const req = httpMock.expectOne((r) => r.url.endsWith('/shift-templates/3'));
     expect(req.request.method).toBe('GET');
     req.flush(DETAILS);
-    httpMock.expectOne((r) => r.url.endsWith('/sites/1/employees')).flush(EMPLOYEES);
+    // The strip feeds the picker through pageLoaded; no per-site fan-out.
+    component.onStripPage({ page: 1, items: EMPLOYEES });
     fixture.detectChanges();
+  }
+
+  /** Feeds the picker from the strip in create mode. */
+  function feedStrip(): void {
+    component.onStripPage({ page: 1, items: EMPLOYEES });
+    fixture.detectChanges();
+  }
+
+  /** Builds a stub drop event: strip card onto a builder row. */
+  function dropEvent(employee: ShiftCandidateEmployee, clientId: number) {
+    const block = component.blocks().find((b) => b.clientId === clientId);
+    return {
+      item: { data: employee },
+      container: { data: block },
+    } as unknown as CdkDragDrop<WorkingBlock, WorkingBlock, ShiftCandidateEmployee>;
   }
 
   /** Prefills the builder row with a valid in-range block. */
@@ -229,6 +264,75 @@ describe('ShiftTemplateEditorComponent', () => {
     expect(req.request.body.shiftBlocks.length).toBe(1);
     expect(req.request.body.shiftBlocks[0].id).toBe(11);
     req.flush(DETAILS);
+    fixture.detectChanges();
+
+    expect(navigated).toEqual([['/scheduling/shift-templates']]);
+  });
+
+  it('should assign a dropped strip card to the block and mark it assigned', async () => {
+    await setup(null);
+    flushLookups();
+    feedStrip();
+    fillValidForm();
+
+    component.onDrop(dropEvent(EMPLOYEES[0], component.blocks()[0].clientId));
+
+    expect(component.blocks()[0].assignedUserId).toBe(100);
+    expect(component.blocks()[0].assignedUserName).toBe('Sara');
+    expect(component.assignedIds()).toEqual([100]);
+  });
+
+  it('should move an employee when dropped on another block', async () => {
+    await setup(null);
+    flushLookups();
+    feedStrip();
+    fillValidForm();
+    component.rowStartHm.set('02:00');
+    component.rowStartMer.set('PM');
+    component.rowEndHm.set('03:00');
+    component.rowEndMer.set('PM');
+    component.rowRoleId.set(10);
+    component.postBlock();
+    expect(component.blocks().length).toBe(2);
+
+    const [first, second] = component.blocks();
+    component.onDrop(dropEvent(EMPLOYEES[0], first.clientId));
+    component.onDrop(dropEvent(EMPLOYEES[0], second.clientId));
+
+    expect(component.blocks()[0].assignedUserId).toBeNull();
+    expect(component.blocks()[1].assignedUserId).toBe(100);
+    expect(component.assignedIds()).toEqual([100]);
+  });
+
+  it('should unassign through the remove control', async () => {
+    await setup(null);
+    flushLookups();
+    feedStrip();
+    fillValidForm();
+
+    component.onDrop(dropEvent(EMPLOYEES[0], component.blocks()[0].clientId));
+    component.unassignBlock(component.blocks()[0]);
+
+    expect(component.blocks()[0].assignedUserId).toBeNull();
+    expect(component.blocks()[0].assignedUserName).toBeNull();
+    expect(component.assignedIds()).toEqual([]);
+  });
+
+  it('should persist a dropped assignment through save and reload', async () => {
+    await setup('3');
+    flushLookups();
+    flushDetails();
+
+    component.onDrop(dropEvent(EMPLOYEES[1], component.blocks()[0].clientId));
+    component.save();
+
+    const req = httpMock.expectOne((r) => r.url.endsWith('/shift-templates/3'));
+    expect(req.request.method).toBe('PUT');
+    expect(req.request.body.shiftBlocks[0].assignedUserId).toBe(101);
+    req.flush({
+      ...DETAILS,
+      shiftBlocks: [{ ...DETAILS.shiftBlocks[0], assignedUserId: 101, assignedUserName: 'Omar' }],
+    });
     fixture.detectChanges();
 
     expect(navigated).toEqual([['/scheduling/shift-templates']]);

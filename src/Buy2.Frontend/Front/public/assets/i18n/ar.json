@@ -84,10 +84,25 @@
       "DELETE_BLOCK": "حذف المقطع",
       "DELETE_BLOCK_TITLE": "حذف المقطع",
       "DELETE_BLOCK_MESSAGE": "إزالة هذا المقطع من القالب؟",
+      "UNASSIGN_EMPLOYEE": "إلغاء إسناد الموظف",
       "SAVE_ERROR": "فشل حفظ القالب.",
       "LOAD_ERROR": "فشل تحميل القالب.",
       "DISCARD": "تجاهل",
       "DONE": "تم"
+    },
+    "STRIP": {
+      "TITLE": "الموظفون",
+      "SEARCH_PLACEHOLDER": "ابحث عن الموظفين...",
+      "PREFERRED_ONLY": "المفضلون فقط",
+      "ASSIGNED": "مسند",
+      "PREFERRED": "مفضل",
+      "NO_SITES": "اختر موقعاً لتحميل موظفيه.",
+      "EMPTY": "لا يوجد موظفون.",
+      "LOAD_ERROR": "فشل تحميل الموظفين.",
+      "RISK_TOP_PERFORMER": "متميز",
+      "RISK_OVERTIME": "خطر عمل إضافي",
+      "RISK_WARNING": "تحذير",
+      "RISK_NORMAL": "طبيعي"
     }
   },
   "AUTH": {

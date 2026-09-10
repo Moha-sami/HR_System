@@ -1,0 +1,100 @@
+<div class="mb-4 rounded-lg border border-neutral-200 p-4">
+  <!-- ── Header ────────────────────────────────────────────── -->
+  <div class="mb-3 flex items-center justify-between">
+    <h3 class="text-sm font-medium text-neutral-700">
+      {{ 'SHIFT_TEMPLATES.STRIP.TITLE' | translate }}
+      <span class="text-neutral-400">({{ totalCount() }})</span>
+    </h3>
+    <label class="flex cursor-pointer items-center gap-2 text-sm text-neutral-600">
+      <input
+        type="checkbox"
+        class="size-4 accent-primary-600"
+        [checked]="preferredOnly()"
+        (change)="togglePreferred()"
+      />
+      {{ 'SHIFT_TEMPLATES.STRIP.PREFERRED_ONLY' | translate }}
+    </label>
+  </div>
+
+  <!-- ── Filters ───────────────────────────────────────────── -->
+  <div class="mb-3 flex flex-wrap items-center gap-2">
+    <input
+      type="text"
+      class="w-48 rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-1.5 text-sm outline-none focus:border-primary-500"
+      [placeholder]="'SHIFT_TEMPLATES.STRIP.SEARCH_PLACEHOLDER' | translate"
+      [ngModel]="search()"
+      (ngModelChange)="onSearchInput($event)"
+    />
+    @for (tier of tiers; track tier) {
+      <button
+        type="button"
+        class="rounded-full border px-3 py-1 text-xs font-medium transition-colors"
+        [class.border-primary-600]="selectedTiers().includes(tier)"
+        [class.bg-primary-50]="selectedTiers().includes(tier)"
+        [class.text-primary-700]="selectedTiers().includes(tier)"
+        [class.border-neutral-200]="!selectedTiers().includes(tier)"
+        [class.text-neutral-500]="!selectedTiers().includes(tier)"
+        [attr.aria-pressed]="selectedTiers().includes(tier)"
+        (click)="toggleTier(tier)"
+      >
+        {{ tier }}
+      </button>
+    }
+  </div>
+
+  <!-- ── Cards ─────────────────────────────────────────────── -->
+  @if (siteIds().length === 0) {
+    <p class="py-4 text-center text-sm text-neutral-400">
+      {{ 'SHIFT_TEMPLATES.STRIP.NO_SITES' | translate }}
+    </p>
+  } @else {
+    <div
+      class="flex gap-3 overflow-x-auto pb-2"
+      (scroll)="onScroll($event)"
+    >
+      @for (emp of items(); track emp.id) {
+        <div
+          cdkDrag
+          [cdkDragData]="emp"
+          class="w-44 shrink-0 cursor-grab rounded-lg border border-neutral-200 bg-white p-3 active:cursor-grabbing"
+          [class.opacity-60]="isAssigned(emp.id)"
+        >
+          <p class="truncate text-sm font-medium text-neutral-800">{{ emp.fullName }}</p>
+          <p class="truncate text-xs text-neutral-400">{{ emp.employeeCode }} · {{ emp.roleTitle }}</p>
+          <p class="mt-1 text-xs text-neutral-500">
+            {{ emp.weeklyCompletedHours }}h · ★ {{ emp.ratingScore }}
+          </p>
+          <div class="mt-2 flex flex-wrap gap-1">
+            <span
+              class="rounded px-2 py-0.5 text-xs font-medium"
+              [ngClass]="riskBadgeClass(emp.riskStatusToken)"
+            >
+              {{ riskLabelKey(emp.riskStatusToken) | translate }}
+            </span>
+            @if (isAssigned(emp.id)) {
+              <span class="rounded bg-primary-50 px-2 py-0.5 text-xs font-medium text-primary-700">
+                {{ 'SHIFT_TEMPLATES.STRIP.ASSIGNED' | translate }}
+              </span>
+            }
+            @if (emp.isPreferredForSite) {
+              <span class="rounded bg-primary-50 px-2 py-0.5 text-xs font-medium text-primary-700">
+                {{ 'SHIFT_TEMPLATES.STRIP.PREFERRED' | translate }}
+              </span>
+            }
+          </div>
+        </div>
+      }
+      @if (loading()) {
+        <div class="flex w-44 shrink-0 items-center justify-center">
+          <span class="size-6 animate-spin rounded-full border-2 border-primary-200 border-t-primary-600"></span>
+        </div>
+      }
+    </div>
+    @if (loadError()) {
+      <p role="alert" class="mt-2 text-sm text-error-600">{{ 'SHIFT_TEMPLATES.STRIP.LOAD_ERROR' | translate }}</p>
+    }
+    @if (items().length === 0 && !loading() && !loadError()) {
+      <p class="py-4 text-center text-sm text-neutral-400">{{ 'SHIFT_TEMPLATES.STRIP.EMPTY' | translate }}</p>
+    }
+  }
+</div>

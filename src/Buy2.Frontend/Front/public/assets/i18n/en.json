@@ -84,10 +84,25 @@
       "DELETE_BLOCK": "Delete block",
       "DELETE_BLOCK_TITLE": "Delete block",
       "DELETE_BLOCK_MESSAGE": "Remove this block from the template?",
+      "UNASSIGN_EMPLOYEE": "Unassign employee",
       "SAVE_ERROR": "Failed to save the template.",
       "LOAD_ERROR": "Failed to load the template.",
       "DISCARD": "Discard",
       "DONE": "Done"
+    },
+    "STRIP": {
+      "TITLE": "Employees",
+      "SEARCH_PLACEHOLDER": "Search employees...",
+      "PREFERRED_ONLY": "Preferred only",
+      "ASSIGNED": "Assigned",
+      "PREFERRED": "Preferred",
+      "NO_SITES": "Select a site to load its employees.",
+      "EMPTY": "No employees found.",
+      "LOAD_ERROR": "Failed to load employees.",
+      "RISK_TOP_PERFORMER": "Top performer",
+      "RISK_OVERTIME": "Overtime risk",
+      "RISK_WARNING": "Warning",
+      "RISK_NORMAL": "Normal"
     }
   },
   "AUTH": {

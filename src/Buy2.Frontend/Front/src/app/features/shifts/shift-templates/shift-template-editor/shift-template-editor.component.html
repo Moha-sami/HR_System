@@ -1,4 +1,4 @@
-<div class="p-6">
+<div class="p-6" cdkDropListGroup>
 
   <!-- ── Title ───────────────────────────────────────────────── -->
   <div class="mb-6 flex items-center gap-2">
@@ -134,6 +134,13 @@
       {{ 'SHIFT_TEMPLATES.EDITOR.BLOCKS_TITLE' | translate }}
     </h2>
 
+    <!-- Employee strip (#329): primary assignment path -->
+    <app-employee-strip
+      [siteIds]="selectedSiteIds()"
+      [assignedIds]="assignedIds()"
+      (pageLoaded)="onStripPage($event)"
+    />
+
     <!-- Builder row -->
     <div class="mb-3 flex flex-wrap items-center gap-3">
       <span class="text-sm text-neutral-600">{{ 'SHIFT_TEMPLATES.EDITOR.BLOCK_START' | translate }}</span>
@@ -194,8 +201,8 @@
         (ngModelChange)="rowEmployeeId.set($event === '' ? null : +$event)"
       >
         <option [ngValue]="null">{{ 'SHIFT_TEMPLATES.EDITOR.EMPLOYEE_OPTIONAL' | translate }}</option>
-        @for (emp of employees(); track emp.employeeId) {
-          <option [ngValue]="emp.employeeId">{{ emp.fullName }} ({{ emp.roleName }})</option>
+        @for (emp of employees(); track emp.id) {
+          <option [ngValue]="emp.id">{{ emp.fullName }} ({{ emp.roleTitle }})</option>
         }
       </select>
 
@@ -228,12 +235,29 @@
     @if (blocks().length > 0) {
       <ul class="mb-4 divide-y divide-neutral-200 rounded-lg border border-neutral-200">
         @for (block of blocks(); track block.clientId) {
-          <li class="flex items-center justify-between px-4 py-2.5">
+          <li
+            class="flex items-center justify-between px-4 py-2.5"
+            cdkDropList
+            [cdkDropListData]="block"
+            (cdkDropListDropped)="onDrop($event)"
+          >
             <div class="flex items-center gap-3 text-sm">
               <span class="font-medium text-neutral-800">{{ blockLabel(block) }}</span>
               <span class="rounded bg-primary-50 px-2 py-0.5 text-primary-700">{{ block.jobRoleTitle }}</span>
               @if (block.assignedUserName) {
-                <span class="text-neutral-500">{{ block.assignedUserName }}</span>
+                <span class="flex items-center gap-1 text-neutral-500">
+                  {{ block.assignedUserName }}
+                  <button
+                    type="button"
+                    class="rounded p-0.5 text-neutral-400 hover:bg-neutral-100 hover:text-error-600"
+                    [attr.aria-label]="'SHIFT_TEMPLATES.EDITOR.UNASSIGN_EMPLOYEE' | translate"
+                    (click)="unassignBlock(block)"
+                  >
+                    <svg aria-hidden="true" class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </span>
               }
             </div>
             <div class="flex items-center gap-1">
