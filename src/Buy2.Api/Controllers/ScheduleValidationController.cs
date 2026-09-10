@@ -1,6 +1,7 @@
 using Buy2.Application.DTOs;
 using Buy2.Application.DTOs.Schedules;
 using Buy2.Application.Features.Schedules.CommitCopyShifts;
+using Buy2.Application.Features.Schedules.CommitPublishSchedule;
 using Buy2.Application.Features.Schedules.PreflightCopyShifts;
 using Buy2.Application.Features.Schedules.PreflightPublishSchedule;
 using Buy2.Application.Features.Schedules.ValidateDraft;
@@ -127,6 +128,40 @@ public class ScheduleValidationController : ControllerBase
                 request.TargetRoleIds);
 
             var result = await _mediator.Send(query, cancellationToken);
+            return Ok(result);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    [HttpPost("/api/v1/shifts/publish/commit")]
+    [Authorize(Roles = "Admin,Manager,OperationsManager")]
+    [ProducesResponseType(typeof(CommitPublishScheduleResponseDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<ActionResult<CommitPublishScheduleResponseDto>> CommitPublishSchedule(
+        [FromBody] CommitPublishScheduleRequestDto request,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var command = new CommitPublishScheduleCommand(
+                request.SiteId,
+                request.TargetDates,
+                request.AllUnpublishedDays,
+                request.TargetRoleIds,
+                request.ExceptionResolutions,
+                request.OvertimeJustification);
+
+            var result = await _mediator.Send(command, cancellationToken);
             return Ok(result);
         }
         catch (KeyNotFoundException ex)
