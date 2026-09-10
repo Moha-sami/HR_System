@@ -1,6 +1,7 @@
 import type { Routes } from '@angular/router';
 import { ShiftsPlaceholderComponent } from './shifts-placeholder/shifts-placeholder.component';
 import { ShiftTemplateListComponent } from './shift-templates/shift-template-list/shift-template-list.component';
+import { ShiftTemplateEditorComponent } from './shift-templates/shift-template-editor/shift-template-editor.component';
 
 export const SHIFTS_ROUTES: Routes = [
   { path: '', redirectTo: 'shift-templates', pathMatch: 'full' },
@@ -9,16 +10,14 @@ export const SHIFTS_ROUTES: Routes = [
     component: ShiftTemplateListComponent,
     data: { titleKey: 'LAYOUT.NAV.SHIFT_TEMPLATES' },
   },
-  // Ticket #327 replaces this placeholder with the real template editor.
   {
     path: 'shift-templates/new',
-    component: ShiftsPlaceholderComponent,
+    component: ShiftTemplateEditorComponent,
     data: { titleKey: 'COMMON.CREATE' },
   },
-  // Ticket #327 replaces this placeholder with the real template editor.
   {
     path: 'shift-templates/:id/edit',
-    component: ShiftsPlaceholderComponent,
+    component: ShiftTemplateEditorComponent,
     data: { titleKey: 'COMMON.EDIT' },
   },
   {
