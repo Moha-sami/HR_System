@@ -87,12 +87,9 @@ public class ShiftTemplateUpdateService
             return Propagate<ValidatedShiftTemplateUpdate>(references);
         }
 
-        var assignments = await EnsureAssignmentsValidAsync(template.Id, dto, cancellationToken);
-        if (!assignments.IsSuccess)
-        {
-            return Propagate<ValidatedShiftTemplateUpdate>(assignments);
-        }
-
+        // NOTE: employee assignment on template blocks is a reusable snapshot value.
+        // The same employee may appear in many blocks across many templates,
+        // so no intra-template or cross-template employee uniqueness is enforced here.
         return Result<ValidatedShiftTemplateUpdate>.Success(new ValidatedShiftTemplateUpdate(
             template,
             dto.Name.Trim(),
@@ -234,23 +231,6 @@ public class ShiftTemplateUpdateService
         var employeeIds = dto.ShiftBlocks.Select(b => b.AssignedUserId).Distinct().ToList();
         return await ShiftTemplateExistenceValidator.EnsureEmployeesExistAsync(
             _employeeRepository, employeeIds, cancellationToken);
-    }
-
-    private async Task<Result> EnsureAssignmentsValidAsync(
-        int templateId,
-        UpdateShiftTemplateDto dto,
-        CancellationToken cancellationToken)
-    {
-        var duplicateCheck = ShiftTemplateAssignmentValidator.EnsureNoDuplicateEmployees(
-            dto.ShiftBlocks.Select(b => b.AssignedUserId).ToList());
-        if (!duplicateCheck.IsSuccess)
-        {
-            return duplicateCheck;
-        }
-
-        var employeeIds = dto.ShiftBlocks.Select(b => b.AssignedUserId).Distinct().ToList();
-        return await ShiftTemplateAssignmentValidator.EnsureEmployeesNotAssignedElsewhereAsync(
-            _shiftBlockRepository, employeeIds, excludeTemplateId: templateId, cancellationToken);
     }
 
     private void ReplaceSiteLinks(ShiftTemplate template, List<int> siteIds)

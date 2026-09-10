@@ -32,13 +32,10 @@ public class ShiftBlockConfiguration : IEntityTypeConfiguration<ShiftBlock>
             .IsRequired(false)
             .OnDelete(DeleteBehavior.Restrict);
 
-        // Employee can be assigned to at most one block globally
-        // (covers: no duplicate inside same template + no employee in two templates).
-        // Unassigned blocks (EmployeeId IS NULL) are excluded so templates
-        // can hold any number of open blocks.
-        builder.HasIndex(b => b.EmployeeId)
-            .IsUnique()
-            .HasFilter("[EmployeeId] IS NOT NULL");
+        // Employee assignment on template blocks is a reusable snapshot value:
+        // the same employee may appear in many blocks across many templates
+        // (e.g. saved daily canvases). The index exists for query performance only.
+        builder.HasIndex(b => b.EmployeeId);
 
         builder.HasIndex(b => b.ShiftTemplateId);
     }

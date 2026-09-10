@@ -72,11 +72,6 @@ public class UpdateShiftTemplateCommandHandler
             return Result<ShiftTemplateDetailsDto>.Conflict(
                 "The shift template was modified by another request. Please reload and try again.");
         }
-        catch (DbUpdateException ex) when (IsEmployeeAssignmentViolation(ex))
-        {
-            return Result<ShiftTemplateDetailsDto>.Conflict(
-                "One or more employees are already assigned to another shift.");
-        }
     }
 
     private static Result<ShiftTemplateDetailsDto> PropagateFailure<T>(Result<T> source) => source.ErrorType switch
@@ -88,18 +83,4 @@ public class UpdateShiftTemplateCommandHandler
         _ => Result<ShiftTemplateDetailsDto>.ValidationFailure(
             source.ErrorMessage ?? "Shift template update failed validation.")
     };
-
-    private static bool IsEmployeeAssignmentViolation(DbUpdateException ex)
-    {
-        for (var current = (Exception?)ex; current is not null; current = current.InnerException)
-        {
-            if (current.GetType().Name.Contains("SqlException", StringComparison.Ordinal)
-                && current.Message.Contains("IX_ShiftBlocks_EmployeeId", StringComparison.OrdinalIgnoreCase))
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
 }

@@ -1,7 +1,9 @@
+using System.Security.Claims;
 using Buy2.Application.DTOs;
 using Buy2.Application.DTOs.Schedules;
 using Buy2.Application.DTOs.Sites;
 using Buy2.Application.Features.Schedules.ApplyTemplate;
+using Buy2.Application.Features.Schedules.SaveAsTemplate;
 using Buy2.Application.Features.Sites.CreateSite;
 using Buy2.Application.Features.Sites.DeleteSite;
 using Buy2.Application.Features.Sites.Documents;
@@ -31,7 +33,6 @@ public class GetSitesController : ControllerBase
         _mediator = mediator;
     }
 
-    // Get All Sites
     [HttpGet]
     [ProducesResponseType(typeof(List<SiteDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -41,7 +42,6 @@ public class GetSitesController : ControllerBase
         return Ok(result);
     }
 
-    // Get Site Shifts Overview
     [HttpGet("shifts-overview")]
     [ProducesResponseType(typeof(List<SiteShiftCoverageOverviewDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -56,7 +56,6 @@ public class GetSitesController : ControllerBase
         return Ok(result);
     }
 
-    // Add New Site
     [HttpPost]
     [Authorize(Roles = "Admin")]
     [ProducesResponseType(typeof(int), StatusCodes.Status201Created)]
@@ -74,7 +73,6 @@ public class GetSitesController : ControllerBase
         return Created($"/api/v1/sites/{site}", site);
     }
 
-    // Update Site
     [HttpPut("{id}")]
     [Authorize(Roles = "Admin,Manager")]
     [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
@@ -91,7 +89,6 @@ public class GetSitesController : ControllerBase
         return Ok(site);
     }
 
-    // Update Site Automation Settings
     [HttpPatch("{id}/automation-settings")]
     [Authorize(Roles = "Admin,Manager")]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -108,7 +105,6 @@ public class GetSitesController : ControllerBase
         return Ok();
     }
 
-    // Update Site Smart Settings
     [HttpPatch("{siteId}/smart-settings")]
     [Authorize(Roles = "Admin,Manager,OperationsManager")]
     [ProducesResponseType(typeof(SiteSmartSettingsResponseDto), StatusCodes.Status200OK)]
@@ -126,7 +122,6 @@ public class GetSitesController : ControllerBase
     }
 
 
-    // Deletion Check
     [HttpGet("{id}/deletion-check")]
     [Authorize(Roles = "Admin")]
     [ProducesResponseType(typeof(DeletionCheckDto), StatusCodes.Status200OK)]
@@ -138,7 +133,6 @@ public class GetSitesController : ControllerBase
         var site = await _mediator.Send(new CheckSiteDeletionQuery(id), cancellation);
         return Ok(site);
     }
-    // Delete Site
     [HttpDelete("{id}")]
     [Authorize(Roles ="Admin")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -153,7 +147,6 @@ public class GetSitesController : ControllerBase
         return NoContent();
     }
 
-    // Get Site Info
     [HttpGet("{id}")]
     [ProducesResponseType(typeof(SiteFullProfile), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -164,7 +157,6 @@ public class GetSitesController : ControllerBase
         return Ok(site);
     }
 
-    // Get Sits Shifts
     [HttpGet("{id}/shifts")]
     [ProducesResponseType(typeof(List<ShiftTabDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -175,7 +167,6 @@ public class GetSitesController : ControllerBase
         return Ok(shifts);
     }
 
-    // Get Site Shift Templates
     // NOTE: {siteId} is intentionally unconstrained (no :int) so that a
     // malformed id (e.g. "abc") fails model binding and yields 400, not 404.
     [HttpGet("{siteId}/shift-templates")]
@@ -205,7 +196,6 @@ public class GetSitesController : ControllerBase
         return Ok(result.Value);
     }
 
-    // Get Sits Employees
     [HttpGet("{id}/employees")]
     [ProducesResponseType(typeof(List<EmployeeTabDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -216,7 +206,6 @@ public class GetSitesController : ControllerBase
         return Ok(employees);
     }
 
-    // Get All Regions
     [HttpGet("regions")]
     [ProducesResponseType(typeof(List<RegionListItemDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -226,7 +215,6 @@ public class GetSitesController : ControllerBase
         return Ok(regions);
     }
 
-    // Create New Region
     [HttpPost("regions")]
     [Authorize(Roles = "Admin,Manager")]
     [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
@@ -240,7 +228,6 @@ public class GetSitesController : ControllerBase
         return Created($"/api/v1/sites/regions/{region}", region);
     }
 
-    // Upload Documents
     [HttpPost("{id}/documents")]
     [Authorize(Roles = "Admin,Manager")]
     [Consumes("multipart/form-data")]
@@ -256,7 +243,6 @@ public class GetSitesController : ControllerBase
         return Created($"/api/v1/sites/{id}/documents/{document.Id}", document);
     }
 
-    // Delete Document
     [HttpDelete("{id}/documents/{documentId}")]
     [Authorize(Roles = "Admin,Manager")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -271,7 +257,6 @@ public class GetSitesController : ControllerBase
         return NoContent();
     }
 
-    // Toggle Site Day-Off Status
     [HttpPut("{siteId}/dates/{date}/day-off")]
     [Authorize(Roles = "Admin,Manager,OperationsManager")]
     [ProducesResponseType(typeof(SetSiteDayOffResponseDto), StatusCodes.Status200OK)]
@@ -290,7 +275,6 @@ public class GetSitesController : ControllerBase
         return Ok(result);
     }
 
-    // Apply Shift Template to Site Date
     [HttpPost("{siteId}/dates/{date}/apply-template")]
     [Authorize(Roles = "Admin,Manager,OperationsManager")]
     [ProducesResponseType(typeof(ApplyTemplateResponseDto), StatusCodes.Status200OK)]
@@ -319,5 +303,43 @@ public class GetSitesController : ControllerBase
         }
 
         return Ok(result.Value);
+    }
+
+    // NOTE: {siteId} is intentionally unconstrained (no :int) so that a
+    // malformed id (e.g. "abc") fails model binding and yields 400, not 404.
+    [HttpPost("{siteId}/dates/{date}/save-as-template")]
+    [Authorize(Roles = "Admin,Manager,OperationsManager")]
+    [ProducesResponseType(typeof(SiteShiftTemplateDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> SaveAsTemplate(
+        [FromRoute] int siteId,
+        [FromRoute] DateOnly date,
+        [FromBody] SaveAsTemplateRequestDto dto,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await _mediator.Send(
+            new SaveAsTemplateCommand(siteId, date, dto?.Name, GetActorEmployeeId()),
+            cancellationToken);
+
+        if (result.IsNotFound)
+        {
+            return NotFound(new { message = result.ErrorMessage });
+        }
+
+        if (!result.IsSuccess)
+        {
+            return BadRequest(new { message = result.ErrorMessage });
+        }
+
+        return StatusCode(StatusCodes.Status201Created, result.Value);
+    }
+
+    private int? GetActorEmployeeId()
+    {
+        var raw = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        return int.TryParse(raw, out var employeeId) ? employeeId : null;
     }
 }

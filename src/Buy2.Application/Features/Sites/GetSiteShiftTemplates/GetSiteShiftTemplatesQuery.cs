@@ -1,6 +1,5 @@
 using Buy2.Application.Common.Interfaces;
 using Buy2.Application.Common.Models;
-using Buy2.Application.Features.ShiftTemplates;
 using Buy2.Domain.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -71,22 +70,7 @@ public class GetSiteShiftTemplatesQueryHandler
             .OrderBy(t => t.Id)
             .ToListAsync(cancellationToken);
 
-        var items = templates.Select(t => new SiteShiftTemplateDto(
-            t.Id,
-            t.Name,
-            ShiftTimeHelper.FormatTime(t.StartTime),
-            ShiftTimeHelper.FormatTime(t.EndTime),
-            t.ShiftBlocks.Count,
-            t.ShiftBlocks
-                .OrderBy(b => b.Id)
-                .Select(b => new SiteShiftTemplateBlockDto(
-                    b.Id,
-                    ShiftTimeHelper.FormatTime(b.StartTime),
-                    ShiftTimeHelper.FormatTime(b.EndTime),
-                    b.JobRoleId,
-                    b.EmployeeId))
-                .ToList()
-        )).ToList();
+        var items = templates.Select(SiteShiftTemplateMapper.ToDto).ToList();
 
         return Result<List<SiteShiftTemplateDto>>.Success(items);
     }
