@@ -118,6 +118,10 @@ export class SiteListComponent implements OnInit, OnDestroy {
     this.router.navigate(['/sites/create']);
   }
 
+  navigateToEdit(site: SiteListItemDto): void {
+    this.router.navigate(['/sites/edit', site.id]);
+  }
+
   // ── Three-dot menu ─────────────────────────────────────────────────────────
   toggleMenu(event: Event, siteId: number): void {
     event.stopPropagation();

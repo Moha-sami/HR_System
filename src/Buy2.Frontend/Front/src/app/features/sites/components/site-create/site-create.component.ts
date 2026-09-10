@@ -12,9 +12,9 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, Validators, type AbstractControl } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject, takeUntil, forkJoin } from 'rxjs';
 import { SiteService, type EmployeeListItemDto } from '../../services/site.service';
 import { ModalComponent } from '@app/shared/components/modal/modal.component';
 import { ModalBodyComponent } from '@app/shared/components/modal/modal-body.component';
@@ -54,7 +54,12 @@ export class SiteCreateComponent implements OnInit, AfterViewInit, OnDestroy {
 
   @ViewChild('mapContainer') mapContainerRef!: ElementRef<HTMLDivElement>;
 
+  private readonly route = inject(ActivatedRoute);
+
   // ── State ─────────────────────────────────────────────────────────────────
+  readonly isEditMode = signal(false);
+  readonly editSiteId = signal<number | null>(null);
+  readonly isLoading = signal(false);
   readonly regions = signal<RegionDto[]>([]);
   readonly isSubmitting = signal(false);
   readonly showSuccessModal = signal(false);
@@ -113,15 +118,77 @@ export class SiteCreateComponent implements OnInit, AfterViewInit, OnDestroy {
   });
 
   ngOnInit(): void {
-    this.siteService
-      .getRegions()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({ next: (r) => this.regions.set(r), error: () => {} });
+    const idParam = this.route.snapshot.paramMap.get('id');
+    
+    if (idParam) {
+      this.isEditMode.set(true);
+      this.editSiteId.set(+idParam);
+      this.isLoading.set(true);
+      
+      forkJoin({
+        regions: this.siteService.getRegions(),
+        employees: this.siteService.getEmployees(),
+        site: this.siteService.getSite(+idParam)
+      }).pipe(takeUntil(this.destroy$)).subscribe({
+        next: ({ regions, employees, site }) => {
+          this.regions.set(regions);
+          this.allEmployees.set(employees.items || []);
+          
+          this.form.patchValue({
+            siteName: site.siteName,
+            address: site.address,
+            phoneNumber: site.phoneNumber,
+            macAddress: site.macAddress || (site.macWhitelist && site.macWhitelist.length > 0 ? site.macWhitelist[0] : ''),
+            instructions: site.instructions,
+          });
+          
+          if (site.latitude) this.mapLat.set(site.latitude);
+          if (site.longitude) this.mapLng.set(site.longitude);
+          if (site.address) this.mapSelectedAddress.set(site.address);
+          if (site.address) this.mapSearchAddress.set(site.address);
+          
+          const region = regions.find((r: any) => r.id === site.regionId);
+          if (region) this.selectedRegion.set(region);
+          
+          if (site.preferredEmployeeIds && site.preferredEmployeeIds.length > 0) {
+             const selectedEmps = (employees.items || []).filter((e: any) => site.preferredEmployeeIds.includes(e.id));
+             this.selectedEmployees.set(selectedEmps);
+          }
+          
+          if (site.operationalHours && site.operationalHours.length > 0) {
+             const currentDays = this.operationalDays();
+             const newDays = currentDays.map(d => {
+                const hour = site.operationalHours.find((h: any) => h.day === d.dayIndex);
+                if (hour) {
+                   return {
+                      ...d,
+                      isOpen: hour.isOpen,
+                      from: hour.from ? hour.from.substring(0, 5) : '00:00',
+                      to: hour.to ? hour.to.substring(0, 5) : '00:00'
+                   };
+                }
+                return d;
+             });
+             this.operationalDays.set(newDays);
+          }
+          
+          this.isLoading.set(false);
+        },
+        error: () => {
+          this.isLoading.set(false);
+        }
+      });
+    } else {
+      this.siteService
+        .getRegions()
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({ next: (r) => this.regions.set(r), error: () => {} });
 
-    this.siteService
-      .getEmployees()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({ next: (res) => this.allEmployees.set(res.items || []), error: () => {} });
+      this.siteService
+        .getEmployees()
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({ next: (res) => this.allEmployees.set(res.items || []), error: () => {} });
+    }
   }
 
   ngAfterViewInit(): void {}
@@ -346,24 +413,43 @@ export class SiteCreateComponent implements OnInit, AfterViewInit, OnDestroy {
       operationalHours: hours,
     };
 
-    this.siteService.createSite(dto).subscribe({
-      next: () => {
-        this.isSubmitting.set(false);
-        this.createdSiteName.set(this.form.value.siteName!);
-        this.showSuccessModal.set(true);
-      },
-      error: (err) => {
-        this.isSubmitting.set(false);
-        let backendMsg = null;
-        if (err?.error?.errors && typeof err.error.errors === 'object') {
-          // It's an ASP.NET validation error object
-          backendMsg = Object.values(err.error.errors).flat().join(' | ');
-        } else {
-          backendMsg = err?.error?.message || (typeof err?.error === 'string' ? err.error : null);
-        }
-        this.submitError.set(backendMsg || this.translate.instant('SITE_MANAGEMENT.CREATE_ERROR'));
-      },
-    });
+    if (this.isEditMode() && this.editSiteId()) {
+      this.siteService.updateSite(this.editSiteId()!, dto).subscribe({
+        next: () => {
+          this.isSubmitting.set(false);
+          this.createdSiteName.set(this.form.value.siteName!);
+          this.showSuccessModal.set(true);
+        },
+        error: (err) => {
+          this.isSubmitting.set(false);
+          let backendMsg = null;
+          if (err?.error?.errors && typeof err.error.errors === 'object') {
+            backendMsg = Object.values(err.error.errors).flat().join(' | ');
+          } else {
+            backendMsg = err?.error?.message || (typeof err?.error === 'string' ? err.error : null);
+          }
+          this.submitError.set(backendMsg || this.translate.instant('SITE_MANAGEMENT.UPDATE_ERROR'));
+        },
+      });
+    } else {
+      this.siteService.createSite(dto).subscribe({
+        next: () => {
+          this.isSubmitting.set(false);
+          this.createdSiteName.set(this.form.value.siteName!);
+          this.showSuccessModal.set(true);
+        },
+        error: (err) => {
+          this.isSubmitting.set(false);
+          let backendMsg = null;
+          if (err?.error?.errors && typeof err.error.errors === 'object') {
+            backendMsg = Object.values(err.error.errors).flat().join(' | ');
+          } else {
+            backendMsg = err?.error?.message || (typeof err?.error === 'string' ? err.error : null);
+          }
+          this.submitError.set(backendMsg || this.translate.instant('SITE_MANAGEMENT.CREATE_ERROR'));
+        },
+      });
+    }
   }
 
   onDiscard(): void {

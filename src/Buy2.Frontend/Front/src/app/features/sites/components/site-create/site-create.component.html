@@ -4,7 +4,13 @@
   <div class="create-header">
     <span class="breadcrumb-parent" (click)="onDiscard()">{{ 'SITE_MANAGEMENT.TITLE' | translate }}</span>
     <span class="breadcrumb-sep">›</span>
-    <span class="breadcrumb-current">{{ 'SITE_MANAGEMENT.CREATE_SITE' | translate }}</span>
+    <span class="breadcrumb-current">
+      @if (isEditMode()) {
+        {{ 'COMMON.EDIT' | translate }}
+      } @else {
+        {{ 'SITE_MANAGEMENT.CREATE_SITE' | translate }}
+      }
+    </span>
   </div>
 
   <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
@@ -393,7 +399,11 @@
             </svg>
           </div>
           <h3 class="success-title">
-            {{ 'SITE_MANAGEMENT.CREATE_SUCCESS' | translate : { name: createdSiteName() } }}
+            @if (isEditMode()) {
+              Successfully updated site "{{ createdSiteName() }}"
+            } @else {
+              {{ 'SITE_MANAGEMENT.CREATE_SUCCESS' | translate : { name: createdSiteName() } }}
+            }
           </h3>
           <button class="btn-ok" (click)="confirmSuccess()">{{ 'COMMON.OK' | translate }}</button>
       </div>

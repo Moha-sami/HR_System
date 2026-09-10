@@ -5,4 +5,5 @@ import { SiteCreateComponent } from './components/site-create/site-create.compon
 export const SITES_ROUTES: Routes = [
   { path: '', component: SiteListComponent },
   { path: 'create', component: SiteCreateComponent },
+  { path: 'edit/:id', component: SiteCreateComponent },
 ];
