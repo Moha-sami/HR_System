@@ -90,6 +90,14 @@
       "DISCARD": "Discard",
       "DONE": "Done"
     },
+    "TIMELINE": {
+      "TITLE": "Coverage",
+      "EMPTY": "Post a block to see it on the timeline.",
+      "NO_RANGE": "Set a valid shift time range to see the timeline.",
+      "EDIT_BLOCK": "Edit block",
+      "ASSIGN_BLOCK": "Assign employee",
+      "DELETE_BLOCK": "Delete block"
+    },
     "STRIP": {
       "TITLE": "Employees",
       "SEARCH_PLACEHOLDER": "Search employees...",

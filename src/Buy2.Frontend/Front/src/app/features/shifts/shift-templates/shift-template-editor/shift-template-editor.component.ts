@@ -1,9 +1,11 @@
 import {
   Component,
   computed,
+  ElementRef,
   HostListener,
   inject,
   signal,
+  ViewChild,
   type OnInit,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -11,7 +13,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { Subject, takeUntil } from 'rxjs';
-import { CdkDragDrop, CdkDropList, CdkDropListGroup } from '@angular/cdk/drag-drop';
+import { CdkDropListGroup } from '@angular/cdk/drag-drop';
 import { ShiftsLookupsService } from '../../data-access/services/shifts-lookups.service';
 import { ShiftTemplateService } from '../../data-access/services/shift-template.service';
 import type {
@@ -28,10 +30,13 @@ import { ModalComponent } from '@app/shared/components/modal/modal.component';
 import { ModalBodyComponent } from '@app/shared/components/modal/modal-body.component';
 import { EmployeeStripComponent } from '../employee-strip/employee-strip.component';
 import {
+  ShiftTimelineComponent,
+  type TimelineBlock,
+} from '../../ui/shift-timeline/shift-timeline.component';
+import {
   formatBackendTime,
   parseBackendTime,
   parseTimeInput,
-  rangesOverlap,
   splitTime,
   type Meridiem,
 } from '../shift-time.utils';
@@ -50,9 +55,9 @@ export interface WorkingBlock {
 
 /**
  * Ticket #327: shared create/edit form with a block builder row.
- * Ticket #329: employee strip (primary assignment path) with drag-and-drop
- * onto builder rows; the row picker remains as the accessible fallback.
- * Timeline drops (#328) land in a later ticket.
+ * Ticket #329: employee strip (primary assignment path).
+ * Ticket #328: timeline canvas for block coverage view; dropping a strip
+ * card onto a timeline bar assigns that employee to the block.
  */
 @Component({
   selector: 'app-shift-template-editor',
@@ -65,8 +70,8 @@ export interface WorkingBlock {
     ModalComponent,
     ModalBodyComponent,
     EmployeeStripComponent,
+    ShiftTimelineComponent,
     CdkDropListGroup,
-    CdkDropList,
   ],
   templateUrl: './shift-template-editor.component.html',
 })
@@ -149,6 +154,46 @@ export class ShiftTemplateEditorComponent implements OnInit {
     this.sitesOpen.set(false);
   }
 
+  // ── Timeline (#328) ─────────────────────────────────────────────────
+  @ViewChild('rowEmployee') private readonly rowEmployee?: ElementRef<HTMLSelectElement>;
+
+  /** Working blocks adapted to the shared timeline model. */
+  readonly timelineBlocks = computed<TimelineBlock[]>(() =>
+    this.blocks().map((b) => ({
+      id: b.clientId,
+      start: b.start,
+      end: b.end,
+      label: b.jobRoleTitle,
+      assigned: b.assignedUserId !== null,
+      assigneeName: b.assignedUserName,
+    })),
+  );
+
+  private findBlock(clientId: string | number): WorkingBlock | undefined {
+    return this.blocks().find((b) => b.clientId === clientId);
+  }
+
+  onTimelineEdit(clientId: string | number): void {
+    const block = this.findBlock(clientId);
+    if (block) this.editBlock(block);
+  }
+
+  onTimelineDelete(clientId: string | number): void {
+    const block = this.findBlock(clientId);
+    if (block) this.askDeleteBlock(block);
+  }
+
+  /**
+   * Assign action: reload the block into the builder row and focus the
+   * employee picker so an assignee can be chosen immediately.
+   */
+  onTimelineAssign(clientId: string | number): void {
+    const block = this.findBlock(clientId);
+    if (!block) return;
+    this.editBlock(block);
+    this.rowEmployee?.nativeElement.focus();
+  }
+
   // ── Employee strip (#329) ─────────────────────────────────────────────
   /** Ids currently assigned, so the strip can mark those cards. */
   readonly assignedIds = computed(() =>
@@ -171,20 +216,23 @@ export class ShiftTemplateEditorComponent implements OnInit {
   }
 
   /**
-   * Drop (or move) a strip card onto a builder row. A drop replaces the
-   * row's assignee; an employee on another row moves (backend rejects
-   * duplicates across blocks).
+   * Assign a strip card dropped onto a timeline bar. A drop replaces the
+   * block's assignee; an employee on another block moves (backend rejects
+   * duplicates across blocks). Non-employee payloads are ignored.
    */
-  onDrop(event: CdkDragDrop<WorkingBlock, WorkingBlock, ShiftCandidateEmployee>): void {
-    const employee = event.item.data;
-    const target = event.container.data;
-    if (!employee || !target) return;
+  onStripDrop(event: { id: string | number; data: unknown }): void {
+    const data = event.data;
+    if (typeof data !== 'object' || data === null) return;
+    const employee = data as { id?: unknown; fullName?: unknown };
+    if (typeof employee.id !== 'number' || typeof employee.fullName !== 'string') return;
+    const employeeId: number = employee.id;
+    const employeeName: string = employee.fullName;
     this.blocks.update((blocks) =>
       blocks.map((b) => {
-        if (b.clientId === target.clientId) {
-          return { ...b, assignedUserId: employee.id, assignedUserName: employee.fullName };
+        if (b.clientId === event.id) {
+          return { ...b, assignedUserId: employeeId, assignedUserName: employeeName };
         }
-        if (b.assignedUserId === employee.id) {
+        if (b.assignedUserId === employeeId) {
           return { ...b, assignedUserId: null, assignedUserName: null };
         }
         return b;
@@ -346,12 +394,8 @@ export class ShiftTemplateEditorComponent implements OnInit {
     if (!range) return t('SHIFT_TEMPLATES.EDITOR.TIME_INVALID');
     if (start < range.start || end > range.end)
       return t('SHIFT_TEMPLATES.EDITOR.BLOCK_WITHIN_RANGE');
-    const editing = this.editingClientId();
-    const overlap = this.blocks().some(
-      (b) => b.clientId !== editing && rangesOverlap(start, end, b.start, b.end),
-    );
-    if (overlap) return t('SHIFT_TEMPLATES.EDITOR.BLOCK_OVERLAP');
     if (this.rowRoleId() === null) return t('SHIFT_TEMPLATES.EDITOR.ROLE_REQUIRED');
+    const editing = this.editingClientId();
     const employeeId = this.rowEmployeeId();
     if (
       employeeId !== null &&

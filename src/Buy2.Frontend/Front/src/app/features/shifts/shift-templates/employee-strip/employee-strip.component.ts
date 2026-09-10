@@ -12,7 +12,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslatePipe } from '@ngx-translate/core';
-import { CdkDrag } from '@angular/cdk/drag-drop';
+import { CdkDrag, CdkDropList } from '@angular/cdk/drag-drop';
 import { Subject, debounceTime } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ShiftsLookupsService } from '../../data-access/services/shifts-lookups.service';
@@ -25,14 +25,14 @@ export const RATING_TIERS = ['4.5+', '4.0-4.49', '3.0-3.99', '2.0-2.99', 'below 
 
 /**
  * Ticket #329: horizontal employee strip scoped to the selected sites.
- * Paged server-side (scroll loads more); every card is a CDK drag source
- * whose drop targets live in the editor. Emits each loaded page so the
- * editor can feed its accessible picker fallback from the same fetch.
+ * Paged server-side (scroll loads more); every card is a drag source for
+ * timeline-bar drops. Emits each loaded page so the editor can feed its
+ * picker from the same fetch.
  */
 @Component({
   selector: 'app-employee-strip',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslatePipe, CdkDrag],
+  imports: [CommonModule, FormsModule, TranslatePipe, CdkDrag, CdkDropList],
   templateUrl: './employee-strip.component.html',
 })
 export class EmployeeStripComponent {

@@ -50,6 +50,8 @@
   } @else {
     <div
       class="flex gap-3 overflow-x-auto pb-2"
+      cdkDropList
+      [cdkDropListSortingDisabled]="true"
       (scroll)="onScroll($event)"
     >
       @for (emp of items(); track emp.id) {

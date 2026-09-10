@@ -4,9 +4,9 @@ import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting, HttpTestingController } from '@angular/common/http/testing';
 import { Router, ActivatedRoute, convertToParamMap } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
-import type { CdkDragDrop } from '@angular/cdk/drag-drop';
 import { ShiftTemplateEditorComponent, type WorkingBlock } from './shift-template-editor.component';
 import { EmployeeStripComponent } from '../employee-strip/employee-strip.component';
+import { ShiftTimelineComponent } from '../../ui/shift-timeline/shift-timeline.component';
 import type { ShiftTemplateDetails } from '../../data-access/models/shift-template.models';
 import type {
   ShiftCandidateEmployee,
@@ -27,6 +27,18 @@ class StubStripComponent {
   readonly siteIds = input<number[]>([]);
   readonly assignedIds = input<number[]>([]);
   readonly pageLoaded = output<{ page: number; items: ShiftCandidateEmployee[] }>();
+}
+
+/** Timeline stub: bar gestures are covered in the timeline's own spec. */
+@Component({ selector: 'app-shift-timeline', standalone: true, template: '' })
+class StubTimelineComponent {
+  readonly blocks = input<unknown[]>([]);
+  readonly rangeStart = input<number | null>(null);
+  readonly rangeEnd = input<number | null>(null);
+  readonly editBlock = output<string | number>();
+  readonly assignBlock = output<string | number>();
+  readonly deleteBlock = output<string | number>();
+  readonly dropOnBlock = output<{ id: string | number; data: unknown }>();
 }
 
 const SITES: ShiftsSiteLookup[] = [
@@ -92,8 +104,8 @@ describe('ShiftTemplateEditorComponent', () => {
       ],
     })
       .overrideComponent(ShiftTemplateEditorComponent, {
-        remove: { imports: [TranslatePipe, EmployeeStripComponent] },
-        add: { imports: [MockTranslatePipe, StubStripComponent] },
+        remove: { imports: [TranslatePipe, EmployeeStripComponent, ShiftTimelineComponent] },
+        add: { imports: [MockTranslatePipe, StubStripComponent, StubTimelineComponent] },
       })
       .compileComponents();
 
@@ -122,15 +134,6 @@ describe('ShiftTemplateEditorComponent', () => {
   function feedStrip(): void {
     component.onStripPage({ page: 1, items: EMPLOYEES });
     fixture.detectChanges();
-  }
-
-  /** Builds a stub drop event: strip card onto a builder row. */
-  function dropEvent(employee: ShiftCandidateEmployee, clientId: number) {
-    const block = component.blocks().find((b) => b.clientId === clientId);
-    return {
-      item: { data: employee },
-      container: { data: block },
-    } as unknown as CdkDragDrop<WorkingBlock, WorkingBlock, ShiftCandidateEmployee>;
   }
 
   /** Prefills the builder row with a valid in-range block. */
@@ -193,8 +196,7 @@ describe('ShiftTemplateEditorComponent', () => {
     expect(component.blocks().length).toBe(1);
     expect(component.blockLabel(component.blocks()[0])).toBe('01:00 PM - 02:00 PM');
   });
-
-  it('should reject an overlapping block', async () => {
+  it('should allow an overlapping block', async () => {
     await setup(null);
     flushLookups();
     fillValidRow();
@@ -203,8 +205,8 @@ describe('ShiftTemplateEditorComponent', () => {
     fillValidRow();
     component.postBlock();
 
-    expect(component.blocks().length).toBe(1);
-    expect(component.rowError()).toBe('SHIFT_TEMPLATES.EDITOR.BLOCK_OVERLAP');
+    expect(component.blocks().length).toBe(2);
+    expect(component.rowError()).toBeNull();
   });
 
   it('should remove a block after the delete modal confirms', async () => {
@@ -269,20 +271,26 @@ describe('ShiftTemplateEditorComponent', () => {
     expect(navigated).toEqual([['/scheduling/shift-templates']]);
   });
 
-  it('should assign a dropped strip card to the block and mark it assigned', async () => {
+  it('should unassign through the remove control', async () => {
     await setup(null);
     flushLookups();
     feedStrip();
     fillValidForm();
 
-    component.onDrop(dropEvent(EMPLOYEES[0], component.blocks()[0].clientId));
+    component.editBlock(component.blocks()[0]);
+    component.rowEmployeeId.set(100);
+    component.postBlock();
 
     expect(component.blocks()[0].assignedUserId).toBe(100);
-    expect(component.blocks()[0].assignedUserName).toBe('Sara');
-    expect(component.assignedIds()).toEqual([100]);
+
+    component.unassignBlock(component.blocks()[0]);
+
+    expect(component.blocks()[0].assignedUserId).toBeNull();
+    expect(component.blocks()[0].assignedUserName).toBeNull();
+    expect(component.assignedIds()).toEqual([]);
   });
 
-  it('should move an employee when dropped on another block', async () => {
+  it('should assign a strip card dropped on a timeline bar and move it between blocks', async () => {
     await setup(null);
     flushLookups();
     feedStrip();
@@ -296,45 +304,78 @@ describe('ShiftTemplateEditorComponent', () => {
     expect(component.blocks().length).toBe(2);
 
     const [first, second] = component.blocks();
-    component.onDrop(dropEvent(EMPLOYEES[0], first.clientId));
-    component.onDrop(dropEvent(EMPLOYEES[0], second.clientId));
+    component.onStripDrop({ id: first.clientId, data: EMPLOYEES[0] });
+    expect(component.blocks()[0].assignedUserId).toBe(100);
+    expect(component.blocks()[0].assignedUserName).toBe('Sara');
+    expect(component.assignedIds()).toEqual([100]);
 
+    component.onStripDrop({ id: second.clientId, data: EMPLOYEES[0] });
     expect(component.blocks()[0].assignedUserId).toBeNull();
     expect(component.blocks()[1].assignedUserId).toBe(100);
     expect(component.assignedIds()).toEqual([100]);
   });
 
-  it('should unassign through the remove control', async () => {
+  it('should ignore non-employee drop payloads', async () => {
     await setup(null);
     flushLookups();
     feedStrip();
     fillValidForm();
 
-    component.onDrop(dropEvent(EMPLOYEES[0], component.blocks()[0].clientId));
-    component.unassignBlock(component.blocks()[0]);
+    component.onStripDrop({ id: component.blocks()[0].clientId, data: null });
+    component.onStripDrop({ id: component.blocks()[0].clientId, data: { id: 'x' } });
 
     expect(component.blocks()[0].assignedUserId).toBeNull();
-    expect(component.blocks()[0].assignedUserName).toBeNull();
     expect(component.assignedIds()).toEqual([]);
   });
 
-  it('should persist a dropped assignment through save and reload', async () => {
+  it('should feed mapped blocks to the shared timeline', async () => {
     await setup('3');
     flushLookups();
     flushDetails();
 
-    component.onDrop(dropEvent(EMPLOYEES[1], component.blocks()[0].clientId));
-    component.save();
+    expect(fixture.nativeElement.querySelector('app-shift-timeline')).not.toBeNull();
+    expect(component.timelineBlocks()).toEqual([
+      {
+        id: component.blocks()[0].clientId,
+        start: 540,
+        end: 720,
+        label: 'Cashier',
+        assigned: false,
+        assigneeName: null,
+      },
+    ]);
+  });
 
-    const req = httpMock.expectOne((r) => r.url.endsWith('/shift-templates/3'));
-    expect(req.request.method).toBe('PUT');
-    expect(req.request.body.shiftBlocks[0].assignedUserId).toBe(101);
-    req.flush({
-      ...DETAILS,
-      shiftBlocks: [{ ...DETAILS.shiftBlocks[0], assignedUserId: 101, assignedUserName: 'Omar' }],
-    });
+  it('should reload the block into the builder through the timeline edit output', async () => {
+    await setup('3');
+    flushLookups();
+    flushDetails();
+
+    component.onTimelineEdit(component.blocks()[0].clientId);
+
+    expect(component.editingClientId()).toBe(component.blocks()[0].clientId);
+    expect(component.rowRoleId()).toBe(10);
+  });
+
+  it('should focus the employee picker through the timeline assign output', async () => {
+    await setup('3');
+    flushLookups();
+    flushDetails();
+
+    component.onTimelineAssign(component.blocks()[0].clientId);
     fixture.detectChanges();
 
-    expect(navigated).toEqual([['/scheduling/shift-templates']]);
+    expect(component.editingClientId()).toBe(component.blocks()[0].clientId);
+    expect(document.activeElement?.getAttribute('aria-label')).toBe('Block employee');
+  });
+
+  it('should open the delete modal through the timeline delete output', async () => {
+    await setup('3');
+    flushLookups();
+    flushDetails();
+
+    component.onTimelineDelete(component.blocks()[0].clientId);
+
+    expect(component.showDeleteBlockModal()).toBe(true);
   });
 });

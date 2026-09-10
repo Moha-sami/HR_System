@@ -194,6 +194,7 @@
 
       <span class="text-sm text-neutral-600">{{ 'SHIFT_TEMPLATES.EDITOR.EMPLOYEE' | translate }}</span>
       <select
+        #rowEmployee
         class="rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2 text-sm outline-none focus:border-primary-500 disabled:opacity-50"
         aria-label="Block employee"
         [disabled]="employees().length === 0"
@@ -231,61 +232,16 @@
       <p class="mb-3 text-sm text-neutral-400">{{ 'SHIFT_TEMPLATES.EDITOR.NO_EMPLOYEES_HINT' | translate }}</p>
     }
 
-    <!-- Working list -->
-    @if (blocks().length > 0) {
-      <ul class="mb-4 divide-y divide-neutral-200 rounded-lg border border-neutral-200">
-        @for (block of blocks(); track block.clientId) {
-          <li
-            class="flex items-center justify-between px-4 py-2.5"
-            cdkDropList
-            [cdkDropListData]="block"
-            (cdkDropListDropped)="onDrop($event)"
-          >
-            <div class="flex items-center gap-3 text-sm">
-              <span class="font-medium text-neutral-800">{{ blockLabel(block) }}</span>
-              <span class="rounded bg-primary-50 px-2 py-0.5 text-primary-700">{{ block.jobRoleTitle }}</span>
-              @if (block.assignedUserName) {
-                <span class="flex items-center gap-1 text-neutral-500">
-                  {{ block.assignedUserName }}
-                  <button
-                    type="button"
-                    class="rounded p-0.5 text-neutral-400 hover:bg-neutral-100 hover:text-error-600"
-                    [attr.aria-label]="'SHIFT_TEMPLATES.EDITOR.UNASSIGN_EMPLOYEE' | translate"
-                    (click)="unassignBlock(block)"
-                  >
-                    <svg aria-hidden="true" class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                </span>
-              }
-            </div>
-            <div class="flex items-center gap-1">
-              <button
-                type="button"
-                class="rounded p-1 text-primary-600 hover:bg-primary-50"
-                [attr.aria-label]="'SHIFT_TEMPLATES.EDITOR.EDIT_BLOCK' | translate"
-                (click)="editBlock(block)"
-              >
-                <svg aria-hidden="true" class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 3.487a2.25 2.25 0 0 1 3.182 3.182L8.25 18.463 4.5 19.5l1.037-3.75L16.862 3.487Z" />
-                </svg>
-              </button>
-              <button
-                type="button"
-                class="rounded p-1 text-error-600 hover:bg-error-50"
-                [attr.aria-label]="'SHIFT_TEMPLATES.EDITOR.DELETE_BLOCK' | translate"
-                (click)="askDeleteBlock(block)"
-              >
-                <svg aria-hidden="true" class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 7h12M9 7V5.5A1.5 1.5 0 0 1 10.5 4h3A1.5 1.5 0 0 1 15 5.5V7m-7 0 .75 12.25A1.5 1.5 0 0 0 10.247 20h3.506a1.5 1.5 0 0 0 1.497-1.75L16 7M10 10.5v6M14 10.5v6" />
-                </svg>
-              </button>
-            </div>
-          </li>
-        }
-      </ul>
-    }
+    <!-- Timeline canvas (#328): coverage view of the working blocks -->
+    <app-shift-timeline
+      [blocks]="timelineBlocks()"
+      [rangeStart]="shiftRange()?.start ?? null"
+      [rangeEnd]="shiftRange()?.end ?? null"
+      (editBlock)="onTimelineEdit($event)"
+      (assignBlock)="onTimelineAssign($event)"
+      (deleteBlock)="onTimelineDelete($event)"
+      (dropOnBlock)="onStripDrop($event)"
+    />
 
     <!-- Form errors -->
     @if (formErrors().length > 0) {
