@@ -85,25 +85,25 @@ public class PointsAutomationDispatcher
     {
         var maxWindows = Math.Max(1, _options.MaxCatchUpWindowsPerPeriod);
 
+        // Anchor on the last completed run for this category regardless of
+        // the period that produced it, so switching Daily -> Weekly resumes
+        // the day after the last evaluated day (no overlap, no gap).
+        // Legacy runs with null Category (pre-per-category) are included
+        // as fallback anchors.
+        var lastCompletedEndUtc = await _runsRepository.Query()
+            .AsNoTracking()
+            .Where(r => (r.Category == category || r.Category == null)
+                && r.Status == AutomationRunStatus.Completed)
+            .OrderByDescending(r => r.PeriodEnd)
+            .Select(r => (DateTimeOffset?)r.PeriodEnd)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        DateOnly? anchorEndCairo = lastCompletedEndUtc.HasValue
+            ? CairoPeriodResolver.ToCairoDate(lastCompletedEndUtc.Value, cairoTimeZone)
+            : null;
+
         for (var i = 0; i < maxWindows; i++)
         {
-            // Anchor on the last completed run for this category regardless of
-            // the period that produced it, so switching Daily -> Weekly resumes
-            // the day after the last evaluated day (no overlap, no gap).
-            // Legacy runs with null Category (pre-per-category) are included
-            // as fallback anchors.
-            var lastCompletedEndUtc = await _runsRepository.Query()
-                .AsNoTracking()
-                .Where(r => (r.Category == category || r.Category == null)
-                    && r.Status == AutomationRunStatus.Completed)
-                .OrderByDescending(r => r.PeriodEnd)
-                .Select(r => (DateTimeOffset?)r.PeriodEnd)
-                .FirstOrDefaultAsync(cancellationToken);
-
-            DateOnly? anchorEndCairo = lastCompletedEndUtc.HasValue
-                ? CairoPeriodResolver.ToCairoDate(lastCompletedEndUtc.Value, cairoTimeZone)
-                : null;
-
             var nextWindow = CairoPeriodResolver.TryGetNextDueWindow(period, todayCairo, anchorEndCairo);
             if (nextWindow is null)
             {
@@ -130,6 +130,8 @@ public class PointsAutomationDispatcher
                 "Points automation completed for category {Category} period {Period} [{Start} - {End}]: {Employees} employees, {Transactions} transactions.",
                 category, period, window.StartUtc, window.EndUtc,
                 result.TotalEmployeesEvaluated, result.TransactionsCreatedCount);
+
+            anchorEndCairo = nextWindow.Value.End;
         }
 
         _logger.LogWarning(

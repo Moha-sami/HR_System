@@ -24,9 +24,7 @@ public class GetJobsQueryHandler : IRequestHandler<GetJobsQuery, JobPaginatedRes
         var page = Math.Max(1, filter.PageNumber);
         var pageSize = Math.Clamp(filter.PageSize, 1, 100);
 
-        IQueryable<JobRole> query = _jobRoleRepository.Query(asNoTracking: true)
-            .Include(j => j.Department)
-            .Include(j => j.Employees);
+        IQueryable<JobRole> query = _jobRoleRepository.Query(asNoTracking: true);
 
         query = ApplyFilters(query, filter);
 
@@ -37,9 +35,35 @@ public class GetJobsQueryHandler : IRequestHandler<GetJobsQuery, JobPaginatedRes
         var rawList = await query
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
+            .Select(j => new
+            {
+                j.Id,
+                j.Title,
+                j.DepartmentId,
+                DepartmentName = j.Department != null ? j.Department.Name : "N/A",
+                j.SeniorityLevel,
+                j.AttendanceType,
+                AssignedEmployeesCount = j.Employees.Count(e => !e.IsDeleted),
+                j.RequiredQualificationsJson,
+                j.ExperienceYears,
+                j.IsActive,
+                j.CreatedAt
+            })
             .ToListAsync(cancellationToken);
 
-        var items = rawList.Select(MapToListItemDto).ToList();
+        var items = rawList.Select(j => new JobListItemDto(
+            j.Id,
+            j.Title,
+            j.DepartmentId,
+            j.DepartmentName,
+            j.SeniorityLevel,
+            j.AttendanceType,
+            j.AssignedEmployeesCount,
+            ParseJsonListCount(j.RequiredQualificationsJson),
+            j.ExperienceYears,
+            j.IsActive,
+            j.CreatedAt
+        )).ToList();
 
         var totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
 
@@ -110,26 +134,6 @@ public class GetJobsQueryHandler : IRequestHandler<GetJobsQuery, JobPaginatedRes
         };
     }
 
-    private static JobListItemDto MapToListItemDto(JobRole j)
-    {
-        var employeeCount = j.Employees?.Count(e => !e.IsDeleted) ?? 0;
-        var departmentName = j.Department?.Name ?? "N/A";
-        var qualCount = ParseJsonListCount(j.RequiredQualificationsJson);
-
-        return new JobListItemDto(
-            j.Id,
-            j.Title,
-            j.DepartmentId,
-            departmentName,
-            j.SeniorityLevel,
-            j.AttendanceType,
-            employeeCount,
-            qualCount,
-            j.ExperienceYears,
-            j.IsActive,
-            j.CreatedAt
-        );
-    }
 
     private static int ParseJsonListCount(string? json)
     {

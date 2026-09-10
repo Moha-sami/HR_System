@@ -30,7 +30,6 @@ public class GetSiteShiftsOverviewQueryHandler : IRequestHandler<GetSiteShiftsOv
 
         var query = _siteRepository.Query(true)
             .Include(s => s.Region)
-            .Include(s => s.Shifts)
             .AsQueryable();
 
         if (request.RegionId.HasValue)
@@ -49,21 +48,11 @@ public class GetSiteShiftsOverviewQueryHandler : IRequestHandler<GetSiteShiftsOv
 
         var siteIds = sites.Select(s => s.Id).ToList();
 
-        var shiftsFromRepo = await _shiftRepository.Query(true)
-            .Where(s => siteIds.Contains(s.SiteId))
+        var shifts = await _shiftRepository.Query(true)
+            .Where(s => siteIds.Contains(s.SiteId) && s.StartTime >= startUtc && s.StartTime < endUtc)
             .ToListAsync(cancellationToken);
 
-        var allShifts = shiftsFromRepo
-            .Concat(sites.SelectMany(s => s.Shifts ?? Enumerable.Empty<ShiftEntity>()))
-            .GroupBy(s => s.Id > 0 ? s.Id.ToString() : $"{s.SiteId}_{s.StartTime}_{s.EmployeeId}")
-            .Select(g => g.First())
-            .Where(s =>
-                (s.StartTime >= startUtc && s.StartTime < endUtc) ||
-                (s.StartTime.UtcDateTime >= startUtc.UtcDateTime && s.StartTime.UtcDateTime < endUtc.UtcDateTime)
-            )
-            .ToList();
-
-        var assignedEmployeeIds = allShifts
+        var assignedEmployeeIds = shifts
             .Where(s => s.EmployeeId.HasValue)
             .Select(s => s.EmployeeId!.Value)
             .Distinct()
@@ -77,7 +66,7 @@ public class GetSiteShiftsOverviewQueryHandler : IRequestHandler<GetSiteShiftsOv
 
         foreach (var site in sites)
         {
-            var siteShifts = allShifts.Where(s => s.SiteId == site.Id).ToList();
+            var siteShifts = shifts.Where(s => s.SiteId == site.Id).ToList();
 
             var totalShifts = siteShifts.Count;
             var openShifts = siteShifts.Count(s => s.EmployeeId == null);
