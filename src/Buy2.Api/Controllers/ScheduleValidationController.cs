@@ -2,6 +2,7 @@ using Buy2.Application.DTOs;
 using Buy2.Application.DTOs.Schedules;
 using Buy2.Application.Features.Schedules.CommitCopyShifts;
 using Buy2.Application.Features.Schedules.PreflightCopyShifts;
+using Buy2.Application.Features.Schedules.PreflightPublishSchedule;
 using Buy2.Application.Features.Schedules.ValidateDraft;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -101,6 +102,38 @@ public class ScheduleValidationController : ControllerBase
             return BadRequest(new { message = ex.Message });
         }
         catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    [HttpPost("/api/v1/shifts/publish/preflight")]
+    [Authorize(Roles = "Admin,Manager,OperationsManager")]
+    [ProducesResponseType(typeof(PreflightPublishScheduleResponseDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<ActionResult<PreflightPublishScheduleResponseDto>> PreflightPublishSchedule(
+        [FromBody] PreflightPublishScheduleRequestDto request,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var query = new PreflightPublishScheduleQuery(
+                request.SiteId,
+                request.TargetDates,
+                request.AllUnpublishedDays,
+                request.TargetRoleIds);
+
+            var result = await _mediator.Send(query, cancellationToken);
+            return Ok(result);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+        catch (ArgumentException ex)
         {
             return BadRequest(new { message = ex.Message });
         }
