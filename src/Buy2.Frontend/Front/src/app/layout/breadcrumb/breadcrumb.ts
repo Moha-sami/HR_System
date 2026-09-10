@@ -33,6 +33,7 @@ const routeTranslationKeys: Record<string, string> = {
   '/notifications': 'LAYOUT.NAV.NOTIFICATIONS',
   '/scheduling': 'LAYOUT.NAV.SCHEDULING',
   '/scheduling/shift-templates': 'LAYOUT.NAV.SHIFT_TEMPLATES',
+  '/scheduling/shift-templates/new': 'COMMON.CREATE',
   '/scheduling/shift-management': 'LAYOUT.NAV.SHIFT_MANAGEMENT',
   '/scheduling/employee-assignment': 'LAYOUT.NAV.EMPLOYEE_ASSIGNMENT',
   '/scheduling/shift-market': 'LAYOUT.NAV.SHIFT_MARKET',
@@ -72,6 +73,15 @@ export class BreadcrumbComponent {
       this.items.set([
         { label: '', url: '/recognitions', isActive: segments.length === 1, translationKey: 'LAYOUT.NAV.RECOGNITIONS' },
         ...(segments.length > 1 ? [{ label: '', url, isActive: true, translationKey: detailKey }] : []),
+      ]);
+      return;
+    }
+
+    if (segments[0] === 'scheduling' && segments[1] === 'shift-templates' && segments.length === 4 && segments[3] === 'edit') {
+      this.items.set([
+        { label: '', url: '/scheduling', isActive: false, translationKey: 'LAYOUT.NAV.SCHEDULING' },
+        { label: '', url: '/scheduling/shift-templates', isActive: false, translationKey: 'LAYOUT.NAV.SHIFT_TEMPLATES' },
+        { label: '', url, isActive: true, translationKey: 'COMMON.EDIT' },
       ]);
       return;
     }

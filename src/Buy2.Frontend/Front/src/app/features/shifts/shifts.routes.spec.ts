@@ -9,4 +9,10 @@ describe('SHIFTS_ROUTES', () => {
     expect(paths).toContain('employee-assignment');
     expect(paths).toContain('shift-market');
   });
+
+  it('should expose editor routes for ticket #327 (placeholder until the editor lands)', () => {
+    const paths = SHIFTS_ROUTES.map((r) => r.path);
+    expect(paths).toContain('shift-templates/new');
+    expect(paths).toContain('shift-templates/:id/edit');
+  });
 });

@@ -27,6 +27,31 @@
   "SCHEDULING": {
     "COMING_SOON": "قريباً"
   },
+  "SHIFT_TEMPLATES": {
+    "TITLE": "قوالب الورديات",
+    "SEARCH_PLACEHOLDER": "ابحث هنا...",
+    "CREATE_BUTTON": "إنشاء وردية جديدة",
+    "EXPORT": "تصدير",
+    "RETRY": "إعادة المحاولة",
+    "LOAD_ERROR": "فشل تحميل قوالب الورديات.",
+    "EDIT_TEMPLATE": "تعديل القالب",
+    "DUPLICATE_TEMPLATE": "تكرار القالب",
+    "DELETE_TEMPLATE": "حذف القالب",
+    "DELETE_TITLE": "حذف قالب الوردية",
+    "DELETE_MESSAGE": "حذف القالب \"{{name}}\"؟",
+    "DELETE_ERROR": "فشل حذف القالب.",
+    "DELETE_SUCCESS": "تم حذف القالب بنجاح.",
+    "DUPLICATE_ERROR": "فشل تكرار القالب.",
+    "DUPLICATE_SUCCESS": "تم تكرار القالب بنجاح.",
+    "TABLE": {
+      "NAME": "اسم الوردية",
+      "CREATION_DATE": "تاريخ الإنشاء",
+      "LAST_UPDATED": "آخر تحديث",
+      "ASSIGNED_SITES": "عدد المواقع المسندة",
+      "ACTIONS": "الإجراءات",
+      "EMPTY": "لا توجد قوالب ورديات."
+    }
+  },
   "AUTH": {
     "LOGIN": {
       "TITLE": "مرحباً بعودتك",

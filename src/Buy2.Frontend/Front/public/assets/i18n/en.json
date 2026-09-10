@@ -27,6 +27,31 @@
   "SCHEDULING": {
     "COMING_SOON": "Coming soon"
   },
+  "SHIFT_TEMPLATES": {
+    "TITLE": "Shift Templates",
+    "SEARCH_PLACEHOLDER": "Type here...",
+    "CREATE_BUTTON": "Create New Shift",
+    "EXPORT": "Export",
+    "RETRY": "Retry",
+    "LOAD_ERROR": "Failed to load shift templates.",
+    "EDIT_TEMPLATE": "Edit template",
+    "DUPLICATE_TEMPLATE": "Duplicate template",
+    "DELETE_TEMPLATE": "Delete template",
+    "DELETE_TITLE": "Delete shift template",
+    "DELETE_MESSAGE": "Delete template \"{{name}}\"?",
+    "DELETE_ERROR": "Failed to delete the template.",
+    "DELETE_SUCCESS": "Template deleted successfully.",
+    "DUPLICATE_ERROR": "Failed to duplicate the template.",
+    "DUPLICATE_SUCCESS": "Template duplicated successfully.",
+    "TABLE": {
+      "NAME": "Shift Name",
+      "CREATION_DATE": "Creation Date",
+      "LAST_UPDATED": "Last Updated",
+      "ASSIGNED_SITES": "Number of Assigned Sites",
+      "ACTIONS": "Actions",
+      "EMPTY": "No shift templates found."
+    }
+  },
   "AUTH": {
     "LOGIN": {
       "TITLE": "Welcome Back",
