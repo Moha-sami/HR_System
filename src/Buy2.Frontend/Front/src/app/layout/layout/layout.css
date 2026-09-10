@@ -201,6 +201,56 @@
   stroke: #fff;
 }
 
+/* ===== Expandable nav groups (e.g. Scheduling) ===== */
+.nav-group-toggle {
+  width: 100%;
+  background: none;
+  border: none;
+  font: inherit;
+  text-align: start;
+}
+
+.nav-group-arrow {
+  transition: transform 0.2s;
+}
+
+.nav-group-arrow.open {
+  transform: rotate(90deg);
+}
+
+.nav-group-children {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 2px 0 4px;
+  padding-inline-start: 20px;
+}
+
+.nav-child {
+  font-size: 13px;
+  padding: 9px 12px;
+}
+
+.nav-child .nav-child-label {
+  flex: 1;
+}
+
+.nav-child.is-active {
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+}
+
+.nav-child.is-disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.nav-child-soon {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.55);
+  white-space: nowrap;
+}
+
 /* ============================================
    MAIN CONTENT
    ============================================ */

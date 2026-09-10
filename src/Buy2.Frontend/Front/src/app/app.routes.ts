@@ -95,10 +95,10 @@ export const routes: Routes = [
       // ──────────────────────────────────────────────────────────────────────
       // §4 — Advanced Scheduling Engine
       // ──────────────────────────────────────────────────────────────────────
-      // {
-      //   path: 'scheduling',
-      //   loadChildren: () => import('./features/scheduling/scheduling.routes').then(m => m.SCHEDULING_ROUTES)
-      // },
+      {
+        path: 'scheduling',
+        loadChildren: () => import('./features/shifts/shifts.routes').then(m => m.SHIFTS_ROUTES)
+      },
 
       // ──────────────────────────────────────────────────────────────────────
       // §5 — Internal Shift Market (Claims)

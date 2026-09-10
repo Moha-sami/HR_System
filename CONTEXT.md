@@ -26,6 +26,8 @@ Canonical domain terminology and ubiquitous language governing the Buy2 HR Manag
   - **Collision Hard Stop**: Blocks double-booking an employee across overlapping times.
   - **Overtime Risk Warning**: Flags shifts that push an employee past legal weekly hours limit.
 - **Publish Justification**: Mandatory written audit log required from a manager to override overtime warnings during schedule publication.
+- **Shift Template**: A reusable named roster pattern (name + time range + blocks + sites) from which concrete shifts are produced.
+- **Template Block**: One time-segment inside a Shift Template, optionally bound to a job role and/or an assigned employee.
 
 ### 5. Shift Market & Escrow
 - **Market Shift**: An unassigned or dropped shift block made available on the internal organizational marketplace.

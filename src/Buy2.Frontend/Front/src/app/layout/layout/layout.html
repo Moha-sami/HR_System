@@ -27,8 +27,9 @@
 
     <!-- Navigation Menu -->
     <nav class="nav-menu">
+      <ng-container *ngFor="let item of menuItems">
       <a
-        *ngFor="let item of menuItems"
+        *ngIf="!item.children"
         [routerLink]="item.route"
         routerLinkActive="active"
         [routerLinkActiveOptions]="{ exact: false }"
@@ -84,6 +85,45 @@
         <span class="label" *ngIf="isSidebarOpen()">{{ item.labelKey | translate }}</span>
         <span class="arrow" *ngIf="isSidebarOpen() && item['hasArrow']">›</span>
       </a>
+      <div *ngIf="item.children" class="nav-group">
+        <button
+          class="nav-item nav-group-toggle"
+          [class.active]="isGroupExpanded(item.route)"
+          [title]="!isSidebarOpen() ? (item.labelKey | translate) : ''"
+          (click)="toggleGroup(item.route); closeSidebarOnMobile()"
+        >
+          <!-- Scheduling -->
+          <span class="nav-icon" *ngIf="item.icon === 'svg-scheduling'">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          </span>
+
+          <span class="label" *ngIf="isSidebarOpen()">{{ item.labelKey | translate }}</span>
+          <span class="arrow nav-group-arrow" [class.open]="isGroupExpanded(item.route)" *ngIf="isSidebarOpen()">›</span>
+        </button>
+        <div class="nav-group-children" *ngIf="isGroupExpanded(item.route) && isSidebarOpen()">
+          <ng-container *ngFor="let child of item.children; trackBy: trackChild">
+            <a
+              *ngIf="!child.disabled"
+              [routerLink]="child.route"
+              class="nav-item nav-child"
+              [class.is-active]="isChildActive(child.route)"
+              (click)="closeSidebarOnMobile()"
+            >
+              <span class="nav-child-label">{{ child.labelKey | translate }}</span>
+            </a>
+            <span
+              *ngIf="child.disabled"
+              class="nav-item nav-child is-disabled"
+              aria-disabled="true"
+              [title]="child.labelKey | translate"
+            >
+              <span class="nav-child-label">{{ child.labelKey | translate }}</span>
+              <span class="nav-child-soon">{{ 'SCHEDULING.COMING_SOON' | translate }}</span>
+            </span>
+          </ng-container>
+        </div>
+      </div>
+      </ng-container>
     </nav>
 
     <!-- Sidebar Toggle Button -->

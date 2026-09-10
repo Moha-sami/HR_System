@@ -1,0 +1,298 @@
+<div class="p-6" cdkDropListGroup>
+
+  <!-- ── Title ───────────────────────────────────────────────── -->
+  <div class="mb-6 flex items-center gap-2">
+    <h1 class="text-2xl font-semibold text-neutral-500">
+      {{ 'LAYOUT.NAV.SHIFT_TEMPLATES' | translate }}
+    </h1>
+    <span class="text-2xl font-semibold text-primary-600">
+      @if (isEdit()) {
+        {{ 'SHIFT_TEMPLATES.EDITOR.TITLE_EDIT' | translate }}
+      } @else {
+        {{ 'SHIFT_TEMPLATES.EDITOR.TITLE_CREATE' | translate }}
+      }
+    </span>
+  </div>
+
+  <!-- ── Loading ─────────────────────────────────────────────── -->
+  @if (loading()) {
+    <div class="flex items-center justify-center gap-3 py-10">
+      <span class="size-6 animate-spin rounded-full border-2 border-primary-200 border-t-primary-600"></span>
+      <p class="text-sm text-neutral-500">{{ 'COMMON.LOADING' | translate }}</p>
+    </div>
+  }
+
+  <!-- ── Load error ──────────────────────────────────────────── -->
+  @if (loadError() && !loading()) {
+    <div class="mb-4 flex items-center justify-between rounded-lg border border-error-200 bg-error-50 px-4 py-3">
+      <p class="text-sm text-error-600">{{ 'SHIFT_TEMPLATES.EDITOR.LOAD_ERROR' | translate }}</p>
+      <button
+        type="button"
+        class="rounded-md px-3 py-1.5 text-sm font-medium text-primary-600 hover:bg-primary-50"
+        (click)="discard()"
+      >
+        {{ 'COMMON.BACK' | translate }}
+      </button>
+    </div>
+  }
+
+  @if (!loading() && !loadError()) {
+    <!-- ── Shift Name ────────────────────────────────────────── -->
+    <div class="mb-4 flex items-center gap-4">
+      <label for="template-name" class="w-28 shrink-0 text-sm text-neutral-600">
+        {{ 'SHIFT_TEMPLATES.EDITOR.NAME' | translate }}
+      </label>
+      <input
+        id="template-name"
+        type="text"
+        class="w-full rounded-lg border border-neutral-200 bg-neutral-50 px-4 py-2.5 text-sm outline-none transition-colors focus:border-primary-500"
+        [placeholder]="'SHIFT_TEMPLATES.EDITOR.NAME_PLACEHOLDER' | translate"
+        [ngModel]="name()"
+        (ngModelChange)="name.set($event)"
+      />
+    </div>
+
+    <!-- ── Sites multi-select ────────────────────────────────── -->
+    <div class="mb-4 flex items-center gap-4">
+      <span class="w-28 shrink-0 text-sm text-neutral-600">
+        {{ 'SHIFT_TEMPLATES.EDITOR.SITES' | translate }}
+      </span>
+      <div class="relative">
+        <button
+          type="button"
+          class="flex w-64 items-center justify-between rounded-lg border border-neutral-200 bg-neutral-50 px-4 py-2.5 text-sm outline-none transition-colors focus:border-primary-500"
+          (click)="toggleSitesDropdown($event)"
+        >
+          <span class="truncate text-neutral-600">{{ sitesLabel() }}</span>
+          <svg aria-hidden="true" class="size-4 shrink-0 text-primary-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6" />
+          </svg>
+        </button>
+        @if (sitesOpen()) {
+          <div class="absolute z-10 mt-1 w-64 rounded-lg border border-neutral-200 bg-white py-1 shadow-lg">
+            @for (site of sites(); track site.id) {
+              <label class="flex cursor-pointer items-center gap-2 px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-50">
+                <input
+                  type="checkbox"
+                  class="size-4 accent-primary-600"
+                  [checked]="selectedSiteIds().includes(site.id)"
+                  (change)="toggleSite($event, site.id)"
+                />
+                {{ site.siteName }}
+              </label>
+            }
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- ── Shift start / end ─────────────────────────────────── -->
+    <div class="mb-6 flex flex-wrap items-center gap-3">
+      <span class="w-28 shrink-0 text-sm text-neutral-600">
+        {{ 'SHIFT_TEMPLATES.EDITOR.START_TIME' | translate }}
+      </span>
+      <input
+        type="text"
+        class="w-24 rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2 text-center text-sm outline-none focus:border-primary-500"
+        aria-label="Shift start time"
+        [ngModel]="startHm()"
+        (ngModelChange)="startHm.set($event)"
+      />
+      <select
+        class="rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2 text-sm text-primary-600 outline-none focus:border-primary-500"
+        aria-label="Shift start meridiem"
+        [ngModel]="startMer()"
+        (ngModelChange)="startMer.set($event)"
+      >
+        <option value="AM">AM</option>
+        <option value="PM">PM</option>
+      </select>
+
+      <span class="ml-6 w-20 shrink-0 text-sm text-neutral-600">
+        {{ 'SHIFT_TEMPLATES.EDITOR.END_TIME' | translate }}
+      </span>
+      <input
+        type="text"
+        class="w-24 rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2 text-center text-sm outline-none focus:border-primary-500"
+        aria-label="Shift end time"
+        [ngModel]="endHm()"
+        (ngModelChange)="endHm.set($event)"
+      />
+      <select
+        class="rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2 text-sm text-primary-600 outline-none focus:border-primary-500"
+        aria-label="Shift end meridiem"
+        [ngModel]="endMer()"
+        (ngModelChange)="endMer.set($event)"
+      >
+        <option value="AM">AM</option>
+        <option value="PM">PM</option>
+      </select>
+    </div>
+
+    <!-- ── Shift Blocks ──────────────────────────────────────── -->
+    <h2 class="mb-3 text-sm font-medium text-neutral-700">
+      {{ 'SHIFT_TEMPLATES.EDITOR.BLOCKS_TITLE' | translate }}
+    </h2>
+
+    <!-- Employee strip (#329): primary assignment path -->
+    <app-employee-strip
+      [siteIds]="selectedSiteIds()"
+      [assignedIds]="assignedIds()"
+      (pageLoaded)="onStripPage($event)"
+    />
+
+    <!-- Builder row -->
+    <div class="mb-3 flex flex-wrap items-center gap-3">
+      <span class="text-sm text-neutral-600">{{ 'SHIFT_TEMPLATES.EDITOR.BLOCK_START' | translate }}</span>
+      <input
+        type="text"
+        class="w-16 rounded-lg border border-neutral-200 bg-neutral-50 px-2 py-2 text-center text-sm outline-none focus:border-primary-500"
+        aria-label="Block start time"
+        [ngModel]="rowStartHm()"
+        (ngModelChange)="rowStartHm.set($event)"
+      />
+      <select
+        class="rounded-lg border border-neutral-200 bg-neutral-50 px-2 py-2 text-sm text-primary-600 outline-none focus:border-primary-500"
+        aria-label="Block start meridiem"
+        [ngModel]="rowStartMer()"
+        (ngModelChange)="rowStartMer.set($event)"
+      >
+        <option value="AM">AM</option>
+        <option value="PM">PM</option>
+      </select>
+
+      <span class="text-sm text-neutral-600">{{ 'SHIFT_TEMPLATES.EDITOR.BLOCK_END' | translate }}</span>
+      <input
+        type="text"
+        class="w-16 rounded-lg border border-neutral-200 bg-neutral-50 px-2 py-2 text-center text-sm outline-none focus:border-primary-500"
+        aria-label="Block end time"
+        [ngModel]="rowEndHm()"
+        (ngModelChange)="rowEndHm.set($event)"
+      />
+      <select
+        class="rounded-lg border border-neutral-200 bg-neutral-50 px-2 py-2 text-sm text-primary-600 outline-none focus:border-primary-500"
+        aria-label="Block end meridiem"
+        [ngModel]="rowEndMer()"
+        (ngModelChange)="rowEndMer.set($event)"
+      >
+        <option value="AM">AM</option>
+        <option value="PM">PM</option>
+      </select>
+
+      <span class="text-sm text-neutral-600">{{ 'SHIFT_TEMPLATES.EDITOR.ROLE' | translate }}</span>
+      <select
+        class="rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2 text-sm outline-none focus:border-primary-500"
+        aria-label="Block job role"
+        [ngModel]="rowRoleId()"
+        (ngModelChange)="rowRoleId.set($event === '' ? null : +$event)"
+      >
+        <option [ngValue]="null">—</option>
+        @for (role of roles(); track role.id) {
+          <option [ngValue]="role.id">{{ role.title }}</option>
+        }
+      </select>
+
+      <span class="text-sm text-neutral-600">{{ 'SHIFT_TEMPLATES.EDITOR.EMPLOYEE' | translate }}</span>
+      <select
+        #rowEmployee
+        class="rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2 text-sm outline-none focus:border-primary-500 disabled:opacity-50"
+        aria-label="Block employee"
+        [disabled]="employees().length === 0"
+        [ngModel]="rowEmployeeId()"
+        (ngModelChange)="rowEmployeeId.set($event === '' ? null : +$event)"
+      >
+        <option [ngValue]="null">{{ 'SHIFT_TEMPLATES.EDITOR.EMPLOYEE_OPTIONAL' | translate }}</option>
+        @for (emp of employees(); track emp.id) {
+          <option [ngValue]="emp.id">{{ emp.fullName }} ({{ emp.roleTitle }})</option>
+        }
+      </select>
+
+      <app-button variant="primary" (clicked)="postBlock()">
+        @if (editingClientId() !== null) {
+          {{ 'SHIFT_TEMPLATES.EDITOR.UPDATE_BLOCK' | translate }}
+        } @else {
+          {{ 'SHIFT_TEMPLATES.EDITOR.POST_BLOCK' | translate }}
+        }
+      </app-button>
+      @if (editingClientId() !== null) {
+        <button
+          type="button"
+          class="text-sm font-medium text-neutral-500 hover:text-neutral-700"
+          (click)="cancelRowEdit()"
+        >
+          {{ 'COMMON.CANCEL' | translate }}
+        </button>
+      }
+    </div>
+
+    @if (rowError()) {
+      <p role="alert" class="mb-3 text-sm text-error-600">{{ rowError() }}</p>
+    }
+    @if (employees().length === 0) {
+      <p class="mb-3 text-sm text-neutral-400">{{ 'SHIFT_TEMPLATES.EDITOR.NO_EMPLOYEES_HINT' | translate }}</p>
+    }
+
+    <!-- Timeline canvas (#328): coverage view of the working blocks -->
+    <app-shift-timeline
+      [blocks]="timelineBlocks()"
+      [rangeStart]="shiftRange()?.start ?? null"
+      [rangeEnd]="shiftRange()?.end ?? null"
+      (editBlock)="onTimelineEdit($event)"
+      (assignBlock)="onTimelineAssign($event)"
+      (deleteBlock)="onTimelineDelete($event)"
+      (dropOnBlock)="onStripDrop($event)"
+    />
+
+    <!-- Form errors -->
+    @if (formErrors().length > 0) {
+      <div role="alert" class="mb-4 rounded-lg border border-error-200 bg-error-50 px-4 py-3">
+        @for (error of formErrors(); track error) {
+          <p class="text-sm text-error-600">{{ error }}</p>
+        }
+      </div>
+    }
+    @if (saveError()) {
+      <p role="alert" class="mb-4 text-sm text-error-600">{{ saveError() }}</p>
+    }
+
+    <!-- Footer -->
+    <div class="mt-6 flex items-center justify-end gap-6 border-t border-neutral-200 pt-4">
+      <button
+        type="button"
+        class="text-sm font-medium text-primary-600 hover:text-primary-800"
+        (click)="discard()"
+      >
+        {{ 'SHIFT_TEMPLATES.EDITOR.DISCARD' | translate }}
+      </button>
+      <app-button variant="primary" [loading]="saving()" [disabled]="saving()" (clicked)="save()">
+        {{ 'SHIFT_TEMPLATES.EDITOR.DONE' | translate }}
+      </app-button>
+    </div>
+  }
+</div>
+
+<!-- ── Delete-block modal ────────────────────────────────────── -->
+@if (showDeleteBlockModal()) {
+  <app-modal
+    size="small"
+    [closeOnBackdrop]="true"
+    [showHeader]="false"
+    [showActions]="false"
+    (closed)="closeDeleteBlockModal()"
+  >
+    <app-modal-body>
+      <div class="flex flex-col items-center gap-3 p-2 text-center">
+        <h3 class="text-lg font-semibold text-neutral-900">{{ 'SHIFT_TEMPLATES.EDITOR.DELETE_BLOCK_TITLE' | translate }}</h3>
+        <p class="text-sm text-neutral-600">{{ 'SHIFT_TEMPLATES.EDITOR.DELETE_BLOCK_MESSAGE' | translate }}</p>
+        <div class="mt-1 flex items-center gap-3">
+          <app-button variant="secondary" (clicked)="closeDeleteBlockModal()">
+            {{ 'COMMON.CANCEL' | translate }}
+          </app-button>
+          <app-button variant="danger" (clicked)="confirmDeleteBlock()">
+            {{ 'COMMON.DELETE' | translate }}
+          </app-button>
+        </div>
+      </div>
+    </app-modal-body>
+  </app-modal>
+}
