@@ -29,12 +29,16 @@ public class ShiftBlockConfiguration : IEntityTypeConfiguration<ShiftBlock>
         builder.HasOne(b => b.Employee)
             .WithMany()
             .HasForeignKey(b => b.EmployeeId)
+            .IsRequired(false)
             .OnDelete(DeleteBehavior.Restrict);
 
         // Employee can be assigned to at most one block globally
         // (covers: no duplicate inside same template + no employee in two templates).
+        // Unassigned blocks (EmployeeId IS NULL) are excluded so templates
+        // can hold any number of open blocks.
         builder.HasIndex(b => b.EmployeeId)
-            .IsUnique();
+            .IsUnique()
+            .HasFilter("[EmployeeId] IS NOT NULL");
 
         builder.HasIndex(b => b.ShiftTemplateId);
     }

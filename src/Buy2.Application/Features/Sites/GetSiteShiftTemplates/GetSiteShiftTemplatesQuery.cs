@@ -12,7 +12,7 @@ public record SiteShiftTemplateBlockDto(
     string StartTime,
     string EndTime,
     int JobRoleId,
-    int AssignedUserId
+    int? AssignedUserId
 );
 
 public record SiteShiftTemplateDto(
