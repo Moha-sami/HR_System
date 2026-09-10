@@ -17,8 +17,15 @@
       "REQUEST_MANAGEMENT": "Request Management",
       "TIME_AND_ATTENDANCE": "Time & Attendance",
       "NOTIFICATIONS": "News",
-      "SCHEDULING": "Scheduling"
+      "SCHEDULING": "Scheduling",
+      "SHIFT_MANAGEMENT": "Shift Management",
+      "EMPLOYEE_ASSIGNMENT": "Employee Assignment",
+      "SHIFT_MARKET": "Shift Market",
+      "SHIFT_TEMPLATES": "Shift Templates"
     }
+  },
+  "SCHEDULING": {
+    "COMING_SOON": "Coming soon"
   },
   "AUTH": {
     "LOGIN": {

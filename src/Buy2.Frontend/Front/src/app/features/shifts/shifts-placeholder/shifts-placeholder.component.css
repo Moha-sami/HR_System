@@ -1,0 +1,12 @@
+.shifts-placeholder {
+  padding: 32px 24px;
+}
+
+.shifts-placeholder h1 {
+  font-size: 20px;
+  margin-bottom: 8px;
+}
+
+.shifts-placeholder p {
+  opacity: 0.65;
+}

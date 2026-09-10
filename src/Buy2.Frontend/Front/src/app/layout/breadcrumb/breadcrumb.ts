@@ -32,6 +32,10 @@ const routeTranslationKeys: Record<string, string> = {
   '/attendance': 'LAYOUT.NAV.TIME_AND_ATTENDANCE',
   '/notifications': 'LAYOUT.NAV.NOTIFICATIONS',
   '/scheduling': 'LAYOUT.NAV.SCHEDULING',
+  '/scheduling/shift-templates': 'LAYOUT.NAV.SHIFT_TEMPLATES',
+  '/scheduling/shift-management': 'LAYOUT.NAV.SHIFT_MANAGEMENT',
+  '/scheduling/employee-assignment': 'LAYOUT.NAV.EMPLOYEE_ASSIGNMENT',
+  '/scheduling/shift-market': 'LAYOUT.NAV.SHIFT_MARKET',
 };
 
 @Component({

@@ -17,8 +17,15 @@
       "REQUEST_MANAGEMENT": "إدارة الطلبات",
       "TIME_AND_ATTENDANCE": "الوقت والحضور",
       "NOTIFICATIONS": "الأخبار",
-      "SCHEDULING": "الجدولة"
+      "SCHEDULING": "الجدولة",
+      "SHIFT_MANAGEMENT": "إدارة الورديات",
+      "EMPLOYEE_ASSIGNMENT": "تعيين الموظفين",
+      "SHIFT_MARKET": "سوق الورديات",
+      "SHIFT_TEMPLATES": "قوالب الورديات"
     }
+  },
+  "SCHEDULING": {
+    "COMING_SOON": "قريباً"
   },
   "AUTH": {
     "LOGIN": {
