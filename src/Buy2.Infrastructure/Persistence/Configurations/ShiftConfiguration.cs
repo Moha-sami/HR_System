@@ -35,5 +35,6 @@ public class ShiftConfiguration : IEntityTypeConfiguration<ShiftEntity>
             .IsRequired(false)
             .OnDelete(DeleteBehavior.SetNull);
 
+        builder.HasIndex(s => new { s.SiteId, s.StartTime });
     }
 }
