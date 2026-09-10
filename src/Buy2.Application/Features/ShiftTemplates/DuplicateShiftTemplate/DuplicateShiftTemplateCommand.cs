@@ -92,20 +92,21 @@ public class DuplicateShiftTemplateCommandHandler
 
     private async Task<string> GenerateCopyNameAsync(string sourceName, CancellationToken cancellationToken)
     {
+        var prefix = sourceName.Length > 80 ? sourceName.Substring(0, 80).ToLower() : sourceName.ToLower();
+        var existingNames = await _shiftTemplateRepository.Query()
+            .Where(t => t.Name.ToLower().StartsWith(prefix))
+            .Select(t => t.Name.ToLower())
+            .ToListAsync(cancellationToken);
+
+        var existingSet = new HashSet<string>(existingNames, StringComparer.OrdinalIgnoreCase);
+
         var index = 1;
-        while (await NameExistsAsync(BuildCandidateName(sourceName, index), cancellationToken))
+        while (existingSet.Contains(BuildCandidateName(sourceName, index)))
         {
             index++;
         }
 
         return BuildCandidateName(sourceName, index);
-    }
-
-    private async Task<bool> NameExistsAsync(string candidate, CancellationToken cancellationToken)
-    {
-        var lowered = candidate.ToLower();
-        return await _shiftTemplateRepository.Query()
-            .AnyAsync(t => t.Name.ToLower() == lowered, cancellationToken);
     }
 
     public static string BuildCandidateName(string sourceName, int index)

@@ -1,6 +1,7 @@
 using Buy2.Application.Common.Interfaces;
 using Buy2.Domain.Entities;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 
 namespace Buy2.Application.Features.Authentication.ResetPassword;
 
@@ -17,8 +18,8 @@ public class ResetPasswordCommandHandler : IRequestHandler<ResetPasswordCommand,
 
     public async Task<bool> Handle(ResetPasswordCommand request, CancellationToken cancellationToken)
     {
-        var employees = await _employeeRepository.GetAllAsync(cancellationToken);
-        var employee = employees.FirstOrDefault(e => e.Email == request.Email);
+        var employee = await _employeeRepository.Query()
+            .FirstOrDefaultAsync(e => e.Email == request.Email, cancellationToken);
 
         if (employee is null)
         {
