@@ -89,21 +89,9 @@ public class CreateShiftTemplateCommandHandler
                 employeesCheck.ErrorMessage ?? "One or more AssignedUserIds do not exist.");
         }
 
-        var duplicateCheck = ShiftTemplateAssignmentValidator.EnsureNoDuplicateEmployees(
-            blocks.Select(b => b.AssignedUserId).ToList());
-        if (!duplicateCheck.IsSuccess)
-        {
-            return Result<ShiftTemplateDetailsDto>.Conflict(
-                duplicateCheck.ErrorMessage ?? "An employee cannot be assigned to more than one block in the same shift.");
-        }
-
-        var collisionCheck = await ShiftTemplateAssignmentValidator.EnsureEmployeesNotAssignedElsewhereAsync(
-            _shiftBlockRepository, employeeIds, excludeTemplateId: null, cancellationToken);
-        if (!collisionCheck.IsSuccess)
-        {
-            return Result<ShiftTemplateDetailsDto>.Conflict(
-                collisionCheck.ErrorMessage ?? "One or more employees are already assigned to another shift.");
-        }
+        // NOTE: employee assignment on template blocks is a reusable snapshot value.
+        // The same employee may appear in many blocks across many templates,
+        // so no intra-template or cross-template employee uniqueness is enforced here.
 
         try
         {
@@ -165,7 +153,7 @@ public class CreateShiftTemplateCommandHandler
         catch (DbUpdateException)
         {
             return Result<ShiftTemplateDetailsDto>.Conflict(
-                "One or more employees are already assigned to another shift.");
+                "Could not create the shift template. Please try again.");
         }
     }
 }

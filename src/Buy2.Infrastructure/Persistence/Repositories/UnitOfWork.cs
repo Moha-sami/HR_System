@@ -1,7 +1,7 @@
 using Buy2.Application.Common.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
-
+using System.Data;
 namespace Buy2.Infrastructure.Persistence.Repositories;
 
 public class UnitOfWork : IUnitOfWork
@@ -105,6 +105,29 @@ public class UnitOfWork : IUnitOfWork
         return await strategy.ExecuteAsync(async () =>
         {
             await using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
+            var result = await operation();
+            await _context.SaveChangesAsync(cancellationToken);
+            await transaction.CommitAsync(cancellationToken);
+            return result;
+        });
+    }
+
+    public async Task<TResult> ExecuteInTransactionAsync<TResult>(
+        Func<Task<TResult>> operation,
+        IsolationLevel isolationLevel,
+        CancellationToken cancellationToken = default)
+    {
+        if (!_context.Database.IsRelational())
+        {
+            var res = await operation();
+            await _context.SaveChangesAsync(cancellationToken);
+            return res;
+        }
+
+        var strategy = _context.Database.CreateExecutionStrategy();
+        return await strategy.ExecuteAsync(async () =>
+        {
+            await using var transaction = await _context.Database.BeginTransactionAsync(isolationLevel, cancellationToken);
             var result = await operation();
             await _context.SaveChangesAsync(cancellationToken);
             await transaction.CommitAsync(cancellationToken);
