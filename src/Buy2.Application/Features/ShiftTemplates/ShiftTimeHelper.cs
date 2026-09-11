@@ -64,29 +64,62 @@ public static class ShiftTimeHelper
         return (end.TotalMinutes - start.TotalMinutes + DayMinutes) % DayMinutes;
     }
 
-    public static bool HasOverlappingBlocks(
-        IReadOnlyList<(TimeSpan Start, TimeSpan End)> blocks,
+    public static IReadOnlyList<(TimeSpan Start, TimeSpan End, int EmployeeId)> GetOverlappingBlocksForSameEmployee(
+        IEnumerable<(TimeSpan Start, TimeSpan End, int EmployeeId)> blocks,
         TimeSpan templateStart)
     {
-        if (blocks.Count < 2)
+        var overlapping = new List<(TimeSpan Start, TimeSpan End, int EmployeeId)>();
+        foreach (var group in blocks.GroupBy(b => b.EmployeeId))
         {
-            return false;
+            CollectOverlappingBlocks(group.ToList(), templateStart, overlapping);
         }
 
-        var normalized = blocks
-            .Select(b => ToOffsetInterval(b.Start, b.End, templateStart))
-            .OrderBy(x => x.Offset)
+        return overlapping;
+    }
+
+    public static bool HasOverlappingBlocksForSameEmployee(
+        IEnumerable<(TimeSpan Start, TimeSpan End, int EmployeeId)> blocks,
+        TimeSpan templateStart)
+    {
+        return GetOverlappingBlocksForSameEmployee(blocks, templateStart).Count != 0;
+    }
+
+    private static void CollectOverlappingBlocks(
+        IReadOnlyList<(TimeSpan Start, TimeSpan End, int EmployeeId)> group,
+        TimeSpan templateStart,
+        List<(TimeSpan Start, TimeSpan End, int EmployeeId)> accumulator)
+    {
+        var ordered = group
+            .Select(b => (Block: b, Interval: ToOffsetInterval(b.Start, b.End, templateStart)))
+            .OrderBy(x => x.Interval.Offset)
             .ToList();
 
-        for (var i = 1; i < normalized.Count; i++)
+        var overlappingIndexes = new HashSet<int>();
+        var openIndexes = new List<int>();
+
+        for (var i = 0; i < ordered.Count; i++)
         {
-            if (normalized[i].Offset < normalized[i - 1].End - 1e-9)
+            var currentOffset = ordered[i].Interval.Offset;
+            for (var k = openIndexes.Count - 1; k >= 0; k--)
             {
-                return true;
+                if (ordered[openIndexes[k]].Interval.End <= currentOffset + 1e-9)
+                {
+                    openIndexes.RemoveAt(k);
+                }
+                else
+                {
+                    overlappingIndexes.Add(openIndexes[k]);
+                    overlappingIndexes.Add(i);
+                }
             }
+
+            openIndexes.Add(i);
         }
 
-        return false;
+        foreach (var index in overlappingIndexes.OrderBy(x => x))
+        {
+            accumulator.Add(ordered[index].Block);
+        }
     }
 
     private static (double Offset, double End) ToOffsetInterval(

@@ -23,6 +23,7 @@ public class UpdateShiftTemplateDtoValidator : AbstractValidator<UpdateShiftTemp
 
         RuleFor(x => x)
             .Must(HaveDifferentTimes)
+            .When(IsValidTemplateTimes)
             .WithMessage("StartTime and EndTime must be different.");
 
         RuleFor(x => x.SiteIds)
@@ -55,15 +56,15 @@ public class UpdateShiftTemplateDtoValidator : AbstractValidator<UpdateShiftTemp
             .When(x => x.ShiftBlocks is not null)
             .WithMessage("Shift block Ids must be distinct.");
 
-        RuleFor(x => x)
-            .Must(AllBlocksWithinTemplate)
-            .When(x => x.ShiftBlocks is not null)
-            .WithMessage("One or more shift blocks must be within template time.");
+        RuleForEach(x => x.ShiftBlocks)
+            .Must((dto, block) => IsBlockWithinTemplate(dto, block.StartTime, block.EndTime))
+            .When(x => x.ShiftBlocks is not null && IsValidTemplateTimes(x))
+            .WithMessage((dto, block) => $"Block {GetBlockPosition(dto.ShiftBlocks, block)} is outside the template range.");
 
         RuleFor(x => x)
             .Must(HaveNoOverlappingBlocks)
-            .When(x => x.ShiftBlocks is not null)
-            .WithMessage("Shift blocks must not overlap.");
+            .When(x => x.ShiftBlocks is not null && IsValidTemplateTimes(x))
+            .WithMessage("Shift blocks for the same employee must not overlap.");
     }
 
     private static bool BeParseableTime(string? value)
@@ -73,11 +74,9 @@ public class UpdateShiftTemplateDtoValidator : AbstractValidator<UpdateShiftTemp
 
     private static bool HaveDifferentTimes(UpdateShiftTemplateDto dto)
     {
-        if (!ShiftTimeHelper.TryParseTime(dto.StartTime, out var start)
-            || !ShiftTimeHelper.TryParseTime(dto.EndTime, out var end))
-        {
-            return true;
-        }
+        // Guarded by When(IsValidTemplateTimes): both values are parseable here.
+        ShiftTimeHelper.TryParseTime(dto.StartTime, out var start);
+        ShiftTimeHelper.TryParseTime(dto.EndTime, out var end);
 
         return start != end;
     }
@@ -107,40 +106,52 @@ public class UpdateShiftTemplateDtoValidator : AbstractValidator<UpdateShiftTemp
         return existingIds.Distinct().Count() == existingIds.Count;
     }
 
-    private static bool AllBlocksWithinTemplate(UpdateShiftTemplateDto dto)
+    private static bool IsBlockWithinTemplate(UpdateShiftTemplateDto dto, string? blockStartTime, string? blockEndTime)
     {
+        // Layered ownership: template-level failures belong to the StartTime/EndTime
+        // rules (see When guard), and unreadable block times belong to the block
+        // validator — they must never be misreported as "outside the template range".
+        // Night shifts are handled by IsWithinTemplate via template-relative offsets
+        // (no naive blockStart >= templateStart && blockEnd <= templateEnd comparison).
         if (!ShiftTimeHelper.TryParseTime(dto.StartTime, out var templateStart)
             || !ShiftTimeHelper.TryParseTime(dto.EndTime, out var templateEnd))
         {
             return true;
         }
 
-        foreach (var block in dto.ShiftBlocks ?? Enumerable.Empty<UpdateShiftTemplateBlockDto>())
+        if (!ShiftTimeHelper.TryParseTime(blockStartTime, out var blockStart)
+            || !ShiftTimeHelper.TryParseTime(blockEndTime, out var blockEnd))
         {
-            if (!ShiftTimeHelper.TryParseTime(block.StartTime, out var blockStart)
-                || !ShiftTimeHelper.TryParseTime(block.EndTime, out var blockEnd))
-            {
-                continue;
-            }
-
-            if (!ShiftTimeHelper.IsWithinTemplate(blockStart, blockEnd, templateStart, templateEnd))
-            {
-                return false;
-            }
+            return true;
         }
 
-        return true;
+        return ShiftTimeHelper.IsWithinTemplate(blockStart, blockEnd, templateStart, templateEnd);
+    }
+
+    private static int GetBlockPosition(List<UpdateShiftTemplateBlockDto>? blocks, UpdateShiftTemplateBlockDto block)
+    {
+        if (blocks is null)
+        {
+            return 0;
+        }
+
+        return blocks.IndexOf(block) + 1;
+    }
+
+    private static bool IsValidTemplateTimes(UpdateShiftTemplateDto dto)
+    {
+        return ShiftTimeHelper.TryParseTime(dto.StartTime, out _)
+            && ShiftTimeHelper.TryParseTime(dto.EndTime, out _);
     }
 
     private static bool HaveNoOverlappingBlocks(UpdateShiftTemplateDto dto)
     {
-        if (!ShiftTimeHelper.TryParseTime(dto.StartTime, out var templateStart)
-            || !ShiftTimeHelper.TryParseTime(dto.EndTime, out var templateEnd))
-        {
-            return true;
-        }
+        // Only speaks about overlap. Invalid template times are reported by the
+        // StartTime/EndTime rules; this rule never runs for them (see When guard above).
+        ShiftTimeHelper.TryParseTime(dto.StartTime, out var templateStart);
+        ShiftTimeHelper.TryParseTime(dto.EndTime, out var templateEnd);
 
-        var intervals = new List<(TimeSpan Start, TimeSpan End)>();
+        var intervals = new List<(TimeSpan Start, TimeSpan End, int EmployeeId)>();
         foreach (var block in dto.ShiftBlocks ?? Enumerable.Empty<UpdateShiftTemplateBlockDto>())
         {
             if (!ShiftTimeHelper.TryParseTime(block.StartTime, out var blockStart)
@@ -154,9 +165,9 @@ public class UpdateShiftTemplateDtoValidator : AbstractValidator<UpdateShiftTemp
                 continue;
             }
 
-            intervals.Add((blockStart, blockEnd));
+            intervals.Add((blockStart, blockEnd, block.AssignedUserId));
         }
 
-        return !ShiftTimeHelper.HasOverlappingBlocks(intervals, templateStart);
+        return ShiftTimeHelper.GetOverlappingBlocksForSameEmployee(intervals, templateStart).Count == 0;
     }
 }

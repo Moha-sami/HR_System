@@ -88,8 +88,8 @@ public class ShiftTemplateUpdateService
         }
 
         // NOTE: employee assignment on template blocks is a reusable snapshot value.
-        // The same employee may appear in many blocks across many templates,
-        // so no intra-template or cross-template employee uniqueness is enforced here.
+        // The same employee may appear in many blocks across many templates.
+        // Only overlapping blocks for the same employee within this template are rejected (see EnsureTimeRules).
         return Result<ValidatedShiftTemplateUpdate>.Success(new ValidatedShiftTemplateUpdate(
             template,
             dto.Name.Trim(),
@@ -199,10 +199,10 @@ public class ShiftTemplateUpdateService
             }
         }
 
-        var intervals = parsed.Blocks.Select(b => (b.Start, b.End)).ToList();
-        if (ShiftTimeHelper.HasOverlappingBlocks(intervals, parsed.TemplateStart))
+        var intervals = parsed.Blocks.Select(b => (b.Start, b.End, b.EmployeeId)).ToList();
+        if (ShiftTimeHelper.HasOverlappingBlocksForSameEmployee(intervals, parsed.TemplateStart))
         {
-            return Result.ValidationFailure("Shift blocks must not overlap.");
+            return Result.ValidationFailure("Shift blocks for the same employee must not overlap.");
         }
 
         return Result.Success();
