@@ -1,65 +1,85 @@
-﻿using Buy2.Application.Common.Interfaces;
+using Buy2.Application.Common.Interfaces;
+using Buy2.Application.Common.Models;
 using Buy2.Application.DTOs.Rewards.DTOs;
+using Buy2.Application.Validators.Rewards;
 using Buy2.Domain.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using System.ComponentModel.DataAnnotations;
 
 namespace Buy2.Application.Features.Rewards.Commands;
 
 public record CreateRewardCommand(
-    RewardCreateDto dto,
-    IFormFile ImageFile
-) : IRequest<RewardProfileListDto>;
+    RewardCreateDto Dto,
+    IFormFile? ImageFile
+) : IRequest<Result<RewardProfileListDto>>;
 
-public class CreateRewardCommandHandler: IRequestHandler<CreateRewardCommand, RewardProfileListDto>
+public class CreateRewardCommandHandler : IRequestHandler<CreateRewardCommand, Result<RewardProfileListDto>>
 {
     private readonly IRepository<RewardItem> _rewardItemRepository;
     private readonly IRepository<RewardCategory> _categoryRepository;
     private readonly IFileStorageService _fileStorageService;
     private readonly IUnitOfWork _unitOfWork;
-    public CreateRewardCommandHandler(IRepository<RewardItem> rewardItem, IRepository<RewardCategory> category, IFileStorageService file, IUnitOfWork unitOfWork)
+
+    public CreateRewardCommandHandler(
+        IRepository<RewardItem> rewardItem,
+        IRepository<RewardCategory> category,
+        IFileStorageService file,
+        IUnitOfWork unitOfWork)
     {
         _rewardItemRepository = rewardItem;
         _categoryRepository = category;
         _fileStorageService = file;
         _unitOfWork = unitOfWork;
     }
-    public async Task<RewardProfileListDto> Handle(CreateRewardCommand command, CancellationToken cancellation)
+
+    public async Task<Result<RewardProfileListDto>> Handle(CreateRewardCommand command, CancellationToken cancellation)
     {
-        var categoryExit = await _categoryRepository
-            .Query(false)
-            .AnyAsync(c => c.Id == command.dto.CategoryId, cancellation);
-        if (!categoryExit)
+        if (command.Dto is null)
         {
-            throw new ValidationException("Category not found!");
+            return Result<RewardProfileListDto>.ValidationFailure("Reward data is required.");
         }
 
-        var rewardExit = await _rewardItemRepository
-            .Query(false)
-            .AnyAsync(r => r.RewardName == command.dto.Name &&
-                           r.CategoryId == command.dto.CategoryId &&
-                           r.IsActive , cancellation);
-
-        if (rewardExit)
+        var validationResult = await new RewardCreateDtoValidator().ValidateAsync(command.Dto, cancellation);
+        if (!validationResult.IsValid)
         {
-            throw new ValidationException("Reward item name is exists");
+            return Result<RewardProfileListDto>.ValidationFailure(
+                string.Join("; ", validationResult.Errors.Select(e => e.ErrorMessage)));
         }
-        string? imageFile = command.dto.BannerImageUrl;
+
+        var category = await _categoryRepository
+            .Query(false)
+            .FirstOrDefaultAsync(c => c.Id == command.Dto.CategoryId, cancellation);
+
+        if (category is null)
+        {
+            return Result<RewardProfileListDto>.NotFound("Category not found!");
+        }
+
+        var rewardExists = await _rewardItemRepository
+            .Query(false)
+            .AnyAsync(r => r.RewardName == command.Dto.Name &&
+                           r.CategoryId == command.Dto.CategoryId &&
+                           r.IsActive, cancellation);
+
+        if (rewardExists)
+        {
+            return Result<RewardProfileListDto>.Conflict("Reward item name already exists in this category.");
+        }
+
+        string? imageFile = command.Dto.BannerImageUrl;
         if (command.ImageFile is not null)
         {
             const long maxFileSize = 1 * 1024 * 1024;
 
             if (command.ImageFile.Length == 0)
             {
-                throw new ValidationException("Image file is empty.");
+                return Result<RewardProfileListDto>.ValidationFailure("Image file is empty.");
             }
 
             if (command.ImageFile.Length > maxFileSize)
             {
-                throw new ValidationException(
-                    "Image size must not exceed 1 MB.");
+                return Result<RewardProfileListDto>.ValidationFailure("Image size must not exceed 1 MB.");
             }
 
             var allowedExtensions = new[]
@@ -75,7 +95,7 @@ public class CreateRewardCommandHandler: IRequestHandler<CreateRewardCommand, Re
 
             if (!allowedExtensions.Contains(extension))
             {
-                throw new ValidationException(
+                return Result<RewardProfileListDto>.ValidationFailure(
                     "Image extension should be one of: .jpg, .jpeg, .png.");
             }
 
@@ -86,33 +106,36 @@ public class CreateRewardCommandHandler: IRequestHandler<CreateRewardCommand, Re
                 command.ImageFile);
         }
 
-        var rewardItem = new RewardItem { 
-            RewardName = command.dto.Name,
-            CategoryId = command.dto.CategoryId,
+        var rewardItem = new RewardItem
+        {
+            RewardName = command.Dto.Name,
+            CategoryId = command.Dto.CategoryId,
             BannerImageUrl = imageFile,
-            Description = command.dto.Description,
+            Description = command.Dto.Description,
             AvailableStock = 0,
-            CostInPoints = command.dto.Points,
-            MonetaryValue = command.dto.MonetaryValue,
-            HowToRedeem = command.dto.HowToRedeem,
-            TermsOfUse = command.dto.TermsOfUse,
+            CostInPoints = command.Dto.Points,
+            MonetaryValue = command.Dto.MonetaryValue,
+            HowToRedeem = command.Dto.HowToRedeem,
+            TermsOfUse = command.Dto.TermsOfUse,
             IsActive = true
         };
 
         await _rewardItemRepository.AddAsync(rewardItem, cancellation);
         await _unitOfWork.SaveChangesAsync(cancellation);
 
-        return new RewardProfileListDto(
-                rewardItem.Id,
-                rewardItem.RewardName,
-                rewardItem.Description,
-                rewardItem.BannerImageUrl,
-                rewardItem.Category.Name,
-                rewardItem.CostInPoints,
-                rewardItem.MonetaryValue,
-                rewardItem.HowToRedeem,
-                rewardItem.TermsOfUse,
-                rewardItem.IsActive
-            );
+        var resultDto = new RewardProfileListDto(
+            rewardItem.Id,
+            rewardItem.RewardName,
+            rewardItem.Description,
+            rewardItem.BannerImageUrl,
+            category.Name,
+            rewardItem.CostInPoints,
+            rewardItem.MonetaryValue,
+            rewardItem.HowToRedeem,
+            rewardItem.TermsOfUse,
+            rewardItem.IsActive
+        );
+
+        return Result<RewardProfileListDto>.Success(resultDto);
     }
 }

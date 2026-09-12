@@ -1,4 +1,4 @@
-﻿using Buy2.Application.DTOs.Rewards.DTOs;
+using Buy2.Application.DTOs.Rewards.DTOs;
 using Buy2.Application.Features.Rewards.Commands;
 using Buy2.Application.Features.Rewards.Queries;
 using MediatR;
@@ -32,16 +32,31 @@ public class RewardsController : ControllerBase
     [HttpPost]
     [Authorize(Roles = "Admin,Manager,SuperAdmin")]
     [Consumes("multipart/form-data")]
-    [ProducesResponseType(typeof(RewardProfileListDto),StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(RewardProfileListDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<ActionResult<RewardProfileListDto>> CreateReward([FromForm] RewardCreateDto dto, IFormFile? imageFile, CancellationToken cancellation)
+    public async Task<IActionResult> CreateReward([FromForm] RewardCreateDto dto, IFormFile? imageFile, CancellationToken cancellation)
     {
-        CreateRewardCommand command = new CreateRewardCommand(dto, imageFile);
-        var createReward = await _mediator.Send(command, cancellation);
-        return Created($"api/v1/rewards/{createReward}", createReward);
+        var result = await _mediator.Send(new CreateRewardCommand(dto, imageFile), cancellation);
+
+        if (result.IsNotFound)
+        {
+            return NotFound(new { message = result.ErrorMessage });
+        }
+
+        if (result.IsConflict)
+        {
+            return Conflict(new { message = result.ErrorMessage });
+        }
+
+        if (!result.IsSuccess)
+        {
+            return BadRequest(new { message = result.ErrorMessage });
+        }
+
+        return StatusCode(StatusCodes.Status201Created, result.Value);
     }
 
 }
