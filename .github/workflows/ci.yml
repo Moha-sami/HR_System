@@ -24,6 +24,9 @@ jobs:
     - name: Restore & Build Solution
       run: dotnet build --configuration Release HR_system.slnx
 
+    - name: Run .NET Tests
+      run: dotnet test --configuration Release --no-build HR_system.slnx
+
     - name: Publish .NET Backend API
       if: github.ref == 'refs/heads/main' && github.event_name == 'push'
       run: dotnet publish src/Buy2.Api/Buy2.Api.csproj -c Release -o publish_out
