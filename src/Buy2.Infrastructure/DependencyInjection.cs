@@ -31,6 +31,7 @@ public static class DependencyInjection
         services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
         services.AddTransient<ExcelVoucherParser>();
         services.AddScoped<IScheduleValidationEngine, ScheduleValidationEngine>();
+        services.AddScoped<IFileStorageService, FileStorageService>();
 
         return services;
     }

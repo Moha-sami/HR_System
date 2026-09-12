@@ -1,4 +1,6 @@
-﻿namespace Buy2.Application.DTOs.Rewards.DTOs;
+﻿using Microsoft.AspNetCore.Http;
+
+namespace Buy2.Application.DTOs.Rewards.DTOs;
 
 // Reward List
 public record RewardListDto(
