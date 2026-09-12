@@ -53,6 +53,16 @@ export class SiteService {
     return this.http.post<{ id: number }>(`${API_BASE}/sites`, dto);
   }
 
+  // ── GET site by id ────────────────────────────────────────────────────────
+  getSite(id: number): Observable<any> {
+    return this.http.get<any>(`${API_BASE}/sites/${id}`);
+  }
+
+  // ── UPDATE site ───────────────────────────────────────────────────────────
+  updateSite(id: number, dto: CreateSiteDto): Observable<void> {
+    return this.http.put<void>(`${API_BASE}/sites/${id}`, dto);
+  }
+
   // ── DELETE site ───────────────────────────────────────────────────────────
   deleteSite(id: number, dto: DeleteSiteDto): Observable<void> {
     return this.http.delete<void>(`${API_BASE}/sites/${id}`, { body: dto });
