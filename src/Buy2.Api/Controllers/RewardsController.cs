@@ -37,9 +37,9 @@ public class RewardsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<ActionResult<RewardProfileListDto>> CreateReward([FromForm] RewardCreateDto dto, CancellationToken cancellation)
+    public async Task<ActionResult<RewardProfileListDto>> CreateReward([FromForm] RewardCreateDto dto, IFormFile? imageFile, CancellationToken cancellation)
     {
-        CreateRewardCommand command = new CreateRewardCommand(dto);
+        CreateRewardCommand command = new CreateRewardCommand(dto, imageFile);
         var createReward = await _mediator.Send(command, cancellation);
         return Created($"api/v1/rewards/{createReward}", createReward);
     }

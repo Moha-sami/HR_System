@@ -2,13 +2,15 @@
 using Buy2.Application.DTOs.Rewards.DTOs;
 using Buy2.Domain.Entities;
 using MediatR;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 
 namespace Buy2.Application.Features.Rewards.Commands;
 
 public record CreateRewardCommand(
-    RewardCreateDto dto
+    RewardCreateDto dto,
+    IFormFile ImageFile
 ) : IRequest<RewardProfileListDto>;
 
 public class CreateRewardCommandHandler: IRequestHandler<CreateRewardCommand, RewardProfileListDto>
@@ -28,8 +30,8 @@ public class CreateRewardCommandHandler: IRequestHandler<CreateRewardCommand, Re
     {
         var categoryExit = await _categoryRepository
             .Query(false)
-            .FirstOrDefaultAsync(c => c.Id == command.dto.CategoryId, cancellation);
-        if (categoryExit is null)
+            .AnyAsync(c => c.Id == command.dto.CategoryId, cancellation);
+        if (!categoryExit)
         {
             throw new ValidationException("Category not found!");
         }
@@ -44,17 +46,17 @@ public class CreateRewardCommandHandler: IRequestHandler<CreateRewardCommand, Re
         {
             throw new ValidationException("Reward item name is exists");
         }
-        string? imageFile = null;
-        if (command.dto.BannerImageUrl is not null)
+        string? imageFile = command.dto.BannerImageUrl;
+        if (command.ImageFile is not null)
         {
             const long maxFileSize = 1 * 1024 * 1024;
 
-            if (command.dto.BannerImageUrl.Length == 0)
+            if (command.ImageFile.Length == 0)
             {
                 throw new ValidationException("Image file is empty.");
             }
 
-            if (command.dto.BannerImageUrl.Length > maxFileSize)
+            if (command.ImageFile.Length > maxFileSize)
             {
                 throw new ValidationException(
                     "Image size must not exceed 1 MB.");
@@ -68,7 +70,7 @@ public class CreateRewardCommandHandler: IRequestHandler<CreateRewardCommand, Re
             };
 
             var extension = Path
-                .GetExtension(command.dto.BannerImageUrl.FileName)
+                .GetExtension(command.ImageFile.FileName)
                 .ToLowerInvariant();
 
             if (!allowedExtensions.Contains(extension))
@@ -81,7 +83,7 @@ public class CreateRewardCommandHandler: IRequestHandler<CreateRewardCommand, Re
 
             imageFile = await _fileStorageService.UploadAsync(
                 fileName,
-                command.dto.BannerImageUrl);
+                command.ImageFile);
         }
 
         var rewardItem = new RewardItem { 

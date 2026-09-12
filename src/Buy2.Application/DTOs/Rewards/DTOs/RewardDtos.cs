@@ -29,7 +29,7 @@ public record RewardCreateDto(
     string Name,
     string? Description,
     int CategoryId,
-    IFormFile? BannerImageUrl,
+    string? BannerImageUrl,
     int Points,
     decimal MonetaryValue,
     string HowToRedeem,
