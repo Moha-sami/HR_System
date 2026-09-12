@@ -42,7 +42,21 @@ public static class DatabaseSeeder
             await context.SaveChangesAsync(cancellationToken);
         }
 
-        // 5. Check Existing Count (Target 100,000 records for performance testing)
+        // 5. Ensure Default Reward Categories Exist
+        if (!await context.Set<RewardCategory>().AnyAsync(cancellationToken))
+        {
+            context.Set<RewardCategory>().AddRange(
+                new RewardCategory { Name = "Gift Cards" },
+                new RewardCategory { Name = "Electronics & Tech Gadgets" },
+                new RewardCategory { Name = "Food & Dining" },
+                new RewardCategory { Name = "Health & Wellness" },
+                new RewardCategory { Name = "Travel & Experiences" },
+                new RewardCategory { Name = "Company Swag" }
+            );
+            await context.SaveChangesAsync(cancellationToken);
+        }
+
+        // 6. Check Existing Count (Target 100,000 records for performance testing)
         int existingCount = await context.Set<Employee>().CountAsync(cancellationToken);
         int targetTotal = 100000;
         int remainingToSeed = targetTotal - existingCount;
