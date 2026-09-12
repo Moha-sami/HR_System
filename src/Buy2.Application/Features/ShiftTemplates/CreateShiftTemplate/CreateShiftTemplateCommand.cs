@@ -90,8 +90,8 @@ public class CreateShiftTemplateCommandHandler
         }
 
         // NOTE: employee assignment on template blocks is a reusable snapshot value.
-        // The same employee may appear in many blocks across many templates,
-        // so no intra-template or cross-template employee uniqueness is enforced here.
+        // The same employee may appear in many blocks across many templates.
+        // Only overlapping blocks for the same employee within this template are rejected (see validator).
 
         try
         {
