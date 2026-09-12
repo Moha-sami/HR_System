@@ -60,4 +60,16 @@ export class JobService {
   createQualification(qualification: any): Observable<any> {
     return this.http.post<any>(`${this.jsonServerUrl}/qualifications`, qualification);
   }
+
+  exportJobs(): Observable<string> {
+    return this.http.get(`${this.apiUrl}/export`, { responseType: 'text' });
+  }
+
+  getDeletionImpact(id: number): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/${id}/deletion-impact`);
+  }
+
+  reassignAndDelete(id: number, payload: any): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/${id}/reassign-and-delete`, payload);
+  }
 }

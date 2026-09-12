@@ -25,4 +25,12 @@
       </table>
     </div>
   </div>
+
+  <div class="mt-4 flex justify-center">
+    <app-pagination
+      [totalPages]="totalPages"
+      [initialPage]="1"
+      (pageChanged)="onPageChanged($event)"
+    />
+  </div>
 </div>

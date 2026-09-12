@@ -10,8 +10,6 @@
       Job Management
     </h1>
 
-
-    <!-- SORT + EXPORT -->
     <div class="flex items-center gap-3">
 
       <!-- SORT -->
@@ -20,37 +18,12 @@
         class="inline-flex items-center gap-2 rounded-md bg-primary-700 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-primary-800"
         (click)="onSortToggle()"
       >
-
-        <span>
-          Sort
-        </span>
-
-
-        <svg
-          aria-hidden="true"
-          class="size-5"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-        >
-
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            d="M8 6h13M8 12h9M8 18h5"
-          />
-
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            d="M4 6v12m0 0-2-2m2 2 2-2"
-          />
-
+        <span>Sort</span>
+        <svg aria-hidden="true" class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M8 6h13M8 12h9M8 18h5"/>
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 6v12m0 0-2-2m2 2 2-2"/>
         </svg>
-
       </button>
-
 
       <!-- EXPORT -->
       <button
@@ -58,41 +31,12 @@
         class="inline-flex items-center gap-2 rounded-md bg-red-600 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-red-700"
         (click)="onExport()"
       >
-
-        <span>
-          Export
-        </span>
-
-
-        <svg
-          aria-hidden="true"
-          class="size-5"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-        >
-
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            d="M12 3v12"
-          />
-
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            d="m8 11 4 4 4-4"
-          />
-
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            d="M5 20h14"
-          />
-
+        <span>Export</span>
+        <svg aria-hidden="true" class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v12"/>
+          <path stroke-linecap="round" stroke-linejoin="round" d="m8 11 4 4 4-4"/>
+          <path stroke-linecap="round" stroke-linejoin="round" d="M5 20h14"/>
         </svg>
-
       </button>
 
     </div>
@@ -106,49 +50,21 @@
 
   <div class="mb-5 flex items-center gap-4">
 
-    <!-- SEARCH -->
     <div class="relative flex-1">
-
-      <svg
-        aria-hidden="true"
-        class="absolute left-4 top-1/2 size-5 -translate-y-1/2 text-neutral-500"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-      >
-
-        <circle
-          cx="11"
-          cy="11"
-          r="7"
-        />
-
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          d="m20 20-4-4"
-        />
-
+      <svg aria-hidden="true" class="absolute left-4 top-1/2 size-5 -translate-y-1/2 text-neutral-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="7"/>
+        <path stroke-linecap="round" stroke-linejoin="round" d="m20 20-4-4"/>
       </svg>
-
-
       <input
         type="text"
         class="w-full rounded-lg border border-primary-200 bg-white py-3 pl-11 pr-4 outline-none transition-colors focus:border-primary-500"
-        placeholder="Type here..."
+        placeholder="Search jobs..."
         [value]="searchTerm()"
         (input)="onSearch($event)"
       />
-
     </div>
 
-
-    <!-- CREATE NEW JOB -->
-    <app-button
-      variant="primary"
-      (clicked)="navigateToCreateJob()"
-    >
+    <app-button variant="primary" (clicked)="navigateToCreateJob()">
       Create a New Job
     </app-button>
 
@@ -173,13 +89,11 @@
   <!-- ===================================================== -->
 
   <div class="mt-4 flex justify-center">
-
     <app-pagination
       [totalPages]="totalPages()"
       [initialPage]="1"
       (pageChanged)="onPageChanged($event)"
     />
-
   </div>
 
 
@@ -187,119 +101,194 @@
   <!-- ACTIONS TEMPLATE -->
   <!-- ===================================================== -->
 
-  <ng-template
-    #actionsTemplate
-    let-job
-  >
-
+  <ng-template #actionsTemplate let-job>
     <div class="flex items-center justify-center gap-2">
 
-
-      <!-- ================================================= -->
       <!-- EDIT -->
-      <!-- ================================================= -->
-
-      <button
-        type="button"
-        class="rounded p-1 text-primary-600 transition-colors hover:bg-primary-50 focus:outline-none focus:ring-2 focus:ring-primary-400"
-        aria-label="Edit Job"
-        title="Edit Job"
-        (click)="editJob(job); $event.stopPropagation()"
-      >
-
-        <svg
-          aria-hidden="true"
-          class="size-5"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-        >
-
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            d="M16.862 3.487a2.25 2.25 0 0 1 3.182 3.182L8.25 18.463 4.5 19.5l1.037-3.75L16.862 3.487Z"
-          />
-
+      <app-button variant="ghost" size="sm" shape="circle" title="Edit Job" (clicked)="editJob(job)">
+        <svg aria-hidden="true" class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 3.487a2.25 2.25 0 0 1 3.182 3.182L8.25 18.463 4.5 19.5l1.037-3.75L16.862 3.487Z"/>
         </svg>
+      </app-button>
 
-      </button>
-
-
-      <!-- ================================================= -->
       <!-- DELETE -->
-      <!-- ================================================= -->
-
-      <button
-        type="button"
-        class="rounded p-1 text-red-600 transition-colors hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-400"
-        aria-label="Delete Job"
-        title="Delete Job"
-        (click)="deleteJob(job); $event.stopPropagation()"
-      >
-
-        <svg
-          aria-hidden="true"
-          class="size-5"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-        >
-
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            d="M6 7h12M9 7V5.5A1.5 1.5 0 0 1 10.5 4h3A1.5 1.5 0 0 1 15 5.5V7m-7 0 .75 12.25A1.5 1.5 0 0 0 10.247 20h3.506a1.5 1.5 0 0 0 1.497-1.75L16 7M10 10.5v6M14 10.5v6"
-          />
-
+      <app-button variant="ghost" size="sm" shape="circle" title="Delete Job" (clicked)="deleteJob(job)">
+        <svg aria-hidden="true" class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 7h16M10 11v6m4-6v6M6 7l1 13h10l1-13M9 7V4h6v3"/>
         </svg>
+      </app-button>
 
-      </button>
-
-
-      <!-- ================================================= -->
       <!-- VIEW -->
-      <!-- ================================================= -->
-
-      <button
-        type="button"
-        class="rounded p-1 text-primary-600 transition-colors hover:bg-primary-50 focus:outline-none focus:ring-2 focus:ring-primary-400"
-        [attr.aria-label]="'View ' + job.jobName"
-        title="View Job"
-        (click)="viewJob(job); $event.stopPropagation()"
-      >
-
-        <svg
-          aria-hidden="true"
-          class="size-5"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-        >
-
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"
-          />
-
-          <circle
-            cx="12"
-            cy="12"
-            r="2.5"
-          />
-
+      <app-button variant="ghost" size="sm" shape="circle" title="View Job" (clicked)="viewJob(job)">
+        <svg aria-hidden="true" class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"/>
+          <circle cx="12" cy="12" r="2.5"/>
         </svg>
-
-      </button>
-
+      </app-button>
 
     </div>
-
   </ng-template>
 
-  <router-outlet></router-outlet>
+
+  <!-- ===================================================== -->
+  <!-- MODAL 1: CONFIRM SIMPLE DELETE (no employees) -->
+  <!-- ===================================================== -->
+
+  @if (showConfirmDeleteModal() && jobToDelete(); as job) {
+    <app-modal size="small" [showCloseButton]="false" [closeOnBackdrop]="false" [closeOnEscape]="false">
+      <app-modal-body>
+        <div class="text-center">
+          <div class="mx-auto mb-4 flex size-12 items-center justify-center rounded-full bg-error-50 text-error-700">
+            <svg aria-hidden="true" class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 7h16M10 11v6m4-6v6M6 7l1 13h10l1-13M9 7V4h6v3"/>
+            </svg>
+          </div>
+          <h2 class="text-lg font-semibold text-gray-900">Delete Job</h2>
+          <p class="mt-2 text-sm text-gray-600">
+            Are you sure you want to delete <strong>{{ job.title }}</strong>? This action cannot be undone.
+          </p>
+          @if (deleteError(); as err) {
+            <p class="mt-4 text-sm text-red-600" role="alert">{{ err }}</p>
+          }
+        </div>
+      </app-modal-body>
+      <app-modal-footer>
+        <div class="flex w-full flex-col-reverse gap-3 sm:flex-row sm:justify-center">
+          <app-button variant="secondary" [disabled]="isDeleting()" (clicked)="closeConfirmDeleteModal()">
+            Cancel
+          </app-button>
+          <app-button variant="danger" [loading]="isDeleting()" [disabled]="isDeleting()" (clicked)="confirmDirectDelete()">
+            Delete
+          </app-button>
+        </div>
+      </app-modal-footer>
+    </app-modal>
+  }
+
+
+  <!-- ===================================================== -->
+  <!-- MODAL 2: REASSIGN EMPLOYEES THEN DELETE -->
+  <!-- ===================================================== -->
+
+  @if (showReassignModal() && jobToDelete(); as job) {
+    <app-modal size="large" [showCloseButton]="false" [closeOnBackdrop]="false" [closeOnEscape]="false">
+      <app-modal-body>
+        <div class="space-y-4">
+
+          <!-- Icon + Title -->
+          <div class="flex items-center gap-3">
+            <div class="flex size-10 items-center justify-center rounded-full bg-orange-100 text-orange-600">
+              <svg aria-hidden="true" class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v4m0 4h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+              </svg>
+            </div>
+            <div>
+              <h2 class="text-lg font-semibold text-gray-900">Reassign Employees & Delete Job</h2>
+              <p class="text-sm text-gray-500">
+                <strong>{{ job.title }}</strong> has {{ deletionImpact()?.assignedEmployeesCount }} employee(s) assigned. Please reassign them before deleting.
+              </p>
+            </div>
+          </div>
+
+          <!-- Default replacement job -->
+          <div class="space-y-1">
+            <label class="block text-sm font-medium text-gray-700">
+              Default New Job <span class="text-gray-400">(applies to all unless overridden below)</span>
+            </label>
+            <select
+              class="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+              [ngModel]="defaultReplacementJobId()"
+              (ngModelChange)="defaultReplacementJobId.set($event)"
+            >
+              <option [ngValue]="null">Select a job...</option>
+              @for (j of jobs(); track j.id) {
+                @if (j.id !== job.id) {
+                  <option [ngValue]="j.id">{{ j.title }}</option>
+                }
+              }
+            </select>
+          </div>
+
+          <!-- Employees table -->
+          @if (affectedEmployees.length > 0) {
+            <div class="overflow-x-auto rounded-lg border border-gray-200">
+              <table class="w-full text-sm">
+                <thead>
+                  <tr class="bg-gray-50 border-b border-gray-200">
+                    <th class="px-4 py-3 text-left font-medium text-gray-600">Employee</th>
+                    <th class="px-4 py-3 text-left font-medium text-gray-600">Current Job</th>
+                    <th class="px-4 py-3 text-left font-medium text-gray-600">New Job</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                  @for (emp of affectedEmployees; track emp.id) {
+                    <tr class="hover:bg-gray-50">
+                      <td class="px-4 py-3 font-medium text-gray-900">{{ emp.fullName }}</td>
+                      <td class="px-4 py-3 text-gray-500">{{ job.title }}</td>
+                      <td class="px-4 py-3">
+                        <select
+                          class="w-full rounded border border-gray-300 bg-white px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                          [ngModel]="reassignments()[emp.id]"
+                          (ngModelChange)="onEmployeeJobChange(emp.id, $event)"
+                        >
+                          <option [ngValue]="undefined">Use default</option>
+                          @for (j of jobs(); track j.id) {
+                            @if (j.id !== job.id) {
+                              <option [ngValue]="j.id">{{ j.title }}</option>
+                            }
+                          }
+                        </select>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+
+          @if (deleteError(); as err) {
+            <p class="text-sm text-red-600" role="alert">{{ err }}</p>
+          }
+
+        </div>
+      </app-modal-body>
+      <app-modal-footer>
+        <div class="flex w-full flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+          <app-button variant="secondary" [disabled]="isDeleting()" (clicked)="closeReassignModal()">
+            Cancel
+          </app-button>
+          <app-button variant="danger" [loading]="isDeleting()" [disabled]="isDeleting() || !canConfirmReassign" (clicked)="confirmReassignAndDelete()">
+            Delete & Reassign
+          </app-button>
+        </div>
+      </app-modal-footer>
+    </app-modal>
+  }
+
+
+  <!-- ===================================================== -->
+  <!-- MODAL 3: SUCCESS -->
+  <!-- ===================================================== -->
+
+  @if (showSuccessModal()) {
+    <app-modal size="small" [showCloseButton]="false" [closeOnBackdrop]="false" [closeOnEscape]="false">
+      <app-modal-body>
+        <div class="text-center">
+          <div class="mx-auto mb-4 flex size-12 items-center justify-center rounded-full bg-green-100">
+            <svg class="size-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m5 13 4 4L19 7"/>
+            </svg>
+          </div>
+          <h2 class="text-lg font-semibold text-gray-900">Deleted Successfully</h2>
+          <p class="mt-2 text-sm text-gray-600">
+            The job <strong>{{ jobToDelete()?.title }}</strong> has been deleted successfully.
+          </p>
+        </div>
+      </app-modal-body>
+      <app-modal-footer>
+        <app-button variant="primary" (clicked)="confirmSuccess()">Done</app-button>
+      </app-modal-footer>
+    </app-modal>
+  }
+
 </div>
