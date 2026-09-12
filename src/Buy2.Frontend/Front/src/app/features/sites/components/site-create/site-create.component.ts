@@ -147,22 +147,28 @@ export class SiteCreateComponent implements OnInit, AfterViewInit, OnDestroy {
           if (site.address) this.mapSelectedAddress.set(site.address);
           if (site.address) this.mapSearchAddress.set(site.address);
           
-          const region = regions.find((r: any) => r.id === site.regionId);
+          const region = regions.find((r: any) => r.name === site.regionName || r.id === site.regionId);
           if (region) this.selectedRegion.set(region);
           
-          if (site.preferredEmployeeIds && site.preferredEmployeeIds.length > 0) {
+          if (site.preferredPeople && site.preferredPeople.length > 0) {
+             const selectedEmps = (employees.items || []).filter((e: any) => 
+                site.preferredPeople.some((p: any) => p.name === e.employeeName || p.name === e.fullName)
+             );
+             this.selectedEmployees.set(selectedEmps);
+          } else if (site.preferredEmployeeIds && site.preferredEmployeeIds.length > 0) {
              const selectedEmps = (employees.items || []).filter((e: any) => site.preferredEmployeeIds.includes(e.id));
              this.selectedEmployees.set(selectedEmps);
           }
           
-          if (site.operationalHours && site.operationalHours.length > 0) {
+          const schedule = site.operationalSchedule || site.operationalHours;
+          if (schedule && schedule.length > 0) {
              const currentDays = this.operationalDays();
              const newDays = currentDays.map(d => {
-                const hour = site.operationalHours.find((h: any) => h.day === d.dayIndex);
+                const hour = schedule.find((h: any) => h.day === d.dayIndex);
                 if (hour) {
                    return {
                       ...d,
-                      isOpen: hour.isOpen,
+                      isOpen: hour.isOpen !== undefined ? hour.isOpen : true,
                       from: hour.from ? hour.from.substring(0, 5) : '00:00',
                       to: hour.to ? hour.to.substring(0, 5) : '00:00'
                    };
