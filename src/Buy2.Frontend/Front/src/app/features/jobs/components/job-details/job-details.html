@@ -1,4 +1,4 @@
-<div class="h-full flex flex-col relative w-full pt-4">
+<div class="min-h-full flex flex-col relative w-full pt-4">
   <!-- Breadcrumb -->
   <div class="px-8 flex items-center text-sm mb-4">
     <span class="text-gray-500 font-medium cursor-pointer hover:text-gray-700" routerLink="/jobs">Job Management</span>
@@ -6,7 +6,7 @@
     <span class="font-semibold text-gray-900">Job Details</span>
   </div>
 
-  <div class="bg-white rounded-xl border border-gray-100 shadow-sm mx-8 overflow-hidden flex flex-col">
+  <div class="bg-white rounded-xl border border-gray-100 shadow-sm mx-8 overflow-hidden flex flex-col flex-shrink-0">
     <!-- Header: Title and Actions -->
     <div class="flex items-center justify-between px-6 pt-6 pb-2">
       <h2 class="text-xl font-bold text-primary-900">{{ jobTitle }}</h2>
@@ -63,7 +63,7 @@
   </div>
 
   <!-- Main Content Area -->
-  <div class="flex-1 overflow-y-auto px-8 py-6 pb-20 w-full">
+  <div class="flex-1 px-8 py-6 pb-20 w-full">
     <router-outlet></router-outlet>
   </div>
 </div>

@@ -39,13 +39,13 @@ export class JobEmployees implements OnInit {
     this.jobService.getJobEmployees(this.jobId, this.pageNumber, this.pageSize).subscribe({
       next: (res) => {
         this.employees = res.items.map((e: any) => ({
-          id: e.employeeCode !== 'N/A' ? e.employeeCode : e.id.toString(),
-          name: e.fullName,
-          email: e.email,
-          joinDate: e.joinDate.split('T')[0]
+          id: e.employeeCode && e.employeeCode !== 'N/A' ? e.employeeCode : (e.id ? e.id.toString() : ''),
+          name: e.employeeName || e.fullName || 'N/A',
+          email: e.email || 'N/A',
+          joinDate: e.joinDate ? e.joinDate.split('T')[0] : 'N/A'
         }));
-        this.totalCount = res.totalCount;
-        this.totalPages = res.totalPages;
+        this.totalCount = res.totalCount || 0;
+        this.totalPages = res.totalPages || 0;
       },
       error: (err) => console.error('Failed to load employees', err)
     });
