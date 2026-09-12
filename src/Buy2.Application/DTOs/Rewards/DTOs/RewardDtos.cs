@@ -1,4 +1,6 @@
-﻿namespace Buy2.Application.DTOs.Rewards.DTOs;
+﻿using Microsoft.AspNetCore.Http;
+
+namespace Buy2.Application.DTOs.Rewards.DTOs;
 
 // Reward List
 public record RewardListDto(
@@ -27,7 +29,7 @@ public record RewardCreateDto(
     string Name,
     string? Description,
     int CategoryId,
-    string? BannerImageUrl,
+    IFormFile? BannerImageUrl,
     int Points,
     decimal MonetaryValue,
     string HowToRedeem,
