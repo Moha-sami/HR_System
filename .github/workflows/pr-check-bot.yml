@@ -3,72 +3,146 @@ name: PR Validation & Feedback Bot
 on:
   pull_request:
     types: [opened, edited, synchronize]
-    branches: [ "main" ]
+    branches: ["main"]
 
 jobs:
   validate-pr:
-    name: Validate PR Naming & Code Build
+    name: Validate PR Naming, Build, Review & Security
     runs-on: ubuntu-latest
+
     permissions:
       contents: read
       pull-requests: write
+      security-events: write
 
     steps:
-    - name: Checkout Code
-      uses: actions/checkout@v4
+      - name: Checkout Code
+        uses: actions/checkout@v7
 
-    - name: Setup .NET SDK
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: '9.0.x'
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
 
-    - name: Check Jira Key in PR Title / Branch
-      id: check-key
-      run: |
-        python -c "
-        import os, re, sys
+      - name: Check Jira Key in PR Title / Branch
+        id: check-key
+        run: |
+          python -c "
+          import os, re
 
-        title = '''${{ github.event.pull_request.title }}'''
-        branch = '''${{ github.event.pull_request.head.ref }}'''
+          title = '''${{ github.event.pull_request.title }}'''
+          branch = '''${{ github.event.pull_request.head.ref }}'''
 
-        m_task = re.search(r'Task\s*[-_]?\s*\d+', title, re.IGNORECASE) or re.search(r'Task\s*[-_]?\s*\d+', branch, re.IGNORECASE)
-        m_scrum = re.search(r'SCRUM[-_]?\d+', title, re.IGNORECASE) or re.search(r'SCRUM[-_]?\d+', branch, re.IGNORECASE)
+          m_task = (
+              re.search(r'Task\s*[-_]?\s*\d+', title, re.IGNORECASE)
+              or re.search(r'Task\s*[-_]?\s*\d+', branch, re.IGNORECASE)
+          )
 
-        has_key = bool(m_task or m_scrum)
-        with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
-            f.write(f'missing_key={\"false\" if has_key else \"true\"}\n')
-        "
+          m_scrum = (
+              re.search(r'SCRUM[-_]?\d+', title, re.IGNORECASE)
+              or re.search(r'SCRUM[-_]?\d+', branch, re.IGNORECASE)
+          )
 
-    - name: Build .NET Solution
-      id: build-check
-      continue-on-error: true
-      run: dotnet build --configuration Release HR_system.slnx
+          has_key = bool(m_task or m_scrum)
 
-    - name: Post Automated Feedback Comment on PR
-      uses: actions/github-script@v7
-      with:
-        script: |
-          const missingKey = '${{ steps.check-key.outputs.missing_key }}' === 'true';
-          const buildFailed = '${{ steps.build-check.outcome }}' === 'failure';
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+              f.write(f'missing_key={\"false\" if has_key else \"true\"}\n')
+          "
 
-          let commentBody = '## 🤖 Automated PR Validation Feedback\n\n';
+      - name: Automated Code Review (Linter & Formatting)
+        id: code-review
+        continue-on-error: true
+        run: dotnet format HR_system.slnx --verify-no-changes
 
-          if (!missingKey && !buildFailed) {
-            commentBody += '✅ **All Checks Passed!**\n- Jira key / Task reference detected.\n- .NET solution compiled successfully (`0 Error(s)`).\n\nReady for maintainer review!';
-          } else {
-            commentBody += '⚠️ **Action Needed on this Pull Request:**\n\n';
-            if (missingKey) {
-              commentBody += '- ❌ **Missing Jira Key**: Please include your Jira key (e.g. `SCRUM-6`) in your PR title or branch name.\n';
+      - name: Build & Analyze .NET Solution
+        id: build-check
+        continue-on-error: true
+        run: |
+          dotnet build HR_system.slnx \
+            --configuration Release \
+            -p:EnableNETAnalyzers=true
+
+      - name: Security Vulnerability Scan (Trivy)
+        id: security-scan
+        continue-on-error: true
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: "fs"
+          scan-ref: "."
+          format: "table"
+          exit-code: "1"
+          ignore-unfixed: true
+          severity: "CRITICAL,HIGH"
+
+      - name: Post Automated Feedback Comment on PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const missingKey =
+              '${{ steps.check-key.outputs.missing_key }}' === 'true';
+
+            const formatFailed =
+              '${{ steps.code-review.outcome }}' === 'failure';
+
+            const buildFailed =
+              '${{ steps.build-check.outcome }}' === 'failure';
+
+            const securityFailed =
+              '${{ steps.security-scan.outcome }}' === 'failure';
+
+            let commentBody =
+              '## Automated PR Validation Feedback\n\n';
+
+            if (
+              !missingKey &&
+              !formatFailed &&
+              !buildFailed &&
+              !securityFailed
+            ) {
+              commentBody += '**All Checks Passed!**\n\n';
+              commentBody +=
+                '- Jira key / Task reference detected.\n';
+              commentBody +=
+                '- Code formatting passed.\n';
+              commentBody +=
+                '- .NET 10 solution compiled successfully.\n';
+              commentBody +=
+                '- .NET analyzers passed.\n';
+              commentBody +=
+                '- Security Scan passed (No Critical/High vulnerabilities).\n\n';
+              commentBody +=
+                'Ready for maintainer review!';
+            } else {
+              commentBody +=
+                '**Action Needed on this Pull Request:**\n\n';
+
+              if (missingKey) {
+                commentBody +=
+                  '- **Missing Jira Key**: Please include your Jira key (e.g. `SCRUM-6`) in your PR title or branch name.\n';
+              }
+
+              if (formatFailed) {
+                commentBody +=
+                  '- **Code Formatting Failed**: Code does not match formatting rules. Run `dotnet format` locally and commit the changes.\n';
+              }
+
+              if (buildFailed) {
+                commentBody +=
+                  '- **Build Failure**: The .NET 10 solution failed to compile or analyzers found errors. Run `dotnet build` locally and fix the issues.\n';
+              }
+
+              if (securityFailed) {
+                commentBody +=
+                  '- **Security Issues**: Trivy found High/Critical vulnerabilities. Please check the workflow logs for details.\n';
+              }
+
+              commentBody +=
+                '\nPlease push a fix to your branch to re-run validation!';
             }
-            if (buildFailed) {
-              commentBody += '- ❌ **Build Failure**: The .NET solution failed to compile. Run `dotnet build` locally and fix errors.\n';
-            }
-            commentBody += '\n*Please push a fix to your branch to re-run validation!*';
-          }
 
-          github.rest.issues.createComment({
-            issue_number: context.issue.number,
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            body: commentBody
-          });
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: commentBody
+            });
