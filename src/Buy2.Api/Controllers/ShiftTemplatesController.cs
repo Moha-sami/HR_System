@@ -3,6 +3,7 @@ using Buy2.Application.Features.ShiftTemplates.CreateShiftTemplate;
 using Buy2.Application.Features.ShiftTemplates.DeleteShiftTemplate;
 using Buy2.Application.Features.ShiftTemplates.DTOs;
 using Buy2.Application.Features.ShiftTemplates.DuplicateShiftTemplate;
+using Buy2.Application.Features.ShiftTemplates.ExportShiftTemplates;
 using Buy2.Application.Features.ShiftTemplates.GetShiftTemplateById;
 using Buy2.Application.Features.ShiftTemplates.GetShiftTemplates;
 using Buy2.Application.Features.ShiftTemplates.UpdateShiftTemplate;
@@ -41,6 +42,27 @@ public class ShiftTemplatesController : ControllerBase
         }
 
         return Ok(result.Value);
+    }
+
+    [HttpGet("export")]
+    [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> ExportShiftTemplates(
+        [FromQuery] ShiftTemplateFilterQueryDto filter,
+        CancellationToken cancellationToken)
+    {
+        var result = await _mediator.Send(new ExportShiftTemplatesQuery(filter), cancellationToken);
+
+        if (!result.IsSuccess)
+        {
+            return BadRequest(new { message = result.ErrorMessage });
+        }
+
+        const string contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+        var fileName = $"shift-templates-{DateTime.UtcNow:yyyyMMdd}.xlsx";
+        return File(result.Value!, contentType, fileName);
     }
 
     [HttpGet("{id:int}")]
