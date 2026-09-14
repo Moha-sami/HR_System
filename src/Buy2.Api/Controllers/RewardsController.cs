@@ -4,7 +4,6 @@ using Buy2.Application.Features.Rewards.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.JSInterop.Infrastructure;
 
 namespace Buy2.Api.Controllers;
 
@@ -58,6 +57,7 @@ public class RewardsController : ControllerBase
 
         return StatusCode(StatusCodes.Status201Created, result.Value);
     }
+
     [HttpDelete("{id}")]
     [Authorize(Roles = "Admin,Manager,SuperAdmin")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -67,7 +67,23 @@ public class RewardsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<IActionResult> DeleteReward(int id, CancellationToken cancellation)
     {
-        await _mediator.Send(new DeleteRewardCommand(id), cancellation);
+        var result = await _mediator.Send(new DeleteRewardCommand(id), cancellation);
+
+        if (result.IsNotFound)
+        {
+            return NotFound(new { message = result.ErrorMessage });
+        }
+
+        if (result.IsConflict)
+        {
+            return Conflict(new { message = result.ErrorMessage });
+        }
+
+        if (!result.IsSuccess)
+        {
+            return BadRequest(new { message = result.ErrorMessage });
+        }
+
         return NoContent();
     }
 
@@ -77,11 +93,28 @@ public class RewardsController : ControllerBase
     [ProducesResponseType(typeof(RewardProfileListDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)] 
-    public async Task<IActionResult> UpdateReward(int id, RewardUpdateDto dto, IFormFile imageFile, CancellationToken cancellation) 
+    public async Task<IActionResult> UpdateReward(int id, [FromForm] RewardUpdateDto dto, IFormFile? imageFile, CancellationToken cancellation) 
     { 
-        var send = await _mediator.Send(new UpdateRewardCommand(id, dto, imageFile));
-        return Ok(send);
+        var result = await _mediator.Send(new UpdateRewardCommand(id, dto, imageFile), cancellation);
+
+        if (result.IsNotFound)
+        {
+            return NotFound(new { message = result.ErrorMessage });
+        }
+
+        if (result.IsConflict)
+        {
+            return Conflict(new { message = result.ErrorMessage });
+        }
+
+        if (!result.IsSuccess)
+        {
+            return BadRequest(new { message = result.ErrorMessage });
+        }
+
+        return Ok(result.Value);
     }
 }
