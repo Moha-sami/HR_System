@@ -342,6 +342,12 @@ public class PointsAutomationRunner : IPointsAutomationRunner
                     return (false, $"Invalid range in '{setting.Category}:{setting.SubCategory}': FromValue ({current.FromValue}) cannot be greater than ToValue ({current.ToValue}).");
                 }
 
+                var signError = ValidateRangeSign(setting, current);
+                if (signError != null)
+                {
+                    return (false, signError);
+                }
+
                 if (next != null && current.ToValue.HasValue && next.FromValue.HasValue && current.ToValue >= next.FromValue)
                 {
                     return (false, $"Overlapping ranges in '{setting.Category}:{setting.SubCategory}': Range {i + 1} ToValue ({current.ToValue}) overlaps with Range {i + 2} FromValue ({next.FromValue}).");
@@ -362,5 +368,19 @@ public class PointsAutomationRunner : IPointsAutomationRunner
             }
         }
         return (true, null);
+    }
+
+    private static string? ValidateRangeSign(PointsAutomationSetting setting, PointsAutomationRange range)
+    {
+        var t = range.RangeType?.Trim();
+        if (string.IsNullOrWhiteSpace(t))
+            return $"Invalid RangeType in '{setting.Category}:{setting.SubCategory}': RangeType must be either 'Reward' or 'Deduction'.";
+        if (t.Equals("Deduction", StringComparison.OrdinalIgnoreCase) && range.PointsValue >= 0)
+            return $"Invalid sign in '{setting.Category}:{setting.SubCategory}': Deduction ranges must have a negative PointsValue.";
+        if (t.Equals("Reward", StringComparison.OrdinalIgnoreCase) && range.PointsValue <= 0)
+            return $"Invalid sign in '{setting.Category}:{setting.SubCategory}': Reward ranges must have a positive PointsValue.";
+        if (!t.Equals("Deduction", StringComparison.OrdinalIgnoreCase) && !t.Equals("Reward", StringComparison.OrdinalIgnoreCase))
+            return $"Invalid RangeType in '{setting.Category}:{setting.SubCategory}': RangeType must be either 'Reward' or 'Deduction'.";
+        return null;
     }
 }

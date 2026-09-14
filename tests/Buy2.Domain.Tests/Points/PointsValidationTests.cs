@@ -219,4 +219,102 @@ public class PointsValidationTests
     }
 
     #endregion
+
+    #region Range Sign Validation (Reward positive / Deduction negative)
+
+    private SaveAutomationSettingsDto BuildSingleRangeDto(
+        string rangeType, int pointsValue, bool? isEnabled = true, decimal from = 0m, decimal to = 100m)
+    {
+        return new SaveAutomationSettingsDto(
+            "Monthly",
+            new List<AutomationSettingCategoryDto>
+            {
+                new AutomationSettingCategoryDto(
+                    1,
+                    "Performance",
+                    "Score",
+                    isEnabled,
+                    new List<AutomationRangeDto>
+                    {
+                        new AutomationRangeDto(null, rangeType, from, to, null, pointsValue)
+                    }
+                )
+            }
+        );
+    }
+
+    [Theory]
+    [InlineData("Reward", 50)]
+    [InlineData("Deduction", -20)]
+    [InlineData("reward", 10)]
+    [InlineData("DEDUCTION", -5)]
+    [InlineData("  Reward  ", 1)]
+    public void SaveSettings_ValidSign_ShouldNotHaveErrors(string rangeType, int points)
+    {
+        var result = _saveSettingsValidator.TestValidate(BuildSingleRangeDto(rangeType, points));
+        result.ShouldNotHaveAnyValidationErrors();
+    }
+
+    [Theory]
+    [InlineData("Reward", -50)]
+    [InlineData("Deduction", 500)]
+    [InlineData("Reward", 0)]
+    [InlineData("Deduction", 0)]
+    public void SaveSettings_InvalidSign_ShouldHaveError(string rangeType, int points)
+    {
+        var result = _saveSettingsValidator.TestValidate(BuildSingleRangeDto(rangeType, points));
+        Assert.False(result.IsValid);
+    }
+
+    [Theory]
+    [InlineData("Bonus")]
+    [InlineData("Unknown")]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void SaveSettings_UnknownRangeType_ShouldHaveError(string rangeType)
+    {
+        var result = _saveSettingsValidator.TestValidate(BuildSingleRangeDto(rangeType, 10));
+        Assert.False(result.IsValid);
+    }
+
+    [Fact]
+    public void SaveSettings_DisabledWithNullRanges_ShouldNotHaveErrors()
+    {
+        var dto = new SaveAutomationSettingsDto(
+            "Monthly",
+            new List<AutomationSettingCategoryDto>
+            {
+                new AutomationSettingCategoryDto(1, "TimeAndAttendance", "Lateness", false, null!)
+            }
+        );
+        var result = _saveSettingsValidator.TestValidate(dto);
+        result.ShouldNotHaveAnyValidationErrors();
+    }
+
+    [Fact]
+    public void SaveSettings_DisabledWithGarbageRanges_ShouldNotHaveErrors()
+    {
+        var dto = new SaveAutomationSettingsDto(
+            "Monthly",
+            new List<AutomationSettingCategoryDto>
+            {
+                new AutomationSettingCategoryDto(
+                    1,
+                    "TimeAndAttendance",
+                    "Lateness",
+                    false,
+                    new List<AutomationRangeDto>
+                    {
+                        new AutomationRangeDto(null, "Garbage", 80m, 10m, null, 0),
+                        new AutomationRangeDto(null, "Reward", 70m, 100m, null, -50),
+                        new AutomationRangeDto(null, "Reward", 60m, 100m, null, 50)
+                    }
+                )
+            }
+        );
+        var result = _saveSettingsValidator.TestValidate(dto);
+        result.ShouldNotHaveAnyValidationErrors();
+    }
+
+    #endregion
 }

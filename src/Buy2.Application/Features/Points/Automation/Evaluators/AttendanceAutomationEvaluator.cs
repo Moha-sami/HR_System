@@ -39,7 +39,9 @@ public class AttendanceAutomationEvaluator : IAutomationEvaluator
         {
             var presentDays = workingDays.Count(r =>
                 r.Status == AttendanceDayStatus.Present ||
-                r.Status == AttendanceDayStatus.OnTime);
+                r.Status == AttendanceDayStatus.OnTime ||
+                r.Status == AttendanceDayStatus.Late ||
+                (r.LatenessMinutes.HasValue && r.LatenessMinutes.Value > 0));
 
             var attendanceRate =
                 (decimal)presentDays / workingDays.Count * 100;
