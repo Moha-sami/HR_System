@@ -21,7 +21,9 @@ public class PerformanceAutomationEvaluator : IAutomationEvaluator
         foreach (var submission in submissions)
         {
             var metricName = submission.PerformanceMetric?.Name ?? "Unknown";
-            var achievedPercent = Math.Clamp(submission.AchievedPercent, 0, 100);
+            // Single source of truth: Score. AchievedPercent is a legacy mirror
+            // kept in sync on write and will be retired.
+            var achievedPercent = Math.Clamp(submission.Score, 0, 100);
 
             var matchingSettings = settings.Where(s => 
                 s.MetricId.HasValue && s.MetricId.Value == submission.MetricId).ToList();
