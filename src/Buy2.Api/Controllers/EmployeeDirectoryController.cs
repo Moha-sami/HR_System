@@ -13,6 +13,7 @@ using Buy2.Application.Features.Employees.GetPointsSummary;
 using Buy2.Application.Features.Employees.GetPointsTransactions;
 using Buy2.Application.Features.Employees.GetViolations;
 using Buy2.Application.Features.Employees.GetViolationDetail;
+using Buy2.Application.Features.Employees.PerformanceSubmissions.SubmitScore;
 using Buy2.Application.Features.Employees.ResolveViolation;
 using Buy2.Application.Features.Employees.UpdateJobDetails;
 using Buy2.Application.Features.Employees.UpdatePayrollProfile;
@@ -442,6 +443,33 @@ public class EmployeeDirectoryController : ControllerBase
         }
 
         return File(result, "text/csv", $"employee_{id}_violations.csv");
+    }
+
+    [HttpPost("{id:int}/performance/submissions")]
+    [Authorize(Roles = "Admin,Manager,HR,SuperAdmin")]
+    [ProducesResponseType(typeof(PerformanceSubmissionResultDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<ActionResult<PerformanceSubmissionResultDto>> SubmitPerformanceScore(
+        [FromRoute] int id,
+        [FromBody] CreatePerformanceSubmissionDto dto,
+        CancellationToken cancellationToken)
+    {
+        var result = await _mediator.Send(new SubmitPerformanceScoreCommand(id, dto), cancellationToken);
+
+        if (result.IsNotFound)
+        {
+            return NotFound(new { message = result.ErrorMessage });
+        }
+
+        if (!result.IsSuccess)
+        {
+            return BadRequest(new { message = result.ErrorMessage });
+        }
+
+        return StatusCode(StatusCodes.Status201Created, result.Value);
     }
 }
 

@@ -311,6 +311,61 @@ This document outlines the REST API endpoints provided by the Buy2 HRMS backend 
   - `404 Not Found` if employee with specified `id` does not exist or has been soft-deleted, or if metric with specified `metricId` does not exist.
   - `401 Unauthorized` if the request is unauthenticated.
 
+### `GET /api/v1/performance/metrics`
+- **Authorization**: `Admin`, `Manager`, `HR`, `SuperAdmin`
+- **Description**: Returns all performance metric definitions (`Weight` drives the weighted overview score; `Target` is display-only reference shown next to the actual score and never enters calculations). Used to populate the metric dropdown on the score submission form.
+- **Responses**:
+  - `200 OK` with array of `PerformanceMetricDto`:
+    - `id` (int)
+    - `name` (string)
+    - `description` (string)
+    - `target` (decimal, 0-100, display-only)
+    - `weight` (decimal, > 0)
+  - `401 Unauthorized` if the request is unauthenticated.
+  - `403 Forbidden` if the user lacks a permitted role.
+
+### `POST /api/v1/performance/metrics`
+- **Authorization**: `Admin` only
+- **Body** (`CreatePerformanceMetricDto`):
+  - `name` (string, required, max 100, unique)
+  - `description` (string, optional, max 500)
+  - `target` (decimal, required, 0-100, display-only)
+  - `weight` (decimal, required, > 0 and <= 100)
+- **Description**: Creates a new performance metric definition. `Weight` controls the metric's influence on `overallWeightedScore` (`SUM(Score * Weight) / SUM(Weight)`).
+- **Responses**:
+  - `201 Created` with `PerformanceMetricDto`
+  - `400 Bad Request` (`{ message }`) on validation failure
+  - `409 Conflict` (`{ message }`) if a metric with the same name already exists
+  - `401 Unauthorized` / `403 Forbidden` for auth/role failures.
+
+### `PUT /api/v1/performance/metrics/{id}`
+- **Authorization**: `Admin` only
+- **Path Parameters**:
+  - `id` (int, required) - Unique ID of the metric
+- **Body**: same shape as `POST` (`UpdatePerformanceMetricDto`)
+- **Description**: Full update of a metric definition (name, description, display-only target, weight). Applies to future overview calculations; historical submissions keep their recorded scores.
+- **Responses**:
+  - `200 OK` with `PerformanceMetricDto`
+  - `400 Bad Request` (`{ message }`) on validation failure
+  - `404 Not Found` (`{ message }`) if the metric does not exist
+  - `409 Conflict` (`{ message }`) if another metric already uses the requested name
+  - `401 Unauthorized` / `403 Forbidden` for auth/role failures.
+
+### `POST /api/v1/employees/{id}/performance/submissions`
+- **Authorization**: `Admin`, `Manager`, `HR`, `SuperAdmin`
+- **Path Parameters**:
+  - `id` (int, required) - Unique ID of the evaluated employee
+- **Body** (`CreatePerformanceSubmissionDto`):
+  - `metricId` (int, required, > 0) - Must reference an existing metric
+  - `score` (decimal, required, 0-100) - Single source of truth; `AchievedPercent` is mirrored automatically for backward compatibility
+  - `feedback` (string, optional, max 1000)
+- **Description**: Records one evaluation (create-only; no update/delete in v1). The submitted `Score` feeds the weighted overview (`GET .../performance/overview`), the metric detail averages, and the points automation engine (range matching on the clamped 0-100 score).
+- **Responses**:
+  - `201 Created` with `PerformanceSubmissionResultDto` (`id`, `employeeId`, `metricId`, `score`, `submittedAt`)
+  - `400 Bad Request` (`{ message }`) on validation failure
+  - `404 Not Found` (`{ message }`) if the employee (or soft-deleted) or the metric does not exist
+  - `401 Unauthorized` / `403 Forbidden` for auth/role failures.
+
 ### `GET /api/v1/employees/{id}/tasks`
 - **Authorization**: Authenticated users (`[Authorize]`)
 - **Path Parameters**:
