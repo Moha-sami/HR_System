@@ -36,6 +36,14 @@ public class SaveAutomationSettingsCommandHandler : IRequestHandler<SaveAutomati
         }
 
         var normalized = new List<(AutomationCategory Category, string SubCategory, AutomationPeriod Period, bool IsEnabled, List<RangeInput> Ranges)>();
+
+        if (!Enum.TryParse<AutomationPeriod>(dto.AutomationPeriod?.Trim(), ignoreCase: true, out var globalPeriod))
+        {
+            return new SaveAutomationSettingsResult(
+                IsSuccess: false,
+                ErrorMessage: "AutomationPeriod must be one of: Daily, Weekly, BiWeekly, Monthly.");
+        }
+
         foreach (var setting in dto.Settings!)
         {
             if (!TryParseCategory(setting.Category, out var category))
@@ -43,13 +51,6 @@ public class SaveAutomationSettingsCommandHandler : IRequestHandler<SaveAutomati
                 return new SaveAutomationSettingsResult(
                     IsSuccess: false,
                     ErrorMessage: $"Unknown category '{setting.Category}'. Must be one of: Performance, Tasks, TimeAndAttendance.");
-            }
-
-            if (!Enum.TryParse<AutomationPeriod>(setting.AutomationPeriod?.Trim(), ignoreCase: true, out var period))
-            {
-                return new SaveAutomationSettingsResult(
-                    IsSuccess: false,
-                    ErrorMessage: $"AutomationPeriod must be one of: Daily, Weekly, BiWeekly, Monthly (category '{setting.Category}').");
             }
 
             var subCategory = setting.SubCategory?.Trim();
@@ -85,7 +86,7 @@ public class SaveAutomationSettingsCommandHandler : IRequestHandler<SaveAutomati
                 }
             }
 
-            normalized.Add((category, subCategory, period, setting.IsEnabled.Value,
+            normalized.Add((category, subCategory, globalPeriod, setting.IsEnabled.Value,
                 setting.Ranges!.Select(r => new RangeInput(
                     r.RangeType.Trim(),
                     r.FromValue,

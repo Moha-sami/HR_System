@@ -40,13 +40,30 @@ public class ExecuteAutomationNowCommandHandler : IRequestHandler<ExecuteAutomat
                 ErrorMessage: "Category must be one of: Performance, Tasks, TimeAndAttendance.");
         }
 
-        if (string.IsNullOrWhiteSpace(request.Request.AutomationPeriod)
-            || !Enum.TryParse<AutomationPeriod>(request.Request.AutomationPeriod.Trim(), ignoreCase: true, out var period))
+        // Global period is resolved from stored settings; the request carries Category only.
+        var storedPeriods = await _automationSettingRepository.Query()
+            .AsNoTracking()
+            .Where(s => s.IsEnabled)
+            .Select(s => s.AutomationPeriod)
+            .Distinct()
+            .ToListAsync(cancellationToken);
+
+        if (storedPeriods.Count == 0)
         {
             return new ExecuteAutomationNowResult(
                 IsSuccess: false,
-                ErrorMessage: "AutomationPeriod must be one of: Daily, Weekly, BiWeekly, Monthly.");
+                ErrorMessage: "No enabled automation settings found.",
+                IsNotFound: true);
         }
+
+        if (storedPeriods.Count > 1)
+        {
+            return new ExecuteAutomationNowResult(
+                IsSuccess: false,
+                ErrorMessage: $"Stored automation settings have mixed periods ({string.Join(", ", storedPeriods)}). Save a unified automationPeriod first.");
+        }
+
+        var period = storedPeriods.Single();
 
         var hasSettings = await _automationSettingRepository.Query()
             .AsNoTracking()

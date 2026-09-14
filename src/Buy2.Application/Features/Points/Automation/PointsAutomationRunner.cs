@@ -72,8 +72,8 @@ public class PointsAutomationRunner : IPointsAutomationRunner
         var distinctPeriods = categorySettings.Select(s => s.AutomationPeriod).Distinct().ToList();
         if (distinctPeriods.Count > 1)
         {
-            var message = $"Automation settings for category '{category}' have mixed periods " +
-                $"({string.Join(", ", distinctPeriods)}). Unify the period per category before running.";
+            var message = $"Automation settings have mixed periods " +
+                $"({string.Join(", ", distinctPeriods)}). Save a unified automationPeriod before running.";
             await RecordRunAsync(
                 category, period, periodStartUtc, periodEndUtc, executedAt,
                 AutomationRunStatus.Failed, 0, 0, message,

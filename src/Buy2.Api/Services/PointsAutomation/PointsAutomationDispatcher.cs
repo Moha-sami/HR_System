@@ -49,19 +49,26 @@ public class PointsAutomationDispatcher
             .Select(s => new { s.Category, s.AutomationPeriod })
             .ToListAsync(cancellationToken);
 
-        foreach (var group in enabledSettings.GroupBy(s => s.Category))
+        // Single global period: never run partially on legacy mixed data.
+        var globalPeriods = enabledSettings.Select(s => s.AutomationPeriod).Distinct().ToList();
+        if (globalPeriods.Count == 0)
         {
-            var category = group.Key;
-            var distinctPeriods = group.Select(s => s.AutomationPeriod).Distinct().ToList();
-            if (distinctPeriods.Count > 1)
-            {
-                _logger.LogError(
-                    "Points automation skipped for category {Category}: mixed periods configured ({Periods}). Unify the period per category before running.",
-                    category, string.Join(", ", distinctPeriods));
-                continue;
-            }
+            return;
+        }
 
-            var period = distinctPeriods[0];
+        if (globalPeriods.Count > 1)
+        {
+            _logger.LogError(
+                "Points automation skipped: mixed periods configured ({Periods}). Save a unified automationPeriod before running.",
+                string.Join(", ", globalPeriods));
+            return;
+        }
+
+        var period = globalPeriods.Single();
+        var categories = enabledSettings.Select(s => s.Category).Distinct().ToList();
+
+        foreach (var category in categories)
+        {
 
             try
             {

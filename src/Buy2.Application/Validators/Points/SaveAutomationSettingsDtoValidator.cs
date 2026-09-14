@@ -13,16 +13,17 @@ public class SaveAutomationSettingsDtoValidator : AbstractValidator<SaveAutomati
 
     public SaveAutomationSettingsDtoValidator()
     {
+        RuleFor(x => x.AutomationPeriod)
+            .NotEmpty()
+            .WithMessage("AutomationPeriod is required.")
+            .Must(p => SaveAutomationSettingsDtoValidator.IsValidAutomationPeriod(p))
+            .WithMessage("AutomationPeriod must be one of: Daily, Weekly, BiWeekly, Monthly.");
+
         RuleFor(x => x.Settings)
             .NotNull()
             .WithMessage("Settings are required.")
             .NotEmpty()
             .WithMessage("Settings cannot be empty.");
-
-        RuleFor(x => x.Settings!)
-            .Must(ValidateUniformPeriodPerCategory)
-            .WithMessage("All settings within the same Category must share the same AutomationPeriod.")
-            .OverridePropertyName(nameof(SaveAutomationSettingsDto.Settings));
 
         RuleFor(x => x.Settings!)
             .Must(ValidateNoDuplicateTaskPriority)
@@ -31,16 +32,6 @@ public class SaveAutomationSettingsDtoValidator : AbstractValidator<SaveAutomati
 
         RuleForEach(x => x.Settings!)
             .SetValidator(new AutomationSettingCategoryDtoValidator());
-    }
-
-    private static bool ValidateUniformPeriodPerCategory(List<AutomationSettingCategoryDto> settings)
-    {
-        return settings
-            .Where(s => !string.IsNullOrWhiteSpace(s.Category))
-            .GroupBy(s => s.Category.Trim(), StringComparer.OrdinalIgnoreCase)
-            .All(g => g.Select(s => s.AutomationPeriod?.Trim() ?? string.Empty)
-                .Distinct(StringComparer.OrdinalIgnoreCase)
-                .Count() <= 1);
     }
 
     private static bool ValidateNoDuplicateTaskPriority(List<AutomationSettingCategoryDto> settings)
@@ -79,12 +70,6 @@ public class AutomationSettingCategoryDtoValidator : AbstractValidator<Automatio
             .WithMessage("SubCategory is required.")
             .Must(s => !string.IsNullOrWhiteSpace(s!.Trim()))
             .WithMessage("SubCategory cannot be empty or whitespace.");
-
-        RuleFor(x => x.AutomationPeriod)
-            .NotEmpty()
-            .WithMessage("AutomationPeriod is required.")
-            .Must(p => SaveAutomationSettingsDtoValidator.IsValidAutomationPeriod(p))
-            .WithMessage("AutomationPeriod must be one of: Daily, Weekly, BiWeekly, Monthly.");
 
         RuleFor(x => x.IsEnabled)
             .NotNull()
