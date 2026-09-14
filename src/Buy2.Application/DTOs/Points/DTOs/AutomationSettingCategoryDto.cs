@@ -4,7 +4,6 @@ public record AutomationSettingCategoryDto(
     int Id,
     string Category,
     string SubCategory,
-    string AutomationPeriod,
     bool? IsEnabled,
     List<AutomationRangeDto> Ranges
 );
