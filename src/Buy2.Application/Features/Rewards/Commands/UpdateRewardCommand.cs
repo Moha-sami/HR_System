@@ -47,7 +47,7 @@ public class UpdateRewardCommandHandler : IRequestHandler<UpdateRewardCommand, R
 
         var rewardExit = await _rewardItemRepository
             .Query(false)
-            .AnyAsync(r => 
+            .AnyAsync(r =>
             r.Id != command.Id &&
             r.CategoryId == command.dto.CategoryId &&
             r.RewardName == command.dto.Name &&
@@ -60,11 +60,11 @@ public class UpdateRewardCommandHandler : IRequestHandler<UpdateRewardCommand, R
         }
 
         string? imageFile = command.dto.BannerImageUrl;
-        if(imageFile is not null)
+        if (imageFile is not null)
         {
             if (command.ImageFile == null || command.ImageFile.Length == 0)
             {
-                throw new  ValidationException("Image not found.");
+                throw new ValidationException("Image not found.");
             }
 
             long max = 1024 * 1024 * 1;
@@ -84,16 +84,16 @@ public class UpdateRewardCommandHandler : IRequestHandler<UpdateRewardCommand, R
             imageFile = await _fileStorageService.UploadAsync(fileName, command.ImageFile);
         }
 
-        rewardItem.RewardName       = command.dto.Name;
-        rewardItem.Description      = command.dto.Description;
-        rewardItem.BannerImageUrl   = command.dto.BannerImageUrl;
-        rewardItem.CategoryId       = command.dto.CategoryId;
-        rewardItem.CostInPoints     = command.dto.Points;
-        rewardItem.MonetaryValue    = command.dto.MonetaryValue;
-        rewardItem.HowToRedeem      = command.dto.HowToRedeem;
-        rewardItem.TermsOfUse       = command.dto.TermsOfUse;
-        rewardItem.IsActive         = true;
-        
+        rewardItem.RewardName = command.dto.Name;
+        rewardItem.Description = command.dto.Description;
+        rewardItem.BannerImageUrl = command.dto.BannerImageUrl;
+        rewardItem.CategoryId = command.dto.CategoryId;
+        rewardItem.CostInPoints = command.dto.Points;
+        rewardItem.MonetaryValue = command.dto.MonetaryValue;
+        rewardItem.HowToRedeem = command.dto.HowToRedeem;
+        rewardItem.TermsOfUse = command.dto.TermsOfUse;
+        rewardItem.IsActive = true;
+
         await _unitOfWork.SaveChangesAsync(cancellation);
 
         return new RewardProfileListDto(

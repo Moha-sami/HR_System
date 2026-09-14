@@ -57,6 +57,7 @@ public class RewardsController : ControllerBase
 
         return StatusCode(StatusCodes.Status201Created, result.Value);
     }
+
     [HttpPut("{id}")]
     [Authorize(Roles = "Admin,Manager,SuperAdmin")]
     [Consumes("multipart/form-data")]
