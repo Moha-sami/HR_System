@@ -29,19 +29,21 @@ public class GetPointsAutomationRulesQueryHandler : IRequestHandler<GetPointsAut
         var settings = await _automationSettingRepository.Query()
             .AsNoTracking()
             .Include(s => s.Ranges)
-            .Where(s => s.IsEnabled)
             .ToListAsync(cancellationToken);
 
         if (!settings.Any())
         {
             return new GetPointsAutomationRulesResult(
                 IsSuccess: false,
-                ErrorMessage: "No enabled automation settings found.",
+                ErrorMessage: "No automation settings found.",
                 IsNotFound: true);
         }
 
-        // Single global period: never pick randomly on legacy mixed data.
-        var distinctPeriods = settings.Select(s => s.AutomationPeriod).Distinct().ToList();
+        // Single global period: computed on enabled settings only so
+        // disabled placeholders never block the run or the GET.
+        var enabledSettings = settings.Where(s => s.IsEnabled).ToList();
+        var periodSource = enabledSettings.Any() ? enabledSettings : settings;
+        var distinctPeriods = periodSource.Select(s => s.AutomationPeriod).Distinct().ToList();
         if (distinctPeriods.Count > 1)
         {
             return new GetPointsAutomationRulesResult(

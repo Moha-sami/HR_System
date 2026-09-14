@@ -81,7 +81,7 @@ public class TaskAutomationEvaluator : IAutomationEvaluator
                                 MetricEvaluated: "DaysOverdue",
                                 CalculatedValue: daysOverdue,
                                 MatchedRange: $"{matchedRange.FromValue} - {matchedRange.ToValue}",
-                                RewardOrDeduction: -taskPenalty,
+                                RewardOrDeduction: taskPenalty,
                                 TaskPriority: priority,
                                 OverdueDays: daysOverdue,
                                 Source: "Tasks"
@@ -91,7 +91,7 @@ public class TaskAutomationEvaluator : IAutomationEvaluator
                     }
                 }
 
-                totalPoints -= totalPenalty;
+                totalPoints += totalPenalty;
             }
         }
 

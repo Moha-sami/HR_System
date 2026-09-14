@@ -79,15 +79,18 @@ public class AutomationSettingCategoryDtoValidator : AbstractValidator<Automatio
             .NotNull()
             .WithMessage("Ranges are required.")
             .NotEmpty()
-            .WithMessage("Ranges cannot be empty.");
+            .WithMessage("Ranges cannot be empty.")
+            .When(x => x.IsEnabled == true);
 
         RuleFor(x => x.Ranges!)
             .Must(ValidateNoOverlappingRanges)
             .WithMessage("Ranges must not overlap.")
-            .OverridePropertyName("Ranges");
+            .OverridePropertyName("Ranges")
+            .When(x => x.IsEnabled == true && x.Ranges != null && x.Ranges.Any());
 
         RuleForEach(x => x.Ranges!)
-            .SetValidator(new AutomationRangeDtoValidator());
+            .SetValidator(new AutomationRangeDtoValidator())
+            .When(x => x.IsEnabled == true && x.Ranges != null);
     }
 
     private static bool ValidateNoOverlappingRanges(List<AutomationRangeDto> ranges)
@@ -115,12 +118,20 @@ public class AutomationRangeDtoValidator : AbstractValidator<AutomationRangeDto>
     public AutomationRangeDtoValidator()
     {
         RuleFor(x => x.RangeType)
+            .Cascade(CascadeMode.Stop)
             .NotEmpty()
-            .WithMessage("RangeType is required.");
+            .WithMessage("RangeType is required.")
+            .Must(BeKnownRangeType)
+            .WithMessage("RangeType must be either 'Reward' or 'Deduction'.");
 
         RuleFor(x => x.PointsValue)
             .NotEqual(0)
             .WithMessage("PointsValue cannot be zero.");
+
+        RuleFor(x => x)
+            .Must(BeValidSign)
+            .WithMessage("Range sign is invalid: Deduction ranges must have a negative PointsValue, Reward ranges must have a positive PointsValue.")
+            .OverridePropertyName(nameof(AutomationRangeDto.PointsValue));
 
         RuleFor(x => x.FromValue)
             .Cascade(CascadeMode.Stop)
@@ -144,5 +155,25 @@ public class AutomationRangeDtoValidator : AbstractValidator<AutomationRangeDto>
         RuleFor(x => x.TaskPriority)
             .Must(p => string.IsNullOrWhiteSpace(p) || ValidTaskPriorities.Contains(p.Trim(), StringComparer.OrdinalIgnoreCase))
             .WithMessage("TaskPriority must be one of: Low, Medium, High, Urgent.");
+    }
+
+    private static bool BeKnownRangeType(string rangeType)
+    {
+        var t = rangeType?.Trim();
+        return t != null
+            && (t.Equals("Reward", StringComparison.OrdinalIgnoreCase)
+                || t.Equals("Deduction", StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static bool BeValidSign(AutomationRangeDto range)
+    {
+        var t = range.RangeType?.Trim();
+        if (t == null || range.PointsValue == 0)
+            return true;
+        if (t.Equals("Deduction", StringComparison.OrdinalIgnoreCase))
+            return range.PointsValue < 0;
+        if (t.Equals("Reward", StringComparison.OrdinalIgnoreCase))
+            return range.PointsValue > 0;
+        return true;
     }
 }

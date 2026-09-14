@@ -1,4 +1,5 @@
 using Buy2.Application.Common.Interfaces;
+using Buy2.Application.DTOs.Points.DTOs;
 using Buy2.Application.Validators.Points;
 using Buy2.Domain.Entities;
 using Buy2.Domain.Enums;
@@ -25,7 +26,10 @@ public class SaveAutomationSettingsCommandHandler : IRequestHandler<SaveAutomati
 
     public async Task<SaveAutomationSettingsResult> Handle(SaveAutomationSettingsCommand request, CancellationToken cancellationToken)
     {
-        var dto = request.Request;
+        // Normalize first (defense-in-depth auto-fix): trim RangeType, fix sign
+        // (Reward => +|v|, Deduction => -|v|), zero-out ranges of disabled settings.
+        // The validator then acts as a second net for zero/unknown/garbage on enabled rows.
+        var dto = NormalizeRequest(request.Request);
 
         var validation = await new SaveAutomationSettingsDtoValidator().ValidateAsync(dto, cancellationToken);
         if (!validation.IsValid)
@@ -68,6 +72,19 @@ public class SaveAutomationSettingsCommandHandler : IRequestHandler<SaveAutomati
                     ErrorMessage: "IsEnabled is required and must be true or false.");
             }
 
+            if (!setting.IsEnabled.Value)
+            {
+                normalized.Add((category, subCategory, globalPeriod, false, new List<RangeInput>()));
+                continue;
+            }
+
+            if (setting.Ranges == null || setting.Ranges.Count == 0)
+            {
+                return new SaveAutomationSettingsResult(
+                    IsSuccess: false,
+                    ErrorMessage: "Ranges cannot be empty.");
+            }
+
             foreach (var range in setting.Ranges!)
             {
                 if (!range.FromValue.HasValue || !range.ToValue.HasValue)
@@ -92,7 +109,7 @@ public class SaveAutomationSettingsCommandHandler : IRequestHandler<SaveAutomati
                     r.FromValue,
                     r.ToValue,
                     string.IsNullOrWhiteSpace(r.TaskPriority) ? null : r.TaskPriority.Trim(),
-                    r.PointsValue)).ToList()));
+                    NormalizePointsValue(r.RangeType, r.PointsValue))).ToList()));
         }
 
         var duplicates = normalized
@@ -109,7 +126,8 @@ public class SaveAutomationSettingsCommandHandler : IRequestHandler<SaveAutomati
         }
 
         var deadlineWithoutPriority = normalized
-            .Where(s => s.Category == AutomationCategory.Tasks
+            .Where(s => s.IsEnabled
+                && s.Category == AutomationCategory.Tasks
                 && s.SubCategory.Equals("Deadline", StringComparison.OrdinalIgnoreCase)
                 && s.Ranges.All(r => string.IsNullOrWhiteSpace(r.TaskPriority)))
             .Select(s => $"{s.Category}:{s.SubCategory}")
@@ -184,6 +202,42 @@ public class SaveAutomationSettingsCommandHandler : IRequestHandler<SaveAutomati
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return new SaveAutomationSettingsResult(IsSuccess: true, SavedCount: normalized.Count);
+    }
+
+    private static SaveAutomationSettingsDto NormalizeRequest(SaveAutomationSettingsDto dto)
+    {
+        if (dto.Settings == null)
+            return dto;
+
+        var settings = dto.Settings.Select(s =>
+        {
+            if (s.IsEnabled == false)
+                return s with { Ranges = new List<AutomationRangeDto>() };
+
+            if (s.Ranges == null)
+                return s;
+
+            var ranges = s.Ranges.Select(r => r with
+            {
+                RangeType = r.RangeType?.Trim() ?? string.Empty,
+                TaskPriority = string.IsNullOrWhiteSpace(r.TaskPriority) ? null : r.TaskPriority.Trim(),
+                PointsValue = NormalizePointsValue(r.RangeType, r.PointsValue)
+            }).ToList();
+
+            return s with { Ranges = ranges };
+        }).ToList();
+
+        return dto with { Settings = settings };
+    }
+
+    private static int NormalizePointsValue(string? rangeType, int pointsValue)
+    {
+        var t = rangeType?.Trim();
+        if (t != null && t.Equals("Deduction", StringComparison.OrdinalIgnoreCase))
+            return -Math.Abs(pointsValue);
+        if (t != null && t.Equals("Reward", StringComparison.OrdinalIgnoreCase))
+            return Math.Abs(pointsValue);
+        return pointsValue;
     }
 
     private static bool TryParseCategory(string? value, out AutomationCategory category)
