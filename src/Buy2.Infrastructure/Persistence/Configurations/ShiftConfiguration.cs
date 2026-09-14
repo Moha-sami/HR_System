@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Buy2.Infrastructure.Persistence.Configurations;
+
 public class ShiftConfiguration : IEntityTypeConfiguration<ShiftEntity>
 {
     public void Configure(EntityTypeBuilder<ShiftEntity> builder)
@@ -36,5 +37,6 @@ public class ShiftConfiguration : IEntityTypeConfiguration<ShiftEntity>
             .OnDelete(DeleteBehavior.SetNull);
 
         builder.HasIndex(s => new { s.SiteId, s.StartTime });
+        builder.HasIndex(s => new { s.IsPublished, s.EmployeeId, s.StartTime });
     }
 }

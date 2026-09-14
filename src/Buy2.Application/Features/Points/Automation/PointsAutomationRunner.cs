@@ -193,6 +193,7 @@ public class PointsAutomationRunner : IPointsAutomationRunner
         var totalPointsAwarded = 0;
         var totalPointsDeducted = 0;
         var transactionsCreated = 0;
+        var transactionsToInsert = new List<PointsTransaction>();
 
         foreach (var employee in targetEmployees)
         {
@@ -237,7 +238,7 @@ public class PointsAutomationRunner : IPointsAutomationRunner
                         CreatedAt = DateTimeOffset.UtcNow
                     };
 
-                    await _pointsTransactionRepository.AddAsync(transaction, cancellationToken);
+                    transactionsToInsert.Add(transaction);
 
                     if (points > 0) totalPointsAwarded += points;
                     else totalPointsDeducted += Math.Abs(points);
@@ -267,6 +268,11 @@ public class PointsAutomationRunner : IPointsAutomationRunner
                     ErrorMessage: ex.Message
                 ));
             }
+        }
+
+        if (transactionsToInsert.Count > 0)
+        {
+            await _pointsTransactionRepository.AddRangeAsync(transactionsToInsert, cancellationToken);
         }
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);

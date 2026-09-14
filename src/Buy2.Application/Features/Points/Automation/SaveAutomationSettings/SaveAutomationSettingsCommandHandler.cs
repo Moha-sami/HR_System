@@ -146,6 +146,9 @@ public class SaveAutomationSettingsCommandHandler : IRequestHandler<SaveAutomati
                 && normalized.Select(n => n.SubCategory.ToUpper()).Contains(s.SubCategory.ToUpper()))
             .ToListAsync(cancellationToken);
 
+        var newSettingsToInsert = new List<PointsAutomationSetting>();
+        var newRangesToInsert = new List<PointsAutomationRange>();
+
         foreach (var input in normalized)
         {
             var existing = existingSettings.FirstOrDefault(s =>
@@ -171,7 +174,7 @@ public class SaveAutomationSettingsCommandHandler : IRequestHandler<SaveAutomati
                     }).ToList()
                 };
 
-                await _automationSettingRepository.AddAsync(created, cancellationToken);
+                newSettingsToInsert.Add(created);
             }
             else
             {
@@ -186,7 +189,7 @@ public class SaveAutomationSettingsCommandHandler : IRequestHandler<SaveAutomati
 
                 foreach (var range in input.Ranges)
                 {
-                    await _automationRangeRepository.AddAsync(new PointsAutomationRange
+                    newRangesToInsert.Add(new PointsAutomationRange
                     {
                         AutomationSettingId = existing.Id,
                         RangeType = range.RangeType,
@@ -194,9 +197,19 @@ public class SaveAutomationSettingsCommandHandler : IRequestHandler<SaveAutomati
                         ToValue = range.ToValue,
                         TaskPriority = range.TaskPriority,
                         PointsValue = range.PointsValue
-                    }, cancellationToken);
+                    });
                 }
             }
+        }
+
+        if (newSettingsToInsert.Count > 0)
+        {
+            await _automationSettingRepository.AddRangeAsync(newSettingsToInsert, cancellationToken);
+        }
+
+        if (newRangesToInsert.Count > 0)
+        {
+            await _automationRangeRepository.AddRangeAsync(newRangesToInsert, cancellationToken);
         }
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);

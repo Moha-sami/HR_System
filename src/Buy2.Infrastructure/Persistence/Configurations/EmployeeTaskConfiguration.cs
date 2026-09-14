@@ -26,5 +26,7 @@ public class EmployeeTaskConfiguration : IEntityTypeConfiguration<EmployeeTask>
             .WithMany(e => e.Tasks)
             .HasForeignKey(et => et.EmployeeId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasIndex(et => new { et.EmployeeId, et.DueDate });
     }
 }

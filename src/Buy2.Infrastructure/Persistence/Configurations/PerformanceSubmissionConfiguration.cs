@@ -27,5 +27,7 @@ public class PerformanceSubmissionConfiguration : IEntityTypeConfiguration<Perfo
             .WithMany(pm => pm.PerformanceSubmissions)
             .HasForeignKey(ps => ps.MetricId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasIndex(p => new { p.EmployeeId, p.SubmissionDate });
     }
 }

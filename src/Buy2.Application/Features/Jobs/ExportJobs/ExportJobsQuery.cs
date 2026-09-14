@@ -32,9 +32,7 @@ public class ExportJobsQueryHandler : IRequestHandler<ExportJobsQuery, byte[]>
 
     public async Task<byte[]> Handle(ExportJobsQuery request, CancellationToken cancellationToken)
     {
-        IQueryable<JobRole> query = _jobRepository.Query(true)
-            .Include(j => j.Department)
-            .Include(j => j.Employees);
+        IQueryable<JobRole> query = _jobRepository.Query(true);
 
         // 1. Search Filter
         if (!string.IsNullOrWhiteSpace(request.SearchTerm))
@@ -83,7 +81,19 @@ public class ExportJobsQueryHandler : IRequestHandler<ExportJobsQuery, byte[]>
             _ => query.OrderByDescending(j => j.IsActive).ThenBy(j => j.Title)
         };
 
-        var jobs = await query.ToListAsync(cancellationToken);
+        var jobs = await query
+            .Select(j => new
+            {
+                Title = j.Title,
+                DepartmentName = j.Department != null ? j.Department.Name : "N/A",
+                SeniorityLevel = j.SeniorityLevel,
+                WorkModel = j.AttendanceType,
+                ExperienceYears = j.ExperienceYears,
+                AssignedEmployeesCount = j.Employees.Count(e => !e.IsDeleted),
+                IsActive = j.IsActive,
+                CreatedAt = j.CreatedAt
+            })
+            .ToListAsync(cancellationToken);
 
         // 7. Generate CSV with UTF-8 BOM
         var sb = new StringBuilder();
@@ -92,11 +102,11 @@ public class ExportJobsQueryHandler : IRequestHandler<ExportJobsQuery, byte[]>
         foreach (var job in jobs)
         {
             var title = job.Title ?? "N/A";
-            var dept = job.Department?.Name ?? "N/A";
+            var dept = job.DepartmentName ?? "N/A";
             var seniority = job.SeniorityLevel ?? "N/A";
-            var workModel = job.AttendanceType ?? "N/A";
+            var workModel = job.WorkModel ?? "N/A";
             var exp = job.ExperienceYears;
-            var assignedCount = job.Employees?.Count(e => !e.IsDeleted) ?? 0;
+            var assignedCount = job.AssignedEmployeesCount;
             var status = job.IsActive ? "Active" : "Inactive";
             var createdDate = job.CreatedAt.ToString("yyyy-MM-dd");
 

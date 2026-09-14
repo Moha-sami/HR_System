@@ -38,5 +38,7 @@ public class AttendanceRecordConfiguration : IEntityTypeConfiguration<Attendance
             .WithMany()
             .HasForeignKey(a => a.ScheduledShiftId)
             .OnDelete(DeleteBehavior.SetNull);
+
+        builder.HasIndex(a => new { a.EmployeeId, a.Date });
     }
 }
