@@ -15,12 +15,14 @@ public class GenericRepository<T> : IRepository<T> where T : class
 
     public IQueryable<T> Query(bool asNoTracking = true)
     {
-        return asNoTracking 
-            ? _context.Set<T>().AsNoTracking() 
+        return asNoTracking
+            ? _context.Set<T>().AsNoTracking()
             : _context.Set<T>().AsQueryable();
     }
 
     public async Task AddAsync(T entity, CancellationToken cancellationToken = default) => await _context.AddAsync(entity, cancellationToken);
+
+    public async Task AddRangeAsync(IEnumerable<T> entities, CancellationToken cancellationToken = default) => await _context.AddRangeAsync(entities, cancellationToken);
 
     public void Delete(T entity) => _context.Remove(entity);
 
@@ -39,5 +41,5 @@ public class GenericRepository<T> : IRepository<T> where T : class
         return await _context.Set<T>().AnyAsync(predicate, cancellationToken);
     }
 
-    public void Update(T entity) => _context.Update(entity);    
+    public void Update(T entity) => _context.Update(entity);
 }

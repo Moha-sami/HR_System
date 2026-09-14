@@ -33,7 +33,7 @@ public class GetSiteShiftsOverviewQueryHandler : IRequestHandler<GetSiteShiftsOv
 
         var query = _siteRepository.Query(true)
             .Include(s => s.Region)
-            .Include(s => s.Shifts)
+            .Include(s => s.Shifts.Where(shift => shift.StartTime >= startUtc && shift.StartTime < endUtc))
             .AsQueryable();
 
         if (request.RegionId.HasValue)

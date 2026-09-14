@@ -44,5 +44,7 @@ public class PointsAutomationRunConfiguration : IEntityTypeConfiguration<PointsA
             .IsUnique()
             .HasFilter("[Status] = 'Completed'")
             .HasDatabaseName("IX_PointsAutomationRun_Period");
+
+        builder.HasIndex(r => new { r.Status, r.Category, r.PeriodEnd });
     }
 }

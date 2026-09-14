@@ -109,28 +109,32 @@ public class CreateShiftTemplateCommandHandler
                 await _shiftTemplateRepository.AddAsync(template);
                 await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-                foreach (var siteId in distinctSiteIds)
+                if (distinctSiteIds.Count > 0)
                 {
-                    await _shiftTemplateSiteRepository.AddAsync(new ShiftTemplateSite
+                    var siteEntities = distinctSiteIds.Select(siteId => new ShiftTemplateSite
                     {
                         ShiftTemplateId = template.Id,
                         SiteId = siteId
-                    });
+                    }).ToList();
+                    await _shiftTemplateSiteRepository.AddRangeAsync(siteEntities, cancellationToken);
                 }
 
-                foreach (var block in blocks)
+                if (blocks.Count > 0)
                 {
-                    ShiftTimeHelper.TryParseTime(block.StartTime, out var blockStart);
-                    ShiftTimeHelper.TryParseTime(block.EndTime, out var blockEnd);
-
-                    await _shiftBlockRepository.AddAsync(new ShiftBlock
+                    var blockEntities = blocks.Select(block =>
                     {
-                        ShiftTemplateId = template.Id,
-                        StartTime = blockStart,
-                        EndTime = blockEnd,
-                        JobRoleId = block.JobRoleId,
-                        EmployeeId = block.AssignedUserId
-                    });
+                        ShiftTimeHelper.TryParseTime(block.StartTime, out var blockStart);
+                        ShiftTimeHelper.TryParseTime(block.EndTime, out var blockEnd);
+                        return new ShiftBlock
+                        {
+                            ShiftTemplateId = template.Id,
+                            StartTime = blockStart,
+                            EndTime = blockEnd,
+                            JobRoleId = block.JobRoleId,
+                            EmployeeId = block.AssignedUserId
+                        };
+                    }).ToList();
+                    await _shiftBlockRepository.AddRangeAsync(blockEntities, cancellationToken);
                 }
 
                 await _unitOfWork.SaveChangesAsync(cancellationToken);

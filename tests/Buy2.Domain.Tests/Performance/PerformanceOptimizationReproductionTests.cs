@@ -171,6 +171,11 @@ public class PerformanceOptimizationReproductionTests
             await _context.AddAsync(entity, cancellationToken);
         }
 
+        public async Task AddRangeAsync(IEnumerable<T> entities, CancellationToken cancellationToken = default)
+        {
+            await _context.AddRangeAsync(entities, cancellationToken);
+        }
+
         public void Update(T entity) => _context.Update(entity);
         public void Delete(T entity) => _context.Remove(entity);
     }
