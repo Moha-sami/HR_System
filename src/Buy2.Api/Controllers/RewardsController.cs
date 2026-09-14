@@ -59,4 +59,17 @@ public class RewardsController : ControllerBase
         return StatusCode(StatusCodes.Status201Created, result.Value);
     }
 
+    [HttpPut("{id}")]
+    [Authorize(Roles = "Admin,Manager,SuperAdmin")]
+    [Consumes("multipart/form-data")]
+    [ProducesResponseType(typeof(RewardProfileListDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)] 
+    public async Task<IActionResult> UpdateReward(int id, RewardUpdateDto dto, IFormFile imageFile, CancellationToken cancellation) 
+    { 
+        var send = await _mediator.Send(new UpdateRewardCommand(id, dto, imageFile));
+        return Ok(send);
+    }
 }
