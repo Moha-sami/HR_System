@@ -774,6 +774,7 @@
     "REQUIRED": "مطلوب",
     "IMAGE": "صورة المكافأة",
     "IMAGE_REQUIRED": "صورة المكافأة مطلوبة.",
+    "IMAGE_INVALID": "يجب أن تكون الصورة JPG أو PNG وألا تتجاوز 1 ميجابايت.",
     "REMOVE": "إزالة",
     "NAME": "اسم المكافأة",
     "NAME_PLACEHOLDER": "اسم المكافأة",
@@ -794,7 +795,9 @@
     "POINTS_REQUIRED": "قيمة النقاط مطلوبة.",
     "HOW_TO_REDEEM": "كيفية الاسترداد",
     "HOW_TO_REDEEM_PLACEHOLDER": "كيفية الاسترداد",
+    "HOW_TO_REDEEM_REQUIRED": "كيفية الاسترداد مطلوبة.",
     "TERMS": "شروط الاستخدام",
+    "TERMS_REQUIRED": "شروط الاستخدام مطلوبة.",
     "TERMS_PLACEHOLDER": "شروط الاستخدام",
     "DISCARD": "تجاهل",
     "TABLE": {
@@ -802,7 +805,9 @@
       "NAME": "الاسم",
       "POINTS": "النقاط",
       "PRICE": "السعر",
-      "COST": "التكلفة",
+      "STOCK": "المخزون",
+      "STATUS": "الحالة",
+      "CATEGORY": "الفئة",
       "REDEMPTION_COUNT": "عدد الاسترداد",
       "ACTIONS": "الإجراءات"
     },
