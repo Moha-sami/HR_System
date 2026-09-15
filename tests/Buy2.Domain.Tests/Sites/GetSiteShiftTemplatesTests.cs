@@ -77,7 +77,8 @@ public class GetSiteShiftTemplatesTests
     {
         return new GetSiteShiftTemplatesQueryHandler(
             new GenericRepository<Site>(context),
-            new GenericRepository<ShiftTemplate>(context));
+            new GenericRepository<ShiftTemplate>(context),
+            new GenericRepository<EmployeeSite>(context));
     }
 
     [Fact]
@@ -100,7 +101,7 @@ public class GetSiteShiftTemplatesTests
         await context.SaveChangesAsync();
         var handler = CreateHandler(context);
 
-        var result = await handler.Handle(new GetSiteShiftTemplatesQuery(10, null), CancellationToken.None);
+        var result = await handler.Handle(new GetSiteShiftTemplatesQuery(10, null, BypassSiteAccess: true), CancellationToken.None);
 
         Assert.True(result.IsSuccess);
         Assert.NotNull(result.Value);
@@ -114,7 +115,7 @@ public class GetSiteShiftTemplatesTests
         await SeedAsync(context);
         var handler = CreateHandler(context);
 
-        var result = await handler.Handle(new GetSiteShiftTemplatesQuery(1, null), CancellationToken.None);
+        var result = await handler.Handle(new GetSiteShiftTemplatesQuery(1, null, BypassSiteAccess: true), CancellationToken.None);
 
         Assert.True(result.IsSuccess);
         Assert.NotNull(result.Value);
@@ -129,7 +130,7 @@ public class GetSiteShiftTemplatesTests
         await SeedAsync(context);
         var handler = CreateHandler(context);
 
-        var result = await handler.Handle(new GetSiteShiftTemplatesQuery(1, null), CancellationToken.None);
+        var result = await handler.Handle(new GetSiteShiftTemplatesQuery(1, null, BypassSiteAccess: true), CancellationToken.None);
 
         Assert.True(result.IsSuccess);
         var night = Assert.Single(result.Value!, t => t.Name == "Night Shift");
@@ -144,7 +145,7 @@ public class GetSiteShiftTemplatesTests
         await SeedAsync(context);
         var handler = CreateHandler(context);
 
-        var result = await handler.Handle(new GetSiteShiftTemplatesQuery(1, null), CancellationToken.None);
+        var result = await handler.Handle(new GetSiteShiftTemplatesQuery(1, null, BypassSiteAccess: true), CancellationToken.None);
 
         Assert.True(result.IsSuccess);
         var empty = Assert.Single(result.Value!, t => t.Name == "Empty Template");
@@ -159,7 +160,7 @@ public class GetSiteShiftTemplatesTests
         await SeedAsync(context);
         var handler = CreateHandler(context);
 
-        var result = await handler.Handle(new GetSiteShiftTemplatesQuery(1, null), CancellationToken.None);
+        var result = await handler.Handle(new GetSiteShiftTemplatesQuery(1, null, BypassSiteAccess: true), CancellationToken.None);
 
         Assert.True(result.IsSuccess);
         var night = Assert.Single(result.Value!, t => t.Name == "Night Shift");
@@ -174,7 +175,7 @@ public class GetSiteShiftTemplatesTests
         await SeedAsync(context);
         var handler = CreateHandler(context);
 
-        var result = await handler.Handle(new GetSiteShiftTemplatesQuery(1, "Night Shift"), CancellationToken.None);
+        var result = await handler.Handle(new GetSiteShiftTemplatesQuery(1, "Night Shift", BypassSiteAccess: true), CancellationToken.None);
 
         Assert.True(result.IsSuccess);
         Assert.Single(result.Value!);
@@ -188,7 +189,7 @@ public class GetSiteShiftTemplatesTests
         await SeedAsync(context);
         var handler = CreateHandler(context);
 
-        var result = await handler.Handle(new GetSiteShiftTemplatesQuery(1, "Shift"), CancellationToken.None);
+        var result = await handler.Handle(new GetSiteShiftTemplatesQuery(1, "Shift", BypassSiteAccess: true), CancellationToken.None);
 
         Assert.True(result.IsSuccess);
         Assert.Equal(2, result.Value!.Count);
@@ -201,9 +202,9 @@ public class GetSiteShiftTemplatesTests
         await SeedAsync(context);
         var handler = CreateHandler(context);
 
-        var lower = await handler.Handle(new GetSiteShiftTemplatesQuery(1, "night"), CancellationToken.None);
-        var mixed = await handler.Handle(new GetSiteShiftTemplatesQuery(1, "Night"), CancellationToken.None);
-        var upper = await handler.Handle(new GetSiteShiftTemplatesQuery(1, "NIGHT"), CancellationToken.None);
+        var lower = await handler.Handle(new GetSiteShiftTemplatesQuery(1, "night", BypassSiteAccess: true), CancellationToken.None);
+        var mixed = await handler.Handle(new GetSiteShiftTemplatesQuery(1, "Night", BypassSiteAccess: true), CancellationToken.None);
+        var upper = await handler.Handle(new GetSiteShiftTemplatesQuery(1, "NIGHT", BypassSiteAccess: true), CancellationToken.None);
 
         Assert.True(lower.IsSuccess && mixed.IsSuccess && upper.IsSuccess);
         Assert.Equal(mixed.Value!.Select(t => t.Id), lower.Value!.Select(t => t.Id));
@@ -218,7 +219,7 @@ public class GetSiteShiftTemplatesTests
         await SeedAsync(context);
         var handler = CreateHandler(context);
 
-        var result = await handler.Handle(new GetSiteShiftTemplatesQuery(1, "NoSuchTemplate"), CancellationToken.None);
+        var result = await handler.Handle(new GetSiteShiftTemplatesQuery(1, "NoSuchTemplate", BypassSiteAccess: true), CancellationToken.None);
 
         Assert.True(result.IsSuccess);
         Assert.Empty(result.Value!);
@@ -231,9 +232,9 @@ public class GetSiteShiftTemplatesTests
         await SeedAsync(context);
         var handler = CreateHandler(context);
 
-        var nullSearch = await handler.Handle(new GetSiteShiftTemplatesQuery(1, null), CancellationToken.None);
-        var emptySearch = await handler.Handle(new GetSiteShiftTemplatesQuery(1, ""), CancellationToken.None);
-        var whitespaceSearch = await handler.Handle(new GetSiteShiftTemplatesQuery(1, "   "), CancellationToken.None);
+        var nullSearch = await handler.Handle(new GetSiteShiftTemplatesQuery(1, null, BypassSiteAccess: true), CancellationToken.None);
+        var emptySearch = await handler.Handle(new GetSiteShiftTemplatesQuery(1, "", BypassSiteAccess: true), CancellationToken.None);
+        var whitespaceSearch = await handler.Handle(new GetSiteShiftTemplatesQuery(1, "   ", BypassSiteAccess: true), CancellationToken.None);
 
         Assert.Equal(3, nullSearch.Value!.Count);
         Assert.Equal(3, emptySearch.Value!.Count);
@@ -247,7 +248,7 @@ public class GetSiteShiftTemplatesTests
         await SeedAsync(context);
         var handler = CreateHandler(context);
 
-        var result = await handler.Handle(new GetSiteShiftTemplatesQuery(1, "   Night   "), CancellationToken.None);
+        var result = await handler.Handle(new GetSiteShiftTemplatesQuery(1, "   Night   ", BypassSiteAccess: true), CancellationToken.None);
 
         Assert.True(result.IsSuccess);
         Assert.Single(result.Value!);
@@ -268,5 +269,69 @@ public class GetSiteShiftTemplatesTests
         var roles = ((AuthorizeAttribute)authorize).Roles?.Split(',').Select(r => r.Trim()).ToList() ?? [];
         Assert.Contains("Admin", roles);
         Assert.Contains("Manager", roles);
+    }
+
+    [Fact]
+    public async Task NonBypassUser_WithSiteAccess_ReturnsTemplates()
+    {
+        using var context = CreateDbContext();
+        await SeedAsync(context);
+        context.EmployeeSites.Add(new EmployeeSite { EmployeeId = 45, SiteId = 1 });
+        await context.SaveChangesAsync();
+        var handler = CreateHandler(context);
+
+        var result = await handler.Handle(
+            new GetSiteShiftTemplatesQuery(1, null, ActorEmployeeId: 45, BypassSiteAccess: false),
+            CancellationToken.None);
+
+        Assert.True(result.IsSuccess);
+        Assert.Equal(3, result.Value!.Count);
+    }
+
+    [Fact]
+    public async Task NonBypassUser_WithoutSiteAccess_ReturnsForbidden()
+    {
+        using var context = CreateDbContext();
+        await SeedAsync(context);
+        context.EmployeeSites.Add(new EmployeeSite { EmployeeId = 45, SiteId = 2 });
+        await context.SaveChangesAsync();
+        var handler = CreateHandler(context);
+
+        var result = await handler.Handle(
+            new GetSiteShiftTemplatesQuery(1, null, ActorEmployeeId: 45, BypassSiteAccess: false),
+            CancellationToken.None);
+
+        Assert.False(result.IsSuccess);
+        Assert.True(result.IsForbidden);
+    }
+
+    [Fact]
+    public async Task NonBypassUser_WithoutActor_ReturnsForbidden()
+    {
+        using var context = CreateDbContext();
+        await SeedAsync(context);
+        var handler = CreateHandler(context);
+
+        var result = await handler.Handle(
+            new GetSiteShiftTemplatesQuery(1, null, ActorEmployeeId: null, BypassSiteAccess: false),
+            CancellationToken.None);
+
+        Assert.False(result.IsSuccess);
+        Assert.True(result.IsForbidden);
+    }
+
+    [Fact]
+    public async Task BypassUser_WithoutSiteAccess_ReturnsTemplates()
+    {
+        using var context = CreateDbContext();
+        await SeedAsync(context);
+        var handler = CreateHandler(context);
+
+        var result = await handler.Handle(
+            new GetSiteShiftTemplatesQuery(1, null, ActorEmployeeId: null, BypassSiteAccess: true),
+            CancellationToken.None);
+
+        Assert.True(result.IsSuccess);
+        Assert.Equal(3, result.Value!.Count);
     }
 }
