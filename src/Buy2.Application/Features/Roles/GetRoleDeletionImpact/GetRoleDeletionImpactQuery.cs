@@ -1,8 +1,8 @@
 using Buy2.Application.Common.Interfaces;
+using Buy2.Application.Common.Specifications;
 using Buy2.Application.DTOs.Roles;
 using Buy2.Domain.Entities;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace Buy2.Application.Features.Roles.GetRoleDeletionImpact;
 
@@ -23,23 +23,21 @@ public class GetRoleDeletionImpactQueryHandler : IRequestHandler<GetRoleDeletion
 
     public async Task<RoleDeletionImpactDto?> Handle(GetRoleDeletionImpactQuery request, CancellationToken cancellationToken)
     {
-        var role = await _roleRepository.Query()
-            .IgnoreQueryFilters()
-            .AsNoTracking()
-            .FirstOrDefaultAsync(r => r.Id == request.Id, cancellationToken);
+        var roleSpec = new Specification<Role>()
+            .IgnoreFilters()
+            .Where(r => r.Id == request.Id);
+        var role = await _roleRepository.FirstOrDefaultAsync(roleSpec, cancellationToken);
 
         if (role is null)
         {
             return null;
         }
 
-        var employees = await _employeeRepository.Query()
-            .IgnoreQueryFilters()
-            .AsNoTracking()
-            .Include(e => e.JobRole)
-            .Include(e => e.Site)
-            .Where(e => !e.IsDeleted && e.RoleId == request.Id)
-            .ToListAsync(cancellationToken);
+        var employeesSpec = new Specification<Employee>()
+            .IgnoreFilters()
+            .Include(nameof(Employee.JobRole), nameof(Employee.Site))
+            .Where(e => !e.IsDeleted && e.RoleId == request.Id);
+        var employees = await _employeeRepository.ListAsync(employeesSpec, cancellationToken);
 
         var affectedEmployees = employees.Select(e =>
         {

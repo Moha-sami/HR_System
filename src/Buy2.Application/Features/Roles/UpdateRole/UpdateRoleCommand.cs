@@ -1,8 +1,8 @@
 using Buy2.Application.Common.Interfaces;
+using Buy2.Application.Common.Specifications;
 using Buy2.Application.DTOs.Roles;
 using Buy2.Domain.Entities;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
 
 namespace Buy2.Application.Features.Roles.UpdateRole;
@@ -24,10 +24,12 @@ public class UpdateRoleCommandHandler : IRequestHandler<UpdateRoleCommand, Updat
 
     public async Task<UpdateRoleResult> Handle(UpdateRoleCommand request, CancellationToken cancellationToken)
     {
-        var role = await _roleRepository.Query(asNoTracking: false)
-            .IgnoreQueryFilters()
-            .Include(r => r.Employees)
-            .FirstOrDefaultAsync(r => r.Id == request.Id, cancellationToken);
+        var roleSpec = new Specification<Role>()
+            .IgnoreFilters()
+            .Include(nameof(Role.Employees))
+            .Where(r => r.Id == request.Id)
+            .AsTracked();
+        var role = await _roleRepository.FirstOrDefaultAsync(roleSpec, cancellationToken);
 
         if (role == null)
         {
@@ -45,9 +47,10 @@ public class UpdateRoleCommandHandler : IRequestHandler<UpdateRoleCommand, Updat
             }
         }
 
-        var isDuplicateName = await _roleRepository.Query()
-            .IgnoreQueryFilters()
-            .AnyAsync(r => r.Id != request.Id && r.Name.ToLower() == normalizedName, cancellationToken);
+        var duplicateSpec = new Specification<Role>()
+            .IgnoreFilters()
+            .Where(r => r.Id != request.Id && r.Name.ToLower() == normalizedName);
+        var isDuplicateName = await _roleRepository.CountAsync(duplicateSpec, cancellationToken) > 0;
 
         if (isDuplicateName)
         {

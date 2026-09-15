@@ -2,7 +2,6 @@
 using Buy2.Application.DTOs.Sites;
 using Buy2.Domain.Entities;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace Buy2.Application.Features.Sites.GetSiteDetails;
 
@@ -24,8 +23,6 @@ public class GetSiteShiftsQueryHandler : IRequestHandler<GetSiteShiftsQuery, Lis
     public async Task<List<ShiftTabDto>> Handle( GetSiteShiftsQuery query, CancellationToken cancellation)
     {
         var siteExists = await _siteRepository
-            .Query()
-            .AsNoTracking()
             .AnyAsync(
                 s => s.Id == query.Id,
                 cancellation
@@ -37,12 +34,11 @@ public class GetSiteShiftsQueryHandler : IRequestHandler<GetSiteShiftsQuery, Lis
         }
 
         var shifts = await _shiftRepository
-            .Query()
-            .AsNoTracking()
-            .Where(s => s.SiteId == query.Id)
-            .Include(s => s.JobRole)
-            .Include(s => s.ShiftTemplate)
-            .ToListAsync(cancellation);
+            .ListAsync(
+                s => s.SiteId == query.Id,
+                cancellation,
+                nameof(ShiftEntity.JobRole),
+                nameof(ShiftEntity.ShiftTemplate));
 
         var templateIds = shifts
             .Where(s => s.ShiftTemplateId.HasValue)
@@ -52,16 +48,10 @@ public class GetSiteShiftsQueryHandler : IRequestHandler<GetSiteShiftsQuery, Lis
 
         var blockHeadcounts = templateIds.Count == 0
             ? new Dictionary<(int TemplateId, int JobRoleId), int>()
-            : await _shiftBlockRepository
-                .Query()
-                .AsNoTracking()
-                .Where(b => templateIds.Contains(b.ShiftTemplateId))
-                .GroupBy(b => new { b.ShiftTemplateId, b.JobRoleId })
-                .Select(g => new { g.Key.ShiftTemplateId, g.Key.JobRoleId, Count = g.Count() })
-                .ToDictionaryAsync(
-                    x => (x.ShiftTemplateId, x.JobRoleId),
-                    x => x.Count,
-                    cancellation);
+            : (await _shiftBlockRepository
+                .ListAsync(b => templateIds.Contains(b.ShiftTemplateId), cancellation))
+                .GroupBy(b => (b.ShiftTemplateId, b.JobRoleId))
+                .ToDictionary(g => g.Key, g => g.Count());
 
         return shifts
             .Select(s =>

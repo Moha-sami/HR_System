@@ -1,8 +1,8 @@
 using Buy2.Application.Common.Interfaces;
+using Buy2.Application.Common.Specifications;
 using Buy2.Application.DTOs.Roles;
 using Buy2.Domain.Entities;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace Buy2.Application.Features.Roles.GetRoleLookup;
 
@@ -19,17 +19,20 @@ public class GetRoleLookupQueryHandler : IRequestHandler<GetRoleLookupQuery, Lis
 
     public async Task<List<RoleLookupItemDto>> Handle(GetRoleLookupQuery request, CancellationToken cancellationToken)
     {
-        var query = _roleRepository.Query(asNoTracking: true)
+        var spec = new Specification<Role>()
             .Where(r => r.IsActive);
 
         if (request.ExcludeRoleId.HasValue)
         {
-            query = query.Where(r => r.Id != request.ExcludeRoleId.Value);
+            var excludedId = request.ExcludeRoleId.Value;
+            spec.Where(r => r.Id != excludedId);
         }
 
-        return await query
-            .OrderBy(r => r.Name)
-            .Select(r => new RoleLookupItemDto(r.Id, r.Name))
-            .ToListAsync(cancellationToken);
+        spec.OrderBy(r => r.Name);
+
+        return await _roleRepository.ListAsync(
+            spec,
+            r => new RoleLookupItemDto(r.Id, r.Name),
+            cancellationToken);
     }
 }

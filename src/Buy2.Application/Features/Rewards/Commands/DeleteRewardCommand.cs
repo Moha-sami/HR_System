@@ -2,10 +2,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using Buy2.Application.Common.Interfaces;
 using Buy2.Application.Common.Models;
+using Buy2.Application.Common.Specifications;
 using Buy2.Domain.Entities;
 using Buy2.Domain.Enums;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace Buy2.Application.Features.Rewards.Commands;
 
@@ -33,8 +33,9 @@ public class DeleteRewardCommandHandler : IRequestHandler<DeleteRewardCommand, R
     public async Task<Result> Handle(DeleteRewardCommand command, CancellationToken cancellation)
     {
         var rewardItem = await _rewardItemRepository
-            .Query(false)
-            .FirstOrDefaultAsync(r => r.Id == command.Id, cancellation);
+            .FirstOrDefaultAsync(
+                new Specification<RewardItem>().Where(r => r.Id == command.Id).AsTracked(),
+                cancellation);
 
         if (rewardItem is null)
         {
@@ -42,7 +43,6 @@ public class DeleteRewardCommandHandler : IRequestHandler<DeleteRewardCommand, R
         }
 
         var availableVouchers = await _voucherRepository
-            .Query(false)
             .CountAsync(v => v.RewardItemId == command.Id &&
                              v.Status == VoucherStatus.Available, cancellation);
 
@@ -52,7 +52,6 @@ public class DeleteRewardCommandHandler : IRequestHandler<DeleteRewardCommand, R
         }
 
         var redemptionCount = await _redemptionRepository
-            .Query(false)
             .CountAsync(r => r.RewardItemId == command.Id, cancellation);
 
         if (redemptionCount > 0)

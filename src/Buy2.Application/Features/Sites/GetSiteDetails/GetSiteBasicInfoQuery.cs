@@ -2,7 +2,6 @@
 using Buy2.Application.DTOs.Sites;
 using Buy2.Domain.Entities;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 
 namespace Buy2.Application.Features.Sites.GetSiteDetails;
@@ -20,14 +19,14 @@ public class GetSiteBasicInfoQueryHandler : IRequestHandler<GetSiteBasicInfoQuer
     public async Task<SiteFullProfile> Handle(GetSiteBasicInfoQuery query, CancellationToken cancellation)
     {
         var site = await _siteRepository
-            .Query(false)
-            .Include(s => s.Region)
-            .Include(s => s.PreferredEmployees)
-                .ThenInclude(p => p.Employee)
-                    .ThenInclude(p => p.JobRole)
-            .Include(s => s.Documents)
-            .Include(s => s.OperationalHours)
-            .FirstOrDefaultAsync(s=> s.Id == query.Id ,cancellation);
+            .FirstOrDefaultAsync(
+                s => s.Id == query.Id,
+                cancellation,
+                nameof(Site.Region),
+                nameof(Site.PreferredEmployees),
+                "PreferredEmployees.Employee.JobRole",
+                nameof(Site.Documents),
+                nameof(Site.OperationalHours));
         if (site is null)
         {
             throw new KeyNotFoundException("Site is not found.");

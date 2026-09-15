@@ -1,9 +1,9 @@
 using Buy2.Application.Common.Interfaces;
+using Buy2.Application.Common.Specifications;
 using Buy2.Application.DTOs.Roles;
 using Buy2.Domain.Entities;
 using Buy2.Domain.ValueObjects;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
 
 namespace Buy2.Application.Features.Roles.GetRoleById;
@@ -21,11 +21,11 @@ public class GetRoleByIdQueryHandler : IRequestHandler<GetRoleByIdQuery, RoleDet
 
     public async Task<RoleDetailsDto?> Handle(GetRoleByIdQuery request, CancellationToken cancellationToken)
     {
-        var role = await _roleRepository.Query()
-            .IgnoreQueryFilters()
-            .AsNoTracking()
-            .Include(r => r.Employees)
-            .FirstOrDefaultAsync(r => r.Id == request.Id, cancellationToken);
+        var roleSpec = new Specification<Role>()
+            .IgnoreFilters()
+            .Include(nameof(Role.Employees))
+            .Where(r => r.Id == request.Id);
+        var role = await _roleRepository.FirstOrDefaultAsync(roleSpec, cancellationToken);
 
         if (role is null)
         {

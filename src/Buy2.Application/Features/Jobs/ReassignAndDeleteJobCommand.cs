@@ -4,10 +4,10 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Buy2.Application.Common.Interfaces;
+using Buy2.Application.Common.Specifications;
 using Buy2.Application.Features.Jobs.DTOs;
 using Buy2.Domain.Entities;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace Buy2.Application.Features.Jobs;
 
@@ -40,9 +40,11 @@ public class ReassignAndDeleteJobCommandHandler : IRequestHandler<ReassignAndDel
         if (fallbackJobId.HasValue && fallbackJobId.Value == request.JobId)
             throw new ArgumentException("Replacement job ID cannot be the same as the target job ID.");
 
-        var jobToDelete = await _jobRepository.Query(false)
-            .Include(j => j.Employees)
-            .FirstOrDefaultAsync(j => j.Id == request.JobId, cancellationToken);
+        var jobSpec = new Specification<JobRole>()
+            .Include(nameof(JobRole.Employees))
+            .AsTracked()
+            .Where(j => j.Id == request.JobId);
+        var jobToDelete = await _jobRepository.FirstOrDefaultAsync(jobSpec, cancellationToken);
 
         if (jobToDelete == null)
             throw new KeyNotFoundException($"Job with ID {request.JobId} not found.");
@@ -110,10 +112,9 @@ public class ReassignAndDeleteJobCommandHandler : IRequestHandler<ReassignAndDel
 
         // Verify all referenced target jobs exist
         var uniqueTargetJobIds = mapping.Values.Distinct().ToList();
-        var existingJobs = await _jobRepository.Query(true)
-            .Where(j => uniqueTargetJobIds.Contains(j.Id) && !j.IsDeleted)
-            .Select(j => j.Id)
-            .ToListAsync(cancellationToken);
+        var existingJobsSpec = new Specification<JobRole>()
+            .Where(j => uniqueTargetJobIds.Contains(j.Id) && !j.IsDeleted);
+        var existingJobs = await _jobRepository.ListAsync(existingJobsSpec, j => j.Id, cancellationToken);
 
         var missingJobs = uniqueTargetJobIds.Except(existingJobs).ToList();
         if (missingJobs.Any())

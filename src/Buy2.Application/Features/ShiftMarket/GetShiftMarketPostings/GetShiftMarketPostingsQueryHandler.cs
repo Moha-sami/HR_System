@@ -4,11 +4,11 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Buy2.Application.Common.Interfaces;
+using Buy2.Application.Common.Specifications;
 using Buy2.Application.DTOs.ShiftMarket;
 using Buy2.Application.Features.ShiftTemplates;
 using Buy2.Domain.Entities;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace Buy2.Application.Features.ShiftMarket.GetShiftMarketPostings;
 
@@ -57,21 +57,18 @@ public class GetShiftMarketPostingsQueryHandler : IRequestHandler<GetShiftMarket
 
     private async Task<List<ShiftEntity>> FetchPublishedShiftsAsync(int? siteId, CancellationToken cancellationToken)
     {
-        var query = _shiftRepository.Query(true)
-            .Include(s => s.ShiftTemplate)
-                .ThenInclude(t => t!.LastUpdatedByEmployee)
-            .Include(s => s.JobRole)
-            .Where(s => s.IsPublished);
+        var spec = new Specification<ShiftEntity>()
+            .Where(s => s.IsPublished)
+            .Include("ShiftTemplate.LastUpdatedByEmployee", nameof(ShiftEntity.JobRole))
+            .OrderBy(s => s.StartTime)
+            .ThenBy(s => s.Id);
 
         if (siteId.HasValue)
         {
-            query = query.Where(s => s.SiteId == siteId.Value);
+            spec.Where(s => s.SiteId == siteId.Value);
         }
 
-        return await query
-            .OrderBy(s => s.StartTime)
-            .ThenBy(s => s.Id)
-            .ToListAsync(cancellationToken);
+        return await _shiftRepository.ListAsync(spec, cancellationToken);
     }
 
     private async Task<List<ShiftMarketPostingDto>> BuildPostingsAsync(
@@ -79,16 +76,17 @@ public class GetShiftMarketPostingsQueryHandler : IRequestHandler<GetShiftMarket
         CancellationToken cancellationToken)
     {
         var shiftIds = shifts.Select(s => s.Id).ToList();
-        var claims = await _shiftClaimRepository.Query(true)
-            .Where(c => shiftIds.Contains(c.ShiftId))
-            .ToListAsync(cancellationToken);
+        var claims = await _shiftClaimRepository.ListAsync(
+            c => shiftIds.Contains(c.ShiftId),
+            cancellationToken);
 
         var claimsByShiftId = claims.GroupBy(c => c.ShiftId).ToDictionary(g => g.Key, g => g.ToList());
 
         var siteIds = shifts.Select(s => s.SiteId).Distinct().ToList();
-        var sites = await _siteRepository.Query(true)
-            .Where(s => siteIds.Contains(s.Id))
-            .ToDictionaryAsync(s => s.Id, s => s.SiteName, cancellationToken);
+        var siteList = await _siteRepository.ListAsync(
+            s => siteIds.Contains(s.Id),
+            cancellationToken);
+        var sites = siteList.ToDictionary(s => s.Id, s => s.SiteName);
 
         var claimantIds = claims.Select(c => c.EmployeeId).Distinct().ToList();
         var employees = await FetchEmployeesAsync(claimantIds, shifts, cancellationToken);
@@ -113,9 +111,9 @@ public class GetShiftMarketPostingsQueryHandler : IRequestHandler<GetShiftMarket
             return [];
         }
 
-        return await _shiftRepository.Query(true)
-            .Where(s => s.EmployeeId.HasValue && claimantIds.Contains(s.EmployeeId.Value))
-            .ToListAsync(cancellationToken);
+        return await _shiftRepository.ListAsync(
+            s => s.EmployeeId.HasValue && claimantIds.Contains(s.EmployeeId.Value),
+            cancellationToken);
     }
 
     private async Task<Dictionary<int, Employee>> FetchEmployeesAsync(
@@ -126,11 +124,13 @@ public class GetShiftMarketPostingsQueryHandler : IRequestHandler<GetShiftMarket
         var assignedIds = shifts.Where(s => s.EmployeeId.HasValue).Select(s => s.EmployeeId!.Value);
         var allEmployeeIds = claimantIds.Union(assignedIds).Distinct().ToList();
 
-        return await _employeeRepository.Query(true)
-            .Include(e => e.JobRole)
-            .Include(e => e.PayrollProfile)
-            .Where(e => allEmployeeIds.Contains(e.Id))
-            .ToDictionaryAsync(e => e.Id, cancellationToken);
+        var employeeList = await _employeeRepository.ListAsync(
+            e => allEmployeeIds.Contains(e.Id),
+            cancellationToken,
+            nameof(Employee.JobRole),
+            nameof(Employee.PayrollProfile));
+
+        return employeeList.ToDictionary(e => e.Id);
     }
 
     private static ShiftMarketPostingDto MapToPostingDto(

@@ -1,5 +1,6 @@
 using System.Reflection;
 using Buy2.Api.Controllers;
+using Buy2.Application.Common.Exceptions;
 using Buy2.Application.Common.Interfaces;
 using Buy2.Application.Features.Schedules.SaveAsTemplate;
 using Buy2.Application.Features.Sites.GetSiteShiftTemplates;
@@ -348,7 +349,7 @@ public class SaveAsTemplateTests
         SeedDay(context);
         var handler = CreateHandler(context, new DbFailingUnitOfWork(new UnitOfWork(context)));
 
-        await Assert.ThrowsAsync<DbUpdateException>(
+        await Assert.ThrowsAsync<DataIntegrityException>(
             () => handler.Handle(new SaveAsTemplateCommand(10, Day, "Broken", null), default));
     }
 
@@ -418,7 +419,7 @@ public class SaveAsTemplateTests
         public DbFailingUnitOfWork(IUnitOfWork inner) => _inner = inner;
 
         public Task<int> SaveChangesAsync(CancellationToken cancellationToken = default) =>
-            throw new DbUpdateException("simulated db failure", new Exception("inner"));
+            throw new DataIntegrityException("simulated db failure", new Exception("inner"));
 
         public Task BeginTransactionAsync(CancellationToken cancellationToken = default) =>
             _inner.BeginTransactionAsync(cancellationToken);

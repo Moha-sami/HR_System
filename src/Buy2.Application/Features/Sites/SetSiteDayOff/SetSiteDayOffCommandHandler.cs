@@ -3,7 +3,6 @@ using Buy2.Application.DTOs.Schedules;
 using Buy2.Application.DTOs.Sites;
 using Buy2.Domain.Entities;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace Buy2.Application.Features.Sites.SetSiteDayOff;
 
@@ -64,7 +63,7 @@ public class SetSiteDayOffCommandHandler : IRequestHandler<SetSiteDayOffCommand,
         bool isOpen,
         CancellationToken cancellationToken)
     {
-        var opHour = await _operationalHourRepository.Query(true)
+        var opHour = await _operationalHourRepository
             .FirstOrDefaultAsync(o => o.SiteId == siteId && o.DayOfWeek == dayOfWeek, cancellationToken);
 
         if (opHour != null)
@@ -95,9 +94,8 @@ public class SetSiteDayOffCommandHandler : IRequestHandler<SetSiteDayOffCommand,
         var windowStart = new DateTimeOffset(targetDate, TimeSpan.Zero).AddDays(-1);
         var windowEnd = new DateTimeOffset(targetDate, TimeSpan.Zero).AddDays(2);
 
-        var siteShifts = await _shiftRepository.Query(true)
-            .Where(s => s.SiteId == siteId && s.StartTime >= windowStart && s.StartTime < windowEnd)
-            .ToListAsync(cancellationToken);
+        var siteShifts = await _shiftRepository
+            .ListAsync(s => s.SiteId == siteId && s.StartTime >= windowStart && s.StartTime < windowEnd, cancellationToken);
 
         return siteShifts
             .Where(s => s.StartTime.Date == targetDate ||

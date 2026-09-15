@@ -1,9 +1,9 @@
 using System.Globalization;
 using Buy2.Application.Common.Interfaces;
+using Buy2.Application.Common.Specifications;
 using Buy2.Application.Features.Employees.GetPerformanceOverview;
 using Buy2.Domain.Entities;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace Buy2.Application.Features.Employees.GetMetricDetail;
 
@@ -35,9 +35,10 @@ public class GetMetricDetailQueryHandler : IRequestHandler<GetMetricDetailQuery,
     public async Task<MetricDetailDto?> Handle(GetMetricDetailQuery request, CancellationToken cancellationToken)
     {
         // 1. Validate employee existence and active status (not soft-deleted)
-        var employee = await _employeeRepository.Query()
-            .Include(e => e.DirectManager)
-            .FirstOrDefaultAsync(e => e.Id == request.EmployeeId, cancellationToken);
+        var employee = await _employeeRepository.FirstOrDefaultAsync(
+            e => e.Id == request.EmployeeId,
+            cancellationToken,
+            nameof(Employee.DirectManager));
 
         if (employee == null || employee.IsDeleted)
         {
@@ -45,8 +46,8 @@ public class GetMetricDetailQueryHandler : IRequestHandler<GetMetricDetailQuery,
         }
 
         // 2. Validate performance metric existence
-        var metric = await _metricRepository.Query()
-            .FirstOrDefaultAsync(m => m.Id == request.MetricId, cancellationToken);
+        var metric = await _metricRepository.FirstOrDefaultAsync(
+            m => m.Id == request.MetricId, cancellationToken);
 
         if (metric == null)
         {
@@ -54,10 +55,10 @@ public class GetMetricDetailQueryHandler : IRequestHandler<GetMetricDetailQuery,
         }
 
         // 3. Fetch all submissions for this Employee and Metric (all-time)
-        var allSubmissions = await _submissionRepository.Query()
+        var submissionSpec = new Specification<PerformanceSubmission>()
             .Where(s => s.EmployeeId == request.EmployeeId && s.MetricId == request.MetricId)
-            .OrderByDescending(s => s.SubmissionDate)
-            .ToListAsync(cancellationToken);
+            .OrderBy(s => s.SubmissionDate, descending: true);
+        var allSubmissions = await _submissionRepository.ListAsync(submissionSpec, cancellationToken);
 
         // Helper functions for scoring
         static decimal CalculateAverageScore(IReadOnlyCollection<PerformanceSubmission> submissions)

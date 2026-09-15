@@ -1,8 +1,8 @@
 using Buy2.Application.Common.Interfaces;
+using Buy2.Application.Common.Specifications;
 using Buy2.Application.DTOs.Roles;
 using Buy2.Domain.Entities;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
 
 namespace Buy2.Application.Features.Roles.CreateRole;
@@ -27,9 +27,10 @@ public class CreateRoleCommandHandler : IRequestHandler<CreateRoleCommand, Creat
         var trimmedName = request.Dto.Name.Trim();
         var normalizedName = trimmedName.ToLower();
 
-        var roleExists = await _roleRepository.Query()
-            .IgnoreQueryFilters()
-            .AnyAsync(r => r.Name.ToLower() == normalizedName, cancellationToken);
+        var roleSpec = new Specification<Role>()
+            .IgnoreFilters()
+            .Where(r => r.Name.ToLower() == normalizedName);
+        var roleExists = await _roleRepository.CountAsync(roleSpec, cancellationToken) > 0;
 
         if (roleExists)
         {

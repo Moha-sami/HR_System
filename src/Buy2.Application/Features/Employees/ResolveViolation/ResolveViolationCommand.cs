@@ -2,7 +2,6 @@ using Buy2.Application.Common.Interfaces;
 using Buy2.Domain.Entities;
 using Buy2.Domain.Enums;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace Buy2.Application.Features.Employees.ResolveViolation;
 
@@ -39,8 +38,8 @@ public class ResolveViolationCommandHandler : IRequestHandler<ResolveViolationCo
             return ResolveViolationResult.NotFound($"Employee with ID {request.EmployeeId} was not found.");
         }
 
-        var violation = await _disciplinaryViolationRepository.Query(asNoTracking: false)
-            .FirstOrDefaultAsync(v => v.Id == request.ViolationId && v.EmployeeId == request.EmployeeId, cancellationToken);
+        var violation = await _disciplinaryViolationRepository.FirstOrDefaultAsync(
+            v => v.Id == request.ViolationId && v.EmployeeId == request.EmployeeId, cancellationToken);
 
         if (violation is null)
         {

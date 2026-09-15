@@ -1,9 +1,9 @@
 using Buy2.Application.Common.Interfaces;
+using Buy2.Application.Common.Specifications;
 using Buy2.Application.DTOs.Points.DTOs;
 using Buy2.Application.Features.Points.Automation.Evaluators;
 using Buy2.Domain.Entities;
 using Buy2.Domain.Enums;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace Buy2.Application.Features.Points.Automation;
@@ -55,11 +55,11 @@ public class PointsAutomationRunner : IPointsAutomationRunner
         var executionId = Guid.NewGuid().ToString();
         var executedAt = DateTimeOffset.UtcNow;
 
-        var categorySettings = await _automationSettingRepository.Query()
-            .AsNoTracking()
-            .Include(s => s.Ranges)
-            .Where(s => s.IsEnabled && s.Category == category)
-            .ToListAsync(cancellationToken);
+        var categorySettings = await _automationSettingRepository.ListAsync(
+            new Specification<PointsAutomationSetting>()
+                .Include(nameof(PointsAutomationSetting.Ranges))
+                .Where(s => s.IsEnabled && s.Category == category),
+            cancellationToken);
 
         if (!categorySettings.Any())
         {
@@ -90,9 +90,7 @@ public class PointsAutomationRunner : IPointsAutomationRunner
             return null;
         }
 
-        var alreadyCompleted = await _automationRunRepository.Query()
-            .AsNoTracking()
-            .AnyAsync(
+        var alreadyCompleted = await _automationRunRepository.AnyAsync(
                 r => r.Category == category
                     && r.PeriodStart == periodStartUtc
                     && r.PeriodEnd == periodEndUtc
@@ -117,10 +115,9 @@ public class PointsAutomationRunner : IPointsAutomationRunner
             throw new InvalidOperationException(validationResult.ErrorMessage);
         }
 
-        var targetEmployees = await _employeeRepository.Query()
-            .AsNoTracking()
-            .Where(e => e.IsActive && !e.IsDeleted)
-            .ToListAsync(cancellationToken);
+        var targetEmployees = await _employeeRepository.ListAsync(
+            e => e.IsActive && !e.IsDeleted,
+            cancellationToken);
 
         if (!targetEmployees.Any())
         {
@@ -146,42 +143,39 @@ public class PointsAutomationRunner : IPointsAutomationRunner
 
         var evaluatorSettings = settings.Where(s => s.Category == category).ToList();
 
-        var existingTransactions = await _pointsTransactionRepository.Query()
-            .AsNoTracking()
-            .Where(t => employeeIds.Contains(t.EmployeeId)
+        var existingTransactions = await _pointsTransactionRepository.ListAsync(
+            new Specification<PointsTransaction>().Where(t => employeeIds.Contains(t.EmployeeId)
                 && t.TriggeredBy == "KPI Achievement"
                 && t.AutomationCategory == category
                 && t.EvaluationPeriodStart == periodStartUtc
-                && t.EvaluationPeriodEnd == periodEndUtc)
-            .Select(t => t.EmployeeId)
-            .ToListAsync(cancellationToken);
+                && t.EvaluationPeriodEnd == periodEndUtc),
+            t => t.EmployeeId,
+            cancellationToken);
 
         var existingTransactionKeys = existingTransactions
             .Select(employeeId => (employeeId, category))
             .ToHashSet();
 
-        var attendanceRecords = await _attendanceRecordRepository.Query()
-            .AsNoTracking()
-            .Where(r => employeeIds.Contains(r.EmployeeId)
+        var attendanceRecords = await _attendanceRecordRepository.ListAsync(
+            r => employeeIds.Contains(r.EmployeeId)
                 && r.Date >= periodStartUtc.Date
-                && r.Date <= periodEndUtc.Date)
-            .ToListAsync(cancellationToken);
+                && r.Date <= periodEndUtc.Date,
+            cancellationToken);
 
-        var employeeTasks = await _employeeTaskRepository.Query()
-            .AsNoTracking()
-            .Where(t => employeeIds.Contains(t.EmployeeId)
+        var employeeTasks = await _employeeTaskRepository.ListAsync(
+            t => employeeIds.Contains(t.EmployeeId)
                 && t.DueDate.HasValue
                 && t.DueDate.Value.Date >= periodStartUtc.Date
-                && t.DueDate.Value.Date <= periodEndUtc.Date)
-            .ToListAsync(cancellationToken);
+                && t.DueDate.Value.Date <= periodEndUtc.Date,
+            cancellationToken);
 
-        var performanceSubmissions = await _performanceSubmissionRepository.Query()
-            .AsNoTracking()
-            .Include(s => s.PerformanceMetric)
-            .Where(s => employeeIds.Contains(s.EmployeeId)
-                && s.SubmissionDate >= periodStartUtc.Date
-                && s.SubmissionDate <= periodEndUtc.Date)
-            .ToListAsync(cancellationToken);
+        var performanceSubmissions = await _performanceSubmissionRepository.ListAsync(
+            new Specification<PerformanceSubmission>()
+                .Include(nameof(PerformanceSubmission.PerformanceMetric))
+                .Where(s => employeeIds.Contains(s.EmployeeId)
+                    && s.SubmissionDate >= periodStartUtc.Date
+                    && s.SubmissionDate <= periodEndUtc.Date),
+            cancellationToken);
 
         var attendanceByEmployee = attendanceRecords.GroupBy(r => r.EmployeeId).ToDictionary(g => g.Key, g => g.ToList());
         var tasksByEmployee = employeeTasks.GroupBy(t => t.EmployeeId).ToDictionary(g => g.Key, g => g.ToList());

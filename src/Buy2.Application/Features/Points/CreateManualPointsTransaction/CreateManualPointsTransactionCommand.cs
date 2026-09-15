@@ -3,7 +3,6 @@ using Buy2.Application.DTOs.Points.DTOs;
 using Buy2.Domain.Entities;
 using Buy2.Domain.Enums;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace Buy2.Application.Features.Points.CreateManualPointsTransaction;
 
@@ -38,8 +37,7 @@ public class CreateManualPointsTransactionCommandHandler : IRequestHandler<Creat
 
     public async Task<CreateManualPointsTransactionResult> Handle(CreateManualPointsTransactionCommand request, CancellationToken cancellationToken)
     {
-        var employee = await _employeeRepository.Query()
-            .FirstOrDefaultAsync(e => e.Id == request.EmployeeId, cancellationToken);
+        var employee = await _employeeRepository.FirstOrDefaultAsync(e => e.Id == request.EmployeeId, cancellationToken);
 
         if (employee == null || employee.IsDeleted)
         {

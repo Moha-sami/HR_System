@@ -1,9 +1,9 @@
 using Buy2.Application.Common.Interfaces;
+using Buy2.Application.Common.Specifications;
 using Buy2.Application.DTOs.Employees;
 using Buy2.Domain.Entities;
 using Buy2.Domain.Enums;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace Buy2.Application.Features.Employees.GetAttendanceCalendar;
 
@@ -35,9 +35,8 @@ public class GetAttendanceCalendarQueryHandler : IRequestHandler<GetAttendanceCa
     public async Task<AttendanceCalendarDto?> Handle(GetAttendanceCalendarQuery request, CancellationToken cancellationToken)
     {
         // 1. Validate employee existence and active status
-        var employee = await _employeeRepository.Query()
-            .AsNoTracking()
-            .FirstOrDefaultAsync(e => e.Id == request.EmployeeId, cancellationToken);
+        var employee = await _employeeRepository.FirstOrDefaultAsync(
+            e => e.Id == request.EmployeeId, cancellationToken);
 
         if (employee == null || employee.IsDeleted)
         {
@@ -63,11 +62,10 @@ public class GetAttendanceCalendarQueryHandler : IRequestHandler<GetAttendanceCa
         var monthEnd = new DateTime(year, month, daysInMonth, 23, 59, 59, 999, DateTimeKind.Utc);
 
         // 3. Query all attendance records for the month eagerly including ScheduledShift
-        var records = await _attendanceRepository.Query()
-            .AsNoTracking()
-            .Include(a => a.ScheduledShift)
-            .Where(a => a.EmployeeId == request.EmployeeId && a.Date >= monthStart.Date && a.Date <= monthEnd.Date)
-            .ToListAsync(cancellationToken);
+        var attendanceSpec = new Specification<AttendanceRecord>()
+            .Include(nameof(AttendanceRecord.ScheduledShift))
+            .Where(a => a.EmployeeId == request.EmployeeId && a.Date >= monthStart.Date && a.Date <= monthEnd.Date);
+        var records = await _attendanceRepository.ListAsync(attendanceSpec, cancellationToken);
 
         var recordByDay = records
             .GroupBy(r => r.Date.Date)
@@ -77,12 +75,11 @@ public class GetAttendanceCalendarQueryHandler : IRequestHandler<GetAttendanceCa
         var monthStartOffset = new DateTimeOffset(monthStart);
         var monthEndOffset = new DateTimeOffset(monthEnd);
 
-        var scheduledShifts = await _shiftRepository.Query()
-            .AsNoTracking()
-            .Where(s => s.EmployeeId == request.EmployeeId &&
-                        s.StartTime <= monthEndOffset &&
-                        s.EndTime >= monthStartOffset)
-            .ToListAsync(cancellationToken);
+        var scheduledShifts = await _shiftRepository.ListAsync(
+            s => s.EmployeeId == request.EmployeeId &&
+                s.StartTime <= monthEndOffset &&
+                s.EndTime >= monthStartOffset,
+            cancellationToken);
 
         var shiftById = scheduledShifts.ToDictionary(s => s.Id);
         var shiftsByDate = scheduledShifts
@@ -90,14 +87,13 @@ public class GetAttendanceCalendarQueryHandler : IRequestHandler<GetAttendanceCa
             .ToDictionary(g => g.Key, g => g.ToList());
 
         // 5. Query Approved Leave Requests for the employee during the month
-        var leaveRequests = await _requestRepository.Query()
-            .AsNoTracking()
-            .Include(r => r.RequestType)
+        var leaveSpec = new Specification<Request>()
+            .Include(nameof(Request.RequestType))
             .Where(r => r.EmployeeId == request.EmployeeId &&
                         r.StartDate.HasValue &&
                         r.StartDate.Value <= monthEnd &&
-                        (!r.EndDate.HasValue || r.EndDate.Value >= monthStart))
-            .ToListAsync(cancellationToken);
+                        (!r.EndDate.HasValue || r.EndDate.Value >= monthStart));
+        var leaveRequests = await _requestRepository.ListAsync(leaveSpec, cancellationToken);
 
         var approvedLeaveRequests = leaveRequests
             .Where(IsApprovedLeaveRequest)

@@ -1,8 +1,8 @@
 using Buy2.Application.Common.Interfaces;
+using Buy2.Application.Common.Specifications;
 using Buy2.Application.Features.Departments.DTOs;
 using Buy2.Domain.Entities;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -23,17 +23,18 @@ public class GetDepartmentsQueryHandler : IRequestHandler<GetDepartmentsQuery, I
 
     public async Task<IEnumerable<DepartmentLookupDto>> Handle(GetDepartmentsQuery request, CancellationToken cancellationToken)
     {
-        var departments = await _departmentRepository.Query(asNoTracking: true)
-            .Include(d => d.HeadEmployee)
-            .Include(d => d.JobRoles)
-            .Select(d => new DepartmentLookupDto(
+        var spec = new Specification<Department>()
+            .Include(nameof(Department.HeadEmployee), nameof(Department.JobRoles));
+
+        var entities = await _departmentRepository.ListAsync(spec, cancellationToken);
+
+        var departments = entities.Select(d => new DepartmentLookupDto(
                 d.Id,
                 d.Name,
                 d.Description,
-                d.JobRoles.Count(j => j.IsActive),
+                d.JobRoles != null ? d.JobRoles.Count(j => j.IsActive) : 0,
                 d.HeadEmployee != null ? d.HeadEmployee.FirstName + " " + d.HeadEmployee.LastName : null
-            ))
-            .ToListAsync(cancellationToken);
+            )).ToList();
 
         return departments;
     }

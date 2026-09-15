@@ -1,8 +1,8 @@
 using Buy2.Application.Common.Interfaces;
+using Buy2.Application.Common.Specifications;
 using Buy2.Application.DTOs;
 using Buy2.Domain.Entities;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace Buy2.Application.Features.Sites.GetSites;
 
@@ -19,14 +19,15 @@ public class GetSitesQueryHandler : IRequestHandler<GetSitesQuery, List<SiteDto>
 
     public async Task<List<SiteDto>> Handle(GetSitesQuery request, CancellationToken cancellationToken)
     {
-        return await _siteRepository.Query()
-            .Select(s => new SiteDto(
+        return await _siteRepository.ListAsync(
+            new Specification<Site>(),
+            s => new SiteDto(
                 s.Id,
                 s.SiteName,
                 s.Latitude,
                 s.Longitude,
                 new List<string>()
-            ))
-            .ToListAsync(cancellationToken);
+            ),
+            cancellationToken);
     }
 }

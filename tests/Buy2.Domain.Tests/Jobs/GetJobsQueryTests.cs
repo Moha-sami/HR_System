@@ -41,7 +41,7 @@ public class GetJobsQueryTests
         context.JobRoles.AddRange(job1, job2);
         await context.SaveChangesAsync();
 
-        var handler = new GetJobsQueryHandler(jobRepo);
+        var handler = new GetJobsQueryHandler(jobRepo, new GenericRepository<Employee>(context));
 
         // Act - Search matching title
         var resultTitle = await handler.Handle(new GetJobsQuery(new JobFilterQueryDto(SearchTerm: "backend")), CancellationToken.None);
@@ -73,7 +73,7 @@ public class GetJobsQueryTests
         context.JobRoles.AddRange(job1, job2);
         await context.SaveChangesAsync();
 
-        var handler = new GetJobsQueryHandler(jobRepo);
+        var handler = new GetJobsQueryHandler(jobRepo, new GenericRepository<Employee>(context));
 
         // Act & Assert DepartmentId
         var deptResult = await handler.Handle(new GetJobsQuery(new JobFilterQueryDto(DepartmentId: deptEng.Id)), CancellationToken.None);
@@ -120,7 +120,7 @@ public class GetJobsQueryTests
         context.Employees.AddRange(emp1, emp2, empDeleted);
         await context.SaveChangesAsync();
 
-        var handler = new GetJobsQueryHandler(jobRepo);
+        var handler = new GetJobsQueryHandler(jobRepo, new GenericRepository<Employee>(context));
 
         // Act
         var result = await handler.Handle(new GetJobsQuery(new JobFilterQueryDto()), CancellationToken.None);
@@ -151,7 +151,7 @@ public class GetJobsQueryTests
         }
         await context.SaveChangesAsync();
 
-        var handler = new GetJobsQueryHandler(jobRepo);
+        var handler = new GetJobsQueryHandler(jobRepo, new GenericRepository<Employee>(context));
 
         // Act
         var page1 = await handler.Handle(new GetJobsQuery(new JobFilterQueryDto(PageNumber: 1, PageSize: 10, SortBy: "title", SortDir: "asc")), CancellationToken.None);

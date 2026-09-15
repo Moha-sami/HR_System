@@ -3,7 +3,6 @@ using Buy2.Application.DTOs.Sites;
 using Buy2.Domain.Entities;
 using FluentValidation;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace Buy2.Application.Features.Sites.DeleteSite;
 
@@ -22,11 +21,12 @@ public class CheckSiteDeletionQueryHandler : IRequestHandler<CheckSiteDeletionQu
     public async Task<DeletionCheckDto> Handle(CheckSiteDeletionQuery query, CancellationToken cancellationToken)
     {
         var site = await _siteRepository
-            .Query(false)
-            .Include(s => s.EmployeeSites) 
-                .ThenInclude(es => es.Employee)
-            .Include(s => s.Shifts)
-            .FirstOrDefaultAsync(s => s.Id == query.SiteId, cancellationToken);
+            .FirstOrDefaultAsync(
+                s => s.Id == query.SiteId,
+                cancellationToken,
+                "EmployeeSites",
+                "EmployeeSites.Employee",
+                nameof(Site.Shifts));
 
         if (site is null)
         {
@@ -34,9 +34,7 @@ public class CheckSiteDeletionQueryHandler : IRequestHandler<CheckSiteDeletionQu
         }
 
         var primaryEmployees = await _employeeRepository
-            .Query(false)
-            .Where(e => e.SiteId == query.SiteId)
-            .ToListAsync(cancellationToken);
+            .ListAsync(e => e.SiteId == query.SiteId, cancellationToken);
 
         var allocatedEmployees = primaryEmployees
             .Concat(site.EmployeeSites.Where(es => es.Employee != null).Select(es => es.Employee!))

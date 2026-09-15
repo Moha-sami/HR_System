@@ -1,9 +1,9 @@
 using Buy2.Application.Common.Interfaces;
+using Buy2.Application.Common.Specifications;
 using Buy2.Application.Features.Points.Automation;
 using Buy2.Domain.Entities;
 using Buy2.Domain.Enums;
 using Hangfire;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
 namespace Buy2.Api.Services.PointsAutomation;
@@ -43,11 +43,12 @@ public class PointsAutomationDispatcher
         var cairoTimeZone = CairoPeriodResolver.GetTimeZone(_options.TimeZone);
         var todayCairo = CairoPeriodResolver.TodayInCairo(DateTimeOffset.UtcNow, cairoTimeZone);
 
-        var enabledSettings = await _settingsRepository.Query()
-            .AsNoTracking()
-            .Where(s => s.IsEnabled)
-            .Select(s => new { s.Category, s.AutomationPeriod })
-            .ToListAsync(cancellationToken);
+        var enabledSpec = new Specification<PointsAutomationSetting>()
+            .Where(s => s.IsEnabled);
+        var enabledSettings = await _settingsRepository.ListAsync(
+            enabledSpec,
+            s => new { s.Category, s.AutomationPeriod },
+            cancellationToken);
 
         // Single global period: never run partially on legacy mixed data.
         var globalPeriods = enabledSettings.Select(s => s.AutomationPeriod).Distinct().ToList();
@@ -97,13 +98,14 @@ public class PointsAutomationDispatcher
         // the day after the last evaluated day (no overlap, no gap).
         // Legacy runs with null Category (pre-per-category) are included
         // as fallback anchors.
-        var lastCompletedEndUtc = await _runsRepository.Query()
-            .AsNoTracking()
+        var lastRunSpec = new Specification<PointsAutomationRun>()
             .Where(r => (r.Category == category || r.Category == null)
                 && r.Status == AutomationRunStatus.Completed)
-            .OrderByDescending(r => r.PeriodEnd)
-            .Select(r => (DateTimeOffset?)r.PeriodEnd)
-            .FirstOrDefaultAsync(cancellationToken);
+            .OrderBy(r => r.PeriodEnd, descending: true);
+        var lastCompletedEndUtc = await _runsRepository.FirstOrDefaultAsync(
+            lastRunSpec,
+            r => (DateTimeOffset?)r.PeriodEnd,
+            cancellationToken);
 
         DateOnly? anchorEndCairo = lastCompletedEndUtc.HasValue
             ? CairoPeriodResolver.ToCairoDate(lastCompletedEndUtc.Value, cairoTimeZone)

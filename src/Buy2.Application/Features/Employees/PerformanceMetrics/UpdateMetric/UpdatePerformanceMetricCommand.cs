@@ -4,7 +4,6 @@ using Buy2.Application.DTOs.Employees;
 using Buy2.Application.Validators.Employees;
 using Buy2.Domain.Entities;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace Buy2.Application.Features.Employees.PerformanceMetrics.UpdateMetric;
 
@@ -43,9 +42,8 @@ public class UpdatePerformanceMetricCommandHandler : IRequestHandler<UpdatePerfo
             return Result<PerformanceMetricDto>.NotFound($"Metric with ID {command.MetricId} was not found.");
         }
 
-        var nameTaken = await _metricRepository
-            .Query(false)
-            .AnyAsync(m => m.Id != command.MetricId && m.Name == command.Dto.Name, cancellationToken);
+        var nameTaken = await _metricRepository.AnyAsync(
+            m => m.Id != command.MetricId && m.Name == command.Dto.Name, cancellationToken);
         if (nameTaken)
         {
             return Result<PerformanceMetricDto>.Conflict($"A metric named '{command.Dto.Name}' already exists.");

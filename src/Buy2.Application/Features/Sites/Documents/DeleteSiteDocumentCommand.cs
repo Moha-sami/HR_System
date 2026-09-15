@@ -1,7 +1,6 @@
 ﻿using Buy2.Application.Common.Interfaces;
 using Buy2.Domain.Entities;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace Buy2.Application.Features.Sites.Documents;
 
@@ -19,7 +18,6 @@ public class DeleteSiteDocumentCommandHandler : IRequestHandler<DeleteSiteDocume
     {
 
         var document = await _siteDocumentRepository
-            .Query()
             .FirstOrDefaultAsync(sd => sd.Id == command.DocumentId &&
                                 sd.SiteId == command.SiteId, cancellation);
 

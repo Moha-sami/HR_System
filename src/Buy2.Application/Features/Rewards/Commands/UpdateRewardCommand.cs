@@ -5,12 +5,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using Buy2.Application.Common.Interfaces;
 using Buy2.Application.Common.Models;
+using Buy2.Application.Common.Specifications;
 using Buy2.Application.DTOs.Rewards.DTOs;
 using Buy2.Application.Validators.Rewards;
 using Buy2.Domain.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
 
 namespace Buy2.Application.Features.Rewards.Commands;
 
@@ -54,9 +54,12 @@ public class UpdateRewardCommandHandler : IRequestHandler<UpdateRewardCommand, R
         }
 
         var rewardItem = await _rewardItemRepository
-            .Query(false)
-            .Include(r => r.Category)
-            .FirstOrDefaultAsync(r => r.Id == command.Id, cancellation);
+            .FirstOrDefaultAsync(
+                new Specification<RewardItem>()
+                    .Where(r => r.Id == command.Id)
+                    .Include(nameof(RewardItem.Category))
+                    .AsTracked(),
+                cancellation);
 
         if (rewardItem is null)
         {
@@ -64,8 +67,9 @@ public class UpdateRewardCommandHandler : IRequestHandler<UpdateRewardCommand, R
         }
 
         var category = await _rewardCategoryRepository
-            .Query(false)
-            .FirstOrDefaultAsync(c => c.Id == command.Dto.CategoryId, cancellation);
+            .FirstOrDefaultAsync(
+                new Specification<RewardCategory>().Where(c => c.Id == command.Dto.CategoryId).AsTracked(),
+                cancellation);
 
         if (category is null)
         {
@@ -73,7 +77,6 @@ public class UpdateRewardCommandHandler : IRequestHandler<UpdateRewardCommand, R
         }
 
         var rewardExists = await _rewardItemRepository
-            .Query(false)
             .AnyAsync(r =>
                 r.Id != command.Id &&
                 r.CategoryId == command.Dto.CategoryId &&

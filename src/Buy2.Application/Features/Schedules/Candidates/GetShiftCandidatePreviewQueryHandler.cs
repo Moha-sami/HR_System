@@ -5,10 +5,10 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Buy2.Application.Common.Interfaces;
+using Buy2.Application.Common.Specifications;
 using Buy2.Application.DTOs.Schedules;
 using Buy2.Domain.Entities;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace Buy2.Application.Features.Schedules.Candidates;
 
@@ -33,10 +33,11 @@ public class GetShiftCandidatePreviewQueryHandler : IRequestHandler<GetShiftCand
 
     public async Task<ShiftCandidatePreviewDto?> Handle(GetShiftCandidatePreviewQuery request, CancellationToken cancellationToken)
     {
-        var employee = await _employeeRepository.Query(asNoTracking: true)
-            .Include(e => e.JobRole)
-            .Include(e => e.PayrollProfile)
-            .FirstOrDefaultAsync(e => e.Id == request.CandidateId && !e.IsDeleted, cancellationToken);
+        var employee = await _employeeRepository.FirstOrDefaultAsync(
+            e => e.Id == request.CandidateId && !e.IsDeleted,
+            cancellationToken,
+            nameof(Employee.JobRole),
+            nameof(Employee.PayrollProfile));
 
         if (employee == null)
         {
@@ -58,16 +59,17 @@ public class GetShiftCandidatePreviewQueryHandler : IRequestHandler<GetShiftCand
         }
 
         // 2. Rating
-        var ratings = await _performanceRepository.Query(asNoTracking: true)
-            .Where(p => p.EmployeeId == request.CandidateId)
-            .Select(p => p.Score)
-            .ToListAsync(cancellationToken);
+        var ratings = await _performanceRepository.ListAsync(
+            new Specification<PerformanceSubmission>().Where(p => p.EmployeeId == request.CandidateId),
+            p => p.Score,
+            cancellationToken);
         decimal rating = ratings.Count > 0 ? Math.Round(ratings.Average(), 1) : 5.0m;
 
         // 3. Career Completed Hours
-        var careerCompletedHours = await _attendanceRepository.Query(asNoTracking: true)
-            .Where(a => a.EmployeeId == request.CandidateId)
-            .SumAsync(a => (decimal?)a.HoursWorked, cancellationToken) ?? 0m;
+        var careerCompletedHours = await _attendanceRepository.SumAsync(
+            a => a.EmployeeId == request.CandidateId,
+            a => (decimal?)a.HoursWorked,
+            cancellationToken) ?? 0m;
 
         // 4. Qualifications
         var qualifications = ParseJsonList(employee.JobRole?.RequiredQualificationsJson);
@@ -76,8 +78,9 @@ public class GetShiftCandidatePreviewQueryHandler : IRequestHandler<GetShiftCand
         var isPreferred = false;
         if (request.SiteId.HasValue)
         {
-            isPreferred = await _sitePreferredRepository.Query(asNoTracking: true)
-                .AnyAsync(spe => spe.SiteId == request.SiteId.Value && spe.EmployeeId == request.CandidateId, cancellationToken);
+            isPreferred = await _sitePreferredRepository.AnyAsync(
+                spe => spe.SiteId == request.SiteId.Value && spe.EmployeeId == request.CandidateId,
+                cancellationToken);
         }
 
         var employeeCode = string.IsNullOrEmpty(employee.EmployeeCode) ? $"EMP-{employee.Id:D4}" : employee.EmployeeCode;

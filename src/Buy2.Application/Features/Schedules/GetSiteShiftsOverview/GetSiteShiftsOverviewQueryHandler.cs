@@ -1,8 +1,8 @@
 using Buy2.Application.Common.Interfaces;
+using Buy2.Application.Common.Specifications;
 using Buy2.Application.DTOs.Schedules;
 using Buy2.Domain.Entities;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace Buy2.Application.Features.Schedules.GetSiteShiftsOverview;
 
@@ -28,29 +28,29 @@ public class GetSiteShiftsOverviewQueryHandler : IRequestHandler<GetSiteShiftsOv
         var startUtc = new DateTimeOffset(today, TimeSpan.Zero);
         var endUtc = startUtc.AddDays(3);
 
-        var query = _siteRepository.Query(true)
-            .Include(s => s.Region)
-            .AsQueryable();
+        var sitesSpec = new Specification<Site>()
+            .Include(nameof(Site.Region))
+            .OrderBy(s => s.Id);
 
         if (request.RegionId.HasValue)
         {
-            query = query.Where(s => s.RegionId == request.RegionId.Value);
+            sitesSpec.Where(s => s.RegionId == request.RegionId.Value);
         }
 
         if (!string.IsNullOrWhiteSpace(request.Search))
         {
             var search = request.Search.Trim().ToLower();
-            query = query.Where(s => s.SiteName.ToLower().Contains(search) || s.Address.ToLower().Contains(search));
+            sitesSpec.Where(s => s.SiteName.ToLower().Contains(search) || s.Address.ToLower().Contains(search));
         }
 
-        var sites = await query.OrderBy(s => s.Id).ToListAsync(cancellationToken);
+        var sites = await _siteRepository.ListAsync(sitesSpec, cancellationToken);
         var totalCount = sites.Count;
 
         var siteIds = sites.Select(s => s.Id).ToList();
 
-        var shifts = await _shiftRepository.Query(true)
-            .Where(s => siteIds.Contains(s.SiteId) && s.StartTime >= startUtc && s.StartTime < endUtc)
-            .ToListAsync(cancellationToken);
+        var shifts = await _shiftRepository.ListAsync(
+            s => siteIds.Contains(s.SiteId) && s.StartTime >= startUtc && s.StartTime < endUtc,
+            cancellationToken);
 
         var assignedEmployeeIds = shifts
             .Where(s => s.EmployeeId.HasValue)
@@ -58,9 +58,11 @@ public class GetSiteShiftsOverviewQueryHandler : IRequestHandler<GetSiteShiftsOv
             .Distinct()
             .ToList();
 
-        var employees = await _employeeRepository.Query(true)
-            .Where(e => assignedEmployeeIds.Contains(e.Id))
-            .ToDictionaryAsync(e => e.Id, cancellationToken);
+        var employeeList = await _employeeRepository.ListAsync(
+            e => assignedEmployeeIds.Contains(e.Id),
+            cancellationToken);
+
+        var employees = employeeList.ToDictionary(e => e.Id);
 
         var items = new List<SiteShiftOverviewCardDto>();
 

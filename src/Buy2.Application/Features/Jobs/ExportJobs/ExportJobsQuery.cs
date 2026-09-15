@@ -5,9 +5,9 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Buy2.Application.Common.Interfaces;
+using Buy2.Application.Common.Specifications;
 using Buy2.Domain.Entities;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace Buy2.Application.Features.Jobs.ExportJobs;
 
@@ -32,40 +32,43 @@ public class ExportJobsQueryHandler : IRequestHandler<ExportJobsQuery, byte[]>
 
     public async Task<byte[]> Handle(ExportJobsQuery request, CancellationToken cancellationToken)
     {
-        IQueryable<JobRole> query = _jobRepository.Query(true);
+        var spec = new Specification<JobRole>()
+            .Include(nameof(JobRole.Department), nameof(JobRole.Employees));
 
         // 1. Search Filter
         if (!string.IsNullOrWhiteSpace(request.SearchTerm))
         {
             var search = request.SearchTerm.Trim().ToLower();
-            query = query.Where(j => j.Title.ToLower().Contains(search) ||
-                                     (j.Department != null && j.Department.Name.ToLower().Contains(search)));
+            spec.Where(j => j.Title.ToLower().Contains(search) ||
+                            (j.Department != null && j.Department.Name.ToLower().Contains(search)));
         }
 
         // 2. Department Filter
         if (request.DepartmentId.HasValue && request.DepartmentId.Value > 0)
         {
-            query = query.Where(j => j.DepartmentId == request.DepartmentId.Value);
+            var departmentId = request.DepartmentId.Value;
+            spec.Where(j => j.DepartmentId == departmentId);
         }
 
         // 3. Seniority Level Filter
         if (!string.IsNullOrWhiteSpace(request.SeniorityLevel))
         {
             var seniority = request.SeniorityLevel.Trim();
-            query = query.Where(j => j.SeniorityLevel == seniority);
+            spec.Where(j => j.SeniorityLevel == seniority);
         }
 
         // 4. Work Model Filter
         if (!string.IsNullOrWhiteSpace(request.WorkModel))
         {
             var workModel = request.WorkModel.Trim();
-            query = query.Where(j => j.AttendanceType == workModel);
+            spec.Where(j => j.AttendanceType == workModel);
         }
 
         // 5. Active Status Filter
         if (request.IsActive.HasValue)
         {
-            query = query.Where(j => j.IsActive == request.IsActive.Value);
+            var isActive = request.IsActive.Value;
+            spec.Where(j => j.IsActive == isActive);
         }
 
         // 6. Sorting
@@ -73,15 +76,25 @@ public class ExportJobsQueryHandler : IRequestHandler<ExportJobsQuery, byte[]>
         var isAsc = string.Equals(request.SortDir, "asc", StringComparison.OrdinalIgnoreCase);
         var sortField = request.SortBy?.Trim().ToLowerInvariant();
 
-        query = sortField switch
+        switch (sortField)
         {
-            "title" => isDesc ? query.OrderByDescending(j => j.Title) : query.OrderBy(j => j.Title),
-            "department" => isDesc ? query.OrderByDescending(j => j.Department != null ? j.Department.Name : string.Empty) : query.OrderBy(j => j.Department != null ? j.Department.Name : string.Empty),
-            "createdat" => isAsc ? query.OrderBy(j => j.CreatedAt) : query.OrderByDescending(j => j.CreatedAt),
-            _ => query.OrderByDescending(j => j.IsActive).ThenBy(j => j.Title)
-        };
+            case "title":
+                spec.OrderBy(j => j.Title, descending: isDesc);
+                break;
+            case "department":
+                spec.OrderBy(j => j.Department != null ? j.Department.Name : string.Empty, descending: isDesc);
+                break;
+            case "createdat":
+                spec.OrderBy(j => j.CreatedAt, descending: !isAsc);
+                break;
+            default:
+                spec.OrderBy(j => j.IsActive, descending: true).ThenBy(j => j.Title);
+                break;
+        }
 
-        var jobs = await query
+        var entities = await _jobRepository.ListAsync(spec, cancellationToken);
+
+        var jobs = entities
             .Select(j => new
             {
                 Title = j.Title,
@@ -89,11 +102,11 @@ public class ExportJobsQueryHandler : IRequestHandler<ExportJobsQuery, byte[]>
                 SeniorityLevel = j.SeniorityLevel,
                 WorkModel = j.AttendanceType,
                 ExperienceYears = j.ExperienceYears,
-                AssignedEmployeesCount = j.Employees.Count(e => !e.IsDeleted),
+                AssignedEmployeesCount = j.Employees != null ? j.Employees.Count(e => !e.IsDeleted) : 0,
                 IsActive = j.IsActive,
                 CreatedAt = j.CreatedAt
             })
-            .ToListAsync(cancellationToken);
+            .ToList();
 
         // 7. Generate CSV with UTF-8 BOM
         var sb = new StringBuilder();

@@ -1,8 +1,8 @@
 using Buy2.Application.Common.Interfaces;
+using Buy2.Application.Common.Specifications;
 using Buy2.Domain.Entities;
 using Buy2.Domain.Enums;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -41,12 +41,11 @@ public class ExecuteAutomationNowCommandHandler : IRequestHandler<ExecuteAutomat
         }
 
         // Global period is resolved from stored settings; the request carries Category only.
-        var storedPeriods = await _automationSettingRepository.Query()
-            .AsNoTracking()
-            .Where(s => s.IsEnabled)
-            .Select(s => s.AutomationPeriod)
-            .Distinct()
-            .ToListAsync(cancellationToken);
+        var enabledPeriods = await _automationSettingRepository.ListAsync(
+            new Specification<PointsAutomationSetting>().Where(s => s.IsEnabled),
+            s => s.AutomationPeriod,
+            cancellationToken);
+        var storedPeriods = enabledPeriods.Distinct().ToList();
 
         if (storedPeriods.Count == 0)
         {
@@ -65,8 +64,7 @@ public class ExecuteAutomationNowCommandHandler : IRequestHandler<ExecuteAutomat
 
         var period = storedPeriods.Single();
 
-        var hasSettings = await _automationSettingRepository.Query()
-            .AsNoTracking()
+        var hasSettings = await _automationSettingRepository
             .AnyAsync(s => s.IsEnabled && s.Category == category && s.AutomationPeriod == period, cancellationToken);
 
         if (!hasSettings)
@@ -82,13 +80,14 @@ public class ExecuteAutomationNowCommandHandler : IRequestHandler<ExecuteAutomat
 
         // Anchor on the last completed run for this category regardless of the
         // period that produced it (Daily on Monday -> Weekly starts Tuesday).
-        var lastCompletedEndUtc = await _automationRunRepository.Query()
-            .AsNoTracking()
+        var lastRunSpec = new Specification<PointsAutomationRun>()
             .Where(r => (r.Category == category || r.Category == null)
                 && r.Status == AutomationRunStatus.Completed)
-            .OrderByDescending(r => r.PeriodEnd)
-            .Select(r => (DateTimeOffset?)r.PeriodEnd)
-            .FirstOrDefaultAsync(cancellationToken);
+            .OrderBy(r => r.PeriodEnd, descending: true);
+        var lastCompletedEndUtc = await _automationRunRepository.FirstOrDefaultAsync(
+            lastRunSpec,
+            r => (DateTimeOffset?)r.PeriodEnd,
+            cancellationToken);
 
         DateOnly? anchorEndCairo = lastCompletedEndUtc.HasValue
             ? CairoPeriodResolver.ToCairoDate(lastCompletedEndUtc.Value, cairoTimeZone)

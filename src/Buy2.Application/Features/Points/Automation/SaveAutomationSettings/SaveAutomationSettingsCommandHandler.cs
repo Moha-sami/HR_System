@@ -1,10 +1,10 @@
 using Buy2.Application.Common.Interfaces;
+using Buy2.Application.Common.Specifications;
 using Buy2.Application.DTOs.Points.DTOs;
 using Buy2.Application.Validators.Points;
 using Buy2.Domain.Entities;
 using Buy2.Domain.Enums;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace Buy2.Application.Features.Points.Automation.SaveAutomationSettings;
 
@@ -140,11 +140,14 @@ public class SaveAutomationSettingsCommandHandler : IRequestHandler<SaveAutomati
                 ErrorMessage: $"Deadline automation setting requires TaskPriority to be configured for at least one range: {string.Join(", ", deadlineWithoutPriority)}.");
         }
 
-        var existingSettings = await _automationSettingRepository.Query(asNoTracking: false)
-            .Include(s => s.Ranges)
-            .Where(s => normalized.Select(n => n.Category).Contains(s.Category)
-                && normalized.Select(n => n.SubCategory.ToUpper()).Contains(s.SubCategory.ToUpper()))
-            .ToListAsync(cancellationToken);
+        var filterCategories = normalized.Select(n => n.Category).ToList();
+        var filterSubCategories = normalized.Select(n => n.SubCategory.ToUpper()).ToList();
+        var existingSpec = new Specification<PointsAutomationSetting>()
+            .Include(nameof(PointsAutomationSetting.Ranges))
+            .AsTracked()
+            .Where(s => filterCategories.Contains(s.Category)
+                && filterSubCategories.Contains(s.SubCategory.ToUpper()));
+        var existingSettings = await _automationSettingRepository.ListAsync(existingSpec, cancellationToken);
 
         var newSettingsToInsert = new List<PointsAutomationSetting>();
         var newRangesToInsert = new List<PointsAutomationRange>();

@@ -1,10 +1,11 @@
+using Buy2.Application.Common.Exceptions;
 using Buy2.Application.Common.Interfaces;
 using Buy2.Application.Common.Models;
+using Buy2.Application.Common.Specifications;
 using Buy2.Application.Features.ShiftTemplates.DTOs;
 using Buy2.Application.Features.ShiftTemplates.Validators;
 using Buy2.Domain.Entities;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace Buy2.Application.Features.ShiftTemplates.UpdateShiftTemplate;
 
@@ -52,22 +53,24 @@ public class UpdateShiftTemplateCommandHandler
                 _updateService.Apply(validated.Value!, request.ActorEmployeeId);
                 await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-                var updated = await _shiftTemplateRepository.Query()
-                    .AsNoTracking()
-                    .Include(t => t.ShiftTemplateSites)
-                        .ThenInclude(s => s.Site)
-                    .Include(t => t.ShiftBlocks)
-                        .ThenInclude(b => b.JobRole)
-                    .Include(t => t.ShiftBlocks)
-                        .ThenInclude(b => b.Employee)
-                    .FirstAsync(t => t.Id == request.Id, cancellationToken);
+                var spec = new Specification<ShiftTemplate>()
+                    .Where(t => t.Id == request.Id)
+                    .Include(
+                        "ShiftTemplateSites",
+                        "ShiftTemplateSites.Site",
+                        "ShiftBlocks",
+                        "ShiftBlocks.JobRole",
+                        "ShiftBlocks.Employee");
+
+                var updated = await _shiftTemplateRepository.FirstOrDefaultAsync(spec, cancellationToken)
+                    ?? throw new InvalidOperationException("Sequence contains no elements.");
 
                 return ShiftTemplateMapper.ToDetailsDto(updated);
             }, cancellationToken);
 
             return Result<ShiftTemplateDetailsDto>.Success(details);
         }
-        catch (DbUpdateConcurrencyException)
+        catch (ConcurrencyConflictException)
         {
             return Result<ShiftTemplateDetailsDto>.Conflict(
                 "The shift template was modified by another request. Please reload and try again.");

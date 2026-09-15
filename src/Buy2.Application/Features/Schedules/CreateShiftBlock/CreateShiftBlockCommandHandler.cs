@@ -3,7 +3,6 @@ using Buy2.Application.Common.Interfaces;
 using Buy2.Application.DTOs.Schedules;
 using Buy2.Domain.Entities;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace Buy2.Application.Features.Schedules.CreateShiftBlock;
 
@@ -107,8 +106,9 @@ public class CreateShiftBlockCommandHandler : IRequestHandler<CreateShiftBlockCo
         CancellationToken cancellationToken)
     {
         var dayOfWeek = date.DayOfWeek;
-        var opHour = await _operationalHourRepository.Query(true)
-            .FirstOrDefaultAsync(o => o.SiteId == siteId && o.DayOfWeek == dayOfWeek, cancellationToken);
+        var opHour = await _operationalHourRepository.FirstOrDefaultAsync(
+            o => o.SiteId == siteId && o.DayOfWeek == dayOfWeek,
+            cancellationToken);
 
         if (opHour == null)
         {

@@ -1,8 +1,8 @@
 using Buy2.Application.Common.Interfaces;
+using Buy2.Application.Common.Specifications;
 using Buy2.Domain.Entities;
 using Buy2.Domain.Enums;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace Buy2.Application.Features.Employees.GetViolations;
 
@@ -30,17 +30,17 @@ public class GetViolationsQueryHandler : IRequestHandler<GetViolationsQuery, Lis
     public async Task<List<ViolationDto>?> Handle(GetViolationsQuery request, CancellationToken cancellationToken)
     {
         // 1. Check if employee exists and is not soft-deleted
-        var employee = await _employeeRepository.Query()
-            .FirstOrDefaultAsync(e => e.Id == request.EmployeeId, cancellationToken);
+        var employee = await _employeeRepository.FirstOrDefaultAsync(
+            e => e.Id == request.EmployeeId, cancellationToken);
 
         if (employee == null || employee.IsDeleted)
         {
             return null;
         }
 
-        // 2. Base query for employee disciplinary violations including ReportedBy navigation
-        var query = _disciplinaryViolationRepository.Query()
-            .Include(v => v.ReportedBy)
+        // 2. Base specification for employee disciplinary violations including ReportedBy navigation
+        var spec = new Specification<DisciplinaryViolation>()
+            .Include(nameof(DisciplinaryViolation.ReportedBy))
             .Where(v => v.EmployeeId == request.EmployeeId);
 
         // 3. Filter by Type
@@ -49,7 +49,7 @@ public class GetViolationsQueryHandler : IRequestHandler<GetViolationsQuery, Lis
             var typeStr = request.Type.Trim();
             if (Enum.TryParse<ViolationType>(typeStr, ignoreCase: true, out var violationTypeEnum))
             {
-                query = query.Where(v => v.ViolationType == violationTypeEnum);
+                spec.Where(v => v.ViolationType == violationTypeEnum);
             }
             else
             {
@@ -61,26 +61,25 @@ public class GetViolationsQueryHandler : IRequestHandler<GetViolationsQuery, Lis
         if (!string.IsNullOrWhiteSpace(request.SeverityLevel))
         {
             var severityLevel = request.SeverityLevel.Trim().ToLower();
-            query = query.Where(v => v.Severity.ToLower() == severityLevel);
+            spec.Where(v => v.Severity.ToLower() == severityLevel);
         }
 
         // 5. Filter by Date range
         if (request.DateFrom.HasValue)
         {
             var fromUtc = request.DateFrom.Value.UtcDateTime;
-            query = query.Where(v => v.CreatedAt >= fromUtc);
+            spec.Where(v => v.CreatedAt >= fromUtc);
         }
 
         if (request.DateTo.HasValue)
         {
             var toUtc = request.DateTo.Value.UtcDateTime;
-            query = query.Where(v => v.CreatedAt <= toUtc);
+            spec.Where(v => v.CreatedAt <= toUtc);
         }
 
         // 6. Order by CreatedAt descending
-        var violations = await query
-            .OrderByDescending(v => v.CreatedAt)
-            .ToListAsync(cancellationToken);
+        spec.OrderBy(v => v.CreatedAt, descending: true);
+        var violations = await _disciplinaryViolationRepository.ListAsync(spec, cancellationToken);
 
         // 7. Map items cleanly into DTOs
         return violations.Select(MapToDto).ToList();

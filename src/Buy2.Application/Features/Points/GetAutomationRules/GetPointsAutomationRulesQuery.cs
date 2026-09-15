@@ -1,9 +1,9 @@
 using Buy2.Application.Common.Interfaces;
+using Buy2.Application.Common.Specifications;
 using Buy2.Application.DTOs.Points.DTOs;
 using Buy2.Domain.Entities;
 using Buy2.Domain.Enums;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace Buy2.Application.Features.Points.GetAutomationRules;
 
@@ -26,10 +26,9 @@ public class GetPointsAutomationRulesQueryHandler : IRequestHandler<GetPointsAut
 
     public async Task<GetPointsAutomationRulesResult> Handle(GetPointsAutomationRulesQuery request, CancellationToken cancellationToken)
     {
-        var settings = await _automationSettingRepository.Query()
-            .AsNoTracking()
-            .Include(s => s.Ranges)
-            .ToListAsync(cancellationToken);
+        var settings = await _automationSettingRepository.ListAsync(
+            new Specification<PointsAutomationSetting>().Include(nameof(PointsAutomationSetting.Ranges)),
+            cancellationToken);
 
         if (!settings.Any())
         {

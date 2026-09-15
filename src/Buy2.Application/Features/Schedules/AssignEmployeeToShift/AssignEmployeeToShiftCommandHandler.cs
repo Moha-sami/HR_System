@@ -2,7 +2,6 @@ using Buy2.Application.Common.Interfaces;
 using Buy2.Application.DTOs.Schedules;
 using Buy2.Domain.Entities;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace Buy2.Application.Features.Schedules.AssignEmployeeToShift;
 
@@ -51,9 +50,8 @@ public class AssignEmployeeToShiftCommandHandler : IRequestHandler<AssignEmploye
 
     private async Task<ShiftEntity> GetShiftAsync(int shiftBlockId, CancellationToken cancellationToken)
     {
-        var shift = await _shiftRepository.Query(true)
-            .Include(s => s.JobRole)
-            .FirstOrDefaultAsync(s => s.Id == shiftBlockId, cancellationToken);
+        var shift = await _shiftRepository.FirstOrDefaultAsync(
+            s => s.Id == shiftBlockId, cancellationToken, nameof(ShiftEntity.JobRole));
 
         if (shift == null)
         {
@@ -65,10 +63,11 @@ public class AssignEmployeeToShiftCommandHandler : IRequestHandler<AssignEmploye
 
     private async Task<Employee> GetEmployeeAsync(int employeeId, CancellationToken cancellationToken)
     {
-        var employee = await _employeeRepository.Query(true)
-            .Include(e => e.JobRole)
-            .Include(e => e.PayrollProfile)
-            .FirstOrDefaultAsync(e => e.Id == employeeId && !e.IsDeleted && e.IsActive, cancellationToken);
+        var employee = await _employeeRepository.FirstOrDefaultAsync(
+            e => e.Id == employeeId && !e.IsDeleted && e.IsActive,
+            cancellationToken,
+            nameof(Employee.JobRole),
+            nameof(Employee.PayrollProfile));
 
         if (employee == null)
         {
@@ -133,9 +132,9 @@ public class AssignEmployeeToShiftCommandHandler : IRequestHandler<AssignEmploye
         var targetDate = DateOnly.FromDateTime(shift.StartTime.Date);
         var (weekStart, weekEnd) = GetWeekBoundary(targetDate);
 
-        var otherShifts = await _shiftRepository.Query(true)
-            .Where(s => s.EmployeeId == employee.Id && s.Id != shift.Id && s.StartTime >= weekStart && s.StartTime < weekEnd)
-            .ToListAsync(cancellationToken);
+        var otherShifts = await _shiftRepository.ListAsync(
+            s => s.EmployeeId == employee.Id && s.Id != shift.Id && s.StartTime >= weekStart && s.StartTime < weekEnd,
+            cancellationToken);
 
         if (HasOvertimeRiskInShifts(otherShifts, targetDate, shiftDuration, employee.PayrollProfile))
         {
@@ -249,9 +248,9 @@ public class AssignEmployeeToShiftCommandHandler : IRequestHandler<AssignEmploye
         var dayStart = new DateTimeOffset(targetDate.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero).AddDays(-1);
         var dayEnd = dayStart.AddDays(3);
 
-        var siteShifts = await _shiftRepository.Query(true)
-            .Where(s => s.SiteId == siteId && s.StartTime >= dayStart && s.StartTime < dayEnd)
-            .ToListAsync(cancellationToken);
+        var siteShifts = await _shiftRepository.ListAsync(
+            s => s.SiteId == siteId && s.StartTime >= dayStart && s.StartTime < dayEnd,
+            cancellationToken);
 
         var targetDateShifts = siteShifts
             .Where(s => DateOnly.FromDateTime(s.StartTime.Date) == targetDate || DateOnly.FromDateTime(s.StartTime.UtcDateTime.Date) == targetDate)
@@ -268,10 +267,12 @@ public class AssignEmployeeToShiftCommandHandler : IRequestHandler<AssignEmploye
             return 0m;
         }
 
-        var employees = await _employeeRepository.Query(true)
-            .Include(e => e.PayrollProfile)
-            .Where(e => employeeIds.Contains(e.Id))
-            .ToDictionaryAsync(e => e.Id, cancellationToken);
+        var employeeList = await _employeeRepository.ListAsync(
+            e => employeeIds.Contains(e.Id),
+            cancellationToken,
+            nameof(Employee.PayrollProfile));
+
+        var employees = employeeList.ToDictionary(e => e.Id);
 
         return CalculateTotalLaborCost(targetDateShifts, employees);
     }

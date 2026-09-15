@@ -1,8 +1,8 @@
 using Buy2.Application.Common.Interfaces;
+using Buy2.Application.Common.Specifications;
 using Buy2.Domain.Entities;
 using Buy2.Domain.Enums;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace Buy2.Application.Features.Employees.GetEmployeeTasks;
 
@@ -26,15 +26,15 @@ public class GetEmployeeTasksQueryHandler : IRequestHandler<GetEmployeeTasksQuer
 
     public async Task<List<EmployeeTaskDto>?> Handle(GetEmployeeTasksQuery request, CancellationToken cancellationToken)
     {
-        var employee = await _employeeRepository.Query()
-            .FirstOrDefaultAsync(e => e.Id == request.EmployeeId, cancellationToken);
+        var employee = await _employeeRepository.FirstOrDefaultAsync(
+            e => e.Id == request.EmployeeId, cancellationToken);
 
         if (employee == null || employee.IsDeleted)
         {
             return null;
         }
 
-        var query = _taskRepository.Query()
+        var spec = new Specification<EmployeeTask>()
             .Where(t => t.EmployeeId == request.EmployeeId);
 
         if (!string.IsNullOrWhiteSpace(request.Status))
@@ -43,7 +43,7 @@ public class GetEmployeeTasksQueryHandler : IRequestHandler<GetEmployeeTasksQuer
             var statusClean = statusStr.Replace(" ", "").Replace("_", "").Replace("-", "");
             if (Enum.TryParse<EmployeeTaskStatus>(statusClean, ignoreCase: true, out var statusEnum))
             {
-                query = query.Where(t => t.Status == statusEnum);
+                spec.Where(t => t.Status == statusEnum);
             }
             else
             {
@@ -51,10 +51,8 @@ public class GetEmployeeTasksQueryHandler : IRequestHandler<GetEmployeeTasksQuer
             }
         }
 
-        var tasks = await query
-            .OrderBy(t => t.DueDate)
-            .ThenByDescending(t => t.CreatedAt)
-            .ToListAsync(cancellationToken);
+        spec.OrderBy(t => t.DueDate!).ThenBy(t => t.CreatedAt, descending: true);
+        var tasks = await _taskRepository.ListAsync(spec, cancellationToken);
 
         return tasks.Select(t => new EmployeeTaskDto(
             Id: t.Id,

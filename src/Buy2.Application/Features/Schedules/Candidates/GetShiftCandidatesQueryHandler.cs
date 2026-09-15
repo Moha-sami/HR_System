@@ -5,10 +5,10 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Buy2.Application.Common.Interfaces;
+using Buy2.Application.Common.Specifications;
 using Buy2.Application.DTOs.Schedules;
 using Buy2.Domain.Entities;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace Buy2.Application.Features.Schedules.Candidates;
 
@@ -37,16 +37,15 @@ public class GetShiftCandidatesQueryHandler : IRequestHandler<GetShiftCandidates
         var pageSize = request.PageSize > 0 ? request.PageSize : 10;
 
         // 1. Query active, non-deleted employees with JobRole and PayrollProfile
-        var employeesQuery = _employeeRepository.Query(asNoTracking: true)
-            .Include(e => e.JobRole)
-            .Include(e => e.PayrollProfile)
-            .Where(e => !e.IsDeleted && e.IsActive);
+        var employeesSpec = new Specification<Employee>()
+            .Where(e => !e.IsDeleted && e.IsActive)
+            .Include(nameof(Employee.JobRole), nameof(Employee.PayrollProfile));
 
         // 2. Filter by Search (EmployeeCode, FirstName, LastName, FullName, or Id)
         if (!string.IsNullOrWhiteSpace(request.Search))
         {
             var search = request.Search.Trim();
-            employeesQuery = employeesQuery.Where(e =>
+            employeesSpec.Where(e =>
                 e.EmployeeCode.Contains(search) ||
                 e.FirstName.Contains(search) ||
                 e.LastName.Contains(search) ||
@@ -57,10 +56,10 @@ public class GetShiftCandidatesQueryHandler : IRequestHandler<GetShiftCandidates
         // 3. Filter by JobRoleIds
         if (request.JobRoleIds is { Count: > 0 })
         {
-            employeesQuery = employeesQuery.Where(e => request.JobRoleIds.Contains(e.JobRoleId));
+            employeesSpec.Where(e => request.JobRoleIds.Contains(e.JobRoleId));
         }
 
-        var candidates = await employeesQuery.ToListAsync(cancellationToken);
+        var candidates = await _employeeRepository.ListAsync(employeesSpec, cancellationToken);
         if (candidates.Count == 0)
         {
             return new PaginatedShiftCandidatesResponseDto(new List<ShiftCandidateCardDto>(), 0, page, pageSize);
@@ -70,27 +69,30 @@ public class GetShiftCandidatesQueryHandler : IRequestHandler<GetShiftCandidates
 
         // 4. Calculate Current Weekly Hours from AttendanceRecord (Date >= currentWeekStart, last 7 days)
         var currentWeekStart = DateTime.UtcNow.Date.AddDays(-7);
-        var weeklyHoursByEmployee = await _attendanceRepository.Query(asNoTracking: true)
-            .Where(a => candidateIds.Contains(a.EmployeeId) && a.Date >= currentWeekStart)
+        var attendanceRows = await _attendanceRepository.ListAsync(
+            a => candidateIds.Contains(a.EmployeeId) && a.Date >= currentWeekStart,
+            cancellationToken);
+        var weeklyHoursByEmployee = attendanceRows
             .GroupBy(a => a.EmployeeId)
-            .Select(g => new { EmployeeId = g.Key, TotalHours = g.Sum(a => a.HoursWorked) })
-            .ToDictionaryAsync(g => g.EmployeeId, g => g.TotalHours, cancellationToken);
+            .ToDictionary(g => g.Key, g => g.Sum(a => a.HoursWorked));
 
         // 5. Calculate Rating from PerformanceSubmission (average Score, default 5.0)
-        var ratingByEmployee = await _performanceRepository.Query(asNoTracking: true)
-            .Where(p => candidateIds.Contains(p.EmployeeId))
+        var performanceRows = await _performanceRepository.ListAsync(
+            p => candidateIds.Contains(p.EmployeeId),
+            cancellationToken);
+        var ratingByEmployee = performanceRows
             .GroupBy(p => p.EmployeeId)
-            .Select(g => new { EmployeeId = g.Key, AvgScore = g.Average(p => p.Score) })
-            .ToDictionaryAsync(g => g.EmployeeId, g => Math.Round(g.AvgScore, 1), cancellationToken);
+            .ToDictionary(g => g.Key, g => Math.Round(g.Average(p => p.Score), 1));
 
         // 6. Check SitePreferredEmployee
         var preferredEmployeeIds = new HashSet<int>();
         if (request.SiteId.HasValue)
         {
-            var preferredList = await _sitePreferredRepository.Query(asNoTracking: true)
-                .Where(spe => spe.SiteId == request.SiteId.Value && candidateIds.Contains(spe.EmployeeId))
-                .Select(spe => spe.EmployeeId)
-                .ToListAsync(cancellationToken);
+            var preferredList = await _sitePreferredRepository.ListAsync(
+                new Specification<SitePreferredEmployee>()
+                    .Where(spe => spe.SiteId == request.SiteId.Value && candidateIds.Contains(spe.EmployeeId)),
+                spe => spe.EmployeeId,
+                cancellationToken);
             preferredEmployeeIds = new HashSet<int>(preferredList);
         }
 

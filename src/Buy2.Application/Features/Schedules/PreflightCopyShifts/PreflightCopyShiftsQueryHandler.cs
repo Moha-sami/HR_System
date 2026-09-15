@@ -2,7 +2,6 @@ using Buy2.Application.Common.Interfaces;
 using Buy2.Application.DTOs.Schedules;
 using Buy2.Domain.Entities;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace Buy2.Application.Features.Schedules.PreflightCopyShifts;
 
@@ -121,11 +120,11 @@ public class PreflightCopyShiftsQueryHandler : IRequestHandler<PreflightCopyShif
         var queryStart = new DateTimeOffset(minDate.AddDays(-1).ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
         var queryEnd = new DateTimeOffset(maxDate.AddDays(2).ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
 
-        return await _shiftRepository.Query(true)
-            .Include(s => s.ShiftTemplate)
-            .Include(s => s.JobRole)
-            .Where(s => s.SiteId == siteId && s.StartTime >= queryStart && s.StartTime < queryEnd)
-            .ToListAsync(cancellationToken);
+        return await _shiftRepository.ListAsync(
+            s => s.SiteId == siteId && s.StartTime >= queryStart && s.StartTime < queryEnd,
+            cancellationToken,
+            nameof(ShiftEntity.ShiftTemplate),
+            nameof(ShiftEntity.JobRole));
     }
 
     private async Task<Dictionary<int, Employee>> LoadEmployeesAsync(
@@ -143,9 +142,11 @@ public class PreflightCopyShiftsQueryHandler : IRequestHandler<PreflightCopyShif
             return new Dictionary<int, Employee>();
         }
 
-        return await _employeeRepository.Query(true)
-            .Where(e => employeeIds.Contains(e.Id))
-            .ToDictionaryAsync(e => e.Id, cancellationToken);
+        var employeeList = await _employeeRepository.ListAsync(
+            e => employeeIds.Contains(e.Id),
+            cancellationToken);
+
+        return employeeList.ToDictionary(e => e.Id);
     }
 
     private static bool IsShiftOnDate(ShiftEntity shift, DateOnly date)

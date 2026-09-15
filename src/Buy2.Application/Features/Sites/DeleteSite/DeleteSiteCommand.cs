@@ -1,9 +1,9 @@
 using Buy2.Application.Common.Interfaces;
+using Buy2.Application.Common.Specifications;
 using Buy2.Application.DTOs.Sites;
 using Buy2.Domain.Entities;
 using FluentValidation;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace Buy2.Application.Features.Sites.DeleteSite;
 
@@ -30,10 +30,12 @@ public class DeleteSiteCommandHandler : IRequestHandler<DeleteSiteCommand>
     public async Task Handle(DeleteSiteCommand command, CancellationToken cancellationToken)
     {
         var site = await _siteRepository
-            .Query(false)
-            .Include(s => s.EmployeeSites)
-            .Include(s => s.Shifts)
-            .FirstOrDefaultAsync(s => s.Id == command.SiteId, cancellationToken);
+            .FirstOrDefaultAsync(
+                new Specification<Site>()
+                    .Where(s => s.Id == command.SiteId)
+                    .Include(nameof(Site.EmployeeSites), nameof(Site.Shifts))
+                    .AsTracked(),
+                cancellationToken);
 
         if (site is null)
         {
@@ -41,10 +43,10 @@ public class DeleteSiteCommandHandler : IRequestHandler<DeleteSiteCommand>
         }
 
         var primaryEmployeeIds = await _employeeRepository
-            .Query()
-            .Where(e => e.SiteId == command.SiteId)
-            .Select(e => e.Id)
-            .ToListAsync(cancellationToken);
+            .ListAsync(
+                new Specification<Employee>().Where(e => e.SiteId == command.SiteId),
+                e => e.Id,
+                cancellationToken);
 
         var allocatedEmployeeIds = primaryEmployeeIds
             .Concat(site.EmployeeSites.Select(es => es.EmployeeId))
@@ -111,10 +113,10 @@ public class DeleteSiteCommandHandler : IRequestHandler<DeleteSiteCommand>
                 .ToList();
 
             var validateNewSiteId = await _siteRepository
-                .Query()
-                .Where(s => newSiteIds.Contains(s.Id))
-                .Select(s => s.Id)
-                .ToListAsync(cancellationToken);
+                .ListAsync(
+                    new Specification<Site>().Where(s => newSiteIds.Contains(s.Id)),
+                    s => s.Id,
+                    cancellationToken);
 
             if (validateNewSiteId.Count != newSiteIds.Count)
             {
@@ -127,9 +129,11 @@ public class DeleteSiteCommandHandler : IRequestHandler<DeleteSiteCommand>
             }
 
             var employeesToReallocate = await _employeeRepository
-                .Query(false)
-                .Where(e => reassignedEmployeeIds.Contains(e.Id))
-                .ToListAsync(cancellationToken);
+                .ListAsync(
+                    new Specification<Employee>()
+                        .Where(e => reassignedEmployeeIds.Contains(e.Id))
+                        .AsTracked(),
+                    cancellationToken);
 
             foreach (var emp in employeesToReallocate)
             {

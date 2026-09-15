@@ -1,9 +1,9 @@
 using Buy2.Application.Common.Interfaces;
+using Buy2.Application.Common.Specifications;
 using Buy2.Application.DTOs.Roles;
 using Buy2.Domain.Entities;
 using Buy2.Domain.ValueObjects;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
 
 namespace Buy2.Application.Features.Roles.GetRoles;
@@ -26,52 +26,43 @@ public class GetRolesQueryHandler : IRequestHandler<GetRolesQuery, RolePaginated
         var page = Math.Max(1, filter.PageNumber);
         var pageSize = Math.Clamp(filter.PageSize, 1, 100);
 
-        IQueryable<Role> query = _roleRepository.Query().AsNoTracking().IgnoreQueryFilters();
+        var spec = new Specification<Role>()
+            .IgnoreFilters()
+            .Include(nameof(Role.Employees));
 
         if (!string.IsNullOrWhiteSpace(filter.SearchTerm))
         {
             var searchTerm = filter.SearchTerm.Trim();
-            query = query.Where(r => r.Name.Contains(searchTerm) || (r.Description != null && r.Description.Contains(searchTerm)));
+            spec.Where(r => r.Name.Contains(searchTerm) || (r.Description != null && r.Description.Contains(searchTerm)));
         }
 
         if (filter.IsActive.HasValue)
         {
-            query = query.Where(r => r.IsActive == filter.IsActive.Value);
+            var isActive = filter.IsActive.Value;
+            spec.Where(r => r.IsActive == isActive);
         }
 
-        var totalCount = await query.CountAsync(cancellationToken);
+        spec.OrderBy(r => r.IsSystemRole, descending: true).ThenBy(r => r.Name);
 
-        query = query.OrderByDescending(r => r.IsSystemRole).ThenBy(r => r.Name);
+        var paged = await _roleRepository.PagedAsync(spec, page, pageSize, cancellationToken);
 
-        var queryProjection = query
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
-            .Select(r => new
-            {
-                Role = r,
-                EmployeeCount = r.Employees.Count(e => !e.IsDeleted)
-            });
-
-        var rolesList = await queryProjection.ToListAsync(cancellationToken);
-
-        var items = rolesList.Select(r =>
+        var items = paged.Items.Select(r =>
         {
-            var permissionsSummary = BuildPermissionsSummary(r.Role.PermissionsJson);
+            var permissionsSummary = BuildPermissionsSummary(r.PermissionsJson);
+            var employeeCount = r.Employees != null ? r.Employees.Count(e => !e.IsDeleted) : 0;
             return new RoleListItemDto(
-                r.Role.Id,
-                r.Role.Name,
-                r.Role.Description,
-                r.EmployeeCount,
-                r.Role.IsSystemRole,
-                r.Role.IsActive,
-                r.Role.CreatedAt,
+                r.Id,
+                r.Name,
+                r.Description,
+                employeeCount,
+                r.IsSystemRole,
+                r.IsActive,
+                r.CreatedAt,
                 permissionsSummary
             );
         }).ToList();
 
-        var totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
-
-        return new RolePaginatedResponseDto(items, totalCount, page, pageSize, totalPages);
+        return new RolePaginatedResponseDto(items, paged.TotalCount, paged.PageNumber, paged.PageSize, paged.TotalPages);
     }
 
     private static List<string> BuildPermissionsSummary(string permissionsJson)

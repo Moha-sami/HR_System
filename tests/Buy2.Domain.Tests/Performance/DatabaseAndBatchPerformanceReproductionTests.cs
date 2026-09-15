@@ -4,7 +4,9 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Runtime.CompilerServices;
 using Buy2.Application.Common.Interfaces;
+using Buy2.Application.Common.Specifications;
 using Buy2.Application.DTOs.Points.DTOs;
 using Buy2.Application.Features.Employees.BulkOnboard;
 using Buy2.Application.Features.Jobs.ExportJobs;
@@ -38,53 +40,135 @@ public class DatabaseAndBatchPerformanceReproductionTests
 
     public class TrackingRepository<T> : IRepository<T> where T : class
     {
-        private readonly Buy2DbContext _context;
+        private readonly GenericRepository<T> _inner;
         public int GetAllAsyncCallCount { get; private set; }
-        public int QueryCallCount { get; private set; }
+        public int ReadCallCount { get; private set; }
         public int AnyAsyncCallCount { get; private set; }
         public int AddAsyncCallCount { get; private set; }
+        public List<string> CapturedSpecifications { get; } = new();
 
         public TrackingRepository(Buy2DbContext context)
         {
-            _context = context;
+            _inner = new GenericRepository<T>(context);
         }
 
-        public IQueryable<T> Query(bool asNoTracking = true)
+        private void Capture(ISpecification<T> specification, [CallerMemberName] string? caller = null)
         {
-            QueryCallCount++;
-            return asNoTracking ? _context.Set<T>().AsNoTracking() : _context.Set<T>().AsQueryable();
+            ReadCallCount++;
+            CapturedSpecifications.Add(
+                $"{caller} | Criteria:{specification.Criteria} | Includes:[{string.Join(",", specification.Includes)}] | Orderings:{specification.Orderings.Count} | IgnoreFilters:{specification.IgnoreQueryFilters} | Tracked:{specification.Tracked}");
+        }
+
+        private void CapturePredicate(Expression<Func<T, bool>>? predicate, string[] includes, [CallerMemberName] string? caller = null)
+        {
+            ReadCallCount++;
+            CapturedSpecifications.Add($"{caller} | Criteria:{predicate} | Includes:[{string.Join(",", includes)}]");
+        }
+
+        public Task<T?> FirstOrDefaultAsync(ISpecification<T> specification, CancellationToken cancellationToken = default)
+        {
+            Capture(specification);
+            return _inner.FirstOrDefaultAsync(specification, cancellationToken);
+        }
+
+        public Task<T?> FirstOrDefaultAsync(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken = default, params string[] includes)
+        {
+            CapturePredicate(predicate, includes);
+            return _inner.FirstOrDefaultAsync(predicate, cancellationToken, includes);
+        }
+
+        public Task<TResult?> FirstOrDefaultAsync<TResult>(ISpecification<T> specification, Expression<Func<T, TResult>> selector, CancellationToken cancellationToken = default)
+        {
+            Capture(specification);
+            return _inner.FirstOrDefaultAsync(specification, selector, cancellationToken);
+        }
+
+        public Task<List<T>> ListAsync(ISpecification<T> specification, CancellationToken cancellationToken = default)
+        {
+            Capture(specification);
+            return _inner.ListAsync(specification, cancellationToken);
+        }
+
+        public Task<List<T>> ListAsync(Expression<Func<T, bool>>? predicate = null, CancellationToken cancellationToken = default, params string[] includes)
+        {
+            CapturePredicate(predicate, includes);
+            return _inner.ListAsync(predicate, cancellationToken, includes);
+        }
+
+        public Task<List<TResult>> ListAsync<TResult>(ISpecification<T> specification, Expression<Func<T, TResult>> selector, CancellationToken cancellationToken = default)
+        {
+            Capture(specification);
+            return _inner.ListAsync(specification, selector, cancellationToken);
+        }
+
+        public Task<int> CountAsync(Expression<Func<T, bool>>? predicate = null, CancellationToken cancellationToken = default)
+        {
+            ReadCallCount++;
+            return _inner.CountAsync(predicate, cancellationToken);
+        }
+
+        public Task<int> CountAsync(ISpecification<T> specification, CancellationToken cancellationToken = default)
+        {
+            Capture(specification);
+            return _inner.CountAsync(specification, cancellationToken);
+        }
+
+        public Task<bool> AnyAsync(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken = default)
+        {
+            AnyAsyncCallCount++;
+            return _inner.AnyAsync(predicate, cancellationToken);
+        }
+
+        public Task<int> SumAsync(Expression<Func<T, bool>>? predicate, Expression<Func<T, int>> selector, CancellationToken cancellationToken = default)
+        {
+            ReadCallCount++;
+            return _inner.SumAsync(predicate, selector, cancellationToken);
+        }
+
+        public Task<int?> SumAsync(Expression<Func<T, bool>>? predicate, Expression<Func<T, int?>> selector, CancellationToken cancellationToken = default)
+        {
+            ReadCallCount++;
+            return _inner.SumAsync(predicate, selector, cancellationToken);
+        }
+
+        public Task<decimal> SumAsync(Expression<Func<T, bool>>? predicate, Expression<Func<T, decimal>> selector, CancellationToken cancellationToken = default)
+        {
+            ReadCallCount++;
+            return _inner.SumAsync(predicate, selector, cancellationToken);
+        }
+
+        public Task<decimal?> SumAsync(Expression<Func<T, bool>>? predicate, Expression<Func<T, decimal?>> selector, CancellationToken cancellationToken = default)
+        {
+            ReadCallCount++;
+            return _inner.SumAsync(predicate, selector, cancellationToken);
+        }
+
+        public Task<PagedResult<T>> PagedAsync(ISpecification<T> specification, int pageNumber, int pageSize, CancellationToken cancellationToken = default)
+        {
+            Capture(specification);
+            return _inner.PagedAsync(specification, pageNumber, pageSize, cancellationToken);
         }
 
         public async Task<IEnumerable<T>> GetAllAsync(CancellationToken cancellationToken = default)
         {
             GetAllAsyncCallCount++;
-            return await _context.Set<T>().ToListAsync(cancellationToken);
+            return await _inner.GetAllAsync(cancellationToken);
         }
 
-        public async Task<T?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
-        {
-            return await _context.Set<T>().FindAsync(new object[] { id }, cancellationToken);
-        }
+        public Task<T?> GetByIdAsync(int id, CancellationToken cancellationToken = default) =>
+            _inner.GetByIdAsync(id, cancellationToken);
 
-        public async Task<bool> AnyAsync(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken = default)
-        {
-            AnyAsyncCallCount++;
-            return await _context.Set<T>().AnyAsync(predicate, cancellationToken);
-        }
-
-        public async Task AddAsync(T entity, CancellationToken cancellationToken = default)
+        public Task AddAsync(T entity, CancellationToken cancellationToken = default)
         {
             AddAsyncCallCount++;
-            await _context.AddAsync(entity, cancellationToken);
+            return _inner.AddAsync(entity, cancellationToken);
         }
 
-        public async Task AddRangeAsync(IEnumerable<T> entities, CancellationToken cancellationToken = default)
-        {
-            await _context.AddRangeAsync(entities, cancellationToken);
-        }
+        public Task AddRangeAsync(IEnumerable<T> entities, CancellationToken cancellationToken = default) =>
+            _inner.AddRangeAsync(entities, cancellationToken);
 
-        public void Update(T entity) => _context.Update(entity);
-        public void Delete(T entity) => _context.Remove(entity);
+        public void Update(T entity) => _inner.Update(entity);
+        public void Delete(T entity) => _inner.Delete(entity);
     }
 
     private class FakeEvaluator : IAutomationEvaluator

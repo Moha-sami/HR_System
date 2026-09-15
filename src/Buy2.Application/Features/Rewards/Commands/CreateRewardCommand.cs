@@ -5,7 +5,6 @@ using Buy2.Application.Validators.Rewards;
 using Buy2.Domain.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
 
 namespace Buy2.Application.Features.Rewards.Commands;
 
@@ -48,7 +47,6 @@ public class CreateRewardCommandHandler : IRequestHandler<CreateRewardCommand, R
         }
 
         var category = await _categoryRepository
-            .Query(false)
             .FirstOrDefaultAsync(c => c.Id == command.Dto.CategoryId, cancellation);
 
         if (category is null)
@@ -57,7 +55,6 @@ public class CreateRewardCommandHandler : IRequestHandler<CreateRewardCommand, R
         }
 
         var rewardExists = await _rewardItemRepository
-            .Query(false)
             .AnyAsync(r => r.RewardName == command.Dto.Name &&
                            r.CategoryId == command.Dto.CategoryId &&
                            r.IsActive, cancellation);

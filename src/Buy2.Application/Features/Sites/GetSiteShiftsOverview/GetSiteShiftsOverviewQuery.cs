@@ -1,8 +1,8 @@
 using Buy2.Application.Common.Interfaces;
+using Buy2.Application.Common.Specifications;
 using Buy2.Application.DTOs.Sites;
 using Buy2.Domain.Entities;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace Buy2.Application.Features.Sites.GetSiteShiftsOverview;
 
@@ -31,23 +31,21 @@ public class GetSiteShiftsOverviewQueryHandler : IRequestHandler<GetSiteShiftsOv
         var day2 = day1.AddDays(1);
         var day3 = day1.AddDays(2);
 
-        var query = _siteRepository.Query(true)
-            .Include(s => s.Region)
-            .Include(s => s.Shifts.Where(shift => shift.StartTime >= startUtc && shift.StartTime < endUtc))
-            .AsQueryable();
+        var spec = new Specification<Site>()
+            .Include(nameof(Site.Region), nameof(Site.Shifts));
 
         if (request.RegionId.HasValue)
         {
-            query = query.Where(s => s.RegionId == request.RegionId.Value);
+            spec.Where(s => s.RegionId == request.RegionId.Value);
         }
 
         if (!string.IsNullOrWhiteSpace(request.Search))
         {
             var search = request.Search.Trim().ToLower();
-            query = query.Where(s => s.SiteName.ToLower().Contains(search) || s.Address.ToLower().Contains(search));
+            spec.Where(s => s.SiteName.ToLower().Contains(search) || s.Address.ToLower().Contains(search));
         }
 
-        var sites = await query.ToListAsync(cancellationToken);
+        var sites = await _siteRepository.ListAsync(spec, cancellationToken);
 
         var result = new List<SiteShiftCoverageOverviewDto>();
 

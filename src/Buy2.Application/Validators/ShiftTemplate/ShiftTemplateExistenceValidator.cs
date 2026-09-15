@@ -1,7 +1,6 @@
 using Buy2.Application.Common.Interfaces;
 using Buy2.Application.Common.Models;
 using Buy2.Domain.Entities;
-using Microsoft.EntityFrameworkCore;
 
 namespace Buy2.Application.Features.ShiftTemplates.Validators;
 
@@ -12,9 +11,8 @@ public static class ShiftTemplateExistenceValidator
         List<int> siteIds,
         CancellationToken cancellationToken)
     {
-        var count = await siteRepository.Query()
-            .Where(s => siteIds.Contains(s.Id))
-            .CountAsync(cancellationToken);
+        var count = await siteRepository.CountAsync(
+            s => siteIds.Contains(s.Id), cancellationToken);
 
         if (count != siteIds.Count)
         {
@@ -29,9 +27,8 @@ public static class ShiftTemplateExistenceValidator
         List<int> roleIds,
         CancellationToken cancellationToken)
     {
-        var count = await jobRoleRepository.Query()
-            .Where(r => roleIds.Contains(r.Id))
-            .CountAsync(cancellationToken);
+        var count = await jobRoleRepository.CountAsync(
+            r => roleIds.Contains(r.Id), cancellationToken);
 
         if (count != roleIds.Count)
         {
@@ -46,9 +43,8 @@ public static class ShiftTemplateExistenceValidator
         List<int> employeeIds,
         CancellationToken cancellationToken)
     {
-        var count = await employeeRepository.Query()
-            .Where(e => employeeIds.Contains(e.Id))
-            .CountAsync(cancellationToken);
+        var count = await employeeRepository.CountAsync(
+            e => employeeIds.Contains(e.Id), cancellationToken);
 
         if (count != employeeIds.Count)
         {
