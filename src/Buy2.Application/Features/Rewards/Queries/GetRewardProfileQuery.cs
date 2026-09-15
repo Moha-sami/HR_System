@@ -1,60 +1,70 @@
-﻿using Buy2.Application.Common.Interfaces;
+using Buy2.Application.Common.Interfaces;
+using Buy2.Application.Common.Models;
 using Buy2.Application.DTOs.Rewards.DTOs;
 using Buy2.Domain.Entities;
 using Buy2.Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using System.ComponentModel.DataAnnotations;
 
 namespace Buy2.Application.Features.Rewards.Queries;
 
-public record GetRewardProfileQuery(int Id) : IRequest<RewardProfileResponseDto>;
-public class GetRewardProfileQueryHandler : IRequestHandler<GetRewardProfileQuery, RewardProfileResponseDto> {
-    private readonly IRepository<RewardItem>        _rewardItemRepository;
-    private readonly IRepository<RewardRedemption>  _redempationRepository;
-    private readonly IRepository<RewardVoucher>     _voucherRepository;
-    public GetRewardProfileQueryHandler(IRepository<RewardItem> item, IRepository<RewardRedemption> redempation, IRepository<RewardVoucher> voucher)
+public record GetRewardProfileQuery(int Id) : IRequest<Result<RewardProfileResponseDto>>;
+
+public class GetRewardProfileQueryHandler : IRequestHandler<GetRewardProfileQuery, Result<RewardProfileResponseDto>>
+{
+    private readonly IRepository<RewardItem> _rewardItemRepository;
+    private readonly IRepository<RewardRedemption> _redemptionRepository;
+    private readonly IRepository<RewardVoucher> _voucherRepository;
+
+    public GetRewardProfileQueryHandler(
+        IRepository<RewardItem> item,
+        IRepository<RewardRedemption> redemption,
+        IRepository<RewardVoucher> voucher)
     {
-        _rewardItemRepository   = item;
-        _redempationRepository  = redempation;   
-        _voucherRepository      = voucher;
+        _rewardItemRepository = item;
+        _redemptionRepository = redemption;
+        _voucherRepository = voucher;
     }
-    public async Task<RewardProfileResponseDto> Handle(GetRewardProfileQuery query, CancellationToken cancellation)
+
+    public async Task<Result<RewardProfileResponseDto>> Handle(GetRewardProfileQuery query, CancellationToken cancellation)
     {
         var rewardItem = await _rewardItemRepository
-            .Query(false)
+            .Query(true)
             .Include(r => r.Category)
             .FirstOrDefaultAsync(r => r.Id == query.Id, cancellation);
 
-        if (rewardItem is null) {
-            throw new ValidationException("Reward item not found");
+        if (rewardItem is null)
+        {
+            return Result<RewardProfileResponseDto>.NotFound("Reward item not found.");
         }
 
-        var redempation = await _redempationRepository
-            .Query(false)
+        var redemptionCount = await _redemptionRepository
+            .Query(true)
             .CountAsync(r => r.RewardItemId == query.Id, cancellation);
 
-        var totalVoucher = await _voucherRepository
-            .Query(false)
+        var totalVouchers = await _voucherRepository
+            .Query(true)
             .CountAsync(v => v.RewardItemId == query.Id, cancellation);
-        var availableVoucher = await _voucherRepository
-            .Query(false)
+
+        var availableVouchers = await _voucherRepository
+            .Query(true)
             .CountAsync(v => v.RewardItemId == query.Id &&
                              v.Status == VoucherStatus.Available,
                              cancellation);
-        var availabilityStock =
-            $"{availableVoucher}/{totalVoucher}";
 
-        var totalCost = await _redempationRepository
-            .Query(false)
-            .Where(r => r.RewardItemId == query.Id)
-            .Select(r => r.PointsTransaction)
-                .SumAsync(p => (decimal)p.Amount, cancellation);
+        var availabilityStock = $"{availableVouchers}/{totalVouchers}";
 
-        var topRedeem = await _redempationRepository
-            .Query(false)
+        var totalCost = await _redemptionRepository
+            .Query(true)
+            .Where(r => r.RewardItemId == query.Id && r.PointsTransaction != null)
+            .Select(r => (decimal)Math.Abs(r.PointsTransaction.Amount))
+            .SumAsync(cancellation);
+
+        var topRedeem = await _redemptionRepository
+            .Query(true)
             .Where(r =>
                 r.RewardItemId == query.Id &&
+                r.Employee != null &&
                 r.Employee.JobRole != null &&
                 r.Employee.JobRole.Department != null)
             .GroupBy(r => r.Employee.JobRole!.Department!.Name)
@@ -69,14 +79,14 @@ public class GetRewardProfileQueryHandler : IRequestHandler<GetRewardProfileQuer
         var topRedeemedValue = topRedeem?.RedemptionCount ?? 0;
 
         var kpiStats = new RewardKpiStatistics(
-                RedemptionCount : redempation,
-                AvailableStock  : availabilityStock,
-                TotalCost       : totalCost,
-                TopRedeemed     : topRedeemedValue,
-                PointsValue     : rewardItem.CostInPoints
-            );
+            RedemptionCount: redemptionCount,
+            AvailableStock: availabilityStock,
+            TotalCost: totalCost,
+            TopRedeemed: topRedeemedValue,
+            PointsValue: rewardItem.CostInPoints
+        );
 
-        var rewardProfile =  new RewardProfileListDto(
+        var rewardProfile = new RewardProfileListDto(
             rewardItem.Id,
             rewardItem.RewardName,
             rewardItem.Description,
@@ -88,6 +98,7 @@ public class GetRewardProfileQueryHandler : IRequestHandler<GetRewardProfileQuer
             rewardItem.TermsOfUse,
             rewardItem.IsActive
         );
-        return new RewardProfileResponseDto(rewardProfile, kpiStats);
+
+        return Result<RewardProfileResponseDto>.Success(new RewardProfileResponseDto(rewardProfile, kpiStats));
     }
 }
