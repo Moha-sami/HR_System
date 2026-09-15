@@ -95,9 +95,9 @@ public class RewardsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status409Conflict)] 
-    public async Task<IActionResult> UpdateReward(int id, [FromForm] RewardUpdateDto dto, IFormFile? imageFile, CancellationToken cancellation) 
-    { 
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<IActionResult> UpdateReward(int id, [FromForm] RewardUpdateDto dto, IFormFile? imageFile, CancellationToken cancellation)
+    {
         var result = await _mediator.Send(new UpdateRewardCommand(id, dto, imageFile), cancellation);
 
         if (result.IsNotFound)
@@ -123,9 +123,20 @@ public class RewardsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<RewardProfileResponseDto>> GetRewardById(int id, CancellationToken cancellation)
+    public async Task<IActionResult> GetRewardById(int id, CancellationToken cancellation)
     {
         var result = await _mediator.Send(new GetRewardProfileQuery(id), cancellation);
-        return Ok(result);
+
+        if (result.IsNotFound)
+        {
+            return NotFound(new { message = result.ErrorMessage });
+        }
+
+        if (!result.IsSuccess)
+        {
+            return BadRequest(new { message = result.ErrorMessage });
+        }
+
+        return Ok(result.Value);
     }
 }
