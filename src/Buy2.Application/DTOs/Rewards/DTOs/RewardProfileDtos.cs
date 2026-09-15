@@ -17,7 +17,7 @@ public record RewardProfileListDto(
 // Reward KPI Statistics Card:
 public record RewardKpiStatistics(
     int RedemptionCount,
-    int AvailableStock,
+    string AvailableStock,
     decimal TotalCost,
     int TopRedeemed,
     int PointsValue
@@ -35,4 +35,9 @@ public record RewardTransactionHistoryLogDto(
     DateTimeOffset Date,
     DateTime Time,
     string Code
+);
+
+public record RewardProfileResponseDto(
+     RewardProfileListDto Profile,
+     RewardKpiStatistics KpiStats
 );
