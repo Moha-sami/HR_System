@@ -117,4 +117,15 @@ public class RewardsController : ControllerBase
 
         return Ok(result.Value);
     }
+    [HttpGet("{id}")]
+    [Authorize(Roles = "Admin,Manager,SuperAdmin")]
+    [ProducesResponseType(typeof(RewardProfileResponseDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<RewardProfileResponseDto>> GetRewardById(int id, CancellationToken cancellation)
+    {
+        var result = await _mediator.Send(new GetRewardProfileQuery(id), cancellation);
+        return Ok(result);
+    }
 }
