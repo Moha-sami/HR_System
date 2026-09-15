@@ -5,7 +5,8 @@ public enum ResultErrorType
     None,
     Validation,
     NotFound,
-    Conflict
+    Conflict,
+    Forbidden
 }
 
 public sealed class Result<T>
@@ -17,6 +18,7 @@ public sealed class Result<T>
 
     public bool IsNotFound => !IsSuccess && ErrorType == ResultErrorType.NotFound;
     public bool IsConflict => !IsSuccess && ErrorType == ResultErrorType.Conflict;
+    public bool IsForbidden => !IsSuccess && ErrorType == ResultErrorType.Forbidden;
     public bool IsValidationError => !IsSuccess && ErrorType == ResultErrorType.Validation;
 
     private Result(bool isSuccess, T? value, string? errorMessage, ResultErrorType errorType)
@@ -33,6 +35,9 @@ public sealed class Result<T>
     public static Result<T> ValidationFailure(string message) =>
         new(false, default, message, ResultErrorType.Validation);
 
+    public static Result<T> Forbidden(string message) =>
+        new(false, default, message, ResultErrorType.Forbidden);
+
     public static Result<T> NotFound(string message) =>
         new(false, default, message, ResultErrorType.NotFound);
 
@@ -48,6 +53,7 @@ public sealed class Result
 
     public bool IsNotFound => !IsSuccess && ErrorType == ResultErrorType.NotFound;
     public bool IsConflict => !IsSuccess && ErrorType == ResultErrorType.Conflict;
+    public bool IsForbidden => !IsSuccess && ErrorType == ResultErrorType.Forbidden;
     public bool IsValidationError => !IsSuccess && ErrorType == ResultErrorType.Validation;
 
     private Result(bool isSuccess, string? errorMessage, ResultErrorType errorType)
@@ -62,6 +68,9 @@ public sealed class Result
 
     public static Result ValidationFailure(string message) =>
         new(false, message, ResultErrorType.Validation);
+
+    public static Result Forbidden(string message) =>
+        new(false, message, ResultErrorType.Forbidden);
 
     public static Result NotFound(string message) =>
         new(false, message, ResultErrorType.NotFound);

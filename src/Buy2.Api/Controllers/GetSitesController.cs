@@ -21,6 +21,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Buy2.Api.Controllers;
+
 [ApiController]
 [Route("api/v1/sites")]
 [Authorize]
@@ -65,8 +66,8 @@ public class GetSitesController : ControllerBase
     public async Task<ActionResult<int>> CreateSite(CreateUpdateSiteDto dto, CancellationToken cancellation)
     {
         var command = new CreateSiteCommand(
-            dto.SiteName, dto.Latitude, dto.Longitude, dto.MacWhitelist, dto.MacAddress, 
-            dto.Address, dto.MapUrl, dto.PhoneNumber,  dto.Instructions,
+            dto.SiteName, dto.Latitude, dto.Longitude, dto.MacWhitelist, dto.MacAddress,
+            dto.Address, dto.MapUrl, dto.PhoneNumber, dto.Instructions,
             dto.RegionId, dto.MaxCapacity, dto.PreferredEmployeeIds, dto.OperationalHours
         );
         var site = await _mediator.Send(command, cancellation);
@@ -134,7 +135,7 @@ public class GetSitesController : ControllerBase
         return Ok(site);
     }
     [HttpDelete("{id}")]
-    [Authorize(Roles ="Admin")]
+    [Authorize(Roles = "Admin")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -181,11 +182,18 @@ public class GetSitesController : ControllerBase
         [FromQuery] string? search,
         CancellationToken cancellation)
     {
-        var result = await _mediator.Send(new GetSiteShiftTemplatesQuery(siteId, search), cancellation);
+        var result = await _mediator.Send(
+            new GetSiteShiftTemplatesQuery(siteId, search, GetActorEmployeeId(), HasSiteBypass()),
+            cancellation);
 
         if (result.IsNotFound)
         {
             return NotFound(new { message = result.ErrorMessage });
+        }
+
+        if (result.IsForbidden)
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, new { message = result.ErrorMessage });
         }
 
         if (!result.IsSuccess)
@@ -341,5 +349,10 @@ public class GetSitesController : ControllerBase
     {
         var raw = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         return int.TryParse(raw, out var employeeId) ? employeeId : null;
+    }
+
+    private bool HasSiteBypass()
+    {
+        return User.IsInRole("Admin") || User.IsInRole("SuperAdmin") || User.IsInRole("HRAdmin");
     }
 }

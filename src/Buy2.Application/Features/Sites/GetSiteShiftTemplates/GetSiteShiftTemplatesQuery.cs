@@ -23,7 +23,11 @@ public record SiteShiftTemplateDto(
     List<SiteShiftTemplateBlockDto> ShiftBlocks
 );
 
-public record GetSiteShiftTemplatesQuery(int SiteId, string? Search)
+public record GetSiteShiftTemplatesQuery(
+    int SiteId,
+    string? Search,
+    int? ActorEmployeeId = null,
+    bool BypassSiteAccess = false)
     : IRequest<Result<List<SiteShiftTemplateDto>>>;
 
 public class GetSiteShiftTemplatesQueryHandler
@@ -31,13 +35,16 @@ public class GetSiteShiftTemplatesQueryHandler
 {
     private readonly IRepository<Site> _siteRepository;
     private readonly IRepository<ShiftTemplate> _shiftTemplateRepository;
+    private readonly IRepository<EmployeeSite> _employeeSiteRepository;
 
     public GetSiteShiftTemplatesQueryHandler(
         IRepository<Site> siteRepository,
-        IRepository<ShiftTemplate> shiftTemplateRepository)
+        IRepository<ShiftTemplate> shiftTemplateRepository,
+        IRepository<EmployeeSite> employeeSiteRepository)
     {
         _siteRepository = siteRepository;
         _shiftTemplateRepository = shiftTemplateRepository;
+        _employeeSiteRepository = employeeSiteRepository;
     }
 
     public async Task<Result<List<SiteShiftTemplateDto>>> Handle(
@@ -53,6 +60,12 @@ public class GetSiteShiftTemplatesQueryHandler
         {
             return Result<List<SiteShiftTemplateDto>>.NotFound(
                 $"Site with ID {request.SiteId} was not found.");
+        }
+
+        if (!request.BypassSiteAccess && !await HasSiteAccessAsync(request, cancellationToken))
+        {
+            return Result<List<SiteShiftTemplateDto>>.Forbidden(
+                "You do not have access to this site.");
         }
 
         IQueryable<ShiftTemplate> query = _shiftTemplateRepository.Query()
@@ -73,5 +86,23 @@ public class GetSiteShiftTemplatesQueryHandler
         var items = templates.Select(SiteShiftTemplateMapper.ToDto).ToList();
 
         return Result<List<SiteShiftTemplateDto>>.Success(items);
+    }
+
+    private async Task<bool> HasSiteAccessAsync(
+        GetSiteShiftTemplatesQuery request,
+        CancellationToken cancellationToken)
+    {
+        if (!request.ActorEmployeeId.HasValue)
+        {
+            return false;
+        }
+
+        return await _employeeSiteRepository
+            .Query()
+            .AsNoTracking()
+            .AnyAsync(
+                es => es.EmployeeId == request.ActorEmployeeId.Value
+                    && es.SiteId == request.SiteId,
+                cancellationToken);
     }
 }
