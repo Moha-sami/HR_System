@@ -1,5 +1,7 @@
+using Buy2.Application.Common.Interfaces;
 using Buy2.Application.DTOs.Schedules;
 using Buy2.Application.Features.Schedules.ApplyTemplate;
+using Buy2.Application.Features.Schedules.ApplyTemplate.Services;
 using Buy2.Domain.Entities;
 using Buy2.Domain.Enums;
 using Buy2.Infrastructure.Persistence;
@@ -25,17 +27,23 @@ public class ApplyTemplateTests
 
     private static ApplyTemplateCommandHandler CreateHandler(Buy2DbContext context)
     {
+        IRepository<Site> sites = new GenericRepository<Site>(context);
+        IRepository<ShiftTemplate> templates = new GenericRepository<ShiftTemplate>(context);
+        IRepository<ShiftEntity> shifts = new GenericRepository<ShiftEntity>(context);
+        IRepository<Employee> employees = new GenericRepository<Employee>(context);
+        IRepository<JobRole> roles = new GenericRepository<JobRole>(context);
+        IRepository<EmployeeSite> links = new GenericRepository<EmployeeSite>(context);
+        IRepository<SiteOperationalHour> hours = new GenericRepository<SiteOperationalHour>(context);
+        IRepository<Request> requests = new GenericRepository<Request>(context);
+        IRepository<AttendanceRecord> attendance = new GenericRepository<AttendanceRecord>(context);
+        IUnitOfWork uow = new UnitOfWork(context);
+
         return new ApplyTemplateCommandHandler(
-            new GenericRepository<Site>(context),
-            new GenericRepository<ShiftTemplate>(context),
-            new GenericRepository<ShiftEntity>(context),
-            new GenericRepository<Employee>(context),
-            new GenericRepository<JobRole>(context),
-            new GenericRepository<EmployeeSite>(context),
-            new GenericRepository<SiteOperationalHour>(context),
-            new GenericRepository<Request>(context),
-            new GenericRepository<AttendanceRecord>(context),
-            new UnitOfWork(context));
+            new TemplateApplicationLoader(sites, templates, shifts, employees, roles, uow),
+            new AvailabilityResolver(links, hours, requests, attendance),
+            new EligibilityEvaluator(),
+            new OverlapResolver(shifts),
+            new ScheduleAnalyticsService());
     }
 
     private static Site SeedSite(Buy2DbContext context)
