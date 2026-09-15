@@ -1,8 +1,8 @@
 using Buy2.Application.Common.Interfaces;
+using Buy2.Application.Common.Specifications;
 using Buy2.Application.DTOs.Employees;
 using Buy2.Domain.Entities;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace Buy2.Application.Features.Employees.GetEmployees;
 
@@ -27,19 +27,17 @@ public class GetEmployeesQueryHandler : IRequestHandler<GetEmployeesQuery, Pagin
 
     public async Task<PaginatedEmployeeListDto> Handle(GetEmployeesQuery request, CancellationToken cancellationToken)
     {
-        // 1. Start from IQueryable<Employee> with Eager Loaded Navigations
-        IQueryable<Employee> query = _employeeRepository.Query(asNoTracking: true)
-            .Include(e => e.JobRole)
-                .ThenInclude(jr => jr!.Department)
-            .Include(e => e.Site)
-                .ThenInclude(s => s!.Region)
-            .Include(e => e.Role);
+        // 1. Start from Specification<Employee> with Eager Loaded Navigations
+        var spec = new Specification<Employee>()
+            .Include("JobRole.Department")
+            .Include("Site.Region")
+            .Include(nameof(Employee.Role));
 
         // 2. Search Filter (translated to SQL)
         if (!string.IsNullOrWhiteSpace(request.Search))
         {
             var search = request.Search.Trim();
-            query = query.Where(e =>
+            spec.Where(e =>
                 e.FirstName.Contains(search) ||
                 e.LastName.Contains(search) ||
                 e.Email.Contains(search) ||
@@ -52,11 +50,11 @@ public class GetEmployeesQueryHandler : IRequestHandler<GetEmployeesQuery, Pagin
             var department = request.Department.Trim();
             if (int.TryParse(department, out var deptId))
             {
-                query = query.Where(e => e.JobRole != null && e.JobRole.DepartmentId == deptId);
+                spec.Where(e => e.JobRole != null && e.JobRole.DepartmentId == deptId);
             }
             else
             {
-                query = query.Where(e => e.JobRole != null && e.JobRole.Department != null && e.JobRole.Department.Name.Contains(department));
+                spec.Where(e => e.JobRole != null && e.JobRole.Department != null && e.JobRole.Department.Name.Contains(department));
             }
         }
 
@@ -66,11 +64,11 @@ public class GetEmployeesQueryHandler : IRequestHandler<GetEmployeesQuery, Pagin
             var region = request.Region.Trim();
             if (int.TryParse(region, out var regionId))
             {
-                query = query.Where(e => e.Site != null && e.Site.RegionId == regionId);
+                spec.Where(e => e.Site != null && e.Site.RegionId == regionId);
             }
             else
             {
-                query = query.Where(e => e.Site != null && e.Site.Region != null && e.Site.Region.Name.Contains(region));
+                spec.Where(e => e.Site != null && e.Site.Region != null && e.Site.Region.Name.Contains(region));
             }
         }
 
@@ -78,27 +76,32 @@ public class GetEmployeesQueryHandler : IRequestHandler<GetEmployeesQuery, Pagin
         var isAsc = string.Equals(request.SortDir, "asc", StringComparison.OrdinalIgnoreCase);
         var sortField = request.Sort?.Trim().ToLower();
 
-        query = sortField switch
+        switch (sortField)
         {
-            "name" => isAsc ? query.OrderBy(e => e.FirstName).ThenBy(e => e.LastName) : query.OrderByDescending(e => e.FirstName).ThenByDescending(e => e.LastName),
-            "employeecode" => isAsc ? query.OrderBy(e => e.EmployeeCode) : query.OrderByDescending(e => e.EmployeeCode),
-            "email" => isAsc ? query.OrderBy(e => e.Email) : query.OrderByDescending(e => e.Email),
-            "jobtitle" => isAsc ? query.OrderBy(e => e.JobRole != null ? e.JobRole.Title : string.Empty) : query.OrderByDescending(e => e.JobRole != null ? e.JobRole.Title : string.Empty),
-            _ => isAsc ? query.OrderBy(e => e.JoinDate) : query.OrderByDescending(e => e.JoinDate)
-        };
+            case "name":
+                spec.OrderBy(e => e.FirstName, descending: !isAsc).ThenBy(e => e.LastName, descending: !isAsc);
+                break;
+            case "employeecode":
+                spec.OrderBy(e => e.EmployeeCode, descending: !isAsc);
+                break;
+            case "email":
+                spec.OrderBy(e => e.Email, descending: !isAsc);
+                break;
+            case "jobtitle":
+                spec.OrderBy(e => e.JobRole != null ? e.JobRole.Title : string.Empty, descending: !isAsc);
+                break;
+            default:
+                spec.OrderBy(e => e.JoinDate, descending: !isAsc);
+                break;
+        }
 
-        // 6. Total Count before pagination in SQL
-        var totalCount = await query.CountAsync(cancellationToken);
-
-        // 7. Pagination bounds
+        // 6-8. Total Count + Pagination bounds + materialize only the requested page
         var page = request.Page > 0 ? request.Page : 1;
         var pageSize = request.PageSize > 0 ? request.PageSize : 20;
 
-        // 8. Materialize only the requested page from SQL
-        var pagedEmployees = await query
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
-            .ToListAsync(cancellationToken);
+        var pagedResult = await _employeeRepository.PagedAsync(spec, page, pageSize, cancellationToken);
+        var totalCount = pagedResult.TotalCount;
+        var pagedEmployees = pagedResult.Items;
 
         // 9. Map materialized page to DTOs
         var items = pagedEmployees.Select(e =>

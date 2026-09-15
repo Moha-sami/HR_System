@@ -1,10 +1,11 @@
 using System.Diagnostics;
+using Buy2.Application.Common.Exceptions;
 using Buy2.Application.Common.Interfaces;
 using Buy2.Application.Common.Models;
+using Buy2.Application.Common.Specifications;
 using Buy2.Application.Features.ShiftTemplates.DTOs;
 using Buy2.Domain.Entities;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace Buy2.Application.Features.ShiftTemplates.DuplicateShiftTemplate;
 
@@ -31,10 +32,11 @@ public class DuplicateShiftTemplateCommandHandler
         DuplicateShiftTemplateCommand request,
         CancellationToken cancellationToken)
     {
-        var source = await _shiftTemplateRepository.Query(asNoTracking: false)
-            .Include(t => t.ShiftTemplateSites)
-            .Include(t => t.ShiftBlocks)
-            .FirstOrDefaultAsync(t => t.Id == request.Id, cancellationToken);
+        var source = await _shiftTemplateRepository.FirstOrDefaultAsync(
+            t => t.Id == request.Id,
+            cancellationToken,
+            nameof(ShiftTemplate.ShiftTemplateSites),
+            nameof(ShiftTemplate.ShiftBlocks));
 
         if (source is null)
         {
@@ -80,7 +82,7 @@ public class DuplicateShiftTemplateCommandHandler
                 await _unitOfWork.SaveChangesAsync(cancellationToken);
             }, cancellationToken);
         }
-        catch (DbUpdateException)
+        catch (DataIntegrityException)
         {
             return Result<DuplicateShiftTemplateResponseDto>.Conflict(
                 "Could not duplicate the shift template. Please try again.");
@@ -93,10 +95,12 @@ public class DuplicateShiftTemplateCommandHandler
     private async Task<string> GenerateCopyNameAsync(string sourceName, CancellationToken cancellationToken)
     {
         var prefix = sourceName.Length > 80 ? sourceName.Substring(0, 80).ToLower() : sourceName.ToLower();
-        var existingNames = await _shiftTemplateRepository.Query()
-            .Where(t => t.Name.ToLower().StartsWith(prefix))
-            .Select(t => t.Name.ToLower())
-            .ToListAsync(cancellationToken);
+        var spec = new Specification<ShiftTemplate>()
+            .Where(t => t.Name.ToLower().StartsWith(prefix));
+        var existingNames = await _shiftTemplateRepository.ListAsync(
+            spec,
+            t => t.Name.ToLower(),
+            cancellationToken);
 
         var existingSet = new HashSet<string>(existingNames, StringComparer.OrdinalIgnoreCase);
 

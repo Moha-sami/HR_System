@@ -6,7 +6,6 @@ using Buy2.Application.Common.Interfaces;
 using Buy2.Domain.Entities;
 using Buy2.Domain.Enums;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace Buy2.Application.Features.Employees.OnboardEmployee;
 
@@ -80,8 +79,8 @@ public class OnboardEmployeeCommandHandler : IRequestHandler<OnboardEmployeeComm
             throw new ValidationException($"Email format is invalid: '{email}'.");
         }
 
-        var emailExists = await _employeeRepository.Query()
-            .AnyAsync(e => e.Email.ToLower() == email.ToLower(), cancellationToken);
+        var emailExists = await _employeeRepository.AnyAsync(
+            e => e.Email.ToLower() == email.ToLower(), cancellationToken);
 
         if (emailExists)
         {
@@ -101,8 +100,8 @@ public class OnboardEmployeeCommandHandler : IRequestHandler<OnboardEmployeeComm
         }
         else if (!string.IsNullOrWhiteSpace(command.RoleName))
         {
-            var role = await _roleRepository.Query()
-                .FirstOrDefaultAsync(r => r.Name.ToLower() == command.RoleName.Trim().ToLower(), cancellationToken);
+            var role = await _roleRepository.FirstOrDefaultAsync(
+                r => r.Name.ToLower() == command.RoleName.Trim().ToLower(), cancellationToken);
             if (role == null)
             {
                 throw new ValidationException($"Role with name '{command.RoleName}' not found.");
@@ -111,15 +110,15 @@ public class OnboardEmployeeCommandHandler : IRequestHandler<OnboardEmployeeComm
         }
         else
         {
-            var defaultRole = await _roleRepository.Query()
-                .FirstOrDefaultAsync(r => r.Name.ToLower() == "employee", cancellationToken);
+            var defaultRole = await _roleRepository.FirstOrDefaultAsync(
+                r => r.Name.ToLower() == "employee", cancellationToken);
             if (defaultRole != null)
             {
                 assignedRoleId = defaultRole.Id;
             }
             else
             {
-                var firstRole = await _roleRepository.Query().FirstOrDefaultAsync(cancellationToken);
+                var firstRole = await _roleRepository.FirstOrDefaultAsync(_ => true, cancellationToken);
                 if (firstRole == null)
                 {
                     throw new ValidationException("No roles exist in the system to assign.");
@@ -141,8 +140,8 @@ public class OnboardEmployeeCommandHandler : IRequestHandler<OnboardEmployeeComm
         }
         else if (!string.IsNullOrWhiteSpace(command.JobTitle))
         {
-            var jobRole = await _jobRoleRepository.Query()
-                .FirstOrDefaultAsync(jr => jr.Title.ToLower() == command.JobTitle.Trim().ToLower(), cancellationToken);
+            var jobRole = await _jobRoleRepository.FirstOrDefaultAsync(
+                jr => jr.Title.ToLower() == command.JobTitle.Trim().ToLower(), cancellationToken);
             if (jobRole == null)
             {
                 throw new ValidationException($"Job Role title '{command.JobTitle}' not found.");
@@ -151,7 +150,7 @@ public class OnboardEmployeeCommandHandler : IRequestHandler<OnboardEmployeeComm
         }
         else
         {
-            var firstJobRole = await _jobRoleRepository.Query().FirstOrDefaultAsync(cancellationToken);
+            var firstJobRole = await _jobRoleRepository.FirstOrDefaultAsync(_ => true, cancellationToken);
             if (firstJobRole == null)
             {
                 throw new ValidationException("No job roles exist in the system to assign.");
@@ -172,8 +171,8 @@ public class OnboardEmployeeCommandHandler : IRequestHandler<OnboardEmployeeComm
         }
         else if (!string.IsNullOrWhiteSpace(command.SiteName))
         {
-            var site = await _siteRepository.Query()
-                .FirstOrDefaultAsync(s => s.SiteName.ToLower() == command.SiteName.Trim().ToLower(), cancellationToken);
+            var site = await _siteRepository.FirstOrDefaultAsync(
+                s => s.SiteName.ToLower() == command.SiteName.Trim().ToLower(), cancellationToken);
             if (site == null)
             {
                 throw new ValidationException($"Site with name '{command.SiteName}' not found.");
@@ -182,7 +181,7 @@ public class OnboardEmployeeCommandHandler : IRequestHandler<OnboardEmployeeComm
         }
         else
         {
-            var firstSite = await _siteRepository.Query().FirstOrDefaultAsync(cancellationToken);
+            var firstSite = await _siteRepository.FirstOrDefaultAsync(_ => true, cancellationToken);
             if (firstSite == null)
             {
                 throw new ValidationException("No sites exist in the system to assign.");

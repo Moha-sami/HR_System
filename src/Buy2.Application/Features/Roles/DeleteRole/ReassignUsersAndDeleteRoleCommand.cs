@@ -1,8 +1,8 @@
 using Buy2.Application.Common.Interfaces;
+using Buy2.Application.Common.Specifications;
 using Buy2.Application.DTOs.Roles;
 using Buy2.Domain.Entities;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace Buy2.Application.Features.Roles.DeleteRole;
 
@@ -29,9 +29,11 @@ public class ReassignUsersAndDeleteRoleCommandHandler : IRequestHandler<Reassign
 
     public async Task<RoleDeletionResultDto> Handle(ReassignUsersAndDeleteRoleCommand request, CancellationToken cancellationToken)
     {
-        var role = await _roleRepository.Query(asNoTracking: false)
-            .IgnoreQueryFilters()
-            .FirstOrDefaultAsync(r => r.Id == request.Id, cancellationToken);
+        var roleSpec = new Specification<Role>()
+            .IgnoreFilters()
+            .Where(r => r.Id == request.Id)
+            .AsTracked();
+        var role = await _roleRepository.FirstOrDefaultAsync(roleSpec, cancellationToken);
 
         if (role == null)
         {
@@ -43,10 +45,11 @@ public class ReassignUsersAndDeleteRoleCommandHandler : IRequestHandler<Reassign
             throw new InvalidOperationException("System roles cannot be deleted.");
         }
 
-        var assignedEmployees = await _employeeRepository.Query(asNoTracking: false)
-            .IgnoreQueryFilters()
+        var assignedSpec = new Specification<Employee>()
+            .IgnoreFilters()
             .Where(e => !e.IsDeleted && e.RoleId == request.Id)
-            .ToListAsync(cancellationToken);
+            .AsTracked();
+        var assignedEmployees = await _employeeRepository.ListAsync(assignedSpec, cancellationToken);
 
         var employeeTargetRoles = new Dictionary<int, int>();
 
@@ -77,10 +80,9 @@ public class ReassignUsersAndDeleteRoleCommandHandler : IRequestHandler<Reassign
                 throw new ArgumentException("Invalid replacement role specified.");
             }
 
-            var validActiveRoleIds = await _roleRepository.Query()
-                .Where(r => r.IsActive && distinctReplacementRoleIds.Contains(r.Id))
-                .Select(r => r.Id)
-                .ToListAsync(cancellationToken);
+            var validRoleSpec = new Specification<Role>()
+                .Where(r => r.IsActive && distinctReplacementRoleIds.Contains(r.Id));
+            var validActiveRoleIds = await _roleRepository.ListAsync(validRoleSpec, r => r.Id, cancellationToken);
 
             if (validActiveRoleIds.Count != distinctReplacementRoleIds.Count)
             {

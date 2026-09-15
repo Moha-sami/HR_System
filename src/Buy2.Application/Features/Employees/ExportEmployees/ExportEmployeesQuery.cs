@@ -1,8 +1,8 @@
 using System.Text;
 using Buy2.Application.Common.Interfaces;
+using Buy2.Application.Common.Specifications;
 using Buy2.Domain.Entities;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace Buy2.Application.Features.Employees.ExportEmployees;
 
@@ -25,17 +25,17 @@ public class ExportEmployeesQueryHandler : IRequestHandler<ExportEmployeesQuery,
 
     public async Task<byte[]> Handle(ExportEmployeesQuery request, CancellationToken cancellationToken)
     {
-        // 1. Queryable with Eager Loaded Navigations
-        IQueryable<Employee> query = _employeeRepository.Query()
-            .Include(e => e.JobRole)
-            .Include(e => e.Site)
-            .Include(e => e.Role);
+        // 1. Specification with Eager Loaded Navigations
+        var spec = new Specification<Employee>()
+            .Include(nameof(Employee.JobRole))
+            .Include(nameof(Employee.Site))
+            .Include(nameof(Employee.Role));
 
         // 2. Search Filter (translated to SQL)
         if (!string.IsNullOrWhiteSpace(request.Search))
         {
             var search = request.Search.Trim();
-            query = query.Where(e =>
+            spec.Where(e =>
                 e.FirstName.Contains(search) ||
                 e.LastName.Contains(search) ||
                 e.Email.Contains(search) ||
@@ -46,33 +46,48 @@ public class ExportEmployeesQueryHandler : IRequestHandler<ExportEmployeesQuery,
         if (!string.IsNullOrWhiteSpace(request.Department))
         {
             var department = request.Department.Trim();
-            query = int.TryParse(department, out var deptId)
-                ? query.Where(e => e.JobRole != null && e.JobRole.DepartmentId == deptId)
-                : query.Where(e => e.JobRole != null && e.JobRole.Title.Contains(department));
+            if (int.TryParse(department, out var deptId))
+            {
+                spec.Where(e => e.JobRole != null && e.JobRole.DepartmentId == deptId);
+            }
+            else
+            {
+                spec.Where(e => e.JobRole != null && e.JobRole.Title.Contains(department));
+            }
         }
 
         // 4. Region Filter (translated to SQL)
         if (!string.IsNullOrWhiteSpace(request.Region))
         {
             var region = request.Region.Trim();
-            query = query.Where(e => e.Site != null && e.Site.SiteName.Contains(region));
+            spec.Where(e => e.Site != null && e.Site.SiteName.Contains(region));
         }
 
         // 5. Sorting (translated to SQL)
         var isAsc = string.Equals(request.SortDir, "asc", StringComparison.OrdinalIgnoreCase);
         var sortField = request.Sort?.Trim().ToLower();
 
-        query = sortField switch
+        switch (sortField)
         {
-            "name" => isAsc ? query.OrderBy(e => e.FirstName).ThenBy(e => e.LastName) : query.OrderByDescending(e => e.FirstName).ThenByDescending(e => e.LastName),
-            "employeecode" => isAsc ? query.OrderBy(e => e.EmployeeCode) : query.OrderByDescending(e => e.EmployeeCode),
-            "email" => isAsc ? query.OrderBy(e => e.Email) : query.OrderByDescending(e => e.Email),
-            "jobtitle" => isAsc ? query.OrderBy(e => e.JobRole != null ? e.JobRole.Title : string.Empty) : query.OrderByDescending(e => e.JobRole != null ? e.JobRole.Title : string.Empty),
-            _ => isAsc ? query.OrderBy(e => e.JoinDate) : query.OrderByDescending(e => e.JoinDate)
-        };
+            case "name":
+                spec.OrderBy(e => e.FirstName, descending: !isAsc).ThenBy(e => e.LastName, descending: !isAsc);
+                break;
+            case "employeecode":
+                spec.OrderBy(e => e.EmployeeCode, descending: !isAsc);
+                break;
+            case "email":
+                spec.OrderBy(e => e.Email, descending: !isAsc);
+                break;
+            case "jobtitle":
+                spec.OrderBy(e => e.JobRole != null ? e.JobRole.Title : string.Empty, descending: !isAsc);
+                break;
+            default:
+                spec.OrderBy(e => e.JoinDate, descending: !isAsc);
+                break;
+        }
 
         // 6. Fetch all matching employees without pagination
-        var employees = await query.ToListAsync(cancellationToken);
+        var employees = await _employeeRepository.ListAsync(spec, cancellationToken);
 
         // 7. Generate CSV string
         var sb = new StringBuilder();

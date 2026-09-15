@@ -1,8 +1,8 @@
 using Buy2.Application.Common.Interfaces;
+using Buy2.Application.Common.Specifications;
 using Buy2.Domain.Entities;
 using Buy2.Domain.Enums;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace Buy2.Application.Features.Employees.GetPointsTransactions;
 
@@ -32,8 +32,8 @@ public class GetPointsTransactionsQueryHandler : IRequestHandler<GetPointsTransa
     public async Task<PaginatedPointsTransactionsDto?> Handle(GetPointsTransactionsQuery request, CancellationToken cancellationToken)
     {
         // 1. Check if Employee exists (and is not soft-deleted)
-        var employee = await _employeeRepository.Query()
-            .FirstOrDefaultAsync(e => e.Id == request.EmployeeId, cancellationToken);
+        var employee = await _employeeRepository.FirstOrDefaultAsync(
+            e => e.Id == request.EmployeeId, cancellationToken);
 
         if (employee == null || employee.IsDeleted)
         {
@@ -44,9 +44,9 @@ public class GetPointsTransactionsQueryHandler : IRequestHandler<GetPointsTransa
         var page = Math.Max(1, request.Page);
         var pageSize = Math.Clamp(request.PageSize, 1, 100);
 
-        // 3. Base query for employee points transactions with eager loaded PointsRule
-        var query = _pointsTransactionRepository.Query()
-            .Include(t => t.PointsRule)
+        // 3. Base specification for employee points transactions with eager loaded PointsRule
+        var spec = new Specification<PointsTransaction>()
+            .Include(nameof(PointsTransaction.PointsRule))
             .Where(t => t.EmployeeId == request.EmployeeId);
 
         // 4. Filter by Type
@@ -55,15 +55,15 @@ public class GetPointsTransactionsQueryHandler : IRequestHandler<GetPointsTransa
             var type = request.Type.Value;
             if (type == TransactionType.Earned || type == TransactionType.Add)
             {
-                query = query.Where(t => t.Amount > 0);
+                spec.Where(t => t.Amount > 0);
             }
             else if (type == TransactionType.Redeemed || type == TransactionType.Deduct)
             {
-                query = query.Where(t => t.Amount < 0);
+                spec.Where(t => t.Amount < 0);
             }
             else
             {
-                query = query.Where(t => t.TransactionType == type);
+                spec.Where(t => t.TransactionType == type);
             }
         }
 
@@ -71,7 +71,7 @@ public class GetPointsTransactionsQueryHandler : IRequestHandler<GetPointsTransa
         if (!string.IsNullOrWhiteSpace(request.TriggeredBy))
         {
             var triggeredBy = request.TriggeredBy.Trim();
-            query = query.Where(t =>
+            spec.Where(t =>
                 (t.PointsRule != null && (t.PointsRule.RuleKey.Contains(triggeredBy) || t.PointsRule.EventType.Contains(triggeredBy))) ||
                 t.TriggeredBy.Contains(triggeredBy));
         }
@@ -79,23 +79,19 @@ public class GetPointsTransactionsQueryHandler : IRequestHandler<GetPointsTransa
         // 6. Filter by Date range
         if (request.DateFrom.HasValue)
         {
-            query = query.Where(t => t.CreatedAt >= request.DateFrom.Value);
+            spec.Where(t => t.CreatedAt >= request.DateFrom.Value);
         }
 
         if (request.DateTo.HasValue)
         {
-            query = query.Where(t => t.CreatedAt <= request.DateTo.Value);
+            spec.Where(t => t.CreatedAt <= request.DateTo.Value);
         }
 
-        // 7. Get total count before pagination
-        var totalCount = await query.CountAsync(cancellationToken);
-
-        // 8. Order by CreatedAt descending and materialize paginated records
-        var pagedRecords = await query
-            .OrderByDescending(t => t.CreatedAt)
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
-            .ToListAsync(cancellationToken);
+        // 7-8. Order by CreatedAt descending and materialize paginated records
+        spec.OrderBy(t => t.CreatedAt, descending: true);
+        var pagedResult = await _pointsTransactionRepository.PagedAsync(spec, page, pageSize, cancellationToken);
+        var totalCount = pagedResult.TotalCount;
+        var pagedRecords = pagedResult.Items;
 
         // 9. Map items cleanly into DTOs
         var items = pagedRecords.Select(MapToDto).ToList();

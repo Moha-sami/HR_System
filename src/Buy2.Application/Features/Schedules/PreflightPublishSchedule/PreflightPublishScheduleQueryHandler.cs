@@ -1,9 +1,9 @@
 ﻿using Buy2.Application.Common.Interfaces;
+using Buy2.Application.Common.Specifications;
 using Buy2.Application.DTOs.Schedules;
 using Buy2.Application.Features.ShiftTemplates;
 using Buy2.Domain.Entities;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace Buy2.Application.Features.Schedules.PreflightPublishSchedule;
 
@@ -95,26 +95,24 @@ public class PreflightPublishScheduleQueryHandler : IRequestHandler<PreflightPub
         PreflightPublishScheduleQuery request,
         CancellationToken cancellationToken)
     {
-        var query = _shiftRepository.Query(true)
-            .Include(s => s.JobRole)
-            .Where(s => !s.IsPublished && s.SiteId == request.SiteId);
+        var spec = new Specification<ShiftEntity>()
+            .Where(s => !s.IsPublished && s.SiteId == request.SiteId)
+            .Include(nameof(ShiftEntity.JobRole));
 
-        query = ApplyRoleFilter(query, request.TargetRoleIds);
+        ApplyRoleFilter(spec, request.TargetRoleIds);
 
-        var shifts = await query.ToListAsync(cancellationToken);
+        var shifts = await _shiftRepository.ListAsync(spec, cancellationToken);
         return FilterByTargetDates(shifts, request);
     }
 
-    private static IQueryable<ShiftEntity> ApplyRoleFilter(
-        IQueryable<ShiftEntity> query,
+    private static void ApplyRoleFilter(
+        Specification<ShiftEntity> spec,
         IReadOnlyList<int>? roleIds)
     {
         if (roleIds != null && roleIds.Count > 0)
         {
-            return query.Where(s => roleIds.Contains(s.JobRoleId));
+            spec.Where(s => roleIds.Contains(s.JobRoleId));
         }
-
-        return query;
     }
 
     private static List<ShiftEntity> FilterByTargetDates(
@@ -151,11 +149,13 @@ public class PreflightPublishScheduleQueryHandler : IRequestHandler<PreflightPub
             return new Dictionary<int, Employee>();
         }
 
-        return await _employeeRepository.Query(true)
-            .Include(e => e.JobRole)
-            .Include(e => e.PayrollProfile)
-            .Where(e => employeeIds.Contains(e.Id))
-            .ToDictionaryAsync(e => e.Id, cancellationToken);
+        var employeeList = await _employeeRepository.ListAsync(
+            e => employeeIds.Contains(e.Id),
+            cancellationToken,
+            nameof(Employee.JobRole),
+            nameof(Employee.PayrollProfile));
+
+        return employeeList.ToDictionary(e => e.Id);
     }
 
     private async Task<(List<UnqualifiedAssigneeExceptionDto> Unqualified, List<OvertimeViolationExceptionDto> Overtime)>
@@ -297,9 +297,9 @@ public class PreflightPublishScheduleQueryHandler : IRequestHandler<PreflightPub
             return cached;
         }
 
-        var shifts = await _shiftRepository.Query(true)
-            .Where(s => s.EmployeeId == employeeId && s.StartTime >= weekStart && s.StartTime < weekEnd)
-            .ToListAsync(cancellationToken);
+        var shifts = await _shiftRepository.ListAsync(
+            s => s.EmployeeId == employeeId && s.StartTime >= weekStart && s.StartTime < weekEnd,
+            cancellationToken);
 
         cache[key] = shifts;
         return shifts;

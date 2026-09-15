@@ -5,10 +5,10 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Buy2.Application.Common.Interfaces;
+using Buy2.Application.Common.Specifications;
 using Buy2.Application.DTOs.Schedules;
 using Buy2.Domain.Entities;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace Buy2.Application.Features.Schedules.GetShiftCandidateEmployees;
 
@@ -40,13 +40,13 @@ public class GetShiftCandidateEmployeesQueryHandler : IRequestHandler<GetShiftCa
     {
         var (page, pageSize) = NormalizePaging(request.Page, request.PageSize);
 
-        var employeesQuery = _employeeRepository.Query(asNoTracking: true)
-            .Include(e => e.JobRole)
-            .Where(e => !e.IsDeleted && e.IsActive);
+        var employeesSpec = new Specification<Employee>()
+            .Where(e => !e.IsDeleted && e.IsActive)
+            .Include(nameof(Employee.JobRole));
 
-        employeesQuery = ApplyEmployeeFilters(employeesQuery, request.Search, request.RoleIds);
+        ApplyEmployeeFilters(employeesSpec, request.Search, request.RoleIds);
 
-        var candidates = await employeesQuery.ToListAsync(cancellationToken);
+        var candidates = await _employeeRepository.ListAsync(employeesSpec, cancellationToken);
         if (candidates.Count == 0)
         {
             return new PaginatedShiftCandidateEmployeesResponseDto(new List<ShiftCandidateEmployeeItemDto>(), 0, page, pageSize);
@@ -84,8 +84,8 @@ public class GetShiftCandidateEmployeesQueryHandler : IRequestHandler<GetShiftCa
         return (normalizedPage, normalizedPageSize);
     }
 
-    private static IQueryable<Employee> ApplyEmployeeFilters(
-        IQueryable<Employee> query,
+    private static void ApplyEmployeeFilters(
+        Specification<Employee> spec,
         string? search,
         List<int>? roleIds)
     {
@@ -93,7 +93,7 @@ public class GetShiftCandidateEmployeesQueryHandler : IRequestHandler<GetShiftCa
         {
             var trimmedSearch = search.Trim();
             var lowerSearch = trimmedSearch.ToLower();
-            query = query.Where(e =>
+            spec.Where(e =>
                 (e.EmployeeCode != null && e.EmployeeCode.ToLower().Contains(lowerSearch)) ||
                 (e.FirstName != null && e.FirstName.ToLower().Contains(lowerSearch)) ||
                 (e.LastName != null && e.LastName.ToLower().Contains(lowerSearch)) ||
@@ -103,10 +103,8 @@ public class GetShiftCandidateEmployeesQueryHandler : IRequestHandler<GetShiftCa
 
         if (roleIds is { Count: > 0 })
         {
-            query = query.Where(e => roleIds.Contains(e.JobRoleId));
+            spec.Where(e => roleIds.Contains(e.JobRoleId));
         }
-
-        return query;
     }
 
     private async Task<Dictionary<int, decimal>> GetWeeklyHoursAsync(
@@ -114,22 +112,24 @@ public class GetShiftCandidateEmployeesQueryHandler : IRequestHandler<GetShiftCa
         CancellationToken cancellationToken)
     {
         var currentWeekStart = DateTime.UtcNow.Date.AddDays(-7);
-        return await _attendanceRepository.Query(asNoTracking: true)
-            .Where(a => candidateIds.Contains(a.EmployeeId) && a.Date >= currentWeekStart)
+        var attendanceRows = await _attendanceRepository.ListAsync(
+            a => candidateIds.Contains(a.EmployeeId) && a.Date >= currentWeekStart,
+            cancellationToken);
+        return attendanceRows
             .GroupBy(a => a.EmployeeId)
-            .Select(g => new { EmployeeId = g.Key, TotalHours = g.Sum(a => a.HoursWorked) })
-            .ToDictionaryAsync(g => g.EmployeeId, g => g.TotalHours, cancellationToken);
+            .ToDictionary(g => g.Key, g => g.Sum(a => a.HoursWorked));
     }
 
     private async Task<Dictionary<int, decimal>> GetRatingsAsync(
         List<int> candidateIds,
         CancellationToken cancellationToken)
     {
-        return await _performanceRepository.Query(asNoTracking: true)
-            .Where(p => candidateIds.Contains(p.EmployeeId))
+        var performanceRows = await _performanceRepository.ListAsync(
+            p => candidateIds.Contains(p.EmployeeId),
+            cancellationToken);
+        return performanceRows
             .GroupBy(p => p.EmployeeId)
-            .Select(g => new { EmployeeId = g.Key, AvgScore = g.Average(p => p.Score) })
-            .ToDictionaryAsync(g => g.EmployeeId, g => Math.Round(g.AvgScore, 2), cancellationToken);
+            .ToDictionary(g => g.Key, g => Math.Round(g.Average(p => p.Score), 2));
     }
 
     private async Task<HashSet<int>> GetPreferredEmployeeIdsAsync(
@@ -142,10 +142,11 @@ public class GetShiftCandidateEmployeesQueryHandler : IRequestHandler<GetShiftCa
             return new HashSet<int>();
         }
 
-        var preferredList = await _sitePreferredRepository.Query(asNoTracking: true)
-            .Where(spe => spe.SiteId == siteId.Value && candidateIds.Contains(spe.EmployeeId))
-            .Select(spe => spe.EmployeeId)
-            .ToListAsync(cancellationToken);
+        var preferredList = await _sitePreferredRepository.ListAsync(
+            new Specification<SitePreferredEmployee>()
+                .Where(spe => spe.SiteId == siteId.Value && candidateIds.Contains(spe.EmployeeId)),
+            spe => spe.EmployeeId,
+            cancellationToken);
 
         return preferredList.ToHashSet();
     }
@@ -161,12 +162,13 @@ public class GetShiftCandidateEmployeesQueryHandler : IRequestHandler<GetShiftCa
 
         var idStrings = qualificationIds.Select(id => id.ToString()).ToHashSet();
 
-        var qualNames = await _qualificationRepository.Query(asNoTracking: true)
-            .Where(q => qualificationIds.Contains(q.Id))
-            .Select(q => q.Name.Trim().ToLowerInvariant())
-            .ToListAsync(cancellationToken);
+        var qualNames = await _qualificationRepository.ListAsync(
+            new Specification<Qualification>().Where(q => qualificationIds.Contains(q.Id)),
+            q => q.Name,
+            cancellationToken);
 
-        return (qualNames.ToHashSet(), idStrings);
+        var normalizedNames = qualNames.Select(n => n.Trim().ToLowerInvariant()).ToList();
+        return (normalizedNames.ToHashSet(), idStrings);
     }
 
     private static List<ShiftCandidateEmployeeItemDto> FilterAndMapCandidates(

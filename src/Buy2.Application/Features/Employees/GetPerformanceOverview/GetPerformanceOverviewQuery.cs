@@ -1,8 +1,8 @@
 using Buy2.Application.Common.Interfaces;
+using Buy2.Application.Common.Specifications;
 using Buy2.Domain.Entities;
 using Buy2.Domain.Enums;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace Buy2.Application.Features.Employees.GetPerformanceOverview;
 
@@ -36,9 +36,8 @@ public class GetPerformanceOverviewQueryHandler : IRequestHandler<GetPerformance
     public async Task<PerformanceOverviewDto?> Handle(GetPerformanceOverviewQuery request, CancellationToken cancellationToken)
     {
         // 1. Validate employee existence and active status (not soft-deleted)
-        var employee = await _employeeRepository.Query()
-            .AsNoTracking()
-            .FirstOrDefaultAsync(e => e.Id == request.EmployeeId, cancellationToken);
+        var employee = await _employeeRepository.FirstOrDefaultAsync(
+            e => e.Id == request.EmployeeId, cancellationToken);
 
         if (employee == null || employee.IsDeleted)
         {
@@ -121,14 +120,13 @@ public class GetPerformanceOverviewQueryHandler : IRequestHandler<GetPerformance
         var toUtcDateTime = toDate.UtcDateTime;
 
         // 3. Query Performance Submissions with Metric details
-        var submissions = await _submissionRepository.Query()
-            .AsNoTracking()
-            .Include(s => s.PerformanceMetric)
+        var submissionSpec = new Specification<PerformanceSubmission>()
+            .Include(nameof(PerformanceSubmission.PerformanceMetric))
             .Where(s => s.EmployeeId == request.EmployeeId &&
                         s.SubmissionDate >= fromUtcDateTime &&
                         s.SubmissionDate <= toUtcDateTime)
-            .OrderByDescending(s => s.SubmissionDate)
-            .ToListAsync(cancellationToken);
+            .OrderBy(s => s.SubmissionDate, descending: true);
+        var submissions = await _submissionRepository.ListAsync(submissionSpec, cancellationToken);
 
         // 4. Calculate Overall Weighted Score and Rating Label
         decimal overallWeightedScore = 0m;
@@ -170,12 +168,11 @@ public class GetPerformanceOverviewQueryHandler : IRequestHandler<GetPerformance
         }
 
         // 5. Query Tasks and Calculate Task Statistics within Range
-        var tasks = await _taskRepository.Query()
-            .AsNoTracking()
-            .Where(t => t.EmployeeId == request.EmployeeId &&
-                        t.CreatedAt <= toUtcDateTime &&
-                        (t.DueDate == null || t.DueDate >= fromUtcDateTime))
-            .ToListAsync(cancellationToken);
+        var tasks = await _taskRepository.ListAsync(
+            t => t.EmployeeId == request.EmployeeId &&
+                t.CreatedAt <= toUtcDateTime &&
+                (t.DueDate == null || t.DueDate >= fromUtcDateTime),
+            cancellationToken);
 
         var totalTasks = tasks.Count;
         var todoCount = tasks.Count(t => t.Status == EmployeeTaskStatus.Todo);
@@ -209,12 +206,11 @@ public class GetPerformanceOverviewQueryHandler : IRequestHandler<GetPerformance
         );
 
         // 6. Query Employee Achievements including Badge navigation
-        var achievements = await _achievementRepository.Query()
-            .AsNoTracking()
-            .Include(a => a.Badge)
+        var achievementSpec = new Specification<EmployeeAchievement>()
+            .Include(nameof(EmployeeAchievement.Badge))
             .Where(a => a.EmployeeId == request.EmployeeId)
-            .OrderByDescending(a => a.AwardedAt)
-            .ToListAsync(cancellationToken);
+            .OrderBy(a => a.AwardedAt, descending: true);
+        var achievements = await _achievementRepository.ListAsync(achievementSpec, cancellationToken);
 
         var achievementBadges = achievements
             .Select(MapAchievementToDto)

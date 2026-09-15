@@ -1,8 +1,8 @@
 using Buy2.Application.Common.Interfaces;
+using Buy2.Application.Common.Specifications;
 using Buy2.Application.DTOs.Schedules;
 using Buy2.Domain.Entities;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace Buy2.Application.Features.Schedules.CommitCopyShifts;
 
@@ -87,9 +87,9 @@ public class CommitCopyShiftsCommandHandler : IRequestHandler<CommitCopyShiftsCo
         var dayStart = new DateTimeOffset(sourceDate.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
         var dayEnd = dayStart.AddDays(1);
 
-        var shifts = await _shiftRepository.Query(true)
-            .Where(s => s.SiteId == siteId && s.StartTime >= dayStart.AddDays(-1) && s.StartTime < dayEnd.AddDays(1))
-            .ToListAsync(cancellationToken);
+        var shifts = await _shiftRepository.ListAsync(
+            s => s.SiteId == siteId && s.StartTime >= dayStart.AddDays(-1) && s.StartTime < dayEnd.AddDays(1),
+            cancellationToken);
 
         var sourceShifts = shifts.Where(s => IsShiftOnDate(s, sourceDate)).OrderBy(s => s.StartTime).ToList();
         if (sourceShifts.Count == 0)
@@ -170,9 +170,11 @@ public class CommitCopyShiftsCommandHandler : IRequestHandler<CommitCopyShiftsCo
         var dayStart = new DateTimeOffset(targetDate.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
         var dayEnd = dayStart.AddDays(1);
 
-        var shifts = await _shiftRepository.Query(false)
-            .Where(s => s.SiteId == siteId && s.StartTime >= dayStart.AddDays(-1) && s.StartTime < dayEnd.AddDays(1))
-            .ToListAsync(cancellationToken);
+        var shifts = await _shiftRepository.ListAsync(
+            new Specification<ShiftEntity>()
+                .Where(s => s.SiteId == siteId && s.StartTime >= dayStart.AddDays(-1) && s.StartTime < dayEnd.AddDays(1))
+                .AsTracked(),
+            cancellationToken);
 
         return shifts.Where(s => IsShiftOnDate(s, targetDate)).ToList();
     }

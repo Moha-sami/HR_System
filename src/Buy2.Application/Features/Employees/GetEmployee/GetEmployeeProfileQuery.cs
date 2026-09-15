@@ -1,9 +1,9 @@
 using System.Text.Json;
 using Buy2.Application.Common.Interfaces;
+using Buy2.Application.Common.Specifications;
 using Buy2.Application.DTOs.Employees;
 using Buy2.Domain.Entities;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace Buy2.Application.Features.Employees.GetEmployee;
 
@@ -31,16 +31,15 @@ public class GetEmployeeProfileQueryHandler : IRequestHandler<GetEmployeeProfile
     public async Task<EmployeeProfileDto?> Handle(GetEmployeeProfileQuery request, CancellationToken cancellationToken)
     {
         // 1. Fetch Employee with eager loaded navigations
-        var employee = await _employeeRepository.Query(asNoTracking: true)
-            .Include(e => e.JobRole)
-                .ThenInclude(jr => jr!.Department)
-            .Include(e => e.Site)
-                .ThenInclude(s => s!.Region)
-            .Include(e => e.DirectManager)
-            .Include(e => e.Role)
-            .Include(e => e.PayrollProfile)
-            .Include(e => e.EmployeeSites)
-            .FirstOrDefaultAsync(e => e.Id == request.Id, cancellationToken);
+        var employeeSpec = new Specification<Employee>()
+            .Include("JobRole.Department")
+            .Include("Site.Region")
+            .Include(nameof(Employee.DirectManager))
+            .Include(nameof(Employee.Role))
+            .Include(nameof(Employee.PayrollProfile))
+            .Include(nameof(Employee.EmployeeSites))
+            .Where(e => e.Id == request.Id);
+        var employee = await _employeeRepository.FirstOrDefaultAsync(employeeSpec, cancellationToken);
 
         if (employee == null || employee.IsDeleted)
         {
@@ -48,17 +47,14 @@ public class GetEmployeeProfileQueryHandler : IRequestHandler<GetEmployeeProfile
         }
 
         // 2. Calculate live stats
-        var totalPoints = await _pointsRepository.Query(asNoTracking: true)
-            .Where(p => p.EmployeeId == request.Id)
-            .SumAsync(p => (int?)p.Amount, cancellationToken) ?? 0;
+        var totalPoints = await _pointsRepository.SumAsync(
+            p => p.EmployeeId == request.Id, p => (int?)p.Amount, cancellationToken) ?? 0;
 
-        var totalTasks = await _tasksRepository.Query(asNoTracking: true)
-            .Where(t => t.EmployeeId == request.Id)
-            .CountAsync(cancellationToken);
+        var totalTasks = await _tasksRepository.CountAsync(
+            t => t.EmployeeId == request.Id, cancellationToken);
 
-        var totalGifts = await _redemptionRepository.Query(asNoTracking: true)
-            .Where(r => r.EmployeeId == request.Id)
-            .CountAsync(cancellationToken);
+        var totalGifts = await _redemptionRepository.CountAsync(
+            r => r.EmployeeId == request.Id, cancellationToken);
 
         var stats = new EmployeeStatsDto(
             TotalPoints: totalPoints,

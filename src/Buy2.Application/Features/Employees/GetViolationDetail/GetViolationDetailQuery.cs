@@ -3,7 +3,6 @@ using Buy2.Application.Common.Interfaces;
 using Buy2.Domain.Entities;
 using Buy2.Domain.Enums;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace Buy2.Application.Features.Employees.GetViolationDetail;
 
@@ -28,9 +27,8 @@ public class GetViolationDetailQueryHandler : IRequestHandler<GetViolationDetail
     public async Task<ViolationDetailDto?> Handle(GetViolationDetailQuery request, CancellationToken cancellationToken)
     {
         // 1. Check if employee exists and is not soft-deleted
-        var employee = await _employeeRepository.Query()
-            .AsNoTracking()
-            .FirstOrDefaultAsync(e => e.Id == request.EmployeeId, cancellationToken);
+        var employee = await _employeeRepository.FirstOrDefaultAsync(
+            e => e.Id == request.EmployeeId, cancellationToken);
 
         if (employee == null || employee.IsDeleted)
         {
@@ -38,11 +36,11 @@ public class GetViolationDetailQueryHandler : IRequestHandler<GetViolationDetail
         }
 
         // 2. Query violation for this employee including navigations
-        var violation = await _disciplinaryViolationRepository.Query()
-            .AsNoTracking()
-            .Include(v => v.ReportedBy)
-            .Include(v => v.ActionTakenBy)
-            .FirstOrDefaultAsync(v => v.Id == request.ViolationId && v.EmployeeId == request.EmployeeId, cancellationToken);
+        var violation = await _disciplinaryViolationRepository.FirstOrDefaultAsync(
+            v => v.Id == request.ViolationId && v.EmployeeId == request.EmployeeId,
+            cancellationToken,
+            nameof(DisciplinaryViolation.ReportedBy),
+            nameof(DisciplinaryViolation.ActionTakenBy));
 
         if (violation == null)
         {

@@ -2,7 +2,6 @@ using Buy2.Application.Common.Interfaces;
 using Buy2.Application.DTOs;
 using Buy2.Domain.Entities;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace Buy2.Application.Features.Authentication.Login;
 
@@ -28,9 +27,8 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, LoginResponseDt
             return null;
         }
 
-        var employee = await _employeeRepository.Query()
-            .Include(e => e.Role)
-            .FirstOrDefaultAsync(e => e.Email == request.Email.Trim(), cancellationToken);
+        var employee = await _employeeRepository.FirstOrDefaultAsync(
+            e => e.Email == request.Email.Trim(), cancellationToken, nameof(Employee.Role));
 
         if (employee is null)
         {

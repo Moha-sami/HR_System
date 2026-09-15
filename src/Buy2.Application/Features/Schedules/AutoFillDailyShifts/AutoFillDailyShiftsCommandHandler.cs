@@ -1,8 +1,8 @@
 using Buy2.Application.Common.Interfaces;
+using Buy2.Application.Common.Specifications;
 using Buy2.Application.DTOs.Schedules;
 using Buy2.Domain.Entities;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace Buy2.Application.Features.Schedules.AutoFillDailyShifts;
 
@@ -86,9 +86,8 @@ public class AutoFillDailyShiftsCommandHandler : IRequestHandler<AutoFillDailySh
 
     private async Task<Site> ValidateSiteAsync(int siteId, CancellationToken cancellationToken)
     {
-        var site = await _siteRepository.Query(true)
-            .Include(s => s.OperationalHours)
-            .FirstOrDefaultAsync(s => s.Id == siteId, cancellationToken);
+        var site = await _siteRepository.FirstOrDefaultAsync(
+            s => s.Id == siteId, cancellationToken, nameof(Site.OperationalHours));
 
         if (site == null)
         {
@@ -102,9 +101,9 @@ public class AutoFillDailyShiftsCommandHandler : IRequestHandler<AutoFillDailySh
     {
         if (_operationalHourRepository != null)
         {
-            var fromRepo = await _operationalHourRepository.Query(true)
-                .Where(o => o.SiteId == site.Id)
-                .ToListAsync(cancellationToken);
+            var fromRepo = await _operationalHourRepository.ListAsync(
+                o => o.SiteId == site.Id,
+                cancellationToken);
 
             if (fromRepo.Count > 0)
             {
@@ -121,10 +120,12 @@ public class AutoFillDailyShiftsCommandHandler : IRequestHandler<AutoFillDailySh
         var dayStart = new DateTimeOffset(date.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
         var dayEnd = dayStart.AddDays(1);
 
-        var shifts = await _shiftRepository.Query(false)
-            .Include(s => s.JobRole)
+        var spec = new Specification<ShiftEntity>()
             .Where(s => s.SiteId == siteId && s.StartTime >= dayStart.AddDays(-1) && s.StartTime < dayEnd.AddDays(1))
-            .ToListAsync(cancellationToken);
+            .Include(nameof(ShiftEntity.JobRole))
+            .AsTracked();
+
+        var shifts = await _shiftRepository.ListAsync(spec, cancellationToken);
 
         return shifts.Where(s => IsShiftOnDate(s, date)).OrderBy(s => s.StartTime).ToList();
     }
@@ -137,18 +138,18 @@ public class AutoFillDailyShiftsCommandHandler : IRequestHandler<AutoFillDailySh
 
     private async Task<List<Employee>> GetCandidateEmployeesAsync(CancellationToken cancellationToken)
     {
-        return await _employeeRepository.Query(true)
-            .Include(e => e.JobRole)
-            .Include(e => e.PayrollProfile)
-            .Where(e => !e.IsDeleted && e.IsActive)
-            .ToListAsync(cancellationToken);
+        return await _employeeRepository.ListAsync(
+            e => !e.IsDeleted && e.IsActive,
+            cancellationToken,
+            nameof(Employee.JobRole),
+            nameof(Employee.PayrollProfile));
     }
 
     private async Task<HashSet<int>> GetPreferredEmployeeIdsAsync(int siteId, CancellationToken cancellationToken)
     {
-        var preferred = await _sitePreferredRepository.Query(true)
-            .Where(p => p.SiteId == siteId)
-            .ToListAsync(cancellationToken);
+        var preferred = await _sitePreferredRepository.ListAsync(
+            p => p.SiteId == siteId,
+            cancellationToken);
 
         return preferred.Select(p => p.EmployeeId).ToHashSet();
     }
@@ -176,9 +177,9 @@ public class AutoFillDailyShiftsCommandHandler : IRequestHandler<AutoFillDailySh
             return new List<ShiftEntity>();
         }
 
-        return await _shiftRepository.Query(true)
-            .Where(s => s.EmployeeId != null && candidateIds.Contains(s.EmployeeId.Value) && s.StartTime >= weekStart && s.StartTime < weekEnd)
-            .ToListAsync(cancellationToken);
+        return await _shiftRepository.ListAsync(
+            s => s.EmployeeId != null && candidateIds.Contains(s.EmployeeId.Value) && s.StartTime >= weekStart && s.StartTime < weekEnd,
+            cancellationToken);
     }
 
     private static Dictionary<int, decimal> InitWeeklyHours(IEnumerable<Employee> candidates, IReadOnlyList<ShiftEntity> weeklyShifts)
@@ -346,11 +347,11 @@ public class AutoFillDailyShiftsCommandHandler : IRequestHandler<AutoFillDailySh
 
         if (missingIds.Count > 0)
         {
-            var missing = await _employeeRepository.Query(true)
-                .Include(e => e.PayrollProfile)
-                .Include(e => e.JobRole)
-                .Where(e => missingIds.Contains(e.Id))
-                .ToListAsync(cancellationToken);
+            var missing = await _employeeRepository.ListAsync(
+                e => missingIds.Contains(e.Id),
+                cancellationToken,
+                nameof(Employee.PayrollProfile),
+                nameof(Employee.JobRole));
 
             foreach (var emp in missing)
             {

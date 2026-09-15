@@ -1,9 +1,9 @@
 using System.ComponentModel.DataAnnotations;
 using Buy2.Application.Common.Interfaces;
+using Buy2.Application.Common.Specifications;
 using Buy2.Application.DTOs.Schedules;
 using Buy2.Domain.Entities;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace Buy2.Application.Features.Schedules.UnassignOrDeleteShiftBlock;
 
@@ -59,9 +59,12 @@ public class UnassignOrDeleteShiftBlockCommandHandler : IRequestHandler<Unassign
 
     private async Task<ShiftEntity> GetTrackedShiftAsync(int shiftBlockId, CancellationToken cancellationToken)
     {
-        var shift = await _shiftRepository.Query(asNoTracking: false)
-            .Include(s => s.JobRole)
-            .FirstOrDefaultAsync(s => s.Id == shiftBlockId, cancellationToken);
+        var spec = new Specification<ShiftEntity>()
+            .Where(s => s.Id == shiftBlockId)
+            .Include(nameof(ShiftEntity.JobRole))
+            .AsTracked();
+
+        var shift = await _shiftRepository.FirstOrDefaultAsync(spec, cancellationToken);
 
         if (shift == null)
         {
@@ -198,10 +201,10 @@ public class UnassignOrDeleteShiftBlockCommandHandler : IRequestHandler<Unassign
         var dayStart = new DateTimeOffset(targetDate.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero).AddDays(-1);
         var dayEnd = dayStart.AddDays(3);
 
-        var siteShifts = await _shiftRepository.Query(true)
-            .Include(s => s.JobRole)
-            .Where(s => s.SiteId == siteId && s.StartTime >= dayStart && s.StartTime < dayEnd)
-            .ToListAsync(cancellationToken);
+        var siteShifts = await _shiftRepository.ListAsync(
+            s => s.SiteId == siteId && s.StartTime >= dayStart && s.StartTime < dayEnd,
+            cancellationToken,
+            nameof(ShiftEntity.JobRole));
 
         return siteShifts
             .Where(s => DateOnly.FromDateTime(s.StartTime.Date) == targetDate || DateOnly.FromDateTime(s.StartTime.UtcDateTime.Date) == targetDate)
@@ -218,10 +221,12 @@ public class UnassignOrDeleteShiftBlockCommandHandler : IRequestHandler<Unassign
             return new Dictionary<int, Employee>();
         }
 
-        return await _employeeRepository.Query(true)
-            .Include(e => e.PayrollProfile)
-            .Where(e => ids.Contains(e.Id))
-            .ToDictionaryAsync(e => e.Id, cancellationToken);
+        var employeeList = await _employeeRepository.ListAsync(
+            e => ids.Contains(e.Id),
+            cancellationToken,
+            nameof(Employee.PayrollProfile));
+
+        return employeeList.ToDictionary(e => e.Id);
     }
 
     private async Task<bool> IsSiteDayOffAsync(
@@ -231,17 +236,17 @@ public class UnassignOrDeleteShiftBlockCommandHandler : IRequestHandler<Unassign
     {
         if (_operationalHourRepository != null)
         {
-            var opHour = await _operationalHourRepository.Query(true)
-                .FirstOrDefaultAsync(o => o.SiteId == siteId && o.DayOfWeek == dayOfWeek, cancellationToken);
+            var opHour = await _operationalHourRepository.FirstOrDefaultAsync(
+                o => o.SiteId == siteId && o.DayOfWeek == dayOfWeek,
+                cancellationToken);
             if (opHour != null)
             {
                 return !opHour.IsOpen;
             }
         }
 
-        var site = await _siteRepository.Query(true)
-            .Include(s => s.OperationalHours)
-            .FirstOrDefaultAsync(s => s.Id == siteId, cancellationToken);
+        var site = await _siteRepository.FirstOrDefaultAsync(
+            s => s.Id == siteId, cancellationToken, nameof(Site.OperationalHours));
 
         var hourRecord = site?.OperationalHours?.FirstOrDefault(o => o.DayOfWeek == dayOfWeek);
         return hourRecord != null && !hourRecord.IsOpen;

@@ -1,8 +1,8 @@
 using Buy2.Application.Common.Interfaces;
 using Buy2.Application.Common.Models;
+using Buy2.Application.Common.Specifications;
 using Buy2.Domain.Entities;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace Buy2.Application.Features.Sites.GetSiteShiftTemplates;
 
@@ -52,8 +52,6 @@ public class GetSiteShiftTemplatesQueryHandler
         CancellationToken cancellationToken)
     {
         var siteExists = await _siteRepository
-            .Query()
-            .AsNoTracking()
             .AnyAsync(s => s.Id == request.SiteId, cancellationToken);
 
         if (!siteExists)
@@ -68,20 +66,18 @@ public class GetSiteShiftTemplatesQueryHandler
                 "You do not have access to this site.");
         }
 
-        IQueryable<ShiftTemplate> query = _shiftTemplateRepository.Query()
-            .AsNoTracking()
-            .Where(t => t.ShiftTemplateSites.Any(l => l.SiteId == request.SiteId));
+        var spec = new Specification<ShiftTemplate>()
+            .Where(t => t.ShiftTemplateSites.Any(l => l.SiteId == request.SiteId))
+            .Include(nameof(ShiftTemplate.ShiftBlocks))
+            .OrderBy(t => t.Id);
 
         if (!string.IsNullOrWhiteSpace(request.Search))
         {
             var normalizedSearch = request.Search.Trim().ToLower();
-            query = query.Where(t => t.Name.ToLower().Contains(normalizedSearch));
+            spec.Where(t => t.Name.ToLower().Contains(normalizedSearch));
         }
 
-        var templates = await query
-            .Include(t => t.ShiftBlocks)
-            .OrderBy(t => t.Id)
-            .ToListAsync(cancellationToken);
+        var templates = await _shiftTemplateRepository.ListAsync(spec, cancellationToken);
 
         var items = templates.Select(SiteShiftTemplateMapper.ToDto).ToList();
 
@@ -98,8 +94,6 @@ public class GetSiteShiftTemplatesQueryHandler
         }
 
         return await _employeeSiteRepository
-            .Query()
-            .AsNoTracking()
             .AnyAsync(
                 es => es.EmployeeId == request.ActorEmployeeId.Value
                     && es.SiteId == request.SiteId,

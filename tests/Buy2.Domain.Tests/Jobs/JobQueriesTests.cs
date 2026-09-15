@@ -74,7 +74,7 @@ public class JobQueriesTests
         context.JobRoles.AddRange(job1, job2, job3);
         await context.SaveChangesAsync();
 
-        var handler = new GetJobsQueryHandler(jobRepo);
+        var handler = new GetJobsQueryHandler(jobRepo, new GenericRepository<Employee>(context));
 
         // Act & Assert 1: SearchTerm filter
         var searchQuery = new GetJobsQuery(new JobFilterQueryDto(SearchTerm: "Software"));
@@ -131,7 +131,7 @@ public class JobQueriesTests
         context.Employees.AddRange(empActive1, empActive2, empDeleted);
         await context.SaveChangesAsync();
 
-        var handler = new GetJobsQueryHandler(jobRepo);
+        var handler = new GetJobsQueryHandler(jobRepo, new GenericRepository<Employee>(context));
         var query = new GetJobsQuery(new JobFilterQueryDto(PageNumber: 1, PageSize: 10));
 
         // Act

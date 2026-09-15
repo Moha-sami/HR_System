@@ -1,8 +1,8 @@
 using Buy2.Application.Common.Interfaces;
+using Buy2.Application.Common.Specifications;
 using Buy2.Application.DTOs.Sites;
 using Buy2.Domain.Entities;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json;
 
@@ -40,11 +40,11 @@ public class UpdateSiteCommandHandler : IRequestHandler<UpdateSiteCommand, int>
     }
     public async Task<int> Handle(UpdateSiteCommand command, CancellationToken cancellation)
     {
-        var site = await _siteRepository
-            .Query(false)
-            .Include(s => s.OperationalHours)
-            .Include(s => s.PreferredEmployees)
-            .FirstOrDefaultAsync(s => s.Id == command.Id, cancellation);
+        var siteSpec = new Specification<Site>()
+            .Where(s => s.Id == command.Id)
+            .Include(nameof(Site.OperationalHours), nameof(Site.PreferredEmployees))
+            .AsTracked();
+        var site = await _siteRepository.FirstOrDefaultAsync(siteSpec, cancellation);
         if (site is null)
         {
             throw new KeyNotFoundException("Site not found.");
@@ -87,7 +87,6 @@ public class UpdateSiteCommandHandler : IRequestHandler<UpdateSiteCommand, int>
         if (employeeCommand.Count > 0)
         {
             var employeeExistsCount = await _employeeRepository
-                .Query()
                 .CountAsync(e => employeeCommand.Contains(e.Id), cancellation);
             if (employeeExistsCount != employeeCommand.Count)
             {

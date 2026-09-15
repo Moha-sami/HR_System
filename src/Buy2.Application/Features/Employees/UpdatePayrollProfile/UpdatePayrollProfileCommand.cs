@@ -2,7 +2,6 @@ using System.Text.Json;
 using Buy2.Application.Common.Interfaces;
 using Buy2.Domain.Entities;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace Buy2.Application.Features.Employees.UpdatePayrollProfile;
 
@@ -36,10 +35,11 @@ public class UpdatePayrollProfileCommandHandler : IRequestHandler<UpdatePayrollP
 
     public async Task<UpdatePayrollProfileResult> Handle(UpdatePayrollProfileCommand request, CancellationToken cancellationToken)
     {
-        var employee = await _employeeRepository.Query(asNoTracking: false)
-            .Include(e => e.EmployeeSites)
-            .Include(e => e.PayrollProfile)
-            .FirstOrDefaultAsync(e => e.Id == request.EmployeeId, cancellationToken);
+        var employee = await _employeeRepository.FirstOrDefaultAsync(
+            e => e.Id == request.EmployeeId,
+            cancellationToken,
+            nameof(Employee.EmployeeSites),
+            nameof(Employee.PayrollProfile));
 
         if (employee is null || employee.IsDeleted || !employee.IsActive)
         {
@@ -52,8 +52,8 @@ public class UpdatePayrollProfileCommandHandler : IRequestHandler<UpdatePayrollP
         var payroll = employee.PayrollProfile;
         if (payroll is null)
         {
-            payroll = await _payrollProfileRepository.Query(asNoTracking: false)
-                .FirstOrDefaultAsync(p => p.EmployeeId == request.EmployeeId, cancellationToken);
+            payroll = await _payrollProfileRepository.FirstOrDefaultAsync(
+                p => p.EmployeeId == request.EmployeeId, cancellationToken);
         }
 
         var isNewPayroll = false;
@@ -120,9 +120,8 @@ public class UpdatePayrollProfileCommandHandler : IRequestHandler<UpdatePayrollP
 
             if (distinctSiteIds.Count > 0)
             {
-                var validSiteCount = await _siteRepository.Query()
-                    .Where(s => distinctSiteIds.Contains(s.Id))
-                    .CountAsync(cancellationToken);
+                var validSiteCount = await _siteRepository.CountAsync(
+                    s => distinctSiteIds.Contains(s.Id), cancellationToken);
 
                 if (validSiteCount != distinctSiteIds.Count)
                 {

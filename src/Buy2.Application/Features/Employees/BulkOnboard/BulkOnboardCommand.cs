@@ -2,10 +2,10 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using Buy2.Application.Common.Interfaces;
+using Buy2.Application.Common.Specifications;
 using Buy2.Domain.Entities;
 using Buy2.Domain.Enums;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace Buy2.Application.Features.Employees.BulkOnboard;
 
@@ -47,19 +47,19 @@ public class BulkOnboardCommandHandler : IRequestHandler<BulkOnboardCommand, Bul
         var validEmployees = new List<Employee>();
 
         // 1. Batch query existing roles, job roles, and sites to prevent N+1 queries
-        var roles = await _roleRepository.Query().ToListAsync(cancellationToken);
+        var roles = await _roleRepository.ListAsync(cancellationToken: cancellationToken);
         var roleById = roles.ToDictionary(r => r.Id);
         var roleByName = roles
             .GroupBy(r => r.Name, StringComparer.OrdinalIgnoreCase)
             .ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
 
-        var jobRoles = await _jobRoleRepository.Query().ToListAsync(cancellationToken);
+        var jobRoles = await _jobRoleRepository.ListAsync(cancellationToken: cancellationToken);
         var jobRoleById = jobRoles.ToDictionary(jr => jr.Id);
         var jobRoleByTitle = jobRoles
             .GroupBy(jr => jr.Title, StringComparer.OrdinalIgnoreCase)
             .ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
 
-        var sites = await _siteRepository.Query().ToListAsync(cancellationToken);
+        var sites = await _siteRepository.ListAsync(cancellationToken: cancellationToken);
         var siteById = sites.ToDictionary(s => s.Id);
         var siteByName = sites
             .GroupBy(s => s.SiteName, StringComparer.OrdinalIgnoreCase)
@@ -72,10 +72,12 @@ public class BulkOnboardCommandHandler : IRequestHandler<BulkOnboardCommand, Bul
             .Distinct()
             .ToList();
 
-        var existingDbEmails = (await _employeeRepository.Query()
-            .Where(e => incomingEmails.Contains(e.Email.ToLower()))
-            .Select(e => e.Email.ToLower())
-            .ToListAsync(cancellationToken))
+        var existingEmailSpec = new Specification<Employee>()
+            .Where(e => incomingEmails.Contains(e.Email.ToLower()));
+        var existingDbEmails = (await _employeeRepository.ListAsync(
+                existingEmailSpec,
+                e => (e.Email ?? string.Empty).ToLower(),
+                cancellationToken))
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
         // Track emails seen inside this payload batch to catch duplicates

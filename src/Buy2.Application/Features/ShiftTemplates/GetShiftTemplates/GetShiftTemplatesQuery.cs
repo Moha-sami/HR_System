@@ -1,11 +1,10 @@
 using Buy2.Application.Common.Interfaces;
 using Buy2.Application.Common.Models;
+using Buy2.Application.Common.Specifications;
 using Buy2.Application.Features.ShiftTemplates.DTOs;
 using Buy2.Application.Features.ShiftTemplates.Validators;
 using Buy2.Domain.Entities;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
-using System.Linq.Expressions;
 
 namespace Buy2.Application.Features.ShiftTemplates.GetShiftTemplates;
 
@@ -38,26 +37,20 @@ public class GetShiftTemplatesQueryHandler
         var page = Math.Max(1, filter.PageNumber);
         var pageSize = Math.Clamp(filter.PageSize, 1, 100);
 
-        IQueryable<ShiftTemplate> query = _shiftTemplateRepository.Query()
-            .AsNoTracking()
-            .Include(t => t.ShiftTemplateSites);
+        var spec = new Specification<ShiftTemplate>()
+            .Include(nameof(ShiftTemplate.ShiftTemplateSites));
 
         if (!string.IsNullOrWhiteSpace(filter.SearchTerm))
         {
             var searchTerm = filter.SearchTerm.Trim();
-            query = query.Where(t => t.Name.Contains(searchTerm));
+            spec.Where(t => t.Name.Contains(searchTerm));
         }
 
-        var totalCount = await query.CountAsync(cancellationToken);
+        ApplySorting(spec, filter);
 
-        query = ApplySorting(query, filter);
+        var paged = await _shiftTemplateRepository.PagedAsync(spec, page, pageSize, cancellationToken);
 
-        var templates = await query
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
-            .ToListAsync(cancellationToken);
-
-        var items = templates.Select(t => new ShiftTemplateListItemDto(
+        var items = paged.Items.Select(t => new ShiftTemplateListItemDto(
             t.Id,
             t.Name,
             ShiftTimeHelper.FormatDate(t.CreatedAt),
@@ -67,27 +60,30 @@ public class GetShiftTemplatesQueryHandler
             t.ShiftTemplateSites.Count
         )).ToList();
 
-        var totalPages = totalCount == 0 ? 0 : (int)Math.Ceiling((double)totalCount / pageSize);
-
         return Result<ShiftTemplatePaginatedResponseDto<ShiftTemplateListItemDto>>.Success(
-            new ShiftTemplatePaginatedResponseDto<ShiftTemplateListItemDto>(items, totalCount, page, pageSize, totalPages));
+            new ShiftTemplatePaginatedResponseDto<ShiftTemplateListItemDto>(items, paged.TotalCount, page, pageSize, paged.TotalPages));
     }
 
-    private static IQueryable<ShiftTemplate> ApplySorting(
-        IQueryable<ShiftTemplate> query,
+    private static void ApplySorting(
+        Specification<ShiftTemplate> spec,
         ShiftTemplateFilterQueryDto filter)
     {
         var specs = BuildSortSpecs(filter);
 
-        IOrderedQueryable<ShiftTemplate>? ordered = null;
-        foreach (var spec in specs)
+        var first = true;
+        foreach (var sortSpec in specs)
         {
-            ordered = ApplySortSpec(query, ordered, spec);
+            ApplySortSpec(spec, sortSpec, ref first);
         }
 
-        return specs[0].Ascending
-            ? ordered!.ThenBy(t => t.Id)
-            : ordered!.ThenByDescending(t => t.Id);
+        if (specs[0].Ascending)
+        {
+            spec.ThenBy(t => t.Id);
+        }
+        else
+        {
+            spec.ThenBy(t => t.Id, descending: true);
+        }
     }
 
     private static List<ShiftTemplateSortSpec> BuildSortSpecs(ShiftTemplateFilterQueryDto filter)
@@ -105,32 +101,32 @@ public class GetShiftTemplatesQueryHandler
         return specs.OrderByDescending(s => s.Explicit).ToList();
     }
 
-    private static IOrderedQueryable<ShiftTemplate> ApplySortSpec(
-        IQueryable<ShiftTemplate> query,
-        IOrderedQueryable<ShiftTemplate>? ordered,
-        ShiftTemplateSortSpec spec)
+    private static void ApplySortSpec(
+        Specification<ShiftTemplate> spec,
+        ShiftTemplateSortSpec sortSpec,
+        ref bool first)
     {
-        return spec.Key switch
+        switch (sortSpec.Key)
         {
-            ShiftTemplateSortKey.Creation => OrderWith(query, ordered, t => t.CreatedAt, spec.Ascending),
-            ShiftTemplateSortKey.Updated => OrderWith(query, ordered, t => t.UpdatedAt, spec.Ascending),
-            ShiftTemplateSortKey.Name => OrderWith(query, ordered, t => t.Name, spec.Ascending),
-            _ => OrderWith(query, ordered, t => t.ShiftTemplateSites.Count, spec.Ascending),
-        };
-    }
-
-    private static IOrderedQueryable<ShiftTemplate> OrderWith<TKey>(
-        IQueryable<ShiftTemplate> query,
-        IOrderedQueryable<ShiftTemplate>? ordered,
-        Expression<Func<ShiftTemplate, TKey>> keySelector,
-        bool ascending)
-    {
-        if (ordered is null)
-        {
-            return ascending ? query.OrderBy(keySelector) : query.OrderByDescending(keySelector);
+            case ShiftTemplateSortKey.Creation:
+                if (first) { spec.OrderBy(t => t.CreatedAt, descending: !sortSpec.Ascending); }
+                else { spec.ThenBy(t => t.CreatedAt, descending: !sortSpec.Ascending); }
+                break;
+            case ShiftTemplateSortKey.Updated:
+                if (first) { spec.OrderBy(t => t.UpdatedAt!, descending: !sortSpec.Ascending); }
+                else { spec.ThenBy(t => t.UpdatedAt!, descending: !sortSpec.Ascending); }
+                break;
+            case ShiftTemplateSortKey.Name:
+                if (first) { spec.OrderBy(t => t.Name, descending: !sortSpec.Ascending); }
+                else { spec.ThenBy(t => t.Name, descending: !sortSpec.Ascending); }
+                break;
+            default:
+                if (first) { spec.OrderBy(t => t.ShiftTemplateSites.Count, descending: !sortSpec.Ascending); }
+                else { spec.ThenBy(t => t.ShiftTemplateSites.Count, descending: !sortSpec.Ascending); }
+                break;
         }
 
-        return ascending ? ordered.ThenBy(keySelector) : ordered.ThenByDescending(keySelector);
+        first = false;
     }
 
     private static bool IsAscending(string? sortDir)

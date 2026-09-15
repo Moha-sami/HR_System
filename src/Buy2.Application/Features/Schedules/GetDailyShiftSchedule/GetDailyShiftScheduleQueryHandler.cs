@@ -2,7 +2,6 @@ using Buy2.Application.Common.Interfaces;
 using Buy2.Application.DTOs.Schedules;
 using Buy2.Domain.Entities;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace Buy2.Application.Features.Schedules.GetDailyShiftSchedule;
 
@@ -35,9 +34,8 @@ public class GetDailyShiftScheduleQueryHandler : IRequestHandler<GetDailyShiftSc
 
     public async Task<DailyShiftScheduleResponseDto> Handle(GetDailyShiftScheduleQuery request, CancellationToken cancellationToken)
     {
-        var site = await _siteRepository.Query(true)
-            .Include(s => s.OperationalHours)
-            .FirstOrDefaultAsync(s => s.Id == request.SiteId, cancellationToken);
+        var site = await _siteRepository.FirstOrDefaultAsync(
+            s => s.Id == request.SiteId, cancellationToken, nameof(Site.OperationalHours));
 
         if (site == null)
         {
@@ -48,10 +46,10 @@ public class GetDailyShiftScheduleQueryHandler : IRequestHandler<GetDailyShiftSc
 
         var (weekStart, weekEnd) = GetWeekBoundary(request.Date);
 
-        var shifts = await _shiftRepository.Query(true)
-            .Include(s => s.JobRole)
-            .Where(s => s.SiteId == request.SiteId && s.StartTime >= weekStart.AddDays(-1) && s.StartTime < weekEnd.AddDays(1))
-            .ToListAsync(cancellationToken);
+        var shifts = await _shiftRepository.ListAsync(
+            s => s.SiteId == request.SiteId && s.StartTime >= weekStart.AddDays(-1) && s.StartTime < weekEnd.AddDays(1),
+            cancellationToken,
+            nameof(ShiftEntity.JobRole));
 
         var employees = await LoadEmployeesAsync(shifts, cancellationToken);
 
@@ -91,9 +89,9 @@ public class GetDailyShiftScheduleQueryHandler : IRequestHandler<GetDailyShiftSc
     {
         if (_operationalHourRepository != null)
         {
-            var fromRepo = await _operationalHourRepository.Query(true)
-                .Where(o => o.SiteId == site.Id)
-                .ToListAsync(cancellationToken);
+            var fromRepo = await _operationalHourRepository.ListAsync(
+                o => o.SiteId == site.Id,
+                cancellationToken);
 
             if (fromRepo.Count > 0)
             {
@@ -120,10 +118,12 @@ public class GetDailyShiftScheduleQueryHandler : IRequestHandler<GetDailyShiftSc
             return new Dictionary<int, Employee>();
         }
 
-        return await _employeeRepository.Query(true)
-            .Include(e => e.PayrollProfile)
-            .Where(e => employeeIds.Contains(e.Id))
-            .ToDictionaryAsync(e => e.Id, cancellationToken);
+        var employeeList = await _employeeRepository.ListAsync(
+            e => employeeIds.Contains(e.Id),
+            cancellationToken,
+            nameof(Employee.PayrollProfile));
+
+        return employeeList.ToDictionary(e => e.Id);
     }
 
     private static bool IsShiftOnDate(ShiftEntity shift, DateOnly date)

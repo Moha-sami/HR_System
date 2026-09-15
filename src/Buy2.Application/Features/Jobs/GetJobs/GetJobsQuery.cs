@@ -1,8 +1,8 @@
 using Buy2.Application.Common.Interfaces;
+using Buy2.Application.Common.Specifications;
 using Buy2.Application.Features.Jobs.DTOs;
 using Buy2.Domain.Entities;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
 
 namespace Buy2.Application.Features.Jobs.GetJobs;
@@ -12,10 +12,12 @@ public record GetJobsQuery(JobFilterQueryDto Filter) : IRequest<JobPaginatedResp
 public class GetJobsQueryHandler : IRequestHandler<GetJobsQuery, JobPaginatedResponseDto<JobListItemDto>>
 {
     private readonly IRepository<JobRole> _jobRoleRepository;
+    private readonly IRepository<Employee> _employeeRepository;
 
-    public GetJobsQueryHandler(IRepository<JobRole> jobRoleRepository)
+    public GetJobsQueryHandler(IRepository<JobRole> jobRoleRepository, IRepository<Employee> employeeRepository)
     {
         _jobRoleRepository = jobRoleRepository;
+        _employeeRepository = employeeRepository;
     }
 
     public async Task<JobPaginatedResponseDto<JobListItemDto>> Handle(GetJobsQuery request, CancellationToken cancellationToken)
@@ -24,116 +26,133 @@ public class GetJobsQueryHandler : IRequestHandler<GetJobsQuery, JobPaginatedRes
         var page = Math.Max(1, filter.PageNumber);
         var pageSize = Math.Clamp(filter.PageSize, 1, 100);
 
-        IQueryable<JobRole> query = _jobRoleRepository.Query(asNoTracking: true);
+        // NOTE: Employees are intentionally NOT included here. Loading the whole
+        // collection per job just to count it is the over-fetching anti-pattern
+        // (perf. test Issue #316). Counts come from a second filtered query below.
+        var spec = new Specification<JobRole>()
+            .Include(nameof(JobRole.Department));
 
-        query = ApplyFilters(query, filter);
+        ApplyFilters(spec, filter);
+        ApplySorting(spec, filter.SortBy, filter.SortDir);
 
-        var totalCount = await query.CountAsync(cancellationToken);
+        var paged = await _jobRoleRepository.PagedAsync(spec, page, pageSize, cancellationToken);
 
-        query = ApplySorting(query, filter.SortBy, filter.SortDir);
+        var countByJobRoleId = await GetActiveEmployeeCountsAsync(
+            paged.Items.Select(j => j.Id).ToList(), cancellationToken);
 
-        var rawList = await query
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
-            .Select(j => new
-            {
-                j.Id,
-                j.Title,
-                j.DepartmentId,
-                DepartmentName = j.Department != null ? j.Department.Name : "N/A",
-                j.SeniorityLevel,
-                j.AttendanceType,
-                AssignedEmployeesCount = j.Employees.Count(e => !e.IsDeleted),
-                j.RequiredQualificationsJson,
-                j.ExperienceYears,
-                j.IsActive,
-                j.CreatedAt
-            })
-            .ToListAsync(cancellationToken);
-
-        var items = rawList.Select(j => new JobListItemDto(
+        var items = paged.Items.Select(j => new JobListItemDto(
             j.Id,
             j.Title,
             j.DepartmentId,
-            j.DepartmentName,
+            j.Department != null ? j.Department.Name : "N/A",
             j.SeniorityLevel,
             j.AttendanceType,
-            j.AssignedEmployeesCount,
+            countByJobRoleId.TryGetValue(j.Id, out var employeeCount) ? employeeCount : 0,
             ParseJsonListCount(j.RequiredQualificationsJson),
             j.ExperienceYears,
             j.IsActive,
             j.CreatedAt
         )).ToList();
 
-        var totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
-
-        return new JobPaginatedResponseDto<JobListItemDto>(items, totalCount, page, pageSize, totalPages);
+        return new JobPaginatedResponseDto<JobListItemDto>(items, paged.TotalCount, paged.PageNumber, paged.PageSize, paged.TotalPages);
     }
 
-    private static IQueryable<JobRole> ApplyFilters(IQueryable<JobRole> query, JobFilterQueryDto filter)
+    private static Specification<JobRole> ApplyFilters(Specification<JobRole> spec, JobFilterQueryDto filter)
     {
-        query = ApplySearchTerm(query, filter.SearchTerm);
-        query = ApplyDepartmentAndStatusFilter(query, filter.DepartmentId, filter.IsActive);
-        query = ApplyWorkModelAndSeniorityFilter(query, filter.WorkModel, filter.SeniorityLevel);
-        return query;
+        ApplySearchTerm(spec, filter.SearchTerm);
+        ApplyDepartmentAndStatusFilter(spec, filter.DepartmentId, filter.IsActive);
+        ApplyWorkModelAndSeniorityFilter(spec, filter.WorkModel, filter.SeniorityLevel);
+        return spec;
     }
 
-    private static IQueryable<JobRole> ApplySearchTerm(IQueryable<JobRole> query, string? searchTerm)
+    private static Specification<JobRole> ApplySearchTerm(Specification<JobRole> spec, string? searchTerm)
     {
         if (string.IsNullOrWhiteSpace(searchTerm))
         {
-            return query;
+            return spec;
         }
 
         var term = searchTerm.Trim().ToLower();
-        return query.Where(j => j.Title.ToLower().Contains(term) ||
-                                 (j.Department != null && j.Department.Name.ToLower().Contains(term)));
+        spec.Where(j => j.Title.ToLower().Contains(term) ||
+                        (j.Department != null && j.Department.Name.ToLower().Contains(term)));
+        return spec;
     }
 
-    private static IQueryable<JobRole> ApplyDepartmentAndStatusFilter(IQueryable<JobRole> query, int? departmentId, bool? isActive)
+    private static Specification<JobRole> ApplyDepartmentAndStatusFilter(Specification<JobRole> spec, int? departmentId, bool? isActive)
     {
         if (departmentId.HasValue)
         {
-            query = query.Where(j => j.DepartmentId == departmentId.Value);
+            var id = departmentId.Value;
+            spec.Where(j => j.DepartmentId == id);
         }
 
         if (isActive.HasValue)
         {
-            query = query.Where(j => j.IsActive == isActive.Value);
+            var active = isActive.Value;
+            spec.Where(j => j.IsActive == active);
         }
 
-        return query;
+        return spec;
     }
 
-    private static IQueryable<JobRole> ApplyWorkModelAndSeniorityFilter(IQueryable<JobRole> query, string? workModel, string? seniorityLevel)
+    private static Specification<JobRole> ApplyWorkModelAndSeniorityFilter(Specification<JobRole> spec, string? workModel, string? seniorityLevel)
     {
         if (!string.IsNullOrWhiteSpace(seniorityLevel))
         {
-            query = query.Where(j => j.SeniorityLevel == seniorityLevel);
+            spec.Where(j => j.SeniorityLevel == seniorityLevel);
         }
 
         if (!string.IsNullOrWhiteSpace(workModel))
         {
-            query = query.Where(j => j.AttendanceType == workModel);
+            spec.Where(j => j.AttendanceType == workModel);
         }
 
-        return query;
+        return spec;
     }
 
-    private static IQueryable<JobRole> ApplySorting(IQueryable<JobRole> query, string? sortBy, string? sortDir)
+    private static Specification<JobRole> ApplySorting(Specification<JobRole> spec, string? sortBy, string? sortDir)
     {
         var isDesc = string.Equals(sortDir, "desc", StringComparison.OrdinalIgnoreCase);
         var isAsc = string.Equals(sortDir, "asc", StringComparison.OrdinalIgnoreCase);
 
-        return sortBy?.ToLowerInvariant() switch
+        switch (sortBy?.ToLowerInvariant())
         {
-            "title" => isDesc ? query.OrderByDescending(j => j.Title) : query.OrderBy(j => j.Title),
-            "department" => isDesc ? query.OrderByDescending(j => j.Department != null ? j.Department.Name : string.Empty) : query.OrderBy(j => j.Department != null ? j.Department.Name : string.Empty),
-            "createdat" => isAsc ? query.OrderBy(j => j.CreatedAt) : query.OrderByDescending(j => j.CreatedAt),
-            _ => query.OrderByDescending(j => j.IsActive).ThenBy(j => j.Title)
-        };
+            case "title":
+                spec.OrderBy(j => j.Title, descending: isDesc);
+                break;
+            case "department":
+                spec.OrderBy(j => j.Department != null ? j.Department.Name : string.Empty, descending: isDesc);
+                break;
+            case "createdat":
+                spec.OrderBy(j => j.CreatedAt, descending: !isAsc);
+                break;
+            default:
+                spec.OrderBy(j => j.IsActive, descending: true).ThenBy(j => j.Title);
+                break;
+        }
+
+        return spec;
     }
 
+
+    private async Task<Dictionary<int, int>> GetActiveEmployeeCountsAsync(
+        List<int> jobRoleIds, CancellationToken cancellationToken)
+    {
+        if (jobRoleIds.Count == 0)
+        {
+            return new Dictionary<int, int>();
+        }
+
+        var roleIds = await _employeeRepository.ListAsync(
+            new Specification<Employee>()
+                .Where(e => jobRoleIds.Contains(e.JobRoleId) && !e.IsDeleted),
+            e => e.JobRoleId,
+            cancellationToken);
+
+        return roleIds
+            .GroupBy(id => id)
+            .ToDictionary(g => g.Key, g => g.Count());
+    }
 
     private static int ParseJsonListCount(string? json)
     {

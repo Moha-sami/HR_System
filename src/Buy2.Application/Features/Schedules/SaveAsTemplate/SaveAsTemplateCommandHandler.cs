@@ -1,11 +1,12 @@
 using System.Data;
+using Buy2.Application.Common.Exceptions;
 using Buy2.Application.Common.Interfaces;
 using Buy2.Application.Common.Models;
+using Buy2.Application.Common.Specifications;
 using Buy2.Application.Features.ShiftTemplates;
 using Buy2.Application.Features.Sites.GetSiteShiftTemplates;
 using Buy2.Domain.Entities;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace Buy2.Application.Features.Schedules.SaveAsTemplate;
 
@@ -45,10 +46,7 @@ public class SaveAsTemplateCommandHandler
 
         var name = request.Name!.Trim();
 
-        var siteExists = await _siteRepository
-            .Query()
-            .AsNoTracking()
-            .AnyAsync(s => s.Id == request.SiteId, cancellationToken);
+        var siteExists = await _siteRepository.AnyAsync(s => s.Id == request.SiteId, cancellationToken);
         if (!siteExists)
         {
             return Result<SiteShiftTemplateDto>.NotFound(
@@ -93,7 +91,7 @@ public class SaveAsTemplateCommandHandler
 
             return Result<SiteShiftTemplateDto>.Success(SiteShiftTemplateMapper.ToDto(created.Value!));
         }
-        catch (DbUpdateException)
+        catch (DataIntegrityException)
         {
             // Covers the concurrent-insert race (e.g. deadlock victim under
             // serializable isolation): re-check instead of trusting the exception.
@@ -112,10 +110,9 @@ public class SaveAsTemplateCommandHandler
         CancellationToken cancellationToken)
     {
         var normalized = name.ToLower();
-        return await _shiftTemplateRepository.Query()
-            .AsNoTracking()
-            .Where(t => t.ShiftTemplateSites.Any(l => l.SiteId == siteId))
-            .AnyAsync(t => t.Name.ToLower() == normalized, cancellationToken);
+        return await _shiftTemplateRepository.AnyAsync(
+            t => t.ShiftTemplateSites.Any(l => l.SiteId == siteId) && t.Name.ToLower() == normalized,
+            cancellationToken);
     }
 
     private async Task<List<ShiftEntity>> LoadDayShiftsAsync(
@@ -126,11 +123,12 @@ public class SaveAsTemplateCommandHandler
         var dayStart = new DateTimeOffset(date.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
         var dayEnd = dayStart.AddDays(1);
 
-        return await _shiftRepository.Query(false)
+        var spec = new Specification<ShiftEntity>()
             .Where(s => s.SiteId == siteId && s.StartTime < dayEnd && s.EndTime > dayStart)
             .OrderBy(s => s.StartTime)
-            .ThenBy(s => s.Id)
-            .ToListAsync(cancellationToken);
+            .ThenBy(s => s.Id);
+
+        return await _shiftRepository.ListAsync(spec, cancellationToken);
     }
 
     private static (TimeSpan Start, TimeSpan End) ComputeTemplateRange(List<ShiftEntity> shifts)
@@ -183,10 +181,11 @@ public class SaveAsTemplateCommandHandler
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            var created = await _shiftTemplateRepository.Query()
-                .AsNoTracking()
-                .Include(t => t.ShiftBlocks)
-                .FirstAsync(t => t.Id == template.Id, cancellationToken);
+            var created = await _shiftTemplateRepository.FirstOrDefaultAsync(
+                t => t.Id == template.Id,
+                cancellationToken,
+                nameof(ShiftTemplate.ShiftBlocks))
+                ?? throw new InvalidOperationException("Sequence contains no elements.");
 
             return Result<ShiftTemplate>.Success(created);
         }, IsolationLevel.Serializable, cancellationToken);

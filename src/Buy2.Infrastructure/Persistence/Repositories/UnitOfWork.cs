@@ -1,3 +1,4 @@
+using Buy2.Application.Common.Exceptions;
 using Buy2.Application.Common.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -16,7 +17,20 @@ public class UnitOfWork : IUnitOfWork
 
     public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
-        return await _context.SaveChangesAsync(cancellationToken);
+        try
+        {
+            return await _context.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateConcurrencyException ex)
+        {
+            throw new ConcurrencyConflictException(
+                "The record was modified or deleted by another process. Please reload and try again.", ex);
+        }
+        catch (DbUpdateException ex)
+        {
+            throw new DataIntegrityException(
+                "Could not save changes due to a data integrity violation. Please try again.", ex);
+        }
     }
 
     public async Task BeginTransactionAsync(CancellationToken cancellationToken = default)
@@ -33,7 +47,7 @@ public class UnitOfWork : IUnitOfWork
     {
         try
         {
-            await _context.SaveChangesAsync(cancellationToken);
+            await SaveChangesAsync(cancellationToken);
             if (_currentTransaction != null)
             {
                 await _currentTransaction.CommitAsync(cancellationToken);
@@ -78,7 +92,7 @@ public class UnitOfWork : IUnitOfWork
         if (!_context.Database.IsRelational())
         {
             await operation();
-            await _context.SaveChangesAsync(cancellationToken);
+            await SaveChangesAsync(cancellationToken);
             return;
         }
 
@@ -87,7 +101,7 @@ public class UnitOfWork : IUnitOfWork
         {
             await using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
             await operation();
-            await _context.SaveChangesAsync(cancellationToken);
+            await SaveChangesAsync(cancellationToken);
             await transaction.CommitAsync(cancellationToken);
         });
     }
@@ -97,7 +111,7 @@ public class UnitOfWork : IUnitOfWork
         if (!_context.Database.IsRelational())
         {
             var res = await operation();
-            await _context.SaveChangesAsync(cancellationToken);
+            await SaveChangesAsync(cancellationToken);
             return res;
         }
 
@@ -106,7 +120,7 @@ public class UnitOfWork : IUnitOfWork
         {
             await using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
             var result = await operation();
-            await _context.SaveChangesAsync(cancellationToken);
+            await SaveChangesAsync(cancellationToken);
             await transaction.CommitAsync(cancellationToken);
             return result;
         });
@@ -120,7 +134,7 @@ public class UnitOfWork : IUnitOfWork
         if (!_context.Database.IsRelational())
         {
             var res = await operation();
-            await _context.SaveChangesAsync(cancellationToken);
+            await SaveChangesAsync(cancellationToken);
             return res;
         }
 
@@ -129,7 +143,7 @@ public class UnitOfWork : IUnitOfWork
         {
             await using var transaction = await _context.Database.BeginTransactionAsync(isolationLevel, cancellationToken);
             var result = await operation();
-            await _context.SaveChangesAsync(cancellationToken);
+            await SaveChangesAsync(cancellationToken);
             await transaction.CommitAsync(cancellationToken);
             return result;
         });

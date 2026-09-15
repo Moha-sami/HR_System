@@ -1,11 +1,11 @@
 using Buy2.Application.Common.Helpers;
 using Buy2.Application.Common.Interfaces;
 using Buy2.Application.Common.Models;
+using Buy2.Application.Common.Specifications;
 using Buy2.Application.DTOs.Schedules;
 using Buy2.Domain.Entities;
 using Buy2.Domain.Enums;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace Buy2.Application.Features.Schedules.ApplyTemplate;
 
@@ -120,7 +120,7 @@ public class ApplyTemplateCommandHandler : IRequestHandler<ApplyTemplateCommand,
 
         var planned = BuildPlannedBlocks(request, template.Id, blocks, employees, roleTitles, availability);
         DetectOverlaps(planned, FindOverlapCandidates(planned, existingShifts));
-        var deletedIds = ApplyKeepResolution(planned, keep.Value);
+        var deletedIds = await ApplyKeepResolutionAsync(planned, keep.Value, cancellationToken);
 
         await PersistAsync(planned, cancellationToken);
 
@@ -158,16 +158,14 @@ public class ApplyTemplateCommandHandler : IRequestHandler<ApplyTemplateCommand,
 
     private async Task<Site?> LoadSiteAsync(int siteId, CancellationToken cancellationToken)
     {
-        return await _siteRepository.Query(true)
-            .Include(s => s.OperationalHours)
-            .FirstOrDefaultAsync(s => s.Id == siteId, cancellationToken);
+        return await _siteRepository.FirstOrDefaultAsync(
+            s => s.Id == siteId, cancellationToken, nameof(Site.OperationalHours));
     }
 
     private async Task<ShiftTemplate?> LoadTemplateAsync(int templateId, CancellationToken cancellationToken)
     {
-        return await _templateRepository.Query(true)
-            .Include(t => t.ShiftBlocks)
-            .FirstOrDefaultAsync(t => t.Id == templateId, cancellationToken);
+        return await _templateRepository.FirstOrDefaultAsync(
+            t => t.Id == templateId, cancellationToken, nameof(ShiftTemplate.ShiftBlocks));
     }
 
     private async Task<List<ShiftEntity>> LoadDayShiftsAsync(
@@ -176,10 +174,11 @@ public class ApplyTemplateCommandHandler : IRequestHandler<ApplyTemplateCommand,
         var dayStart = new DateTimeOffset(date.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
         var dayEnd = dayStart.AddDays(1);
 
-        return await _shiftRepository.Query(false)
-            .Where(s => s.SiteId == siteId && s.StartTime < dayEnd && s.EndTime > dayStart)
-            .OrderBy(s => s.StartTime)
-            .ToListAsync(cancellationToken);
+        var shifts = await _shiftRepository.ListAsync(
+            s => s.SiteId == siteId && s.StartTime < dayEnd && s.EndTime > dayStart,
+            cancellationToken);
+
+        return shifts.OrderBy(s => s.StartTime).ToList();
     }
 
     private async Task<Dictionary<int, Employee>> LoadEmployeesAsync(
@@ -196,10 +195,12 @@ public class ApplyTemplateCommandHandler : IRequestHandler<ApplyTemplateCommand,
             return new Dictionary<int, Employee>();
         }
 
-        return await _employeeRepository.Query(true)
-            .Include(e => e.PayrollProfile)
-            .Where(e => ids.Contains(e.Id))
-            .ToDictionaryAsync(e => e.Id, cancellationToken);
+        var employees = await _employeeRepository.ListAsync(
+            e => ids.Contains(e.Id),
+            cancellationToken,
+            nameof(Employee.PayrollProfile));
+
+        return employees.ToDictionary(e => e.Id);
     }
 
     private async Task<Dictionary<int, string>> LoadRoleTitlesAsync(
@@ -207,9 +208,11 @@ public class ApplyTemplateCommandHandler : IRequestHandler<ApplyTemplateCommand,
     {
         var ids = blocks.Select(b => b.JobRoleId).Distinct().ToList();
 
-        return await _jobRoleRepository.Query(true)
-            .Where(r => ids.Contains(r.Id))
-            .ToDictionaryAsync(r => r.Id, r => r.Title, cancellationToken);
+        var roles = await _jobRoleRepository.ListAsync(
+            r => ids.Contains(r.Id),
+            cancellationToken);
+
+        return roles.ToDictionary(r => r.Id, r => r.Title);
     }
 
     private async Task<AvailabilityContext> BuildAvailabilityAsync(
@@ -242,12 +245,11 @@ public class ApplyTemplateCommandHandler : IRequestHandler<ApplyTemplateCommand,
             return new HashSet<int>();
         }
 
-        var authorized = await _employeeSiteRepository.Query(true)
-            .Where(l => l.SiteId == siteId && ids.Contains(l.EmployeeId))
-            .Select(l => l.EmployeeId)
-            .ToListAsync(cancellationToken);
+        var links = await _employeeSiteRepository.ListAsync(
+            l => l.SiteId == siteId && ids.Contains(l.EmployeeId),
+            cancellationToken);
 
-        return authorized.ToHashSet();
+        return links.Select(l => l.EmployeeId).ToHashSet();
     }
 
     private async Task LoadLeaveAsync(
@@ -261,21 +263,21 @@ public class ApplyTemplateCommandHandler : IRequestHandler<ApplyTemplateCommand,
         var dayStart = date.ToDateTime(TimeOnly.MinValue);
         var dayEnd = dayStart.AddDays(1);
 
-        var requests = await _requestRepository.Query(true)
-            .Include(r => r.RequestType)
-            .Where(r => ids.Contains(r.EmployeeId)
+        var requests = await _requestRepository.ListAsync(
+            r => ids.Contains(r.EmployeeId)
                 && r.StartDate.HasValue && r.StartDate.Value < dayEnd
-                && (!r.EndDate.HasValue || r.EndDate.Value >= dayStart))
-            .ToListAsync(cancellationToken);
+                && (!r.EndDate.HasValue || r.EndDate.Value >= dayStart),
+            cancellationToken,
+            nameof(Request.RequestType));
 
         foreach (var req in requests)
         {
             AddCoveringLeave(context, req, date);
         }
 
-        var records = await _attendanceRepository.Query(true)
-            .Where(a => ids.Contains(a.EmployeeId) && a.Date >= dayStart && a.Date < dayEnd)
-            .ToListAsync(cancellationToken);
+        var records = await _attendanceRepository.ListAsync(
+            a => ids.Contains(a.EmployeeId) && a.Date >= dayStart && a.Date < dayEnd,
+            cancellationToken);
 
         AddLeaveRecords(context, records);
     }
@@ -314,9 +316,9 @@ public class ApplyTemplateCommandHandler : IRequestHandler<ApplyTemplateCommand,
     private async Task<Dictionary<DayOfWeek, SiteOperationalHour>> ResolveOperationalHoursAsync(
         Site site, CancellationToken cancellationToken)
     {
-        var fromRepo = await _operationalHourRepository.Query(true)
-            .Where(o => o.SiteId == site.Id)
-            .ToListAsync(cancellationToken);
+        var fromRepo = await _operationalHourRepository.ListAsync(
+            o => o.SiteId == site.Id,
+            cancellationToken);
 
         if (fromRepo.Count > 0)
         {
@@ -593,13 +595,14 @@ public class ApplyTemplateCommandHandler : IRequestHandler<ApplyTemplateCommand,
         return first.StartTime < second.EndTime && second.StartTime < first.EndTime;
     }
 
-    private HashSet<int> ApplyKeepResolution(List<PlannedBlock> planned, KeepMode keep)
+    private async Task<HashSet<int>> ApplyKeepResolutionAsync(
+        List<PlannedBlock> planned, KeepMode keep, CancellationToken cancellationToken)
     {
         var deletedIds = new HashSet<int>();
 
         if (keep == KeepMode.KeepNew)
         {
-            DeleteOverlappingExisting(planned, deletedIds);
+            await DeleteOverlappingExistingAsync(planned, deletedIds, cancellationToken);
         }
 
         if (keep == KeepMode.KeepExisting)
@@ -610,7 +613,8 @@ public class ApplyTemplateCommandHandler : IRequestHandler<ApplyTemplateCommand,
         return deletedIds;
     }
 
-    private void DeleteOverlappingExisting(List<PlannedBlock> planned, HashSet<int> deletedIds)
+    private async Task DeleteOverlappingExistingAsync(
+        List<PlannedBlock> planned, HashSet<int> deletedIds, CancellationToken cancellationToken)
     {
         var targets = planned
             .SelectMany(p => p.OverlappingExistingIds)
@@ -622,7 +626,13 @@ public class ApplyTemplateCommandHandler : IRequestHandler<ApplyTemplateCommand,
             return;
         }
 
-        foreach (var shift in _shiftRepository.Query(false).Where(s => targets.Contains(s.Id)).ToList())
+        var spec = new Specification<ShiftEntity>()
+            .Where(s => targets.Contains(s.Id))
+            .AsTracked();
+
+        var targetsShifts = await _shiftRepository.ListAsync(spec, cancellationToken);
+
+        foreach (var shift in targetsShifts)
         {
             _shiftRepository.Delete(shift);
             deletedIds.Add(shift.Id);
@@ -666,14 +676,14 @@ public class ApplyTemplateCommandHandler : IRequestHandler<ApplyTemplateCommand,
             return new Dictionary<int, Employee>(known);
         }
 
-        var missing = await _employeeRepository.Query(true)
-            .Include(e => e.PayrollProfile)
-            .Where(e => missingIds.Contains(e.Id))
-            .ToDictionaryAsync(e => e.Id, cancellationToken);
+        var missing = await _employeeRepository.ListAsync(
+            e => missingIds.Contains(e.Id),
+            cancellationToken,
+            nameof(Employee.PayrollProfile));
 
-        foreach (var entry in missing)
+        foreach (var emp in missing)
         {
-            known[entry.Key] = entry.Value;
+            known[emp.Id] = emp;
         }
 
         return known;
@@ -746,12 +756,12 @@ public class ApplyTemplateCommandHandler : IRequestHandler<ApplyTemplateCommand,
         var (weekStart, _) = GetWeekBoundary(date);
         var dayStart = new DateTimeOffset(date.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
 
-        var shifts = await _shiftRepository.Query(true)
-            .Where(s => s.EmployeeId != null
+        var shifts = await _shiftRepository.ListAsync(
+            s => s.EmployeeId != null
                 && ids.Contains(s.EmployeeId.Value)
                 && s.StartTime >= weekStart
-                && s.StartTime < dayStart)
-            .ToListAsync(cancellationToken);
+                && s.StartTime < dayStart,
+            cancellationToken);
 
         return ids.ToDictionary(
             id => id,

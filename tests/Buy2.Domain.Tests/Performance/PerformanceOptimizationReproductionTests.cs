@@ -4,8 +4,10 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Runtime.CompilerServices;
 using Buy2.Api.Services.PointsAutomation;
 using Buy2.Application.Common.Interfaces;
+using Buy2.Application.Common.Specifications;
 using Buy2.Application.DTOs;
 using Buy2.Application.DTOs.Points.DTOs;
 using Buy2.Application.DTOs.Schedules;
@@ -41,143 +43,133 @@ public class PerformanceOptimizationReproductionTests
         return new Buy2DbContext(options);
     }
 
-    public class InterceptingQueryable<T> : IOrderedQueryable<T>, IAsyncEnumerable<T>
-    {
-        private readonly IQueryable<T> _inner;
-        private readonly InterceptingQueryProvider _provider;
-
-        public InterceptingQueryable(IQueryable<T> inner, List<Expression> capturedExpressions)
-        {
-            _inner = inner;
-            _provider = new InterceptingQueryProvider(inner.Provider, capturedExpressions);
-        }
-
-        public Type ElementType => _inner.ElementType;
-        public Expression Expression => _inner.Expression;
-        public IQueryProvider Provider => _provider;
-
-        public IEnumerator<T> GetEnumerator() => _inner.GetEnumerator();
-        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => _inner.GetEnumerator();
-
-        public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default)
-        {
-            if (_inner is IAsyncEnumerable<T> asyncEnumerable)
-            {
-                return asyncEnumerable.GetAsyncEnumerator(cancellationToken);
-            }
-            return new InMemoryAsyncEnumerator<T>(_inner.GetEnumerator());
-        }
-    }
-
-    private class InMemoryAsyncEnumerator<T> : IAsyncEnumerator<T>
-    {
-        private readonly IEnumerator<T> _inner;
-        public InMemoryAsyncEnumerator(IEnumerator<T> inner) => _inner = inner;
-        public T Current => _inner.Current;
-        public ValueTask DisposeAsync()
-        {
-            _inner.Dispose();
-            return ValueTask.CompletedTask;
-        }
-        public ValueTask<bool> MoveNextAsync() => ValueTask.FromResult(_inner.MoveNext());
-    }
-
-    public class InterceptingQueryProvider : IAsyncQueryProvider
-    {
-        private readonly IQueryProvider _inner;
-        private readonly List<Expression> _capturedExpressions;
-
-        public InterceptingQueryProvider(IQueryProvider inner, List<Expression> capturedExpressions)
-        {
-            _inner = inner;
-            _capturedExpressions = capturedExpressions;
-        }
-
-        public IQueryable CreateQuery(Expression expression)
-        {
-            _capturedExpressions.Add(expression);
-            return _inner.CreateQuery(expression);
-        }
-
-        public IQueryable<TElement> CreateQuery<TElement>(Expression expression)
-        {
-            _capturedExpressions.Add(expression);
-            var query = _inner.CreateQuery<TElement>(expression);
-            return new InterceptingQueryable<TElement>(query, _capturedExpressions);
-        }
-
-        public object? Execute(Expression expression)
-        {
-            _capturedExpressions.Add(expression);
-            return _inner.Execute(expression);
-        }
-
-        public TResult Execute<TResult>(Expression expression)
-        {
-            _capturedExpressions.Add(expression);
-            return _inner.Execute<TResult>(expression);
-        }
-
-        public TResult ExecuteAsync<TResult>(Expression expression, CancellationToken cancellationToken = default)
-        {
-            _capturedExpressions.Add(expression);
-            if (_inner is IAsyncQueryProvider asyncProvider)
-            {
-                return asyncProvider.ExecuteAsync<TResult>(expression, cancellationToken);
-            }
-            return _inner.Execute<TResult>(expression);
-        }
-    }
-
     public class TrackingRepository<T> : IRepository<T> where T : class
     {
-        private readonly Buy2DbContext _context;
+        private readonly GenericRepository<T> _inner;
         public int GetAllAsyncCallCount { get; private set; }
-        public int QueryCallCount { get; private set; }
+        public int ReadCallCount { get; private set; }
         public int AnyAsyncCallCount { get; private set; }
-        public List<Expression> CapturedExpressions { get; } = new();
+        public List<string> CapturedSpecifications { get; } = new();
 
         public TrackingRepository(Buy2DbContext context)
         {
-            _context = context;
+            _inner = new GenericRepository<T>(context);
         }
 
-        public IQueryable<T> Query(bool asNoTracking = true)
+        private void Capture(ISpecification<T> specification, [CallerMemberName] string? caller = null)
         {
-            QueryCallCount++;
-            var q = asNoTracking ? _context.Set<T>().AsNoTracking() : _context.Set<T>().AsQueryable();
-            return new InterceptingQueryable<T>(q, CapturedExpressions);
+            ReadCallCount++;
+            CapturedSpecifications.Add(
+                $"{caller} | Criteria:{specification.Criteria} | Includes:[{string.Join(",", specification.Includes)}] | Orderings:{specification.Orderings.Count} | IgnoreFilters:{specification.IgnoreQueryFilters} | Tracked:{specification.Tracked}");
+        }
+
+        private void CapturePredicate(Expression<Func<T, bool>>? predicate, string[] includes, [CallerMemberName] string? caller = null)
+        {
+            ReadCallCount++;
+            CapturedSpecifications.Add($"{caller} | Criteria:{predicate} | Includes:[{string.Join(",", includes)}]");
+        }
+
+        public Task<T?> FirstOrDefaultAsync(ISpecification<T> specification, CancellationToken cancellationToken = default)
+        {
+            Capture(specification);
+            return _inner.FirstOrDefaultAsync(specification, cancellationToken);
+        }
+
+        public Task<T?> FirstOrDefaultAsync(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken = default, params string[] includes)
+        {
+            CapturePredicate(predicate, includes);
+            return _inner.FirstOrDefaultAsync(predicate, cancellationToken, includes);
+        }
+
+        public Task<TResult?> FirstOrDefaultAsync<TResult>(ISpecification<T> specification, Expression<Func<T, TResult>> selector, CancellationToken cancellationToken = default)
+        {
+            Capture(specification);
+            return _inner.FirstOrDefaultAsync(specification, selector, cancellationToken);
+        }
+
+        public Task<List<T>> ListAsync(ISpecification<T> specification, CancellationToken cancellationToken = default)
+        {
+            Capture(specification);
+            return _inner.ListAsync(specification, cancellationToken);
+        }
+
+        public Task<List<T>> ListAsync(Expression<Func<T, bool>>? predicate = null, CancellationToken cancellationToken = default, params string[] includes)
+        {
+            CapturePredicate(predicate, includes);
+            return _inner.ListAsync(predicate, cancellationToken, includes);
+        }
+
+        public Task<List<TResult>> ListAsync<TResult>(ISpecification<T> specification, Expression<Func<T, TResult>> selector, CancellationToken cancellationToken = default)
+        {
+            Capture(specification);
+            return _inner.ListAsync(specification, selector, cancellationToken);
+        }
+
+        public Task<int> CountAsync(Expression<Func<T, bool>>? predicate = null, CancellationToken cancellationToken = default)
+        {
+            ReadCallCount++;
+            return _inner.CountAsync(predicate, cancellationToken);
+        }
+
+        public Task<int> CountAsync(ISpecification<T> specification, CancellationToken cancellationToken = default)
+        {
+            Capture(specification);
+            return _inner.CountAsync(specification, cancellationToken);
+        }
+
+        public Task<bool> AnyAsync(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken = default)
+        {
+            AnyAsyncCallCount++;
+            return _inner.AnyAsync(predicate, cancellationToken);
+        }
+
+        public Task<int> SumAsync(Expression<Func<T, bool>>? predicate, Expression<Func<T, int>> selector, CancellationToken cancellationToken = default)
+        {
+            ReadCallCount++;
+            return _inner.SumAsync(predicate, selector, cancellationToken);
+        }
+
+        public Task<int?> SumAsync(Expression<Func<T, bool>>? predicate, Expression<Func<T, int?>> selector, CancellationToken cancellationToken = default)
+        {
+            ReadCallCount++;
+            return _inner.SumAsync(predicate, selector, cancellationToken);
+        }
+
+        public Task<decimal> SumAsync(Expression<Func<T, bool>>? predicate, Expression<Func<T, decimal>> selector, CancellationToken cancellationToken = default)
+        {
+            ReadCallCount++;
+            return _inner.SumAsync(predicate, selector, cancellationToken);
+        }
+
+        public Task<decimal?> SumAsync(Expression<Func<T, bool>>? predicate, Expression<Func<T, decimal?>> selector, CancellationToken cancellationToken = default)
+        {
+            ReadCallCount++;
+            return _inner.SumAsync(predicate, selector, cancellationToken);
+        }
+
+        public Task<PagedResult<T>> PagedAsync(ISpecification<T> specification, int pageNumber, int pageSize, CancellationToken cancellationToken = default)
+        {
+            Capture(specification);
+            return _inner.PagedAsync(specification, pageNumber, pageSize, cancellationToken);
         }
 
         public async Task<IEnumerable<T>> GetAllAsync(CancellationToken cancellationToken = default)
         {
             GetAllAsyncCallCount++;
-            return await _context.Set<T>().ToListAsync(cancellationToken);
+            return await _inner.GetAllAsync(cancellationToken);
         }
 
-        public async Task<T?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
-        {
-            return await _context.Set<T>().FindAsync(new object[] { id }, cancellationToken);
-        }
+        public Task<T?> GetByIdAsync(int id, CancellationToken cancellationToken = default) =>
+            _inner.GetByIdAsync(id, cancellationToken);
 
-        public async Task<bool> AnyAsync(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken = default)
-        {
-            AnyAsyncCallCount++;
-            return await _context.Set<T>().AnyAsync(predicate, cancellationToken);
-        }
+        public Task AddAsync(T entity, CancellationToken cancellationToken = default) =>
+            _inner.AddAsync(entity, cancellationToken);
 
-        public async Task AddAsync(T entity, CancellationToken cancellationToken = default)
-        {
-            await _context.AddAsync(entity, cancellationToken);
-        }
+        public Task AddRangeAsync(IEnumerable<T> entities, CancellationToken cancellationToken = default) =>
+            _inner.AddRangeAsync(entities, cancellationToken);
 
-        public async Task AddRangeAsync(IEnumerable<T> entities, CancellationToken cancellationToken = default)
-        {
-            await _context.AddRangeAsync(entities, cancellationToken);
-        }
-
-        public void Update(T entity) => _context.Update(entity);
-        public void Delete(T entity) => _context.Remove(entity);
+        public void Update(T entity) => _inner.Update(entity);
+        public void Delete(T entity) => _inner.Delete(entity);
     }
 
     private class FakePointsAutomationRunner : IPointsAutomationRunner
@@ -327,8 +319,8 @@ public class PerformanceOptimizationReproductionTests
         var dispatcher = new PointsAutomationDispatcher(runner, settingsRepo, runsRepo, options, logger);
         await dispatcher.DispatchDailyAsync(CancellationToken.None);
 
-        Assert.True(runsRepo.QueryCallCount <= 1,
-            $"Issue #313: PointsAutomationDispatcher executed {runsRepo.QueryCallCount} queries across catch-up windows (N+1 query anti-pattern). Expected at most 1 query.");
+        Assert.True(runsRepo.ReadCallCount <= 1,
+            $"Issue #313: PointsAutomationDispatcher executed {runsRepo.ReadCallCount} read queries across catch-up windows (N+1 query anti-pattern). Expected at most 1 query.");
     }
 
     // Issue #314: DuplicateShiftTemplateCommand unbounded while loop calling AnyAsync in each iteration
@@ -370,8 +362,8 @@ public class PerformanceOptimizationReproductionTests
 
         Assert.True(result.IsSuccess);
         Assert.Equal("Shift_Alpha_copy6", result.Value!.Name);
-        Assert.True(templateRepo.QueryCallCount <= 2,
-            $"Issue #314: DuplicateShiftTemplateCommandHandler executed {templateRepo.QueryCallCount} queries due to while loop querying in every iteration. Expected at most 2 queries.");
+        Assert.True(templateRepo.ReadCallCount <= 2,
+            $"Issue #314: DuplicateShiftTemplateCommandHandler executed {templateRepo.ReadCallCount} read queries due to while loop querying in every iteration. Expected at most 2 queries.");
     }
 
     // Issue #315: GetSiteShiftsOverviewQuery over-fetching historic shifts via Include(s => s.Shifts) and memory filtering
@@ -400,12 +392,12 @@ public class PerformanceOptimizationReproductionTests
         Assert.NotNull(result);
 
         // Verify that Site query does not include all Shifts navigation collection
-        var siteQueryExpressions = string.Join("; ", siteRepo.CapturedExpressions.Select(e => e.ToString()));
+        var siteQueryExpressions = string.Join("; ", siteRepo.CapturedSpecifications.Select(e => e.ToString()));
         Assert.False(siteQueryExpressions.Contains("Shifts"),
             "Issue #315: GetSiteShiftsOverviewQueryHandler should not eagerly load all historic shifts via Include(s => s.Shifts).");
 
         // Verify that Shift query pushes StartTime date range filter to the database query
-        var shiftQueryExpressions = string.Join("; ", shiftRepo.CapturedExpressions.Select(e => e.ToString()));
+        var shiftQueryExpressions = string.Join("; ", shiftRepo.CapturedSpecifications.Select(e => e.ToString()));
         Assert.True(shiftQueryExpressions.Contains("StartTime"),
             "Issue #315: GetSiteShiftsOverviewQueryHandler must push the 3-day date range filter (StartTime) down to the SQL query instead of fetching all historic shifts.");
     }
@@ -428,14 +420,14 @@ public class PerformanceOptimizationReproductionTests
         await context.SaveChangesAsync();
 
         var jobRepo = new TrackingRepository<JobRole>(context);
-        var handler = new GetJobsQueryHandler(jobRepo);
+        var empRepo = new TrackingRepository<Employee>(context);
+        var handler = new GetJobsQueryHandler(jobRepo, empRepo);
 
         var result = await handler.Handle(new GetJobsQuery(new JobFilterQueryDto()), CancellationToken.None);
 
         Assert.NotNull(result);
 
-        var capturedExpressions = string.Join("; ", jobRepo.CapturedExpressions.Select(e => e.ToString()));
-        Assert.True(capturedExpressions.Contains("Select"),
-            "Issue #316: GetJobsQueryHandler should project employee count at the database level using Select() projection instead of loading all JobRole entities and counting in memory.");
+        var capturedSpecifications = string.Join("; ", jobRepo.CapturedSpecifications.Select(e => e.ToString()));
+        Assert.DoesNotContain("Employees", capturedSpecifications);
     }
 }

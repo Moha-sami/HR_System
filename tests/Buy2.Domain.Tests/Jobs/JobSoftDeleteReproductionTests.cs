@@ -66,7 +66,7 @@ public class JobSoftDeleteReproductionTests
         Assert.DoesNotContain(jobsFromDb, j => j.Id == softDeletedJob.Id);
 
         // 2. GetJobsQuery assertion - GetJobs endpoint should not return soft-deleted jobs
-        var getJobsHandler = new GetJobsQueryHandler(jobRepo);
+        var getJobsHandler = new GetJobsQueryHandler(jobRepo, new GenericRepository<Employee>(context));
         var jobsListResult = await getJobsHandler.Handle(new GetJobsQuery(new JobFilterQueryDto()), CancellationToken.None);
         Assert.DoesNotContain(jobsListResult.Items, j => j.Id == softDeletedJob.Id);
 

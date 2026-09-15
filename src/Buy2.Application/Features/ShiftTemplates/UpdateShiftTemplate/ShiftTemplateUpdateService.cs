@@ -1,9 +1,9 @@
 using Buy2.Application.Common.Interfaces;
 using Buy2.Application.Common.Models;
+using Buy2.Application.Common.Specifications;
 using Buy2.Application.Features.ShiftTemplates.DTOs;
 using Buy2.Application.Features.ShiftTemplates.Validators;
 using Buy2.Domain.Entities;
-using Microsoft.EntityFrameworkCore;
 
 namespace Buy2.Application.Features.ShiftTemplates.UpdateShiftTemplate;
 
@@ -57,10 +57,13 @@ public class ShiftTemplateUpdateService
         UpdateShiftTemplateDto dto,
         CancellationToken cancellationToken)
     {
-        var template = await _shiftTemplateRepository.Query(asNoTracking: false)
-            .Include(t => t.ShiftTemplateSites)
-            .Include(t => t.ShiftBlocks)
-            .FirstOrDefaultAsync(t => t.Id == templateId, cancellationToken);
+        var spec = new Specification<ShiftTemplate>()
+            .Where(t => t.Id == templateId)
+            .Include(
+                nameof(ShiftTemplate.ShiftTemplateSites),
+                nameof(ShiftTemplate.ShiftBlocks))
+            .AsTracked();
+        var template = await _shiftTemplateRepository.FirstOrDefaultAsync(spec, cancellationToken);
 
         if (template is null)
         {

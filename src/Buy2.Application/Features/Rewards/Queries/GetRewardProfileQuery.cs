@@ -4,7 +4,6 @@ using Buy2.Application.DTOs.Rewards.DTOs;
 using Buy2.Domain.Entities;
 using Buy2.Domain.Enums;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace Buy2.Application.Features.Rewards.Queries;
 
@@ -29,9 +28,7 @@ public class GetRewardProfileQueryHandler : IRequestHandler<GetRewardProfileQuer
     public async Task<Result<RewardProfileResponseDto>> Handle(GetRewardProfileQuery query, CancellationToken cancellation)
     {
         var rewardItem = await _rewardItemRepository
-            .Query(true)
-            .Include(r => r.Category)
-            .FirstOrDefaultAsync(r => r.Id == query.Id, cancellation);
+            .FirstOrDefaultAsync(r => r.Id == query.Id, cancellation, nameof(RewardItem.Category));
 
         if (rewardItem is null)
         {
@@ -39,15 +36,12 @@ public class GetRewardProfileQueryHandler : IRequestHandler<GetRewardProfileQuer
         }
 
         var redemptionCount = await _redemptionRepository
-            .Query(true)
             .CountAsync(r => r.RewardItemId == query.Id, cancellation);
 
         var totalVouchers = await _voucherRepository
-            .Query(true)
             .CountAsync(v => v.RewardItemId == query.Id, cancellation);
 
         var availableVouchers = await _voucherRepository
-            .Query(true)
             .CountAsync(v => v.RewardItemId == query.Id &&
                              v.Status == VoucherStatus.Available,
                              cancellation);
@@ -55,26 +49,29 @@ public class GetRewardProfileQueryHandler : IRequestHandler<GetRewardProfileQuer
         var availabilityStock = $"{availableVouchers}/{totalVouchers}";
 
         var totalCost = await _redemptionRepository
-            .Query(true)
-            .Where(r => r.RewardItemId == query.Id && r.PointsTransaction != null)
-            .Select(r => (decimal)Math.Abs(r.PointsTransaction.Amount))
-            .SumAsync(cancellation);
+            .SumAsync(
+                r => r.RewardItemId == query.Id && r.PointsTransaction != null,
+                r => (decimal)Math.Abs(r.PointsTransaction!.Amount),
+                cancellation);
 
-        var topRedeem = await _redemptionRepository
-            .Query(true)
-            .Where(r =>
+        var scopedRedemptions = await _redemptionRepository.ListAsync(
+            r =>
                 r.RewardItemId == query.Id &&
                 r.Employee != null &&
                 r.Employee.JobRole != null &&
-                r.Employee.JobRole.Department != null)
-            .GroupBy(r => r.Employee.JobRole!.Department!.Name)
+                r.Employee.JobRole.Department != null,
+            cancellation,
+            "Employee.JobRole.Department");
+
+        var topRedeem = scopedRedemptions
+            .GroupBy(r => r.Employee!.JobRole!.Department!.Name)
             .Select(d => new
             {
                 Department = d.Key,
                 RedemptionCount = d.Count()
             })
             .OrderByDescending(d => d.RedemptionCount)
-            .FirstOrDefaultAsync(cancellation);
+            .FirstOrDefault();
 
         var topRedeemedValue = topRedeem?.RedemptionCount ?? 0;
 

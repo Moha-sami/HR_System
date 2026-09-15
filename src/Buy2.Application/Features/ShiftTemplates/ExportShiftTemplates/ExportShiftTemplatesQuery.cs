@@ -1,11 +1,10 @@
 using Buy2.Application.Common.Interfaces;
 using Buy2.Application.Common.Models;
+using Buy2.Application.Common.Specifications;
 using Buy2.Application.Features.ShiftTemplates.DTOs;
 using Buy2.Application.Features.ShiftTemplates.Validators;
 using Buy2.Domain.Entities;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
-using System.Linq.Expressions;
 
 namespace Buy2.Application.Features.ShiftTemplates.ExportShiftTemplates;
 
@@ -37,10 +36,19 @@ public class ExportShiftTemplatesQueryHandler
                 string.Join("; ", validation.Errors.Select(e => e.ErrorMessage)));
         }
 
-        IQueryable<ShiftTemplate> query = ApplySearchFilter(_shiftTemplateRepository.Query(), filter);
-        query = ApplySorting(query, filter);
+        var spec = new Specification<ShiftTemplate>()
+            .Include(
+                "ShiftTemplateSites",
+                "ShiftTemplateSites.Site",
+                "ShiftBlocks",
+                "ShiftBlocks.JobRole",
+                "ShiftBlocks.Employee");
+        ApplySearchFilter(spec, filter);
+        ApplySorting(spec, filter);
 
-        var rows = await query
+        var templates = await _shiftTemplateRepository.ListAsync(spec, cancellationToken);
+
+        var rows = templates
             .Select(t => new ShiftTemplateExportRow(
                 t.Id,
                 t.Name,
@@ -65,7 +73,7 @@ public class ExportShiftTemplatesQueryHandler
                         b.Employee != null ? b.Employee.FirstName : null,
                         b.Employee != null ? b.Employee.LastName : null))
                     .ToList()))
-            .ToListAsync(cancellationToken);
+            .ToList();
 
         var details = rows.Select(ToDetailsDto).ToList();
         var bytes = ShiftTemplateExportWorkbookBuilder.Build(details);
@@ -111,34 +119,39 @@ public class ExportShiftTemplatesQueryHandler
         return $"{firstName} {lastName}".Trim();
     }
 
-    private static IQueryable<ShiftTemplate> ApplySearchFilter(
-        IQueryable<ShiftTemplate> query,
+    private static void ApplySearchFilter(
+        Specification<ShiftTemplate> spec,
         ShiftTemplateFilterQueryDto filter)
     {
         if (string.IsNullOrWhiteSpace(filter.SearchTerm))
         {
-            return query;
+            return;
         }
 
         var searchTerm = filter.SearchTerm.Trim();
-        return query.Where(t => t.Name.Contains(searchTerm));
+        spec.Where(t => t.Name.Contains(searchTerm));
     }
 
-    private static IQueryable<ShiftTemplate> ApplySorting(
-        IQueryable<ShiftTemplate> query,
+    private static void ApplySorting(
+        Specification<ShiftTemplate> spec,
         ShiftTemplateFilterQueryDto filter)
     {
         var specs = BuildSortSpecs(filter);
 
-        IOrderedQueryable<ShiftTemplate>? ordered = null;
-        foreach (var spec in specs)
+        var first = true;
+        foreach (var sortSpec in specs)
         {
-            ordered = ApplySortSpec(query, ordered, spec);
+            ApplySortSpec(spec, sortSpec, ref first);
         }
 
-        return specs[0].Ascending
-            ? ordered!.ThenBy(t => t.Id)
-            : ordered!.ThenByDescending(t => t.Id);
+        if (specs[0].Ascending)
+        {
+            spec.ThenBy(t => t.Id);
+        }
+        else
+        {
+            spec.ThenBy(t => t.Id, descending: true);
+        }
     }
 
     private static List<ShiftTemplateSortSpec> BuildSortSpecs(ShiftTemplateFilterQueryDto filter)
@@ -155,32 +168,32 @@ public class ExportShiftTemplatesQueryHandler
         return specs.OrderByDescending(s => s.Explicit).ToList();
     }
 
-    private static IOrderedQueryable<ShiftTemplate> ApplySortSpec(
-        IQueryable<ShiftTemplate> query,
-        IOrderedQueryable<ShiftTemplate>? ordered,
-        ShiftTemplateSortSpec spec)
+    private static void ApplySortSpec(
+        Specification<ShiftTemplate> spec,
+        ShiftTemplateSortSpec sortSpec,
+        ref bool first)
     {
-        return spec.Key switch
+        switch (sortSpec.Key)
         {
-            ShiftTemplateSortKey.Creation => OrderWith(query, ordered, t => t.CreatedAt, spec.Ascending),
-            ShiftTemplateSortKey.Updated => OrderWith(query, ordered, t => t.UpdatedAt, spec.Ascending),
-            ShiftTemplateSortKey.Name => OrderWith(query, ordered, t => t.Name, spec.Ascending),
-            _ => OrderWith(query, ordered, t => t.ShiftTemplateSites.Count, spec.Ascending),
-        };
-    }
-
-    private static IOrderedQueryable<ShiftTemplate> OrderWith<TKey>(
-        IQueryable<ShiftTemplate> query,
-        IOrderedQueryable<ShiftTemplate>? ordered,
-        Expression<Func<ShiftTemplate, TKey>> keySelector,
-        bool ascending)
-    {
-        if (ordered is null)
-        {
-            return ascending ? query.OrderBy(keySelector) : query.OrderByDescending(keySelector);
+            case ShiftTemplateSortKey.Creation:
+                if (first) { spec.OrderBy(t => t.CreatedAt, descending: !sortSpec.Ascending); }
+                else { spec.ThenBy(t => t.CreatedAt, descending: !sortSpec.Ascending); }
+                break;
+            case ShiftTemplateSortKey.Updated:
+                if (first) { spec.OrderBy(t => t.UpdatedAt!, descending: !sortSpec.Ascending); }
+                else { spec.ThenBy(t => t.UpdatedAt!, descending: !sortSpec.Ascending); }
+                break;
+            case ShiftTemplateSortKey.Name:
+                if (first) { spec.OrderBy(t => t.Name, descending: !sortSpec.Ascending); }
+                else { spec.ThenBy(t => t.Name, descending: !sortSpec.Ascending); }
+                break;
+            default:
+                if (first) { spec.OrderBy(t => t.ShiftTemplateSites.Count, descending: !sortSpec.Ascending); }
+                else { spec.ThenBy(t => t.ShiftTemplateSites.Count, descending: !sortSpec.Ascending); }
+                break;
         }
 
-        return ascending ? ordered.ThenBy(keySelector) : ordered.ThenByDescending(keySelector);
+        first = false;
     }
 
     private static bool IsAscending(string? sortDir)

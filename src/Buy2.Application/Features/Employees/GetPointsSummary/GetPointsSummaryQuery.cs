@@ -1,8 +1,8 @@
 using Buy2.Application.Common.Interfaces;
+using Buy2.Application.Common.Specifications;
 using Buy2.Domain.Entities;
 using Buy2.Domain.Enums;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace Buy2.Application.Features.Employees.GetPointsSummary;
 
@@ -27,8 +27,8 @@ public class GetPointsSummaryQueryHandler : IRequestHandler<GetPointsSummaryQuer
     public async Task<PointsSummaryDto?> Handle(GetPointsSummaryQuery request, CancellationToken cancellationToken)
     {
         // 1. Check if Employee exists (and not soft-deleted)
-        var employee = await _employeeRepository.Query()
-            .FirstOrDefaultAsync(e => e.Id == request.EmployeeId, cancellationToken);
+        var employee = await _employeeRepository.FirstOrDefaultAsync(
+            e => e.Id == request.EmployeeId, cancellationToken);
 
         if (employee == null || employee.IsDeleted)
         {
@@ -36,9 +36,8 @@ public class GetPointsSummaryQueryHandler : IRequestHandler<GetPointsSummaryQuer
         }
 
         // 2. Query PointsTransaction for EmployeeId
-        var transactions = await _pointsTransactionRepository.Query()
-            .Where(t => t.EmployeeId == request.EmployeeId)
-            .ToListAsync(cancellationToken);
+        var transactions = await _pointsTransactionRepository.ListAsync(
+            t => t.EmployeeId == request.EmployeeId, cancellationToken);
 
         // CurrentBalance: sum of all transaction amounts (earned positive, spent/deducted negative). Return 0 if no transactions.
         int currentBalance = transactions.Sum(t => t.Amount);
@@ -49,10 +48,10 @@ public class GetPointsSummaryQueryHandler : IRequestHandler<GetPointsSummaryQuer
             .Sum(t => Math.Abs(t.Amount));
 
         // 3. Query RewardRedemption for EmployeeId
-        var redemptions = await _rewardRedemptionRepository.Query()
-            .Include(r => r.RewardItem)
-            .Where(r => r.EmployeeId == request.EmployeeId)
-            .ToListAsync(cancellationToken);
+        var redemptionSpec = new Specification<RewardRedemption>()
+            .Include(nameof(RewardRedemption.RewardItem))
+            .Where(r => r.EmployeeId == request.EmployeeId);
+        var redemptions = await _rewardRedemptionRepository.ListAsync(redemptionSpec, cancellationToken);
 
         int totalRewardsRedeemed = redemptions.Count;
         int totalRewardsCostPoints = redemptions.Sum(r => r.RewardItem != null ? r.RewardItem.CostInPoints : 0);

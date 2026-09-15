@@ -2,7 +2,6 @@
 using Buy2.Application.DTOs.Sites;
 using Buy2.Domain.Entities;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json;
 
@@ -68,7 +67,6 @@ public class CreateSiteCommandHandler : IRequestHandler<CreateSiteCommand, int>
             .ToList();
 
         var existingPreferredEmployee = await _employeeRepository
-            .Query()
             .CountAsync(e => preferredEmployeeId.Contains(e.Id), cancellationToken);
 
         if (existingPreferredEmployee != preferredEmployeeId.Count)

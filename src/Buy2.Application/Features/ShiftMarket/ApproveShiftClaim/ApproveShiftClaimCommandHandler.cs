@@ -4,11 +4,11 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Buy2.Application.Common.Interfaces;
+using Buy2.Application.Common.Specifications;
 using Buy2.Application.DTOs.ShiftMarket;
 using Buy2.Domain.Entities;
 using Buy2.Domain.Enums;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace Buy2.Application.Features.ShiftMarket.ApproveShiftClaim;
 
@@ -101,9 +101,8 @@ public class ApproveShiftClaimCommandHandler : IRequestHandler<ApproveShiftClaim
 
     private async Task<Employee> LoadEmployeeAsync(int employeeId, CancellationToken cancellationToken)
     {
-        var employee = await _employeeRepository.Query(true)
-            .Include(e => e.PayrollProfile)
-            .FirstOrDefaultAsync(e => e.Id == employeeId, cancellationToken);
+        var employee = await _employeeRepository.FirstOrDefaultAsync(
+            e => e.Id == employeeId, cancellationToken, nameof(Employee.PayrollProfile));
 
         if (employee is null)
         {
@@ -118,9 +117,9 @@ public class ApproveShiftClaimCommandHandler : IRequestHandler<ApproveShiftClaim
         Employee employee,
         CancellationToken cancellationToken)
     {
-        var assignedShifts = await _shiftRepository.Query(true)
-            .Where(s => s.EmployeeId == employee.Id && s.Id != shift.Id)
-            .ToListAsync(cancellationToken);
+        var assignedShifts = await _shiftRepository.ListAsync(
+            s => s.EmployeeId == employee.Id && s.Id != shift.Id,
+            cancellationToken);
 
         var shiftDuration = (decimal)Math.Max(0, (shift.EndTime - shift.StartTime).TotalHours);
         var targetDate = DateOnly.FromDateTime(shift.StartTime.Date);
@@ -233,9 +232,11 @@ public class ApproveShiftClaimCommandHandler : IRequestHandler<ApproveShiftClaim
 
     private async Task RejectCompetingClaimsAsync(int shiftId, int approvedClaimId, CancellationToken cancellationToken)
     {
-        var otherClaims = await _shiftClaimRepository.Query(false)
-            .Where(c => c.ShiftId == shiftId && c.Id != approvedClaimId)
-            .ToListAsync(cancellationToken);
+        var otherClaims = await _shiftClaimRepository.ListAsync(
+            new Specification<ShiftClaim>()
+                .Where(c => c.ShiftId == shiftId && c.Id != approvedClaimId)
+                .AsTracked(),
+            cancellationToken);
 
         foreach (var competing in otherClaims)
         {

@@ -3,7 +3,6 @@ using Buy2.Application.DTOs.Sites;
 using Buy2.Domain.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 
 namespace Buy2.Application.Features.Sites.Documents;
@@ -26,7 +25,6 @@ public class UploadSiteDocumentCommandHandler : IRequestHandler<UploadSiteDocume
     public async Task<DocumentDto> Handle(UploadSiteDocumentCommand command, CancellationToken cancellation)
     {
         var site = await _siteRepository
-            .Query(false)
             .AnyAsync(s => s.Id == command.SiteId, cancellation);
         if (!site)
         {

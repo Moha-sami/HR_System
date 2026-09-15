@@ -1,9 +1,9 @@
 using Buy2.Application.Common.Interfaces;
+using Buy2.Application.Common.Specifications;
 using Buy2.Application.DTOs.Rewards.DTOs;
 using Buy2.Domain.Entities;
 using Buy2.Domain.Enums;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace Buy2.Application.Features.Rewards.Queries;
 
@@ -26,13 +26,14 @@ public class GetRewardQueryHandler : IRequestHandler<GetRewardQuery, PageResultD
     }
     public async Task<PageResultDto<RewardListDto>> Handle(GetRewardQuery query, CancellationToken cancellation)
     {
-        var rewardQuery = _rewardItemRepository.Query(false);
+        var spec = new Specification<RewardItem>()
+            .Include(nameof(RewardItem.Category), nameof(RewardItem.Vouchers), nameof(RewardItem.Redemptions));
 
         // Search By Reward Name Or Category Name
         if (!string.IsNullOrWhiteSpace(query.Search))
         {
             var search = query.Search.Trim();
-            rewardQuery = rewardQuery.Where(
+            spec.Where(
                 r => r.RewardName.Contains(search) ||
                     r.Category.Name.Contains(search)
                 );
@@ -44,69 +45,72 @@ public class GetRewardQueryHandler : IRequestHandler<GetRewardQuery, PageResultD
         {
             if (query.Status.Equals("Active", StringComparison.OrdinalIgnoreCase))
             {
-                rewardQuery = rewardQuery.Where(r => r.IsActive);
+                spec.Where(r => r.IsActive);
             }
             else if(query.Status.Equals("Inactive", StringComparison.OrdinalIgnoreCase))
             {
-                rewardQuery = rewardQuery.Where(r => !r.IsActive);
+                spec.Where(r => !r.IsActive);
             }
         }
 
         // Filter Sorted
-        rewardQuery = query.SortBy?.ToLowerInvariant() switch
+        switch (query.SortBy?.ToLowerInvariant())
         {
-            "name" => query.SortDescending
-                ? rewardQuery.OrderByDescending(r => r.RewardName)
-                : rewardQuery.OrderBy(r => r.RewardName),
-            "cost" or "points" => query.SortDescending
-                ? rewardQuery.OrderByDescending(r => r.CostInPoints)
-                : rewardQuery.OrderBy(r => r.CostInPoints),
-            "price" => query.SortDescending
-                ? rewardQuery.OrderByDescending(r => r.MonetaryValue)
-                : rewardQuery.OrderBy(r => r.MonetaryValue),
-            "redemptioncount" => query.SortDescending
-                ? rewardQuery.OrderByDescending(r => r.Redemptions.Count)
-                : rewardQuery.OrderBy(r => r.Redemptions.Count),
-            _ => rewardQuery.OrderBy(r => r.RewardName)
-        };
+            case "name":
+                spec.OrderBy(r => r.RewardName, descending: query.SortDescending);
+                break;
+            case "cost":
+            case "points":
+                spec.OrderBy(r => r.CostInPoints, descending: query.SortDescending);
+                break;
+            case "price":
+                spec.OrderBy(r => r.MonetaryValue, descending: query.SortDescending);
+                break;
+            case "redemptioncount":
+                spec.OrderBy(r => r.Redemptions.Count, descending: query.SortDescending);
+                break;
+            default:
+                spec.OrderBy(r => r.RewardName);
+                break;
+        }
 
         // Custom Date
         if (query.FromDate.HasValue)
         {
-            rewardQuery = rewardQuery.Where(r => r.CreatedAt >= query.FromDate);
+            var fromDate = query.FromDate.Value;
+            spec.Where(r => r.CreatedAt >= fromDate);
         }
         if (query.ToDate.HasValue)
         {
-            rewardQuery = rewardQuery.Where(r => r.CreatedAt <= query.ToDate);
+            var toDate = query.ToDate.Value;
+            spec.Where(r => r.CreatedAt <= toDate);
         }
-
-        var totalCount = await rewardQuery.CountAsync(cancellation);
 
         var page = query.Page < 1 ? 1 : query.Page;
         var pageSize = query.PageSize < 1 ? 10 : query.PageSize;
 
+        var paged = await _rewardItemRepository.PagedAsync(spec, page, pageSize, cancellation);
+
         // Pagination
-        var reward = await rewardQuery
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
+        var reward = paged.Items
             .Select(r => new RewardListDto(
                     r.Id,
                     r.RewardName,
-                    r.Category.Name,
+                    r.Category != null ? r.Category.Name : string.Empty,
                     r.CostInPoints,
                     r.MonetaryValue,
-                    r.Vouchers.Count(v => v.Status == VoucherStatus.Available)
-                    +"/"+ r.Vouchers.Count(),
-                    r.Redemptions.Count,
+                    (r.Vouchers != null ? r.Vouchers.Count(v => v.Status == VoucherStatus.Available) : 0)
+                    +"/"+ (r.Vouchers != null ? r.Vouchers.Count() : 0),
+                    r.Redemptions != null ? r.Redemptions.Count : 0,
                     r.IsActive
-                )).ToListAsync(cancellation);
+                )).ToList();
 
         return new PageResultDto<RewardListDto>
             (
                 reward,
-                totalCount,
-                page,
-                pageSize
+                paged.TotalCount,
+                paged.PageNumber,
+                paged.PageSize
             );
     }
 }

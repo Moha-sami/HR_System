@@ -2,7 +2,6 @@ using Buy2.Application.Common.Interfaces;
 using Buy2.Application.DTOs;
 using Buy2.Domain.Entities;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace Buy2.Application.Features.ShiftMarket.GetOpenShifts;
 
@@ -19,8 +18,12 @@ public class GetOpenShiftsQueryHandler : IRequestHandler<GetOpenShiftsQuery, Lis
 
     public async Task<List<ShiftDto>> Handle(GetOpenShiftsQuery request, CancellationToken cancellationToken)
     {
-        return await _shiftRepository.Query()
-            .Where(s => s.IsPublished && s.EmployeeId == null && s.StartTime > DateTimeOffset.UtcNow)
+        var now = DateTimeOffset.UtcNow;
+        var shifts = await _shiftRepository.ListAsync(
+            s => s.IsPublished && s.EmployeeId == null && s.StartTime > now,
+            cancellationToken);
+
+        return shifts
             .Select(s => new ShiftDto(
                 s.Id,
                 s.EmployeeId,
@@ -30,6 +33,6 @@ public class GetOpenShiftsQueryHandler : IRequestHandler<GetOpenShiftsQuery, Lis
                 s.EndTime,
                 s.IsPublished
             ))
-            .ToListAsync(cancellationToken);
+            .ToList();
     }
 }

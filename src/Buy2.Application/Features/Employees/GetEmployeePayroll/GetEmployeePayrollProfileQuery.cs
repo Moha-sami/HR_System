@@ -1,10 +1,10 @@
 using System.Text.Json;
 using Buy2.Application.Common.Interfaces;
+using Buy2.Application.Common.Specifications;
 using Buy2.Application.DTOs.Employees;
 using Buy2.Domain.Entities;
 using Buy2.Domain.Enums;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace Buy2.Application.Features.Employees.GetEmployeePayroll;
 
@@ -29,10 +29,11 @@ public class GetEmployeePayrollProfileQueryHandler : IRequestHandler<GetEmployee
     public async Task<EmployeePayrollProfileDto?> Handle(GetEmployeePayrollProfileQuery request, CancellationToken cancellationToken)
     {
         // 1. Fetch Employee with navigation properties
-        var employee = await _employeeRepository.Query()
-            .Include(e => e.EmployeeSites)
-            .Include(e => e.PayrollProfile)
-            .FirstOrDefaultAsync(e => e.Id == request.EmployeeId, cancellationToken);
+        var employee = await _employeeRepository.FirstOrDefaultAsync(
+            e => e.Id == request.EmployeeId,
+            cancellationToken,
+            nameof(Employee.EmployeeSites),
+            nameof(Employee.PayrollProfile));
 
         if (employee == null || employee.IsDeleted)
         {
@@ -43,8 +44,8 @@ public class GetEmployeePayrollProfileQueryHandler : IRequestHandler<GetEmployee
         var payroll = employee.PayrollProfile;
         if (payroll == null)
         {
-            payroll = await _payrollProfileRepository.Query()
-                .FirstOrDefaultAsync(p => p.EmployeeId == request.EmployeeId, cancellationToken);
+            payroll = await _payrollProfileRepository.FirstOrDefaultAsync(
+                p => p.EmployeeId == request.EmployeeId, cancellationToken);
         }
 
         var isConfigured = payroll != null;
@@ -143,12 +144,11 @@ public class GetEmployeePayrollProfileQueryHandler : IRequestHandler<GetEmployee
         var overtimeHourlyRate = payroll?.OvertimeHourlyRate ?? 0m;
 
         // 8. Fetch Payroll History Records
-        var payrollRecords = await _payrollRecordRepository.Query()
-            .AsNoTracking()
+        var payrollSpec = new Specification<PayrollRecord>()
             .Where(pr => pr.EmployeeId == request.EmployeeId)
-            .OrderByDescending(pr => pr.PeriodYear)
-            .ThenByDescending(pr => pr.PeriodMonth)
-            .ToListAsync(cancellationToken);
+            .OrderBy(pr => pr.PeriodYear, descending: true)
+            .ThenBy(pr => pr.PeriodMonth, descending: true);
+        var payrollRecords = await _payrollRecordRepository.ListAsync(payrollSpec, cancellationToken);
 
         var mappedPayrollRecords = payrollRecords
             .Select(pr =>

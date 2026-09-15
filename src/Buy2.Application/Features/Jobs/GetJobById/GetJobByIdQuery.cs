@@ -8,7 +8,6 @@ using Buy2.Application.Common.Interfaces;
 using Buy2.Application.Features.Jobs.DTOs;
 using Buy2.Domain.Entities;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace Buy2.Application.Features.Jobs.GetJobById;
 
@@ -25,10 +24,8 @@ public class GetJobByIdQueryHandler : IRequestHandler<GetJobByIdQuery, JobDetail
 
     public async Task<JobDetailsDto?> Handle(GetJobByIdQuery request, CancellationToken cancellationToken)
     {
-        var job = await _jobRoleRepository.Query(asNoTracking: true)
-            .Include(j => j.Department)
-            .Include(j => j.Employees)
-            .FirstOrDefaultAsync(j => j.Id == request.Id, cancellationToken);
+        var job = await _jobRoleRepository.FirstOrDefaultAsync(
+            j => j.Id == request.Id, cancellationToken, nameof(JobRole.Department), nameof(JobRole.Employees));
 
         if (job == null)
         {

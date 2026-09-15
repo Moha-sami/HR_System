@@ -3,7 +3,6 @@ using Buy2.Application.Common.Models;
 using Buy2.Application.Features.ShiftTemplates.DTOs;
 using Buy2.Domain.Entities;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace Buy2.Application.Features.ShiftTemplates.GetShiftTemplateById;
 
@@ -22,15 +21,14 @@ public class GetShiftTemplateByIdQueryHandler : IRequestHandler<GetShiftTemplate
         GetShiftTemplateByIdQuery request,
         CancellationToken cancellationToken)
     {
-        var template = await _shiftTemplateRepository.Query()
-            .AsNoTracking()
-            .Include(t => t.ShiftTemplateSites)
-                .ThenInclude(s => s.Site)
-            .Include(t => t.ShiftBlocks)
-                .ThenInclude(b => b.JobRole)
-            .Include(t => t.ShiftBlocks)
-                .ThenInclude(b => b.Employee)
-            .FirstOrDefaultAsync(t => t.Id == request.Id, cancellationToken);
+        var template = await _shiftTemplateRepository.FirstOrDefaultAsync(
+            t => t.Id == request.Id,
+            cancellationToken,
+            "ShiftTemplateSites",
+            "ShiftTemplateSites.Site",
+            "ShiftBlocks",
+            "ShiftBlocks.JobRole",
+            "ShiftBlocks.Employee");
 
         if (template is null)
         {
