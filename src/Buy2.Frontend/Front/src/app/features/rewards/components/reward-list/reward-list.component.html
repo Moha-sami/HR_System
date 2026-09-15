@@ -95,7 +95,7 @@
   @if (!loading() && !loadError()) {
     <app-table
       [columns]="columns()"
-      [rows]="displayedRewards()"
+      [rows]="rewards()"
       [cellTemplates]="cellTemplates()"
       [emptyMessage]="'REWARD_MANAGEMENT.NO_REWARDS' | translate"
       (sortChange)="onSort($event)"
@@ -110,27 +110,19 @@
     </div>
   }
 
-  <ng-template #imageTemplate let-reward>
-    @if (reward.imageUrl) {
-      <img class="reward-thumb" [src]="reward.imageUrl" [alt]="reward.name" />
-    } @else {
-      <span class="reward-thumb reward-thumb--empty"></span>
-    }
-  </ng-template>
-
   <ng-template #priceTemplate let-reward>
-    {{ formatPrice(reward.price) }}
+    {{ formatPrice(reward.monetaryValue) }}
   </ng-template>
 
-  <ng-template #costTemplate let-reward>
-    {{ formatCost(reward.cost) }}
+  <ng-template #statusTemplate let-reward>
+    {{ statusLabel(reward.isActive) }}
   </ng-template>
 
   <ng-template #actionsTemplate let-reward>
     <div class="flex items-center justify-center gap-2">
       <button
         type="button"
-        class="rounded p-1 text-primary-600 transition-colors hover:bg-primary-50"
+        class="cursor-pointer rounded p-1 text-primary-600 transition-colors hover:bg-primary-50"
         [attr.aria-label]="'REWARD_MANAGEMENT.EDIT' | translate"
         (click)="editReward(reward); $event.stopPropagation()"
       >
@@ -140,7 +132,7 @@
       </button>
       <button
         type="button"
-        class="rounded p-1 text-red-600 transition-colors hover:bg-red-50"
+        class="cursor-pointer rounded p-1 text-red-600 transition-colors hover:bg-red-50"
         [attr.aria-label]="'REWARD_MANAGEMENT.DELETE' | translate"
         (click)="openDeleteModal(reward); $event.stopPropagation()"
       >
@@ -150,7 +142,7 @@
       </button>
       <button
         type="button"
-        class="rounded p-1 text-primary-600 transition-colors hover:bg-primary-50"
+        class="cursor-pointer rounded p-1 text-primary-600 transition-colors hover:bg-primary-50"
         [attr.aria-label]="'REWARD_MANAGEMENT.VIEW' | translate"
         (click)="viewReward(reward); $event.stopPropagation()"
       >

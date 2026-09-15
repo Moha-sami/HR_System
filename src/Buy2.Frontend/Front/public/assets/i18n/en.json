@@ -774,6 +774,7 @@
     "REQUIRED": "required",
     "IMAGE": "Reward Image",
     "IMAGE_REQUIRED": "Reward image is required.",
+    "IMAGE_INVALID": "Image must be JPG or PNG and at most 1 MB.",
     "REMOVE": "Remove",
     "NAME": "Reward Name",
     "NAME_PLACEHOLDER": "Reward Name",
@@ -794,7 +795,9 @@
     "POINTS_REQUIRED": "Points value is required.",
     "HOW_TO_REDEEM": "How to redeem",
     "HOW_TO_REDEEM_PLACEHOLDER": "How to redeem",
+    "HOW_TO_REDEEM_REQUIRED": "How to redeem is required.",
     "TERMS": "Terms of use",
+    "TERMS_REQUIRED": "Terms of use are required.",
     "TERMS_PLACEHOLDER": "Terms of use",
     "DISCARD": "Discard",
     "TABLE": {
@@ -802,7 +805,9 @@
       "NAME": "Name",
       "POINTS": "Points",
       "PRICE": "Price",
-      "COST": "Cost",
+      "STOCK": "Stock",
+      "STATUS": "Status",
+      "CATEGORY": "Category",
       "REDEMPTION_COUNT": "Redemption Count",
       "ACTIONS": "Actions"
     },
