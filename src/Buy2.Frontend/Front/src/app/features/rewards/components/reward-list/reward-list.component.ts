@@ -21,6 +21,7 @@ import {
 } from '@app/shared/components/table/table.component';
 import { ModalComponent } from '@app/shared/components/modal/modal.component';
 import { ModalBodyComponent } from '@app/shared/components/modal/modal-body.component';
+import { HttpErrorResponse } from '@angular/common/http';
 import type {
   RewardListDto,
   RewardListFilter,
@@ -272,9 +273,9 @@ export class RewardListComponent implements AfterViewInit, OnDestroy {
         this.deletingReward.set(null);
         this.showSuccessModal.set(true);
       },
-      error: () => {
+      error: (err: unknown) => {
         this.isDeleting.set(false);
-        this.deleteError.set(this.translate.instant('REWARD_MANAGEMENT.DELETE_ERROR'));
+        this.deleteError.set(this.extractDeleteError(err));
       },
     });
   }
@@ -292,6 +293,18 @@ export class RewardListComponent implements AfterViewInit, OnDestroy {
     return this.translate.instant(
       isActive ? 'REWARD_MANAGEMENT.STATUS_ACTIVE' : 'REWARD_MANAGEMENT.STATUS_INACTIVE',
     );
+  }
+
+  private extractDeleteError(err: unknown): string {
+    if (err instanceof HttpErrorResponse) {
+      if (typeof err.error?.message === 'string' && err.error.message.trim()) {
+        return err.error.message;
+      }
+      if (typeof err.error === 'string' && err.error.trim()) {
+        return err.error;
+      }
+    }
+    return this.translate.instant('REWARD_MANAGEMENT.DELETE_ERROR');
   }
 
   private currentFilter(): RewardListFilter {
