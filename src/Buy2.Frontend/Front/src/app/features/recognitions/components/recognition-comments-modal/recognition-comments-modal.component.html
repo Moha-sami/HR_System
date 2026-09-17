@@ -1,0 +1,32 @@
+<app-modal size="large" [showHeader]="false" [showActions]="false" [closeOnBackdrop]="!submitting()" [closeOnEscape]="!submitting()" (closed)="closed.emit()">
+  <app-modal-body>
+    <section class="comments-shell" aria-labelledby="recognition-comments-title">
+      <header class="comments-header">
+        <h2 id="recognition-comments-title">{{ 'RECOGNITIONS.COMMENTS' | translate }}</h2>
+      </header>
+
+      <div class="comments-list" aria-live="polite">
+        @if (loading()) {
+          <p class="comments-state">{{ 'RECOGNITIONS.LOADING_COMMENTS' | translate }}</p>
+        } @else if (loadError()) {
+          <div class="comments-state" role="alert">
+            <p>{{ 'RECOGNITIONS.COMMENTS_LOAD_ERROR' | translate }}</p>
+            <button type="button" class="retry" (click)="loadComments()">{{ 'RECOGNITIONS.RETRY' | translate }}</button>
+          </div>
+        } @else if (comments().length === 0) {
+          <p class="comments-state">{{ 'RECOGNITIONS.NO_COMMENTS' | translate }}</p>
+        }
+      </div>
+
+      <form class="composer" (ngSubmit)="submit()">
+        <textarea [formControl]="comment" [placeholder]="'RECOGNITIONS.ADD_COMMENT_PLACEHOLDER' | translate" [attr.aria-label]="'RECOGNITIONS.ADD_COMMENT' | translate" [readonly]="submitting()"></textarea>
+        <button type="submit" class="send" [disabled]="comment.invalid || !comment.value.trim() || submitting()">
+          @if (submitting()) { {{ 'RECOGNITIONS.SENDING' | translate }} } @else { {{ 'RECOGNITIONS.SEND' | translate }} }
+        </button>
+      </form>
+      @if (comment.touched && comment.hasError('required')) { <p class="error" role="alert">{{ 'RECOGNITIONS.COMMENT_REQUIRED' | translate }}</p> }
+      @if (comment.touched && comment.hasError('maxlength')) { <p class="error" role="alert">{{ 'RECOGNITIONS.COMMENT_LENGTH' | translate }}</p> }
+      @if (submitError()) { <p class="error" role="alert">{{ 'RECOGNITIONS.COMMENTS_SUBMIT_ERROR' | translate }}</p> }
+    </section>
+  </app-modal-body>
+</app-modal>
