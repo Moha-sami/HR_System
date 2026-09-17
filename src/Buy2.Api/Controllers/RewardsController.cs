@@ -139,4 +139,31 @@ public class RewardsController : ControllerBase
 
         return Ok(result.Value);
     }
+
+    [HttpGet("{id}/analytics")]
+    [Authorize(Roles = "HRAdmin,Admin,SuperAdmin")]
+    [ProducesResponseType(typeof(RewardAnalyticsDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetRewardAnalytics(
+        int id,
+        [FromQuery] RewardTransactionFilterQueryDto filter,
+        CancellationToken cancellation)
+    {
+        var result = await _mediator.Send(new GetRewardAnalyticsQuery(id, filter), cancellation);
+
+        if (result.IsNotFound)
+        {
+            return NotFound(new { message = result.ErrorMessage });
+        }
+
+        if (!result.IsSuccess)
+        {
+            return BadRequest(new { message = result.ErrorMessage });
+        }
+
+        return Ok(result.Value);
+    }
 }
