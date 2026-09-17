@@ -3,18 +3,19 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { environment } from '../../../../environments/environment';
-import type {
-  CreateInventoryDto,
-  CreateRewardApiInput,
-  CreateRewardDto,
-  EmployeeName,
-  PaginatedRewards,
-  RewardCategory,
-  RewardInventoryItem,
-  RewardItem,
-  RewardListFilter,
-  RewardProfileDto,
-  RewardRedemption,
+import {
+  mapRewardProfileToItem,
+  type CreateInventoryDto,
+  type EmployeeName,
+  type PaginatedRewards,
+  type RewardCategory,
+  type RewardInventoryItem,
+  type RewardItem,
+  type RewardListFilter,
+  type RewardProfileDto,
+  type RewardProfileResponseDto,
+  type RewardRedemption,
+  type RewardWriteInput,
 } from '../models/reward.models';
 
 const REWARDS_API = `${environment.baseUrl}/rewards`;
@@ -46,7 +47,7 @@ export function buildRewardListParams(filter: RewardListFilter): HttpParams {
   return params;
 }
 
-export function buildCreateRewardFormData(input: CreateRewardApiInput): FormData {
+export function buildRewardFormData(input: RewardWriteInput): FormData {
   const formData = new FormData();
   formData.append('name', input.name);
   formData.append('description', input.description);
@@ -66,7 +67,6 @@ export function buildCreateRewardFormData(input: CreateRewardApiInput): FormData
 })
 export class RewardService {
   private readonly http = inject(HttpClient);
-  private readonly mockApiUrl = `${environment.jsonServerUrl}/rewardItems`;
   private readonly categoriesUrl = `${environment.jsonServerUrl}/rewardCategories`;
   private readonly redemptionsUrl = `${environment.jsonServerUrl}/rewardRedemptions`;
   private readonly inventoryUrl = `${environment.jsonServerUrl}/rewardInventory`;
@@ -78,20 +78,26 @@ export class RewardService {
     });
   }
 
+  getRewardProfile(id: number | string): Observable<RewardProfileResponseDto> {
+    return this.http.get<RewardProfileResponseDto>(`${REWARDS_API}/${id}`);
+  }
+
   getReward(id: string): Observable<RewardItem> {
-    return this.http.get<RewardItem>(`${this.mockApiUrl}/${id}`);
+    return this.getRewardProfile(id).pipe(
+      map((response) => mapRewardProfileToItem(response.profile, response.kpiStats)),
+    );
   }
 
-  createReward(input: CreateRewardApiInput): Observable<RewardProfileDto> {
-    return this.http.post<RewardProfileDto>(REWARDS_API, buildCreateRewardFormData(input));
+  createReward(input: RewardWriteInput): Observable<RewardProfileDto> {
+    return this.http.post<RewardProfileDto>(REWARDS_API, buildRewardFormData(input));
   }
 
-  updateReward(id: string, dto: Partial<CreateRewardDto>): Observable<RewardItem> {
-    return this.http.patch<RewardItem>(`${this.mockApiUrl}/${id}`, dto);
+  updateReward(id: number | string, input: RewardWriteInput): Observable<RewardProfileDto> {
+    return this.http.put<RewardProfileDto>(`${REWARDS_API}/${id}`, buildRewardFormData(input));
   }
 
   deleteReward(id: string | number): Observable<void> {
-    return this.http.delete<void>(`${this.mockApiUrl}/${id}`);
+    return this.http.delete<void>(`${REWARDS_API}/${id}`);
   }
 
   getCategories(): Observable<RewardCategory[]> {

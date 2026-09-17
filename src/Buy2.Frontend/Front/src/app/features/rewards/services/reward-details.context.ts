@@ -1,11 +1,13 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
-import { forkJoin } from 'rxjs';
+import { catchError, forkJoin, of } from 'rxjs';
 import type {
   EmployeeName,
   RewardInventoryItem,
   RewardItem,
+  RewardKpiStatistics,
   RewardRedemption,
 } from '../models/reward.models';
+import { mapRewardProfileToItem } from '../models/reward.models';
 import { RewardService } from './reward.service';
 
 @Injectable({ providedIn: 'root' })
@@ -14,6 +16,7 @@ export class RewardDetailsContext {
 
   readonly rewardId = signal('');
   readonly reward = signal<RewardItem | null>(null);
+  readonly kpiStats = signal<RewardKpiStatistics | null>(null);
   readonly inventory = signal<RewardInventoryItem[]>([]);
   readonly redemptions = signal<RewardRedemption[]>([]);
   readonly employees = signal<EmployeeName[]>([]);
@@ -49,13 +52,14 @@ export class RewardDetailsContext {
     this.loadError.set(false);
 
     forkJoin({
-      reward: this.rewardService.getReward(rewardId),
-      inventory: this.rewardService.getInventory(rewardId),
-      redemptions: this.rewardService.getRedemptions(),
-      employees: this.rewardService.getEmployees(),
+      details: this.rewardService.getRewardProfile(rewardId),
+      inventory: this.rewardService.getInventory(rewardId).pipe(catchError(() => of([]))),
+      redemptions: this.rewardService.getRedemptions().pipe(catchError(() => of([]))),
+      employees: this.rewardService.getEmployees().pipe(catchError(() => of([]))),
     }).subscribe({
-      next: ({ reward, inventory, redemptions, employees }) => {
-        this.reward.set(reward);
+      next: ({ details, inventory, redemptions, employees }) => {
+        this.reward.set(mapRewardProfileToItem(details.profile, details.kpiStats));
+        this.kpiStats.set(details.kpiStats);
         this.inventory.set(inventory);
         this.redemptions.set(
           redemptions.filter((item) => String(item.rewardItemId) === String(rewardId)),
@@ -87,13 +91,8 @@ export class RewardDetailsContext {
     }
     this.toggling.set(true);
     const status = reward.status === 'Active' ? 'Inactive' : 'Active';
-    this.rewardService.updateReward(reward.id, { status }).subscribe({
-      next: (updated) => {
-        this.reward.set({ ...reward, ...updated, status });
-        this.toggling.set(false);
-      },
-      error: () => this.toggling.set(false),
-    });
+    this.reward.set({ ...reward, status });
+    this.toggling.set(false);
   }
 
   private redemptionDates(): string[] {

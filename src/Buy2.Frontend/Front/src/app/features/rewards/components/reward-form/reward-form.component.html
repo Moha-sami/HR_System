@@ -15,9 +15,6 @@
         <div class="field-row field-row--top">
           <div class="field-label">
             <span>{{ 'REWARD_MANAGEMENT.IMAGE' | translate }}</span>
-            @if (isEditMode) {
-              <small class="required-tag">{{ 'REWARD_MANAGEMENT.REQUIRED' | translate }}</small>
-            }
           </div>
           <div class="field-input">
             <input
@@ -88,59 +85,21 @@
             <small class="required-tag">{{ 'REWARD_MANAGEMENT.REQUIRED' | translate }}</small>
           </div>
           <div class="field-input">
-            @if (isEditMode) {
-              <select
-                class="form-control"
-                [class.invalid]="isInvalid('category')"
-                formControlName="category"
-              >
-                <option value="">{{ 'REWARD_MANAGEMENT.CATEGORY_PLACEHOLDER' | translate }}</option>
-                @for (category of categories(); track category.id) {
-                  <option [value]="category.name">{{ category.name }}</option>
-                }
-              </select>
-              @if (isInvalid('category')) {
-                <small class="error-msg">{{ 'REWARD_MANAGEMENT.CATEGORY_REQUIRED' | translate }}</small>
+            <select
+              class="form-control"
+              [class.invalid]="isInvalid('categoryId')"
+              formControlName="categoryId"
+            >
+              <option [ngValue]="null">{{ 'REWARD_MANAGEMENT.CATEGORY_PLACEHOLDER' | translate }}</option>
+              @for (category of seededCategories; track category.id) {
+                <option [ngValue]="category.id">{{ category.name }}</option>
               }
-            } @else {
-              <select
-                class="form-control"
-                [class.invalid]="isInvalid('categoryId')"
-                formControlName="categoryId"
-              >
-                <option [ngValue]="null">{{ 'REWARD_MANAGEMENT.CATEGORY_PLACEHOLDER' | translate }}</option>
-                @for (category of seededCategories; track category.id) {
-                  <option [ngValue]="category.id">{{ category.name }}</option>
-                }
-              </select>
-              @if (isInvalid('categoryId')) {
-                <small class="error-msg">{{ 'REWARD_MANAGEMENT.CATEGORY_REQUIRED' | translate }}</small>
-              }
+            </select>
+            @if (isInvalid('categoryId')) {
+              <small class="error-msg">{{ 'REWARD_MANAGEMENT.CATEGORY_REQUIRED' | translate }}</small>
             }
           </div>
         </div>
-
-        @if (isEditMode) {
-          <div class="field-row">
-            <div class="field-label">
-              <span>{{ 'REWARD_MANAGEMENT.COST' | translate }}</span>
-              <small class="required-tag">{{ 'REWARD_MANAGEMENT.REQUIRED' | translate }}</small>
-            </div>
-            <div class="field-input">
-              <input
-                type="number"
-                min="0"
-                class="form-control"
-                [class.invalid]="isInvalid('cost')"
-                formControlName="cost"
-                [placeholder]="'REWARD_MANAGEMENT.COST_PLACEHOLDER' | translate"
-              />
-              @if (isInvalid('cost')) {
-                <small class="error-msg">{{ 'REWARD_MANAGEMENT.COST_REQUIRED' | translate }}</small>
-              }
-            </div>
-          </div>
-        }
 
         <div class="field-row">
           <div class="field-label">
@@ -186,26 +145,36 @@
         <div class="field-row field-row--top">
           <div class="field-label">
             <span>{{ 'REWARD_MANAGEMENT.HOW_TO_REDEEM' | translate }}</span>
+            <small class="required-tag">{{ 'REWARD_MANAGEMENT.REQUIRED' | translate }}</small>
           </div>
           <div class="field-input">
             <textarea
               class="form-control form-textarea"
+              [class.invalid]="isInvalid('howToRedeem')"
               formControlName="howToRedeem"
               [placeholder]="'REWARD_MANAGEMENT.HOW_TO_REDEEM_PLACEHOLDER' | translate"
             ></textarea>
+            @if (isInvalid('howToRedeem')) {
+              <small class="error-msg">{{ 'REWARD_MANAGEMENT.HOW_TO_REDEEM_REQUIRED' | translate }}</small>
+            }
           </div>
         </div>
 
         <div class="field-row field-row--top">
           <div class="field-label">
             <span>{{ 'REWARD_MANAGEMENT.TERMS' | translate }}</span>
+            <small class="required-tag">{{ 'REWARD_MANAGEMENT.REQUIRED' | translate }}</small>
           </div>
           <div class="field-input">
             <textarea
               class="form-control form-textarea"
+              [class.invalid]="isInvalid('termsOfUse')"
               formControlName="termsOfUse"
               [placeholder]="'REWARD_MANAGEMENT.TERMS_PLACEHOLDER' | translate"
             ></textarea>
+            @if (isInvalid('termsOfUse')) {
+              <small class="error-msg">{{ 'REWARD_MANAGEMENT.TERMS_REQUIRED' | translate }}</small>
+            }
           </div>
         </div>
       </div>
