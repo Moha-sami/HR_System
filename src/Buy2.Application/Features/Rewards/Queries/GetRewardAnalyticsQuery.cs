@@ -1,4 +1,4 @@
-﻿using Buy2.Application.Common.Interfaces;
+using Buy2.Application.Common.Interfaces;
 using Buy2.Application.Common.Models;
 using Buy2.Application.DTOs.Rewards.DTOs;
 using Buy2.Domain.Entities;
@@ -9,7 +9,7 @@ namespace Buy2.Application.Features.Rewards.Queries;
 
 public record GetRewardAnalyticsQuery(
     int Id,
-    RewardTransactionFilterQueryDto Filter
+    RewardTransactionFilterQueryDto? Filter = null
 ) : IRequest<Result<RewardAnalyticsDto>>;
 
 public class GetRewardAnalyticsQueryHandler : IRequestHandler<GetRewardAnalyticsQuery, Result<RewardAnalyticsDto>>
@@ -36,11 +36,13 @@ public class GetRewardAnalyticsQueryHandler : IRequestHandler<GetRewardAnalytics
             return Result<RewardAnalyticsDto>.NotFound("Reward item not found.");
         }
 
-        var (dateFrom, dateTo, isWeekly) = ResolveDateBounds(query.Filter);
+        var filter = query.Filter ?? new RewardTransactionFilterQueryDto();
+
+        var (dateFrom, dateTo, isWeekly) = ResolveDateBounds(filter);
 
         var timeline = await BuildTimelineAsync(query.Id, dateFrom, dateTo, isWeekly, cancellation);
 
-        var transactions = await BuildTransactionsAsync(query, dateFrom, dateTo, cancellation);
+        var transactions = await BuildTransactionsAsync(query.Id, filter, dateFrom, dateTo, cancellation);
 
         var totalPages = transactions.TotalCount == 0
             ? 0
@@ -60,6 +62,10 @@ public class GetRewardAnalyticsQueryHandler : IRequestHandler<GetRewardAnalytics
     {
         var to = filter.DateTo ?? DateTimeOffset.UtcNow;
         var from = filter.DateFrom ?? to.AddMonths(-6);
+        if (from > to)
+        {
+            (from, to) = (to, from);
+        }
         var isWeekly = string.Equals(filter.TimelinePeriod, "Weekly", StringComparison.OrdinalIgnoreCase);
         return (from, to, isWeekly);
     }
@@ -104,18 +110,22 @@ public class GetRewardAnalyticsQueryHandler : IRequestHandler<GetRewardAnalytics
     }
 
     private async Task<PageResultDto<RewardTransactionItemDto>> BuildTransactionsAsync(
-        GetRewardAnalyticsQuery query, DateTimeOffset dateFrom, DateTimeOffset dateTo, CancellationToken cancellation)
+        int rewardId, RewardTransactionFilterQueryDto filter, DateTimeOffset dateFrom, DateTimeOffset dateTo, CancellationToken cancellation)
     {
         var redemptionQuery = _redemptionRepository
             .Query(true)
+            .Include(r => r.Employee)
+                .ThenInclude(e => e.JobRole)
+                    .ThenInclude(j => j!.Department)
+            .Include(r => r.PointsTransaction)
             .Where(r =>
-                r.RewardItemId == query.Id &&
+                r.RewardItemId == rewardId &&
                 r.RedeemedAt >= dateFrom &&
                 r.RedeemedAt <= dateTo);
 
-        if (!string.IsNullOrWhiteSpace(query.Filter.SearchTerm))
+        if (!string.IsNullOrWhiteSpace(filter.SearchTerm))
         {
-            var search = query.Filter.SearchTerm.Trim();
+            var search = filter.SearchTerm.Trim();
             redemptionQuery = redemptionQuery.Where(r =>
                 r.Employee.FirstName.Contains(search) ||
                 r.Employee.LastName.Contains(search) ||
@@ -125,8 +135,8 @@ public class GetRewardAnalyticsQueryHandler : IRequestHandler<GetRewardAnalytics
 
         var totalCount = await redemptionQuery.CountAsync(cancellation);
 
-        var pageNumber = Math.Max(1, query.Filter.PageNumber);
-        var pageSize = query.Filter.PageSize < 1 ? 10 : Math.Min(query.Filter.PageSize, 100);
+        var pageNumber = Math.Max(1, filter.PageNumber);
+        var pageSize = filter.PageSize < 1 ? 10 : Math.Min(filter.PageSize, 100);
 
         var items = await redemptionQuery
             .OrderByDescending(r => r.RedeemedAt)
@@ -135,15 +145,15 @@ public class GetRewardAnalyticsQueryHandler : IRequestHandler<GetRewardAnalytics
             .Select(r => new RewardTransactionItemDto(
                 r.Id,
                 r.EmployeeId,
-                r.Employee.FirstName + " " + r.Employee.LastName,
-                r.Employee.EmployeeCode,
-                r.Employee.JobRole != null && r.Employee.JobRole.Department != null
+                r.Employee != null ? r.Employee.FirstName + " " + r.Employee.LastName : string.Empty,
+                r.Employee != null ? r.Employee.EmployeeCode : string.Empty,
+                r.Employee != null && r.Employee.JobRole != null && r.Employee.JobRole.Department != null
                     ? r.Employee.JobRole.Department.Name
                     : string.Empty,
                 r.VoucherCode,
                 r.RedeemedAt,
                 r.RedeemedAt.DateTime.TimeOfDay,
-                Math.Abs(r.PointsTransaction.Amount)
+                r.PointsTransaction != null ? Math.Abs(r.PointsTransaction.Amount) : 0
             ))
             .ToListAsync(cancellation);
 
