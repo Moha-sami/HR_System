@@ -1,8 +1,8 @@
 namespace Buy2.Application.DTOs.Rewards.DTOs;
 
 public record RewardTransactionFilterQueryDto(
-    DateTimeOffset? DateFrom,
-    DateTimeOffset? DateTo,
+    DateTimeOffset? DateFrom = null,
+    DateTimeOffset? DateTo = null,
     string? TimelinePeriod = "Monthly",
     string? SearchTerm = null,
     int PageNumber = 1,
