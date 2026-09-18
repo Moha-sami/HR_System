@@ -22,21 +22,6 @@ public record RewardKpiStatistics(
     int TopRedeemed,
     int PointsValue
 );
-// Reward Analytics Chart: 
-public record RewardRedemptionAnalyticsChartDto(
-    DateTimeOffset StartTime,
-    DateTimeOffset EndTime,
-    int TotalRedemptions
-);
-// Reward Transaction History Log:
-public record RewardTransactionHistoryLogDto(
-    int TransactionId,
-    string EmployeeName,
-    DateTimeOffset Date,
-    DateTime Time,
-    string Code
-);
-
 public record RewardProfileResponseDto(
      RewardProfileListDto Profile,
      RewardKpiStatistics KpiStats
