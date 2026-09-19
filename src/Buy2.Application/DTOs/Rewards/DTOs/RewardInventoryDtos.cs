@@ -1,4 +1,4 @@
-﻿using Buy2.Domain.Enums;
+using Buy2.Domain.Enums;
 using Microsoft.AspNetCore.Http;
 
 namespace Buy2.Application.DTOs.Rewards.DTOs;
@@ -32,12 +32,12 @@ public record PaginatedVouchersResponseDto(
 );
 
 public record VoucherInventoryFilterQueryDto(
-    int? BatchId,
-    VoucherStatus? VoucherCode,
-    string? Status,
-    string? SortBy,
-    DateTimeOffset? DateFrom,
-    DateTimeOffset? DateTo,
+    int? BatchId = null,
+    string? VoucherCode = null,
+    string? Status = null,
+    string? SortBy = null,
+    DateTimeOffset? DateFrom = null,
+    DateTimeOffset? DateTo = null,
     int Page = 1,
     int PageSize = 10
 );

@@ -169,14 +169,28 @@ public class RewardsController : ControllerBase
 
     [HttpGet("{id}/inventory")]
     [Authorize(Roles = "HRAdmin,Admin,SuperAdmin")]
-    [ProducesResponseType(typeof(RewardAnalyticsDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(PaginatedVouchersResponseDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> GetInventory(int id, [FromQuery] VoucherInventoryFilterQueryDto dto, CancellationToken cancellation)
+    public async Task<IActionResult> GetInventory(
+        int id,
+        [FromQuery] VoucherInventoryFilterQueryDto? dto,
+        CancellationToken cancellation)
     {
         var result = await _mediator.Send(new GetRewardVoucherInventoryQuery(id, dto), cancellation);
-        return Ok(result);
+
+        if (result.IsNotFound)
+        {
+            return NotFound(new { message = result.ErrorMessage });
+        }
+
+        if (!result.IsSuccess)
+        {
+            return BadRequest(new { message = result.ErrorMessage });
+        }
+
+        return Ok(result.Value);
     }
 }

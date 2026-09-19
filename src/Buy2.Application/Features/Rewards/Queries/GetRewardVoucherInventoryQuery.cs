@@ -1,102 +1,107 @@
-﻿using Buy2.Application.Common.Interfaces;
+using Buy2.Application.Common.Interfaces;
+using Buy2.Application.Common.Models;
 using Buy2.Application.DTOs.Rewards.DTOs;
 using Buy2.Domain.Entities;
 using Buy2.Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using System.ComponentModel.DataAnnotations;
 
 namespace Buy2.Application.Features.Rewards.Queries;
+
 public record GetRewardVoucherInventoryQuery(
     int Id,
-    VoucherInventoryFilterQueryDto dto
-) : IRequest<PaginatedVouchersResponseDto>;
+    VoucherInventoryFilterQueryDto? Dto = null
+) : IRequest<Result<PaginatedVouchersResponseDto>>;
 
-public class GetRewardVoucherInventoryQueryHandler : IRequestHandler<GetRewardVoucherInventoryQuery, PaginatedVouchersResponseDto>
+public class GetRewardVoucherInventoryQueryHandler : IRequestHandler<GetRewardVoucherInventoryQuery, Result<PaginatedVouchersResponseDto>>
 {
     private readonly IRepository<RewardItem> _rewardItemRepository;
     private readonly IRepository<RewardVoucher> _voucherRepository;
+
     public GetRewardVoucherInventoryQueryHandler(IRepository<RewardItem> item, IRepository<RewardVoucher> voucher)
     {
-        _rewardItemRepository   = item;
-        _voucherRepository      = voucher;
+        _rewardItemRepository = item;
+        _voucherRepository = voucher;
     }
-    public async Task<PaginatedVouchersResponseDto> Handle(GetRewardVoucherInventoryQuery query, CancellationToken cancellation)
+
+    public async Task<Result<PaginatedVouchersResponseDto>> Handle(GetRewardVoucherInventoryQuery query, CancellationToken cancellation)
     {
-        var rewardItem = await _rewardItemRepository
-            .Query(false)
+        var rewardExists = await _rewardItemRepository
+            .Query(true)
             .AnyAsync(r => r.Id == query.Id, cancellation);
 
-        if (!rewardItem)
+        if (!rewardExists)
         {
-            throw new ValidationException("Reward item not found.");
+            return Result<PaginatedVouchersResponseDto>.NotFound("Reward item not found.");
         }
 
-        var vouchers = _voucherRepository
+        var filter = query.Dto ?? new VoucherInventoryFilterQueryDto();
+
+        var baseQuery = _voucherRepository
             .Query(true)
             .Where(v => v.RewardItemId == query.Id);
 
-        if (query.dto.BatchId.HasValue)
+        var availableCount = await baseQuery.CountAsync(v => v.Status == VoucherStatus.Available, cancellation);
+        var redeemedCount = await baseQuery.CountAsync(v => v.Status == VoucherStatus.Redeemed, cancellation);
+        var expiredCount = await baseQuery.CountAsync(v => v.Status == VoucherStatus.Expired, cancellation);
+
+        var vouchers = baseQuery;
+
+        if (filter.BatchId.HasValue)
         {
-            vouchers = vouchers.Where(v => v.BatchId == query.dto.BatchId.Value);
+            vouchers = vouchers.Where(v => v.BatchId == filter.BatchId.Value);
         }
 
-        if (!string.IsNullOrWhiteSpace(query.dto.Status) && !query.dto.Status.Equals("All", StringComparison.OrdinalIgnoreCase))
+        if (!string.IsNullOrWhiteSpace(filter.VoucherCode))
         {
-            if (query.dto.Status.Equals("Available", StringComparison.OrdinalIgnoreCase))
+            var codeSearch = filter.VoucherCode.Trim();
+            vouchers = vouchers.Where(v => v.Code.Contains(codeSearch));
+        }
+
+        if (!string.IsNullOrWhiteSpace(filter.Status) && !string.Equals(filter.Status, "All", StringComparison.OrdinalIgnoreCase))
+        {
+            if (Enum.TryParse<VoucherStatus>(filter.Status.Trim(), true, out var parsedStatus))
             {
-                vouchers = vouchers.Where(v => v.Status.Equals("Available"));
-            }
-            else if (query.dto.Status.Equals("Redeemed", StringComparison.OrdinalIgnoreCase))
-            {
-                vouchers = vouchers.Where(v => v.Status.Equals("Redeemed"));
-            }
-            else if (query.dto.Status.Equals("Expired", StringComparison.OrdinalIgnoreCase))
-            {
-                vouchers = vouchers.Where(v => v.Status.Equals("Expired"));
+                vouchers = vouchers.Where(v => v.Status == parsedStatus);
             }
         }
 
-        if (query.dto.DateFrom.HasValue)
+        var dateFrom = filter.DateFrom;
+        var dateTo = filter.DateTo;
+        if (dateFrom.HasValue && dateTo.HasValue && dateFrom > dateTo)
         {
-            vouchers = vouchers.Where(r => r.CreatedAt >= query.dto.DateFrom);
+            (dateFrom, dateTo) = (dateTo, dateFrom);
         }
-        if (query.dto.DateTo.HasValue)
+
+        if (dateFrom.HasValue)
         {
-            vouchers = vouchers.Where(r => r.CreatedAt <= query.dto.DateTo);
+            var fromUtc = dateFrom.Value.UtcDateTime;
+            vouchers = vouchers.Where(v => v.CreatedAt >= fromUtc);
         }
 
-        var totalCount = await vouchers
-           .CountAsync(cancellation);
+        if (dateTo.HasValue)
+        {
+            var toUtc = dateTo.Value.UtcDateTime;
+            vouchers = vouchers.Where(v => v.CreatedAt <= toUtc);
+        }
 
-        var availableCount = await vouchers
-            .CountAsync(
-                v => v.Status == VoucherStatus.Available,
-                cancellation);
+        var totalCount = await vouchers.CountAsync(cancellation);
 
-        var redeemedCount = await vouchers
-            .CountAsync(
-                v => v.Status == VoucherStatus.Redeemed,
-                cancellation);
-
-        var expiredCount = await vouchers
-            .CountAsync(
-                v => v.Status == VoucherStatus.Expired,
-                cancellation);
-        var page = query.dto.Page < 1 ? 1 : query.dto.Page;
-        var pageSize = query.dto.PageSize < 1 ? 10 : query.dto.PageSize;
+        var page = Math.Max(1, filter.Page);
+        var pageSize = filter.PageSize < 1 ? 10 : Math.Min(filter.PageSize, 100);
 
         var items = await vouchers
+            .OrderByDescending(v => v.CreatedAt)
             .Skip((page - 1) * pageSize)
-            .Take(query.dto.PageSize)
+            .Take(pageSize)
             .Select(v => new RewardInventoryListDto(
-                    v.Id,
-                    v.BatchId,
-                    v.CreatedAt,
-                    v.Code,
-                    v.Status
-                )         
-            ).ToListAsync(cancellation);
+                v.Id,
+                v.BatchId,
+                v.CreatedAt,
+                v.Code,
+                v.Status
+            ))
+            .ToListAsync(cancellation);
 
         var pageResult = new PageResultDto<RewardInventoryListDto>(
             items,
@@ -104,10 +109,10 @@ public class GetRewardVoucherInventoryQueryHandler : IRequestHandler<GetRewardVo
             page,
             pageSize);
 
-        return new PaginatedVouchersResponseDto(
+        return Result<PaginatedVouchersResponseDto>.Success(new PaginatedVouchersResponseDto(
             pageResult,
             availableCount,
             redeemedCount,
-            expiredCount);
+            expiredCount));
     }
 }
