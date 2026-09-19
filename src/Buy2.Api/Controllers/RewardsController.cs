@@ -166,4 +166,17 @@ public class RewardsController : ControllerBase
 
         return Ok(result.Value);
     }
+
+    [HttpGet("{id}/inventory")]
+    [Authorize(Roles = "HRAdmin,Admin,SuperAdmin")]
+    [ProducesResponseType(typeof(RewardAnalyticsDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetInventory(int id, [FromQuery] VoucherInventoryFilterQueryDto dto, CancellationToken cancellation)
+    {
+        var result = await _mediator.Send(new GetRewardVoucherInventoryQuery(id, dto), cancellation);
+        return Ok(result);
+    }
 }
