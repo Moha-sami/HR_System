@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { map } from 'rxjs';
+import { map, throwError } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { AuthService } from '../../../core/auth/auth.service';
 import type { Recognition, RecognitionEmployee, RecognitionInput } from '../models/recognition.models';
@@ -26,5 +26,18 @@ export class RecognitionService {
     return this.http.get<RecognitionEmployee[]>(`${environment.jsonServerUrl}/employees`).pipe(
       map(items => items.map(item => ({ ...item, id: String(item.id) }))),
     );
+  }
+
+  /**
+   * Recognition comments have no API contract in this application yet.  Keep the
+   * boundary here so the view can handle the unavailable API consistently and a
+   * documented endpoint can be wired in without putting HTTP logic in the UI.
+   */
+  getComments(_recognitionId: string) {
+    return throwError(() => new Error('Recognition comments API is not available.'));
+  }
+
+  addComment(_recognitionId: string, _content: string) {
+    return throwError(() => new Error('Recognition comments API is not available.'));
   }
 }
