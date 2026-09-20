@@ -193,4 +193,28 @@ public class RewardsController : ControllerBase
 
         return Ok(result.Value);
     }
+    [HttpPost("{id}/inventory/upload")]
+    [Authorize(Roles = "HRAdmin,Admin,SuperAdmin")]
+    [Consumes("multipart/form-data")]
+    [ProducesResponseType(typeof(UploadVouchersResponseDto), StatusCodes.Status200OK)]
+    [ProducesResponseType( typeof(UploadVouchersResponseDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> UploadVouchers(int id, [FromForm] UploadVouchersRequestDto dto, CancellationToken cancellation)
+    {
+        var result = await _mediator.Send(
+            new UploadRewardVouchersCommand(id, dto),
+            cancellation);
+
+        if (dto.Confirm)
+        {
+            return StatusCode(
+                StatusCodes.Status201Created,
+                result);
+        }
+
+        return Ok(result);
+    }
 }
