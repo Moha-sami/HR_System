@@ -64,7 +64,15 @@ export class Layout implements OnInit {
     { icon: 'svg-reward', labelKey: 'LAYOUT.NAV.REWARD_MANAGEMENT', route: '/rewards' },
     { icon: 'svg-points', labelKey: 'LAYOUT.NAV.POINTS_MANAGEMENT', route: '/points' },
     { icon: 'svg-site', labelKey: 'LAYOUT.NAV.SITE_MANAGEMENT', route: '/sites' },
-    { icon: 'svg-request', labelKey: 'LAYOUT.NAV.REQUEST_MANAGEMENT', route: '/requests', hasArrow: true },
+    { 
+      icon: 'svg-request', 
+      labelKey: 'LAYOUT.NAV.REQUEST_MANAGEMENT', 
+      route: '/requests', 
+      hasArrow: true,
+      children: [
+        { labelKey: 'LAYOUT.NAV.REQUEST_TYPES', route: '/requests/types' }
+      ]
+    },
     { icon: 'svg-time', labelKey: 'LAYOUT.NAV.TIME_AND_ATTENDANCE', route: '/attendance' },
     { icon: 'svg-reward', labelKey: 'LAYOUT.NAV.RECOGNITIONS', route: '/recognitions' },
     { icon: 'svg-notifications', labelKey: 'LAYOUT.NAV.NOTIFICATIONS', route: '/news' },
