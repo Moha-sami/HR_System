@@ -6,7 +6,6 @@ import { environment } from '../../../../environments/environment';
 import { RewardService } from './reward.service';
 
 const REWARDS_URL = `${environment.baseUrl}/rewards`;
-const MOCK_ITEMS_URL = `${environment.jsonServerUrl}/rewardItems`;
 
 describe('RewardService', () => {
   let service: RewardService;
@@ -131,25 +130,112 @@ describe('RewardService', () => {
     );
   });
 
-  it('should keep get-by-id on json-server', () => {
-    service.getReward('8').subscribe();
+  it('should PUT update as multipart FormData to /rewards/{id}', () => {
+    const file = new File(['img'], 'banner.png', { type: 'image/png' });
 
-    const req = httpMock.expectOne(`${MOCK_ITEMS_URL}/8`);
+    service
+      .updateReward(12, {
+        name: 'Amazon Card',
+        description: 'Gift',
+        categoryId: 1,
+        points: 200,
+        monetaryValue: 50,
+        howToRedeem: 'Show code',
+        termsOfUse: 'No cash',
+        imageFile: file,
+      })
+      .subscribe((result) => {
+        expect(result.id).toBe(12);
+      });
+
+    const req = httpMock.expectOne(`${REWARDS_URL}/12`);
+    expect(req.request.method).toBe('PUT');
+    expect(req.request.body instanceof FormData).toBe(true);
+    const body = req.request.body as FormData;
+    expect(body.get('name')).toBe('Amazon Card');
+    expect(body.get('categoryId')).toBe('1');
+    expect(body.get('imageFile')).toBeTruthy();
+    req.flush({
+      id: 12,
+      name: 'Amazon Card',
+      description: 'Gift',
+      imageUrl: null,
+      category: 'Gift Cards',
+      points: 200,
+      monetaryValue: 50,
+      howToRedeem: 'Show code',
+      termsOfUse: 'No cash',
+      isActive: true,
+    });
+  });
+
+  it('should DELETE a reward by id on the real API', () => {
+    service.deleteReward(12).subscribe();
+
+    const req = httpMock.expectOne(`${REWARDS_URL}/12`);
+    expect(req.request.method).toBe('DELETE');
+    req.flush(null, { status: 204, statusText: 'No Content' });
+  });
+
+  it('should GET reward profile by id from the real API', () => {
+    service.getRewardProfile(12).subscribe((response) => {
+      expect(response.profile.name).toBe('Amazon Card');
+    });
+
+    const req = httpMock.expectOne(`${REWARDS_URL}/12`);
     expect(req.request.method).toBe('GET');
     req.flush({
-      id: '8',
-      name: 'Mock',
-      description: '',
-      category: 'Gift Cards',
-      imageUrl: '',
-      cost: 1,
-      price: 1,
-      pointsValue: 1,
-      howToRedeem: '',
-      termsOfUse: '',
-      status: 'Active',
-      availableStock: 0,
-      createdAt: '2026-01-01T00:00:00Z',
+      profile: {
+        id: 12,
+        name: 'Amazon Card',
+        description: 'Gift',
+        imageUrl: null,
+        category: 'Gift Cards',
+        points: 200,
+        monetaryValue: 50,
+        howToRedeem: 'Show code',
+        termsOfUse: 'No cash',
+        isActive: true,
+      },
+      kpiStats: {
+        redemptionCount: 0,
+        availableStock: '0/0',
+        totalCost: 0,
+        topRedeemed: 0,
+        pointsValue: 200,
+      },
+    });
+  });
+
+  it('should map GET reward by id from the real API profile', () => {
+    service.getReward('8').subscribe((reward) => {
+      expect(reward.id).toBe('8');
+      expect(reward.name).toBe('Mock');
+      expect(reward.status).toBe('Active');
+    });
+
+    const req = httpMock.expectOne(`${REWARDS_URL}/8`);
+    expect(req.request.method).toBe('GET');
+    req.flush({
+      profile: {
+        id: 8,
+        name: 'Mock',
+        description: '',
+        imageUrl: null,
+        category: 'Gift Cards',
+        points: 1,
+        monetaryValue: 1,
+        howToRedeem: '',
+        termsOfUse: '',
+        isActive: true,
+      },
+      kpiStats: {
+        redemptionCount: 0,
+        availableStock: '0/0',
+        totalCost: 0,
+        topRedeemed: 0,
+        pointsValue: 1,
+      },
     });
   });
 });
