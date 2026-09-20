@@ -1,0 +1,95 @@
+<div class="page-container">
+  <form [formGroup]="requestForm" (ngSubmit)="onSubmit()">
+    <div class="page-header">
+      <div class="header-left">
+        <a routerLink="/requests/types" class="back-link">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+          {{ 'COMMON.BACK' | translate }}
+        </a>
+        <h1 class="page-title">{{ isEditMode ? ('REQUESTS.TYPES.EDIT_TITLE' | translate) : ('REQUESTS.TYPES.ADD_TITLE' | translate) }}</h1>
+      </div>
+      
+      <div class="header-actions">
+        <button type="button" class="btn btn-text text-danger" routerLink="/requests/types">
+          {{ 'COMMON.DISCARD' | translate }}
+        </button>
+        <button type="submit" class="btn btn-primary">
+          {{ isEditMode ? ('REQUESTS.TYPES.SAVE_CHANGES' | translate) : ('REQUESTS.TYPES.PUBLISH' | translate) }}
+        </button>
+      </div>
+    </div>
+
+    <h3 class="section-title">{{ 'REQUESTS.TYPES.REQUEST_DETAILS' | translate }}</h3>
+    
+    <div class="form-card">
+      <div class="form-group">
+        <label class="form-label">{{ 'REQUESTS.TYPES.CATEGORY' | translate }}</label>
+        <select class="form-control" formControlName="category" [class.is-invalid]="requestForm.get('category')?.invalid && requestForm.get('category')?.touched">
+          <option value="" disabled selected>Select</option>
+          <option value="Leaves">Leaves</option>
+          <option value="Loans">Loans</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">{{ 'REQUESTS.TYPES.NAME_OF_REQUEST' | translate }}</label>
+        <input type="text" class="form-control" formControlName="name" placeholder="Write Title here...." [class.is-invalid]="requestForm.get('name')?.invalid && requestForm.get('name')?.touched" />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">{{ 'REQUESTS.TYPES.HINT' | translate }}</label>
+        <textarea class="form-control" rows="4" formControlName="hint" placeholder="Write body here...."></textarea>
+      </div>
+
+      <div class="form-group" *ngIf="requestForm.get('category')?.value === 'Leaves' || isEditMode">
+        <label class="form-label">{{ 'REQUESTS.TYPES.LEAVE_TYPE' | translate }}</label>
+        <div class="radio-group">
+          <label class="radio-label">
+            <input type="radio" formControlName="leaveType" value="Full">
+            <span class="radio-custom"></span>
+            Full
+          </label>
+          <label class="radio-label">
+            <input type="radio" formControlName="leaveType" value="Partial">
+            <span class="radio-custom"></span>
+            Partial
+          </label>
+        </div>
+      </div>
+
+      <div class="form-group" *ngIf="requestForm.get('category')?.value === 'Leaves' || isEditMode">
+        <label class="form-label">{{ 'REQUESTS.TYPES.LEAVE_PAY' | translate }}</label>
+        <div class="radio-group">
+          <label class="radio-label">
+            <input type="radio" formControlName="leaveType" value="Paid">
+            <span class="radio-custom"></span>
+            Paid
+          </label>
+          <label class="radio-label">
+            <input type="radio" formControlName="leaveType" value="Unpaid">
+            <span class="radio-custom"></span>
+            Unpaid
+          </label>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>
+
+<!-- Success Modal -->
+<div class="modal-backdrop" *ngIf="showSuccessModal">
+  <div class="modal-content">
+    <div class="modal-close" (click)="closeModalAndNavigate()">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+    </div>
+    <div class="success-icon-wrapper">
+      <div class="success-icon-bg">
+        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+      </div>
+    </div>
+    <h2 class="modal-title">{{ isEditMode ? ('REQUESTS.TYPES.EDIT_TITLE' | translate) : ('REQUESTS.TYPES.ADD_TITLE' | translate) }}</h2>
+    <p class="modal-message">{{ isEditMode ? 'Request type updated successfully !!' : 'Request Type has been added successfully !' }}</p>
+    <button class="btn btn-primary btn-block" (click)="closeModalAndNavigate()">Got it</button>
+  </div>
+</div>

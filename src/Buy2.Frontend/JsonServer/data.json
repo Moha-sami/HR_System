@@ -1818,5 +1818,47 @@
       "updatedBy": "hr@buy2.com"
     }
   ],
-  "$schema": "./node_modules/json-server/schema.json"
+  "$schema": "./node_modules/json-server/schema.json",
+  "requestTypes": [
+    {
+      "id": "1",
+      "category": "Leaves",
+      "name": "Leaves",
+      "hint": "Leave request",
+      "leaveType": "Full",
+      "leavePay": "Paid",
+      "createdAt": "2023-09-17T17:00:00Z",
+      "addedBy": "Ahmed Ali"
+    },
+    {
+      "id": "2",
+      "category": "Leaves",
+      "name": "Leaves",
+      "hint": "Leave request",
+      "leaveType": "Full",
+      "leavePay": "Paid",
+      "createdAt": "2023-09-17T17:00:00Z",
+      "addedBy": "Ahmed Ali"
+    },
+    {
+      "id": "3",
+      "category": "Leaves",
+      "name": "Leaves",
+      "hint": "Leave request",
+      "leaveType": "Full",
+      "leavePay": "Paid",
+      "createdAt": "2023-09-17T17:00:00Z",
+      "addedBy": "Ahmed Ali"
+    },
+    {
+      "id": "4",
+      "category": "Leaves",
+      "name": "Leaves",
+      "hint": "Leave request",
+      "leaveType": "Full",
+      "leavePay": "Paid",
+      "createdAt": "2023-09-17T17:00:00Z",
+      "addedBy": "Ahmed Ali"
+    }
+  ]
 }

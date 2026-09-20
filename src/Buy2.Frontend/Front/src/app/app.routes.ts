@@ -68,6 +68,12 @@ export const routes: Routes = [
           import('./features/employees/employees.routes').then((m) => m.EMPLOYEES_ROUTES),
       },
 
+      // Request Management
+      {
+        path: 'requests',
+        loadChildren: () => import('./features/requests/requests.routes').then((m) => m.REQUESTS_ROUTES),
+      },
+
       // ──────────────────────────────────────────────────────────────────────
       // §2.1 — Job Management & Role Engineering
       // ──────────────────────────────────────────────────────────────────────
