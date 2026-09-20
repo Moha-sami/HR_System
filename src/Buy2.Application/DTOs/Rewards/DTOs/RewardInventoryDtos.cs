@@ -41,3 +41,37 @@ public record VoucherInventoryFilterQueryDto(
     int Page = 1,
     int PageSize = 10
 );
+
+
+// Upload Excel File
+public record UploadVouchersRequestDto(
+    IFormFile File,
+    string? BatchId,
+    DateTimeOffset? ExpiryDate,
+    bool Confirm
+);
+public record VoucherUploadPreviewItemDto(
+    string VoucherCode,
+    bool IsValid,
+    string? Error
+);
+public record VoucherUploadPreviewDto(
+    int BatchId,
+    int TotalFound,
+    int ValidCount,
+    int DuplicateInFileCount,
+    int DuplicateInDbCount,
+    IReadOnlyCollection<VoucherUploadPreviewItemDto> Preview
+);
+
+public record VoucherUploadResultDto(
+    int BatchId,
+    int TotalUploaded,
+    int AvailableStock,
+    DateTimeOffset? ExpiryDate
+);
+
+public record UploadVouchersResponseDto(
+    VoucherUploadPreviewDto? Preview,
+    VoucherUploadResultDto? Result
+);
