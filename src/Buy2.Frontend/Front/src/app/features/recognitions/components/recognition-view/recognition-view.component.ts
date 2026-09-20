@@ -6,11 +6,12 @@ import { ButtonComponent } from '../../../../shared/components/button/button.com
 import { ModalComponent } from '../../../../shared/components/modal/modal.component';
 import { ModalBodyComponent } from '../../../../shared/components/modal/modal-body.component';
 import { RecognitionContentComponent } from '../recognition-content/recognition-content.component';
+import { RecognitionCommentsModalComponent } from '../recognition-comments-modal/recognition-comments-modal.component';
 import { RecognitionService } from '../../services/recognition.service';
 import type { Recognition } from '../../models/recognition.models';
 
 @Component({ selector: 'app-recognition-view', standalone: true,
-  imports: [TranslatePipe, ButtonComponent, ModalComponent, ModalBodyComponent, RecognitionContentComponent],
+  imports: [TranslatePipe, ButtonComponent, ModalComponent, ModalBodyComponent, RecognitionContentComponent, RecognitionCommentsModalComponent],
   templateUrl: './recognition-view.component.html', styleUrl: '../../recognitions.css' })
 export class RecognitionViewComponent implements OnInit {
   readonly id = input.required<string>();
@@ -24,6 +25,7 @@ export class RecognitionViewComponent implements OnInit {
   readonly confirmation = signal<'delete' | 'archive' | null>(null);
   readonly success = signal<'delete' | 'archive' | null>(null);
   readonly error = signal('');
+  readonly commentsOpen = signal(false);
   ngOnInit() { this.load(); }
   load() {
     this.loading.set(true); this.loadError.set(false);
@@ -34,6 +36,8 @@ export class RecognitionViewComponent implements OnInit {
   }
   back() { void this.router.navigate(['/recognitions']); }
   edit() { void this.router.navigate(['/recognitions/edit', this.id()]); }
+  openComments() { this.commentsOpen.set(true); }
+  closeComments() { this.commentsOpen.set(false); }
   ask(action: 'delete' | 'archive') { this.error.set(''); this.confirmation.set(action); }
   close() { if (!this.busy()) this.confirmation.set(null); }
   confirm() {
