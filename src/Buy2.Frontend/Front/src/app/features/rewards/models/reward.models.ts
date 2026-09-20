@@ -63,7 +63,20 @@ export interface RewardProfileDto {
   readonly isActive: boolean;
 }
 
-export interface CreateRewardApiInput {
+export interface RewardKpiStatistics {
+  readonly redemptionCount: number;
+  readonly availableStock: string;
+  readonly totalCost: number;
+  readonly topRedeemed: number;
+  readonly pointsValue: number;
+}
+
+export interface RewardProfileResponseDto {
+  readonly profile: RewardProfileDto;
+  readonly kpiStats: RewardKpiStatistics;
+}
+
+export interface RewardWriteInput {
   readonly name: string;
   readonly description: string;
   readonly categoryId: number;
@@ -73,6 +86,8 @@ export interface CreateRewardApiInput {
   readonly termsOfUse: string;
   readonly imageFile?: File | null;
 }
+
+export type CreateRewardApiInput = RewardWriteInput;
 
 export interface RewardItem {
   id: string;
@@ -88,6 +103,35 @@ export interface RewardItem {
   status: RewardStatus;
   availableStock: number;
   createdAt: string;
+}
+
+export function mapRewardProfileToItem(
+  profile: RewardProfileDto,
+  kpi?: RewardKpiStatistics | null,
+): RewardItem {
+  return {
+    id: String(profile.id),
+    name: profile.name,
+    description: profile.description ?? '',
+    category: profile.category,
+    imageUrl: profile.imageUrl ?? '',
+    cost: kpi?.totalCost ?? 0,
+    price: profile.monetaryValue,
+    pointsValue: profile.points,
+    howToRedeem: profile.howToRedeem,
+    termsOfUse: profile.termsOfUse,
+    status: profile.isActive ? 'Active' : 'Inactive',
+    availableStock: firstStockCount(kpi?.availableStock),
+    createdAt: '',
+  };
+}
+
+function firstStockCount(availableStock?: string): number {
+  if (!availableStock) {
+    return 0;
+  }
+  const value = Number(availableStock.split('/')[0]);
+  return Number.isFinite(value) ? value : 0;
 }
 
 export type CreateRewardDto = Omit<RewardItem, 'id'>;

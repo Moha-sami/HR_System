@@ -34,23 +34,25 @@
     <div class="metric-row">
       <div class="metric-card">
         <span class="metric-label">{{ 'REWARD_MANAGEMENT.METRIC_REDEMPTION' | translate }}</span>
-        <span class="metric-value">{{ ctx.redemptionCount() }}</span>
+        <span class="metric-value">{{ ctx.kpiStats()?.redemptionCount ?? ctx.redemptionCount() }}</span>
       </div>
       <div class="metric-card">
         <span class="metric-label">{{ 'REWARD_MANAGEMENT.METRIC_AVAILABILITY' | translate }}</span>
-        <span class="metric-value metric-value--accent">{{ ctx.availableCount() }} / {{ ctx.totalCount() }}</span>
+        <span class="metric-value metric-value--accent">{{
+          ctx.kpiStats()?.availableStock ?? ctx.availableCount() + ' / ' + ctx.totalCount()
+        }}</span>
       </div>
       <div class="metric-card">
         <span class="metric-label">{{ 'REWARD_MANAGEMENT.METRIC_COST' | translate }}</span>
-        <span class="metric-value">${{ reward.cost }}</span>
+        <span class="metric-value">${{ ctx.kpiStats()?.totalCost ?? reward.cost }}</span>
       </div>
       <div class="metric-card">
         <span class="metric-label">{{ 'REWARD_MANAGEMENT.METRIC_TOP' | translate }}</span>
-        <span class="metric-value">{{ ctx.topRedeemed() }}</span>
+        <span class="metric-value">{{ ctx.kpiStats()?.topRedeemed ?? ctx.topRedeemed() }}</span>
       </div>
       <div class="metric-card">
         <span class="metric-label">{{ 'REWARD_MANAGEMENT.METRIC_POINTS' | translate }}</span>
-        <span class="metric-value">{{ reward.pointsValue }}</span>
+        <span class="metric-value">{{ ctx.kpiStats()?.pointsValue ?? reward.pointsValue }}</span>
       </div>
     </div>
 
