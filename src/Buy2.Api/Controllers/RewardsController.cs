@@ -208,13 +208,23 @@ public class RewardsController : ControllerBase
             new UploadRewardVouchersCommand(id, dto),
             cancellation);
 
+        if (result.IsNotFound)
+        {
+            return NotFound(new { message = result.ErrorMessage });
+        }
+
+        if (!result.IsSuccess)
+        {
+            return BadRequest(new { message = result.ErrorMessage });
+        }
+
         if (dto.Confirm)
         {
             return StatusCode(
                 StatusCodes.Status201Created,
-                result);
+                result.Value);
         }
 
-        return Ok(result);
+        return Ok(result.Value);
     }
 }

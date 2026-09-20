@@ -102,11 +102,10 @@ public class ExcelVoucherParser : IExcelVoucherParserService
         var firstLine = true;
         var voucherCodeColumnIndex = 0;
 
-        while (!reader.EndOfStream)
+        string? line;
+        while ((line = await reader.ReadLineAsync(cancellation)) != null)
         {
             cancellation.ThrowIfCancellationRequested();
-
-            var line = await reader.ReadLineAsync(cancellation);
 
             if (string.IsNullOrWhiteSpace(line))
                 continue;
