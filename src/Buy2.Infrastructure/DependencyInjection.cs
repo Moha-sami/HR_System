@@ -29,6 +29,7 @@ public static class DependencyInjection
         services.AddScoped(typeof(IRepository<>), typeof(GenericRepository<>));
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
+        services.AddScoped<IExcelVoucherParserService, ExcelVoucherParser>();
         services.AddTransient<ExcelVoucherParser>();
         services.AddScoped<IScheduleValidationEngine, ScheduleValidationEngine>();
         services.AddScoped<IFileStorageService, FileStorageService>();
