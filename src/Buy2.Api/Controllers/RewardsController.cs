@@ -224,7 +224,22 @@ public class RewardsController : ControllerBase
                 StatusCodes.Status201Created,
                 result.Value);
         }
-
         return Ok(result.Value);
+    }
+
+    [HttpPost("{id}/inventory/delete-batch")]
+    [Authorize(Roles = "HRAdmin,Admin,SuperAdmin")]
+    [ProducesResponseType(typeof(BatchDeleteVouchersResultDto),StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> BatchDeleteVouchers(int id, IReadOnlyCollection<int> VoucherIds, CancellationToken cancellation)
+    {
+        var command = new BatchDeleteVouchersCommand(id, VoucherIds);
+
+        var result = await _mediator.Send(command, cancellation);
+
+        return Ok(result);
     }
 }

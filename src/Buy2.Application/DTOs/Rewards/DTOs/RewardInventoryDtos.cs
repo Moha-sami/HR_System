@@ -75,3 +75,9 @@ public record UploadVouchersResponseDto(
     VoucherUploadPreviewDto? Preview,
     VoucherUploadResultDto? Result
 );
+
+public record BatchDeleteVouchersResultDto(
+    int DeletedCount,
+    int SkippedCount,
+    string Message
+);
