@@ -1,19 +1,19 @@
-﻿using Buy2.Application.Common.Interfaces;
+using Buy2.Application.Common.Interfaces;
+using Buy2.Application.Common.Models;
 using Buy2.Application.DTOs.Rewards.DTOs;
 using Buy2.Domain.Entities;
 using Buy2.Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using System.ComponentModel.DataAnnotations;
 
 namespace Buy2.Application.Features.Rewards.Commands;
 
 public record BatchDeleteVouchersCommand(
     int Id,
     IReadOnlyCollection<int> VoucherIds
-) : IRequest<BatchDeleteVouchersResultDto>;
+) : IRequest<Result<BatchDeleteVouchersResultDto>>;
 
-public class BatchDeleteVouchersCommandHandler : IRequestHandler<BatchDeleteVouchersCommand, BatchDeleteVouchersResultDto>
+public class BatchDeleteVouchersCommandHandler : IRequestHandler<BatchDeleteVouchersCommand, Result<BatchDeleteVouchersResultDto>>
 {
     private readonly IRepository<RewardItem> _rewardItemRepository;
     private readonly IRepository<RewardVoucher> _voucherRepository;
@@ -29,25 +29,22 @@ public class BatchDeleteVouchersCommandHandler : IRequestHandler<BatchDeleteVouc
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<BatchDeleteVouchersResultDto> Handle(BatchDeleteVouchersCommand command, CancellationToken cancellation)
+    public async Task<Result<BatchDeleteVouchersResultDto>> Handle(BatchDeleteVouchersCommand command, CancellationToken cancellation)
     {
+        if (command.VoucherIds is null || command.VoucherIds.Count == 0)
+        {
+            return Result<BatchDeleteVouchersResultDto>.ValidationFailure(
+                "At least one voucher must be selected.");
+        }
+
         var rewardItem = await _rewardItemRepository
-                   .Query(false)
-                   .FirstOrDefaultAsync(
-                       r => r.Id == command.Id,
-                       cancellation);
+            .Query(false)
+            .FirstOrDefaultAsync(r => r.Id == command.Id, cancellation);
 
         if (rewardItem is null)
         {
-            throw new ValidationException(
+            return Result<BatchDeleteVouchersResultDto>.NotFound(
                 "Reward item not found.");
-        }
-
-        if (command.VoucherIds is null ||
-            command.VoucherIds.Count == 0)
-        {
-            throw new ValidationException(
-                "At least one voucher must be selected.");
         }
 
         var voucherIds = command.VoucherIds
@@ -56,12 +53,9 @@ public class BatchDeleteVouchersCommandHandler : IRequestHandler<BatchDeleteVouc
 
         var vouchers = await _voucherRepository
             .Query(false)
-            .Where(v =>
-                v.RewardItemId == command.Id &&
-                voucherIds.Contains(v.Id))
+            .Where(v => v.RewardItemId == command.Id && voucherIds.Contains(v.Id))
             .ToListAsync(cancellation);
 
-        // 4. Partition vouchers
         var availableVouchers = vouchers
             .Where(v => v.Status == VoucherStatus.Available)
             .ToList();
@@ -70,39 +64,27 @@ public class BatchDeleteVouchersCommandHandler : IRequestHandler<BatchDeleteVouc
             .Where(v => v.Status != VoucherStatus.Available)
             .ToList();
 
-        // 5. Delete available vouchers only
+        var notFoundCount = voucherIds.Count - vouchers.Count;
+        var totalSkippedCount = skippedVouchers.Count + notFoundCount;
+
         if (availableVouchers.Count > 0)
         {
-            // 5. Delete available vouchers
             foreach (var voucher in availableVouchers)
             {
                 _voucherRepository.Delete(voucher);
             }
+
+            rewardItem.AvailableStock = Math.Max(0, rewardItem.AvailableStock - availableVouchers.Count);
+            await _unitOfWork.SaveChangesAsync(cancellation);
         }
 
-        var allVouchers = await _voucherRepository
-            .Query(false)
-            .Where(v => v.RewardItemId == command.Id)
-            .ToListAsync(cancellation);
-
-        var deletedVoucherIds = availableVouchers
-            .Select(v => v.Id)
-            .ToHashSet();
-
-        rewardItem.AvailableStock = allVouchers
-            .Count(v =>
-                v.Status == VoucherStatus.Available &&
-                !deletedVoucherIds.Contains(v.Id));
-
-        await _unitOfWork.SaveChangesAsync(cancellation);
-
-        var message = skippedVouchers.Count > 0
+        var message = totalSkippedCount > 0
             ? "Cannot delete redeemed voucher codes. Only unused available vouchers can be removed from inventory."
             : "Voucher codes deleted successfully.";
 
-        return new BatchDeleteVouchersResultDto(
+        return Result<BatchDeleteVouchersResultDto>.Success(new BatchDeleteVouchersResultDto(
             DeletedCount: availableVouchers.Count,
-            SkippedCount: skippedVouchers.Count,
-            Message: message);
+            SkippedCount: totalSkippedCount,
+            Message: message));
     }
 }
