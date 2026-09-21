@@ -234,12 +234,22 @@ public class RewardsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> BatchDeleteVouchers(int id, IReadOnlyCollection<int> VoucherIds, CancellationToken cancellation)
+    public async Task<IActionResult> BatchDeleteVouchers(int id, [FromBody] List<int>? voucherIds, CancellationToken cancellation)
     {
-        var command = new BatchDeleteVouchersCommand(id, VoucherIds);
+        var command = new BatchDeleteVouchersCommand(id, voucherIds ?? new List<int>());
 
         var result = await _mediator.Send(command, cancellation);
 
-        return Ok(result);
+        if (result.IsNotFound)
+        {
+            return NotFound(new { message = result.ErrorMessage });
+        }
+
+        if (!result.IsSuccess)
+        {
+            return BadRequest(new { message = result.ErrorMessage });
+        }
+
+        return Ok(result.Value);
     }
 }
