@@ -691,6 +691,76 @@
       "OVERTIME_THRESHOLD": "حد العمل الإضافي (ساعات)",
       "OVERTIME_RATE": "مضاعف أجر العمل الإضافي",
       "ASSIGNED_SITES": "مواقع العمل المسندة"
+    },
+    "DOCUMENTS": {
+      "TITLE": "المستندات",
+      "UPLOAD_BUTTON": "رفع مستند",
+      "COUNT_ONE": "مستند واحد",
+      "COUNT_OTHER": "{{count}} مستندات",
+      "SEARCH_PLACEHOLDER": "البحث في المستندات...",
+      "CATEGORIES": {
+        "ALL": "الكل",
+        "IDENTIFICATION": "الهوية",
+        "CONTRACTS": "العقود",
+        "CERTIFICATES": "الشهادات",
+        "MEDICAL": "التقارير الطبية",
+        "OTHER": "أخرى"
+      },
+      "EMPTY": {
+        "TITLE": "لم يتم العثور على مستندات",
+        "DESCRIPTION": "لم يتم رفع أي مستندات لهذا الموظف بعد.",
+        "FILTERED_TITLE": "لا توجد مستندات مطابقة",
+        "FILTERED_DESCRIPTION": "لا توجد مستندات تطابق معايير التصفية المحددة."
+      },
+      "ACTIONS": {
+        "VIEW": "عرض / تنزيل",
+        "DELETE": "حذف",
+        "COPY_LINK": "نسخ الرابط",
+        "LINK_COPIED": "تم نسخ الرابط إلى الحافظة"
+      },
+      "CARD": {
+        "CATEGORY": "الفئة",
+        "UPLOADED_ON": "تاريخ الرفع",
+        "OPEN": "فتح المستند"
+      },
+      "UPLOAD_MODAL": {
+        "TITLE": "رفع مستند للموظف",
+        "CATEGORY_LABEL": "فئة المستند",
+        "CATEGORY_PLACEHOLDER": "اختر الفئة",
+        "SOURCE_TYPE": "طريقة الرفع",
+        "FILE_TAB": "رفع ملف",
+        "URL_TAB": "رابط مباشر",
+        "FILE_LABEL": "اختر ملفاً",
+        "FILE_DROP": "اسحب وأفلت الملف هنا، أو تصفح",
+        "FILE_HINT": "الصيغ المدعومة: PDF, DOC, DOCX, PNG, JPG, JPEG (الحد الأقصى 10 ميجابايت)",
+        "FILE_SELECTED": "الملف المحدد",
+        "URL_LABEL": "رابط التخزين / رابط الويب",
+        "URL_PLACEHOLDER": "https://example.com/document.pdf",
+        "URL_HELP": "أدخل رابطاً صالحاً لموقع المستند",
+        "SUBMIT": "رفع المستند",
+        "CANCEL": "إلغاء",
+        "UPLOADING": "جاري الرفع...",
+        "ERRORS": {
+          "CATEGORY_REQUIRED": "فئة المستند مطلوبة.",
+          "FILE_REQUIRED": "يرجى اختيار ملف للرفع.",
+          "URL_REQUIRED": "رابط التخزين مطلوب.",
+          "URL_INVALID": "يرجى إدخال رابط HTTP أو HTTPS صالح."
+        }
+      },
+      "DELETE_MODAL": {
+        "TITLE": "حذف المستند",
+        "CONFIRM_MSG": "هل أنت متأكد من حذف هذا المستند؟ لا يمكن التراجع عن هذا الإجراء.",
+        "CONFIRM": "حذف",
+        "CANCEL": "إلغاء",
+        "DELETING": "جاري الحذف..."
+      },
+      "MESSAGES": {
+        "LOAD_ERROR": "فشل تحميل مستندات الموظف. يرجى المحاولة مرة أخرى.",
+        "UPLOAD_SUCCESS": "تم رفع المستند بنجاح.",
+        "UPLOAD_ERROR": "فشل رفع المستند. يرجى المحاولة مرة أخرى.",
+        "DELETE_SUCCESS": "تم حذف المستند بنجاح.",
+        "DELETE_ERROR": "فشل حذف المستند. يرجى المحاولة مرة أخرى."
+      }
     }
   },
   "SITE_MANAGEMENT": {

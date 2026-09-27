@@ -31,6 +31,7 @@ import type {
 } from '../models/view-employee/employee-performance';
 import type { EmployeePerformanceMetricDetail } from '../models/view-employee/employee-performance-metric';
 import type { EmployeePerformanceTask } from '../models/view-employee/employee-performance-task';
+import type { EmployeeDocumentDto } from '../models/view-employee/employee-documents';
 
 const API_BASE = environment.baseUrl;
 
@@ -83,6 +84,11 @@ export class EmployeeDetailService {
   readonly pointsTransactions = signal<PaginatedEmployeePointsTransactions | null>(null);
   readonly pointsTransactionsLoading = signal(false);
   readonly pointsTransactionsError = signal<string | null>(null);
+
+  // Documents store
+  readonly documents = signal<readonly EmployeeDocumentDto[]>([]);
+  readonly documentsLoading = signal(false);
+  readonly documentsError = signal<string | null>(null);
 
   // Profile API
   getEmployeeProfile(id: number): Observable<EmployeeProfileDto> {
@@ -467,10 +473,50 @@ export class EmployeeDetailService {
     return this.resolveViolation(employeeId, violationId, dto);
   }
 
+  // Documents API
+  getEmployeeDocuments(id: number): Observable<EmployeeDocumentDto[]> {
+    return this.http.get<EmployeeDocumentDto[]>(`${API_BASE}/employees/${id}/documents`);
+  }
+
+  uploadEmployeeDocument(id: number, category: string, fileOrUrl: string): Observable<number> {
+    return this.http.post<number>(`${API_BASE}/employees/${id}/documents`, {
+      employeeId: id,
+      category,
+      storageUrl: fileOrUrl,
+    });
+  }
+
+  deleteEmployeeDocument(id: number, documentId: number): Observable<void> {
+    return this.http.delete<void>(`${API_BASE}/employees/${id}/documents/${documentId}`);
+  }
+
+  loadEmployeeDocuments(id: number): void {
+    this.documentsLoading.set(true);
+    this.documentsError.set(null);
+
+    this.getEmployeeDocuments(id).subscribe({
+      next: (data) => {
+        this.documents.set(data);
+        this.documentsLoading.set(false);
+      },
+      error: () => {
+        this.documentsError.set('EMPLOYEE_DETAIL.DOCUMENTS.LOAD_ERROR');
+        this.documentsLoading.set(false);
+      },
+    });
+  }
+
+  clearEmployeeDocuments(): void {
+    this.documents.set([]);
+    this.documentsLoading.set(false);
+    this.documentsError.set(null);
+  }
+
   clearDetailEmployee(): void {
     this.clearPerformanceOverview();
     this.clearPerformanceMetricDetail();
     this.clearEmployeePerformanceTasks();
+    this.clearEmployeeDocuments();
     this.performanceEmployeeId = null;
     this.detailRequestId++;
     this.detailRequestedEmployeeId = null;

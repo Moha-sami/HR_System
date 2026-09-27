@@ -1,27 +1,556 @@
 @if (employee(); as emp) {
-  <section class="documents-tab p-6">
-    <div class="max-w-4xl mx-auto">
-      <div class="text-center py-16">
-        <svg
-          class="mx-auto h-16 w-16 text-gray-400"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
+  <section class="documents-tab p-6 space-y-6">
+    <!-- Feedback Notification -->
+    @if (feedbackMessage(); as feedback) {
+      <div
+        class="flex items-center justify-between p-4 rounded-xl text-sm transition-all shadow-sm"
+        [ngClass]="{
+          'bg-emerald-50 text-emerald-800 border border-emerald-200': feedback.type === 'success',
+          'bg-red-50 text-red-800 border border-red-200': feedback.type === 'error'
+        }"
+      >
+        <div class="flex items-center gap-2">
+          @if (feedback.type === 'success') {
+            <svg class="w-5 h-5 text-emerald-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          } @else {
+            <svg class="w-5 h-5 text-red-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          }
+          <span class="font-medium">{{ feedback.key | translate }}</span>
+        </div>
+        <button
+          type="button"
+          (click)="feedbackMessage.set(null)"
+          class="text-gray-400 hover:text-gray-600 p-1 rounded-lg"
         >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="1.5"
-            d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"
-          ></path>
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+    }
+
+    <!-- Top Action Bar -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-gray-200">
+      <div class="flex items-center gap-3">
+        <h2 class="text-xl font-bold text-gray-900 tracking-tight">
+          {{ 'EMPLOYEE_DETAIL.DOCUMENTS.TITLE' | translate }}
+        </h2>
+        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-800">
+          {{ documents().length }}
+        </span>
+      </div>
+
+      <app-button
+        variant="primary"
+        size="md"
+        (clicked)="openUploadModal()"
+      >
+        <svg class="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
         </svg>
-        <h3 class="mt-4 text-xl font-semibold text-gray-900">
-          {{ 'EMPLOYEE_DETAIL.TABS.DOCUMENTS' | translate }}
-        </h3>
-        <p class="mt-2 text-gray-500">
-          {{ 'EMPLOYEE_DETAIL.COMING_SOON' | translate }}
-        </p>
+        {{ 'EMPLOYEE_DETAIL.DOCUMENTS.UPLOAD_BUTTON' | translate }}
+      </app-button>
+    </div>
+
+    <!-- Filter Pills & Search Bar -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <!-- Category Filter Pills -->
+      <div class="flex items-center gap-2 overflow-x-auto pb-2 md:pb-0 scrollbar-none">
+        @for (cat of categories; track cat) {
+          <button
+            type="button"
+            (click)="setCategory(cat)"
+            class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-sm font-medium transition-all whitespace-nowrap"
+            [ngClass]="{
+              'bg-primary-600 text-white shadow-sm ring-1 ring-primary-600': selectedCategory() === cat,
+              'bg-gray-100 text-gray-700 hover:bg-gray-200': selectedCategory() !== cat
+            }"
+          >
+            <span>{{ 'EMPLOYEE_DETAIL.DOCUMENTS.CATEGORIES.' + cat.toUpperCase() | translate }}</span>
+            <span
+              class="text-xs px-1.5 py-0.2 rounded-full"
+              [ngClass]="{
+                'bg-primary-700 text-primary-100': selectedCategory() === cat,
+                'bg-gray-200 text-gray-600': selectedCategory() !== cat
+              }"
+            >
+              {{ categoryCounts()[cat] || 0 }}
+            </span>
+          </button>
+        }
+      </div>
+
+      <!-- Search Input -->
+      <div class="relative w-full md:w-72">
+        <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none text-gray-400">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+        </div>
+        <input
+          type="text"
+          [ngModel]="searchQuery()"
+          (ngModelChange)="searchQuery.set($event)"
+          [placeholder]="'EMPLOYEE_DETAIL.DOCUMENTS.SEARCH_PLACEHOLDER' | translate"
+          class="w-full ps-9 pe-9 py-2 text-sm bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
+        />
+        @if (searchQuery()) {
+          <button
+            type="button"
+            (click)="searchQuery.set('')"
+            class="absolute inset-y-0 end-0 flex items-center pe-3 text-gray-400 hover:text-gray-600"
+          >
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        }
       </div>
     </div>
+
+    <!-- Error State -->
+    @if (documentsError()) {
+      <div class="p-4 bg-red-50 border border-red-200 rounded-xl flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <svg class="w-5 h-5 text-red-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+          <span class="text-sm font-medium text-red-800">
+            {{ documentsError()! | translate }}
+          </span>
+        </div>
+        <button
+          type="button"
+          (click)="loadDocuments()"
+          class="text-sm font-semibold text-red-700 hover:text-red-900 underline"
+        >
+          {{ 'SITE_MANAGEMENT.RETRY' | translate }}
+        </button>
+      </div>
+    }
+
+    <!-- Loading Skeleton Grid -->
+    @if (documentsLoading()) {
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 animate-pulse">
+        @for (item of [1, 2, 3, 4, 5, 6]; track item) {
+          <div class="bg-white border border-gray-200 rounded-xl p-5 space-y-4">
+            <div class="flex justify-between items-start">
+              <div class="w-10 h-10 bg-gray-200 rounded-lg"></div>
+              <div class="w-20 h-5 bg-gray-200 rounded-full"></div>
+            </div>
+            <div class="space-y-2">
+              <div class="w-3/4 h-4 bg-gray-200 rounded"></div>
+              <div class="w-1/2 h-3 bg-gray-200 rounded"></div>
+            </div>
+            <div class="pt-3 border-t border-gray-100 flex justify-between items-center">
+              <div class="w-24 h-4 bg-gray-200 rounded"></div>
+              <div class="w-16 h-8 bg-gray-200 rounded-lg"></div>
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Empty States -->
+    @if (!documentsLoading() && filteredDocuments().length === 0) {
+      <div class="text-center py-16 bg-white border border-dashed border-gray-300 rounded-2xl p-8">
+        <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-primary-50 flex items-center justify-center text-primary-600">
+          <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+        </div>
+
+        @if (documents().length === 0) {
+          <h3 class="text-lg font-bold text-gray-900 mb-1">
+            {{ 'EMPLOYEE_DETAIL.DOCUMENTS.EMPTY.TITLE' | translate }}
+          </h3>
+          <p class="text-sm text-gray-500 max-w-sm mx-auto mb-6">
+            {{ 'EMPLOYEE_DETAIL.DOCUMENTS.EMPTY.DESCRIPTION' | translate }}
+          </p>
+          <app-button
+            variant="primary"
+            size="md"
+            (clicked)="openUploadModal()"
+          >
+            <svg class="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+            {{ 'EMPLOYEE_DETAIL.DOCUMENTS.UPLOAD_BUTTON' | translate }}
+          </app-button>
+        } @else {
+          <h3 class="text-lg font-bold text-gray-900 mb-1">
+            {{ 'EMPLOYEE_DETAIL.DOCUMENTS.EMPTY.FILTERED_TITLE' | translate }}
+          </h3>
+          <p class="text-sm text-gray-500 max-w-sm mx-auto mb-4">
+            {{ 'EMPLOYEE_DETAIL.DOCUMENTS.EMPTY.FILTERED_DESCRIPTION' | translate }}
+          </p>
+          <button
+            type="button"
+            (click)="selectedCategory.set('All'); searchQuery.set('')"
+            class="text-sm font-semibold text-primary-600 hover:text-primary-700 underline"
+          >
+            {{ 'EMPLOYEE_DETAIL.VIOLATIONS.ACTIONS.CLEAR_FILTERS' | translate }}
+          </button>
+        }
+      </div>
+    }
+
+    <!-- Document Cards Grid -->
+    @if (!documentsLoading() && filteredDocuments().length > 0) {
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        @for (doc of filteredDocuments(); track doc.id) {
+          <div class="group bg-white border border-gray-200 hover:border-primary-300 rounded-xl p-5 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between">
+            <div>
+              <!-- Card Header: Icon & Category & Delete -->
+              <div class="flex items-start justify-between gap-3 mb-3">
+                <div class="flex items-center gap-3">
+                  <!-- File Type Icon -->
+                  @switch (getFileType(doc.storageUrl)) {
+                    @case ('pdf') {
+                      <div class="w-10 h-10 rounded-lg bg-red-50 text-red-600 flex items-center justify-center font-bold text-xs ring-1 ring-red-200 flex-shrink-0">
+                        PDF
+                      </div>
+                    }
+                    @case ('word') {
+                      <div class="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-xs ring-1 ring-blue-200 flex-shrink-0">
+                        DOC
+                      </div>
+                    }
+                    @case ('excel') {
+                      <div class="w-10 h-10 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold text-xs ring-1 ring-emerald-200 flex-shrink-0">
+                        XLS
+                      </div>
+                    }
+                    @case ('image') {
+                      <div class="w-10 h-10 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center font-bold text-xs ring-1 ring-purple-200 flex-shrink-0">
+                        IMG
+                      </div>
+                    }
+                    @case ('archive') {
+                      <div class="w-10 h-10 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center font-bold text-xs ring-1 ring-amber-200 flex-shrink-0">
+                        ZIP
+                      </div>
+                    }
+                    @default {
+                      <div class="w-10 h-10 rounded-lg bg-gray-50 text-gray-600 flex items-center justify-center flex-shrink-0 ring-1 ring-gray-200">
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                        </svg>
+                      </div>
+                    }
+                  }
+
+                  <!-- Category Badge -->
+                  <span
+                    class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-semibold border"
+                    [ngClass]="getCategoryBadgeClass(doc.category)"
+                  >
+                    {{ doc.category }}
+                  </span>
+                </div>
+
+                <!-- Delete Action Button -->
+                <button
+                  type="button"
+                  (click)="openDeleteModal(doc)"
+                  class="text-gray-400 hover:text-red-600 p-1.5 rounded-lg hover:bg-red-50 transition-colors"
+                  [title]="'EMPLOYEE_DETAIL.DOCUMENTS.ACTIONS.DELETE' | translate"
+                >
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </button>
+              </div>
+
+              <!-- Document Title / Filename -->
+              <h4 class="text-sm font-semibold text-gray-900 truncate mb-1" [title]="getFileName(doc.storageUrl, doc.id, doc.category)">
+                {{ getFileName(doc.storageUrl, doc.id, doc.category) }}
+              </h4>
+
+              <!-- URL Preview -->
+              <p class="text-xs text-gray-500 truncate mb-3 font-mono">
+                {{ doc.storageUrl }}
+              </p>
+            </div>
+
+            <!-- Card Footer: Upload Date & View Action -->
+            <div class="pt-3 border-t border-gray-100 flex items-center justify-between mt-2">
+              <span class="text-xs text-gray-400 flex items-center gap-1">
+                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                {{ doc.createdAt | date:'mediumDate' }}
+              </span>
+
+              <a
+                [href]="doc.storageUrl"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="inline-flex items-center gap-1.5 text-xs font-semibold text-primary-600 hover:text-primary-800 bg-primary-50 hover:bg-primary-100 px-3 py-1.5 rounded-lg transition-colors"
+              >
+                <span>{{ 'EMPLOYEE_DETAIL.DOCUMENTS.ACTIONS.VIEW' | translate }}</span>
+                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                </svg>
+              </a>
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Upload Document Modal -->
+    @if (showUploadModal()) {
+      <app-modal
+        size="medium"
+        (closed)="closeUploadModal()"
+        [closeOnBackdrop]="!uploading()"
+        [showHeader]="true"
+        [showActions]="true"
+      >
+        <div modal-header>
+          <div class="flex items-center gap-2">
+            <div class="w-8 h-8 rounded-lg bg-primary-50 text-primary-600 flex items-center justify-center">
+              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+              </svg>
+            </div>
+            <h3 class="text-lg font-bold text-gray-900">
+              {{ 'EMPLOYEE_DETAIL.DOCUMENTS.UPLOAD_MODAL.TITLE' | translate }}
+            </h3>
+          </div>
+        </div>
+
+        <div modal-body class="space-y-4">
+          @if (uploadError()) {
+            <div class="p-3 bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg flex items-center gap-2">
+              <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span>{{ uploadError()! | translate }}</span>
+            </div>
+          }
+
+          <!-- Category Selection -->
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-1">
+              {{ 'EMPLOYEE_DETAIL.DOCUMENTS.UPLOAD_MODAL.CATEGORY_LABEL' | translate }}
+              <span class="text-red-500">*</span>
+            </label>
+            <select
+              [ngModel]="uploadCategory()"
+              (ngModelChange)="uploadCategory.set($event)"
+              class="w-full px-3 py-2 text-sm bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+            >
+              <option value="Identification">{{ 'EMPLOYEE_DETAIL.DOCUMENTS.CATEGORIES.IDENTIFICATION' | translate }}</option>
+              <option value="Contracts">{{ 'EMPLOYEE_DETAIL.DOCUMENTS.CATEGORIES.CONTRACTS' | translate }}</option>
+              <option value="Certificates">{{ 'EMPLOYEE_DETAIL.DOCUMENTS.CATEGORIES.CERTIFICATES' | translate }}</option>
+              <option value="Medical">{{ 'EMPLOYEE_DETAIL.DOCUMENTS.CATEGORIES.MEDICAL' | translate }}</option>
+              <option value="Other">{{ 'EMPLOYEE_DETAIL.DOCUMENTS.CATEGORIES.OTHER' | translate }}</option>
+            </select>
+          </div>
+
+          <!-- Upload Method Toggle -->
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">
+              {{ 'EMPLOYEE_DETAIL.DOCUMENTS.UPLOAD_MODAL.SOURCE_TYPE' | translate }}
+            </label>
+            <div class="grid grid-cols-2 gap-2 p-1 bg-gray-100 rounded-lg">
+              <button
+                type="button"
+                (click)="uploadSourceType.set('file')"
+                class="py-1.5 text-xs font-semibold rounded-md transition-all"
+                [ngClass]="{
+                  'bg-white text-gray-900 shadow-sm': uploadSourceType() === 'file',
+                  'text-gray-500 hover:text-gray-900': uploadSourceType() !== 'file'
+                }"
+              >
+                {{ 'EMPLOYEE_DETAIL.DOCUMENTS.UPLOAD_MODAL.FILE_TAB' | translate }}
+              </button>
+              <button
+                type="button"
+                (click)="uploadSourceType.set('url')"
+                class="py-1.5 text-xs font-semibold rounded-md transition-all"
+                [ngClass]="{
+                  'bg-white text-gray-900 shadow-sm': uploadSourceType() === 'url',
+                  'text-gray-500 hover:text-gray-900': uploadSourceType() !== 'url'
+                }"
+              >
+                {{ 'EMPLOYEE_DETAIL.DOCUMENTS.UPLOAD_MODAL.URL_TAB' | translate }}
+              </button>
+            </div>
+          </div>
+
+          <!-- File Upload Zone -->
+          @if (uploadSourceType() === 'file') {
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">
+                {{ 'EMPLOYEE_DETAIL.DOCUMENTS.UPLOAD_MODAL.FILE_LABEL' | translate }}
+                <span class="text-red-500">*</span>
+              </label>
+
+              @if (!selectedFile()) {
+                <label class="flex flex-col items-center justify-center w-full h-36 border-2 border-dashed border-gray-300 hover:border-primary-400 rounded-xl cursor-pointer bg-gray-50 hover:bg-primary-50/20 transition-colors p-4">
+                  <div class="flex flex-col items-center justify-center text-center">
+                    <svg class="w-8 h-8 mb-2 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                    </svg>
+                    <p class="text-sm font-medium text-gray-700">
+                      {{ 'EMPLOYEE_DETAIL.DOCUMENTS.UPLOAD_MODAL.FILE_DROP' | translate }}
+                    </p>
+                    <p class="text-xs text-gray-400 mt-1">
+                      {{ 'EMPLOYEE_DETAIL.DOCUMENTS.UPLOAD_MODAL.FILE_HINT' | translate }}
+                    </p>
+                  </div>
+                  <input
+                    type="file"
+                    class="hidden"
+                    accept=".pdf,.doc,.docx,.png,.jpg,.jpeg,.xlsx,.xls,.zip"
+                    (change)="onFileSelected($event)"
+                  />
+                </label>
+              } @else {
+                <div class="flex items-center justify-between p-3.5 bg-primary-50/50 border border-primary-200 rounded-xl">
+                  <div class="flex items-center gap-3 overflow-hidden">
+                    <div class="w-9 h-9 rounded-lg bg-primary-100 text-primary-700 flex items-center justify-center flex-shrink-0">
+                      <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                    </div>
+                    <div class="truncate">
+                      <p class="text-sm font-semibold text-gray-900 truncate">
+                        {{ selectedFile()!.name }}
+                      </p>
+                      <p class="text-xs text-gray-500">
+                        {{ (selectedFile()!.size / 1024 / 1024).toFixed(2) }} MB
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    (click)="removeSelectedFile()"
+                    class="text-gray-400 hover:text-red-600 p-1.5 rounded-lg hover:bg-white transition-colors"
+                  >
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+              }
+            </div>
+          } @else {
+            <!-- URL Input -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">
+                {{ 'EMPLOYEE_DETAIL.DOCUMENTS.UPLOAD_MODAL.URL_LABEL' | translate }}
+                <span class="text-red-500">*</span>
+              </label>
+              <input
+                type="url"
+                [ngModel]="uploadUrl()"
+                (ngModelChange)="uploadUrl.set($event)"
+                [placeholder]="'EMPLOYEE_DETAIL.DOCUMENTS.UPLOAD_MODAL.URL_PLACEHOLDER' | translate"
+                class="w-full px-3 py-2 text-sm bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              />
+              <p class="text-xs text-gray-400 mt-1">
+                {{ 'EMPLOYEE_DETAIL.DOCUMENTS.UPLOAD_MODAL.URL_HELP' | translate }}
+              </p>
+            </div>
+          }
+        </div>
+
+        <div modal-actions class="flex items-center justify-end gap-3 w-full">
+          <app-button
+            variant="ghost"
+            size="md"
+            [disabled]="uploading()"
+            (clicked)="closeUploadModal()"
+          >
+            {{ 'EMPLOYEE_DETAIL.DOCUMENTS.UPLOAD_MODAL.CANCEL' | translate }}
+          </app-button>
+
+          <app-button
+            variant="primary"
+            size="md"
+            [loading]="uploading()"
+            [disabled]="uploading()"
+            (clicked)="submitUpload()"
+          >
+            {{ (uploading() ? 'EMPLOYEE_DETAIL.DOCUMENTS.UPLOAD_MODAL.UPLOADING' : 'EMPLOYEE_DETAIL.DOCUMENTS.UPLOAD_MODAL.SUBMIT') | translate }}
+          </app-button>
+        </div>
+      </app-modal>
+    }
+
+    <!-- Delete Confirmation Modal -->
+    @if (showDeleteModal() && documentToDelete(); as doc) {
+      <app-modal
+        size="small"
+        (closed)="closeDeleteModal()"
+        [closeOnBackdrop]="!deleting()"
+        [showHeader]="true"
+        [showActions]="true"
+      >
+        <div modal-header>
+          <div class="flex items-center gap-2 text-red-600">
+            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            <h3 class="text-base font-bold text-gray-900">
+              {{ 'EMPLOYEE_DETAIL.DOCUMENTS.DELETE_MODAL.TITLE' | translate }}
+            </h3>
+          </div>
+        </div>
+
+        <div modal-body class="space-y-3">
+          <p class="text-sm text-gray-600">
+            {{ 'EMPLOYEE_DETAIL.DOCUMENTS.DELETE_MODAL.CONFIRM_MSG' | translate }}
+          </p>
+
+          <div class="p-3 bg-gray-50 border border-gray-200 rounded-lg text-xs space-y-1">
+            <p class="font-semibold text-gray-900 truncate">
+              {{ getFileName(doc.storageUrl, doc.id, doc.category) }}
+            </p>
+            <p class="text-gray-500">
+              <span class="font-medium">{{ 'EMPLOYEE_DETAIL.DOCUMENTS.CARD.CATEGORY' | translate }}:</span> {{ doc.category }}
+            </p>
+            <p class="text-gray-400">
+              <span class="font-medium">{{ 'EMPLOYEE_DETAIL.DOCUMENTS.CARD.UPLOADED_ON' | translate }}:</span> {{ doc.createdAt | date:'mediumDate' }}
+            </p>
+          </div>
+
+          @if (deleteError()) {
+            <p class="text-xs text-red-600 font-medium">
+              {{ deleteError()! | translate }}
+            </p>
+          }
+        </div>
+
+        <div modal-actions class="flex items-center justify-end gap-2 w-full">
+          <app-button
+            variant="ghost"
+            size="md"
+            [disabled]="deleting()"
+            (clicked)="closeDeleteModal()"
+          >
+            {{ 'EMPLOYEE_DETAIL.DOCUMENTS.DELETE_MODAL.CANCEL' | translate }}
+          </app-button>
+
+          <app-button
+            variant="danger"
+            size="md"
+            [loading]="deleting()"
+            [disabled]="deleting()"
+            (clicked)="confirmDelete()"
+          >
+            {{ (deleting() ? 'EMPLOYEE_DETAIL.DOCUMENTS.DELETE_MODAL.DELETING' : 'EMPLOYEE_DETAIL.DOCUMENTS.DELETE_MODAL.CONFIRM') | translate }}
+          </app-button>
+        </div>
+      </app-modal>
+    }
   </section>
 }

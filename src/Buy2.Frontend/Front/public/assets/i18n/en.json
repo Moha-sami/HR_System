@@ -691,6 +691,76 @@
       "OVERTIME_THRESHOLD": "Overtime threshold (hours)",
       "OVERTIME_RATE": "Overtime rate multiplier",
       "ASSIGNED_SITES": "Assigned work sites"
+    },
+    "DOCUMENTS": {
+      "TITLE": "Documents",
+      "UPLOAD_BUTTON": "Upload Document",
+      "COUNT_ONE": "1 document",
+      "COUNT_OTHER": "{{count}} documents",
+      "SEARCH_PLACEHOLDER": "Search documents...",
+      "CATEGORIES": {
+        "ALL": "All",
+        "IDENTIFICATION": "Identification",
+        "CONTRACTS": "Contracts",
+        "CERTIFICATES": "Certificates",
+        "MEDICAL": "Medical",
+        "OTHER": "Other"
+      },
+      "EMPTY": {
+        "TITLE": "No Documents Found",
+        "DESCRIPTION": "No documents have been uploaded for this employee yet.",
+        "FILTERED_TITLE": "No Matching Documents",
+        "FILTERED_DESCRIPTION": "No documents match the selected filter criteria."
+      },
+      "ACTIONS": {
+        "VIEW": "View / Download",
+        "DELETE": "Delete",
+        "COPY_LINK": "Copy Link",
+        "LINK_COPIED": "Link copied to clipboard"
+      },
+      "CARD": {
+        "CATEGORY": "Category",
+        "UPLOADED_ON": "Uploaded",
+        "OPEN": "Open Document"
+      },
+      "UPLOAD_MODAL": {
+        "TITLE": "Upload Employee Document",
+        "CATEGORY_LABEL": "Document Category",
+        "CATEGORY_PLACEHOLDER": "Select a category",
+        "SOURCE_TYPE": "Upload Method",
+        "FILE_TAB": "File Upload",
+        "URL_TAB": "Direct URL",
+        "FILE_LABEL": "Choose File",
+        "FILE_DROP": "Drag and drop your file here, or browse",
+        "FILE_HINT": "Supported: PDF, DOC, DOCX, PNG, JPG, JPEG (Max 10MB)",
+        "FILE_SELECTED": "Selected file",
+        "URL_LABEL": "Storage URL / Web Link",
+        "URL_PLACEHOLDER": "https://example.com/document.pdf",
+        "URL_HELP": "Enter a valid URL where the document is hosted",
+        "SUBMIT": "Upload Document",
+        "CANCEL": "Cancel",
+        "UPLOADING": "Uploading...",
+        "ERRORS": {
+          "CATEGORY_REQUIRED": "Document category is required.",
+          "FILE_REQUIRED": "Please select a file to upload.",
+          "URL_REQUIRED": "Storage URL is required.",
+          "URL_INVALID": "Please enter a valid HTTP or HTTPS URL."
+        }
+      },
+      "DELETE_MODAL": {
+        "TITLE": "Delete Document",
+        "CONFIRM_MSG": "Are you sure you want to delete this document? This action cannot be undone.",
+        "CONFIRM": "Delete",
+        "CANCEL": "Cancel",
+        "DELETING": "Deleting..."
+      },
+      "MESSAGES": {
+        "LOAD_ERROR": "Failed to load employee documents. Please try again.",
+        "UPLOAD_SUCCESS": "Document uploaded successfully.",
+        "UPLOAD_ERROR": "Failed to upload document. Please try again.",
+        "DELETE_SUCCESS": "Document deleted successfully.",
+        "DELETE_ERROR": "Failed to delete document. Please try again."
+      }
     }
   },
   "SITE_MANAGEMENT": {
