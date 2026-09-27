@@ -13,7 +13,8 @@ public record RequestTypeDto(
     bool RequiresReason,
     bool IsActive,
     DateTime CreatedAt,
-    string? AddedBy
+    string? AddedBy,
+    bool IsUtilized = false
 );
 
 public record CreateRequestTypeDto(

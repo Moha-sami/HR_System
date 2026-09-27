@@ -35,12 +35,14 @@ public class RequestTypesController : ControllerBase
     [HttpGet]
     [ProducesResponseType(typeof(IEnumerable<RequestTypeDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetRequestTypes(
-        [FromQuery] string? search,
-        [FromQuery] string? category,
-        [FromQuery] bool? isActive,
-        CancellationToken cancellationToken)
+        [FromQuery] string? search = null,
+        [FromQuery] string? category = null,
+        [FromQuery] bool? isActive = null,
+        [FromQuery] int? pageNumber = null,
+        [FromQuery] int? pageSize = null,
+        CancellationToken cancellationToken = default)
     {
-        var result = await _mediator.Send(new GetRequestTypesQuery(search, category, isActive), cancellationToken);
+        var result = await _mediator.Send(new GetRequestTypesQuery(search, category, isActive, pageNumber, pageSize), cancellationToken);
         return Ok(result);
     }
 

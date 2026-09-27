@@ -7,5 +7,7 @@ namespace Buy2.Application.Features.Requests.GetRequestTypes;
 public record GetRequestTypesQuery(
     string? Search = null,
     string? Category = null,
-    bool? IsActive = null
+    bool? IsActive = null,
+    int? PageNumber = null,
+    int? PageSize = null
 ) : IRequest<IEnumerable<RequestTypeDto>>;

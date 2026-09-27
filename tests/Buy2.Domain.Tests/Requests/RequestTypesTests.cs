@@ -49,7 +49,9 @@ public class RequestTypesTests
 
         using (var context = CreateDbContext(dbName))
         {
-            var handler = new GetRequestTypesQueryHandler(new GenericRepository<RequestType>(context));
+            var handler = new GetRequestTypesQueryHandler(
+                new GenericRepository<RequestType>(context),
+                new GenericRepository<Request>(context));
             var result = (await handler.Handle(new GetRequestTypesQuery(), CancellationToken.None)).ToList();
 
             Assert.Equal(3, result.Count);
@@ -74,7 +76,9 @@ public class RequestTypesTests
 
         using (var context = CreateDbContext(dbName))
         {
-            var handler = new GetRequestTypesQueryHandler(new GenericRepository<RequestType>(context));
+            var handler = new GetRequestTypesQueryHandler(
+                new GenericRepository<RequestType>(context),
+                new GenericRepository<Request>(context));
             var result = (await handler.Handle(new GetRequestTypesQuery(Category: "Equipment"), CancellationToken.None)).ToList();
 
             Assert.Single(result);
@@ -98,7 +102,9 @@ public class RequestTypesTests
 
         using (var context = CreateDbContext(dbName))
         {
-            var handler = new GetRequestTypesQueryHandler(new GenericRepository<RequestType>(context));
+            var handler = new GetRequestTypesQueryHandler(
+                new GenericRepository<RequestType>(context),
+                new GenericRepository<Request>(context));
             var activeOnly = (await handler.Handle(new GetRequestTypesQuery(IsActive: true), CancellationToken.None)).ToList();
             var inactiveOnly = (await handler.Handle(new GetRequestTypesQuery(IsActive: false), CancellationToken.None)).ToList();
 
@@ -125,7 +131,9 @@ public class RequestTypesTests
 
         using (var context = CreateDbContext(dbName))
         {
-            var handler = new GetRequestTypesQueryHandler(new GenericRepository<RequestType>(context));
+            var handler = new GetRequestTypesQueryHandler(
+                new GenericRepository<RequestType>(context),
+                new GenericRepository<Request>(context));
 
             var resultByName = (await handler.Handle(new GetRequestTypesQuery(Search: "Parental"), CancellationToken.None)).ToList();
             Assert.Single(resultByName);
@@ -140,6 +148,70 @@ public class RequestTypesTests
             Assert.Equal("Desk Monitor", resultByCategory[0].Name);
         }
     }
+
+    [Fact]
+    public async Task GetRequestTypes_ComputesIsUtilizedFlag()
+    {
+        var dbName = Guid.NewGuid().ToString();
+        using (var context = CreateDbContext(dbName))
+        {
+            var rt1 = new RequestType { Name = "Used Type", Category = "Leave", IsActive = true };
+            var rt2 = new RequestType { Name = "Unused Type", Category = "Leave", IsActive = true };
+            context.RequestTypes.AddRange(rt1, rt2);
+            await context.SaveChangesAsync();
+
+            context.Requests.Add(new Request
+            {
+                EmployeeId = 1,
+                RequestTypeId = rt1.Id,
+                Status = "Pending"
+            });
+            await context.SaveChangesAsync();
+        }
+
+        using (var context = CreateDbContext(dbName))
+        {
+            var handler = new GetRequestTypesQueryHandler(
+                new GenericRepository<RequestType>(context),
+                new GenericRepository<Request>(context));
+
+            var result = (await handler.Handle(new GetRequestTypesQuery(), CancellationToken.None)).ToList();
+            var used = result.First(r => r.Name == "Used Type");
+            var unused = result.First(r => r.Name == "Unused Type");
+
+            Assert.True(used.IsUtilized);
+            Assert.False(unused.IsUtilized);
+        }
+    }
+
+    [Fact]
+    public async Task GetRequestTypes_PaginatesResults()
+    {
+        var dbName = Guid.NewGuid().ToString();
+        using (var context = CreateDbContext(dbName))
+        {
+            context.RequestTypes.AddRange(
+                new RequestType { Name = "Type A", Category = "General", IsActive = true },
+                new RequestType { Name = "Type B", Category = "General", IsActive = true },
+                new RequestType { Name = "Type C", Category = "General", IsActive = true }
+            );
+            await context.SaveChangesAsync();
+        }
+
+        using (var context = CreateDbContext(dbName))
+        {
+            var handler = new GetRequestTypesQueryHandler(
+                new GenericRepository<RequestType>(context),
+                new GenericRepository<Request>(context));
+
+            var page1 = (await handler.Handle(new GetRequestTypesQuery(PageNumber: 1, PageSize: 2), CancellationToken.None)).ToList();
+            var page2 = (await handler.Handle(new GetRequestTypesQuery(PageNumber: 2, PageSize: 2), CancellationToken.None)).ToList();
+
+            Assert.Equal(2, page1.Count);
+            Assert.Single(page2);
+        }
+    }
+
 
     [Fact]
     public async Task GetRequestTypeById_ReturnsCorrectDto()
@@ -628,7 +700,7 @@ public class RequestTypesTests
         var mediator = new FakeSender(sampleList);
 
         var controller = new RequestTypesController(mediator);
-        var actionResult = await controller.GetRequestTypes(null, null, null, CancellationToken.None);
+        var actionResult = await controller.GetRequestTypes(null, null, null, null, null, CancellationToken.None);
 
         var okResult = Assert.IsType<OkObjectResult>(actionResult);
         var returnedList = Assert.IsAssignableFrom<IEnumerable<RequestTypeDto>>(okResult.Value);
