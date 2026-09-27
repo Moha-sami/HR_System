@@ -53,6 +53,7 @@ public class Buy2DbContext : DbContext
     public DbSet<ShiftTemplateSite> ShiftTemplateSites => Set<ShiftTemplateSite>();
     public DbSet<RequestType> RequestTypes => Set<RequestType>();
     public DbSet<Request> Requests => Set<Request>();
+    public DbSet<RequestAttachment> RequestAttachments => Set<RequestAttachment>();
     public DbSet<TaskList> TaskLists => Set<TaskList>();
     public DbSet<TaskAssignment> TaskAssignments => Set<TaskAssignment>();
     public DbSet<PayrollRecord> PayrollRecords => Set<PayrollRecord>();
