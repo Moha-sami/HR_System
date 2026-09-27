@@ -21,6 +21,29 @@ public class RequestConfiguration : IEntityTypeConfiguration<Request>
             .HasMaxLength(500)
             .HasColumnType("nvarchar(500)");
 
+        builder.Property(r => r.ManagerStatus)
+            .IsRequired()
+            .HasMaxLength(30)
+            .HasDefaultValue("Pending")
+            .HasColumnType("varchar(30)");
+
+        builder.Property(r => r.ManagerComment)
+            .HasMaxLength(1000)
+            .HasColumnType("nvarchar(1000)");
+
+        builder.Property(r => r.HrStatus)
+            .IsRequired()
+            .HasMaxLength(30)
+            .HasDefaultValue("Pending")
+            .HasColumnType("varchar(30)");
+
+        builder.Property(r => r.HrComment)
+            .HasMaxLength(1000)
+            .HasColumnType("nvarchar(1000)");
+
+        builder.Property(r => r.CategoryValuesJson)
+            .HasColumnType("nvarchar(max)");
+
         builder.HasOne(r => r.Employee)
             .WithMany()
             .HasForeignKey(r => r.EmployeeId)
@@ -35,5 +58,16 @@ public class RequestConfiguration : IEntityTypeConfiguration<Request>
             .WithMany()
             .HasForeignKey(r => r.ApproverId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(r => r.Manager)
+            .WithMany()
+            .HasForeignKey(r => r.ManagerId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(r => r.Hr)
+            .WithMany()
+            .HasForeignKey(r => r.HrId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }
+
