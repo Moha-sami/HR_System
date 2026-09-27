@@ -769,6 +769,23 @@ public class RequestTypesTests
         }
     }
 
+    [Fact]
+    public void DeleteRequestTypeCommandValidator_ValidId_Passes()
+    {
+        var validator = new DeleteRequestTypeCommandValidator();
+        var result = validator.Validate(new DeleteRequestTypeCommand(5));
+        Assert.True(result.IsValid);
+    }
+
+    [Fact]
+    public void DeleteRequestTypeCommandValidator_InvalidId_Fails()
+    {
+        var validator = new DeleteRequestTypeCommandValidator();
+        var result = validator.Validate(new DeleteRequestTypeCommand(0));
+        Assert.False(result.IsValid);
+        Assert.Contains(result.Errors, e => e.PropertyName == "Id");
+    }
+
     #endregion
 
     #region Controller Tests: Endpoints, Status Codes & Error Handling
