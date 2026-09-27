@@ -423,6 +423,44 @@ public class RequestTypesTests
     }
 
     [Fact]
+    public void CreateRequestTypeCommandValidator_ValidCommand_Passes()
+    {
+        var validator = new CreateRequestTypeCommandValidator();
+        var cmd = new CreateRequestTypeCommand(new CreateRequestTypeDto(
+            Category: "Leave",
+            Name: "Maternity Leave",
+            Hint: "Standard leave",
+            LeaveType: "Full",
+            LeavePay: "Paid",
+            RequiresDates: true,
+            RequiresReason: true
+        ));
+
+        var result = validator.Validate(cmd);
+        Assert.True(result.IsValid);
+    }
+
+    [Fact]
+    public void CreateRequestTypeCommandValidator_InvalidInputs_Fails()
+    {
+        var validator = new CreateRequestTypeCommandValidator();
+        var cmd = new CreateRequestTypeCommand(new CreateRequestTypeDto(
+            Category: "",
+            Name: "",
+            Hint: null,
+            LeaveType: "Invalid",
+            LeavePay: "Invalid",
+            RequiresDates: false,
+            RequiresReason: false
+        ));
+
+        var result = validator.Validate(cmd);
+        Assert.False(result.IsValid);
+        Assert.Contains(result.Errors, e => e.PropertyName.Contains("Name"));
+        Assert.Contains(result.Errors, e => e.PropertyName.Contains("Category"));
+    }
+
+    [Fact]
     public async Task CreateRequestType_InvalidLeavePay_ThrowsValidationException()
     {
         var dbName = Guid.NewGuid().ToString();
