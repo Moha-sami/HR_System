@@ -17,5 +17,24 @@ public class RequestTypeConfiguration : IEntityTypeConfiguration<RequestType>
             .IsRequired()
             .HasMaxLength(50)
             .HasColumnType("nvarchar(50)");
+
+        builder.Property(rt => rt.Hint)
+            .HasMaxLength(250)
+            .HasColumnType("nvarchar(250)");
+
+        builder.Property(rt => rt.LeaveType)
+            .HasMaxLength(20)
+            .HasColumnType("nvarchar(20)");
+
+        builder.Property(rt => rt.LeavePay)
+            .HasMaxLength(20)
+            .HasColumnType("nvarchar(20)");
+
+        builder.Property(rt => rt.AddedBy)
+            .HasMaxLength(100)
+            .HasColumnType("nvarchar(100)");
+
+        builder.Property(rt => rt.IsActive)
+            .HasDefaultValue(true);
     }
 }
