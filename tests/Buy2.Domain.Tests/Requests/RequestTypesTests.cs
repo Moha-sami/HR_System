@@ -525,6 +525,7 @@ public class RequestTypesTests
         {
             var handler = new UpdateRequestTypeCommandHandler(
                 new GenericRepository<RequestType>(context),
+                new GenericRepository<Request>(context),
                 new UnitOfWork(context)
             );
 
@@ -564,6 +565,7 @@ public class RequestTypesTests
         {
             var handler = new UpdateRequestTypeCommandHandler(
                 new GenericRepository<RequestType>(context),
+                new GenericRepository<Request>(context),
                 new UnitOfWork(context)
             );
 
@@ -591,6 +593,7 @@ public class RequestTypesTests
         {
             var handler = new UpdateRequestTypeCommandHandler(
                 new GenericRepository<RequestType>(context),
+                new GenericRepository<Request>(context),
                 new UnitOfWork(context)
             );
 
@@ -618,6 +621,7 @@ public class RequestTypesTests
         {
             var handler = new UpdateRequestTypeCommandHandler(
                 new GenericRepository<RequestType>(context),
+                new GenericRepository<Request>(context),
                 new UnitOfWork(context)
             );
 
@@ -628,6 +632,47 @@ public class RequestTypesTests
             Assert.Equal("Updated Hint", result.Hint);
         }
     }
+
+    [Fact]
+    public void UpdateRequestTypeCommandValidator_ValidCommand_Passes()
+    {
+        var validator = new UpdateRequestTypeCommandValidator();
+        var cmd = new UpdateRequestTypeCommand(1, new UpdateRequestTypeDto(
+            Category: "Leave",
+            Name: "Medical Leave",
+            Hint: "Certified leave",
+            LeaveType: "Full",
+            LeavePay: "Paid",
+            RequiresDates: true,
+            RequiresReason: true,
+            IsActive: true
+        ));
+
+        var result = validator.Validate(cmd);
+        Assert.True(result.IsValid);
+    }
+
+    [Fact]
+    public void UpdateRequestTypeCommandValidator_InvalidIdOrPayload_Fails()
+    {
+        var validator = new UpdateRequestTypeCommandValidator();
+        var cmd = new UpdateRequestTypeCommand(0, new UpdateRequestTypeDto(
+            Category: "",
+            Name: "",
+            Hint: null,
+            LeaveType: null,
+            LeavePay: null,
+            RequiresDates: false,
+            RequiresReason: false,
+            IsActive: true
+        ));
+
+        var result = validator.Validate(cmd);
+        Assert.False(result.IsValid);
+        Assert.Contains(result.Errors, e => e.PropertyName == "Id");
+        Assert.Contains(result.Errors, e => e.PropertyName.Contains("Name"));
+    }
+
 
     #endregion
 

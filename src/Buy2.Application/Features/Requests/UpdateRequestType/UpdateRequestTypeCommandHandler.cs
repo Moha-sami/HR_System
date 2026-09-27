@@ -13,13 +13,16 @@ namespace Buy2.Application.Features.Requests.UpdateRequestType;
 public class UpdateRequestTypeCommandHandler : IRequestHandler<UpdateRequestTypeCommand, RequestTypeDto>
 {
     private readonly IRepository<RequestType> _requestTypeRepository;
+    private readonly IRepository<Request> _requestRepository;
     private readonly IUnitOfWork _unitOfWork;
 
     public UpdateRequestTypeCommandHandler(
         IRepository<RequestType> requestTypeRepository,
+        IRepository<Request> requestRepository,
         IUnitOfWork unitOfWork)
     {
         _requestTypeRepository = requestTypeRepository;
+        _requestRepository = requestRepository;
         _unitOfWork = unitOfWork;
     }
 
@@ -119,6 +122,10 @@ public class UpdateRequestTypeCommandHandler : IRequestHandler<UpdateRequestType
         _requestTypeRepository.Update(requestType);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
+        var isUtilized = await _requestRepository.AnyAsync(
+            r => r.RequestTypeId == requestType.Id,
+            cancellationToken);
+
         return new RequestTypeDto(
             requestType.Id,
             requestType.Category,
@@ -130,7 +137,8 @@ public class UpdateRequestTypeCommandHandler : IRequestHandler<UpdateRequestType
             requestType.RequiresReason,
             requestType.IsActive,
             requestType.CreatedAt,
-            requestType.AddedBy
+            requestType.AddedBy,
+            isUtilized
         );
     }
 }
