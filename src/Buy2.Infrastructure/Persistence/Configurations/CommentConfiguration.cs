@@ -10,11 +10,15 @@ public class CommentConfiguration : IEntityTypeConfiguration<Comment>
     {
         builder.Property(c => c.Content)
             .IsRequired()
-            .HasMaxLength(1000)
-            .HasColumnType("nvarchar(1000)");
+            .HasMaxLength(2000)
+            .HasColumnType("nvarchar(2000)");
+
+        builder.Property(c => c.ModerationReason)
+            .HasMaxLength(500)
+            .HasColumnType("nvarchar(500)");
 
         builder.HasOne(c => c.Post)
-            .WithMany()
+            .WithMany(p => p.Comments)
             .HasForeignKey(c => c.PostId)
             .OnDelete(DeleteBehavior.Cascade);
 
@@ -22,5 +26,16 @@ public class CommentConfiguration : IEntityTypeConfiguration<Comment>
             .WithMany()
             .HasForeignKey(c => c.AuthorId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(c => c.ParentComment)
+            .WithMany(p => p.Replies)
+            .HasForeignKey(c => c.ParentCommentId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasQueryFilter(c => !c.IsDeleted);
+
+        builder.HasIndex(c => c.PostId);
+        builder.HasIndex(c => c.ParentCommentId);
+        builder.HasIndex(c => c.AuthorId);
     }
 }
