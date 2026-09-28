@@ -1,0 +1,64 @@
+using Buy2.Application.DTOs.News;
+using Buy2.Application.DTOs.Requests;
+using Buy2.Application.Features.News.GetPostComments;
+using MediatR;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Collections.Generic;
+using System.Security.Claims;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace Buy2.Api.Controllers;
+
+[ApiController]
+[Route("api/v1/news")]
+[Authorize]
+public class NewsCommentsController : ControllerBase
+{
+    private readonly ISender _mediator;
+
+    public NewsCommentsController(ISender mediator)
+    {
+        _mediator = mediator;
+    }
+
+    /// <summary>
+    /// Queries threaded comments and nested replies for a news post with aggregate reactions and caller state.
+    /// </summary>
+    [HttpGet("{postId:int}/comments")]
+    [ProducesResponseType(typeof(PaginatedListResult<CommentThreadDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetPostComments(
+        [FromRoute] int postId,
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 10,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            int? currentUserId = null;
+            var rawId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (int.TryParse(rawId, out var parsedId))
+            {
+                currentUserId = parsedId;
+            }
+
+            var query = new GetPostCommentsQuery(
+                PostId: postId,
+                CurrentUserId: currentUserId,
+                PageNumber: pageNumber,
+                PageSize: pageSize
+            );
+
+            var result = await _mediator.Send(query, cancellationToken);
+            return Ok(result);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+    }
+}

@@ -94,7 +94,7 @@ public class SocialEngagementFoundationTests
         var content = "Inappropriate text";
         var result = SocialEngagementManager.ResolveCommentDisplayContent(content, isModerated: true, isDeleted: false);
 
-        Assert.Equal(SocialEngagementManager.TombstoneModeratedComment, result);
+        Assert.Equal("This comment has been removed by admin", result);
     }
 
     [Fact]
@@ -137,6 +137,7 @@ public class SocialEngagementFoundationTests
             IsModerated: false,
             ModerationReason: null,
             LikesCount: 5,
+            RepliesCount: 1,
             ReactionBreakdown: new Dictionary<string, int> { { "Like", 5 } },
             UserReaction: "Like",
             Replies: new List<CommentReplyDto> { reply },

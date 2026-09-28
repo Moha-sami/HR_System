@@ -13,7 +13,7 @@ public static class SocialEngagementManager
     public const string ReactionHeart = "Heart";
     public const string ReactionAngry = "Angry";
 
-    public const string TombstoneModeratedComment = "[This comment has been removed by a moderator]";
+    public const string TombstoneModeratedComment = "This comment has been removed by admin";
     public const string TombstoneDeletedComment = "[This comment has been deleted]";
 
     public static readonly HashSet<string> AllowedReactionTypes = new(StringComparer.OrdinalIgnoreCase)
