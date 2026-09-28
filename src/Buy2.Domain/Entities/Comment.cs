@@ -13,6 +13,8 @@ public class Comment : BaseEntity
     public DateTime? DeletedAt { get; set; }
     public bool IsModerated { get; set; } = false;
     public string? ModerationReason { get; set; }
+    [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+    public DateTime? UpdatedAt { get; set; }
 
     public Post? Post { get; set; }
     public Employee? Author { get; set; }
