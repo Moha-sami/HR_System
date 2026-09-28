@@ -16,6 +16,8 @@ public class Recognition : BaseEntity
     public DateTime? PublishedAt { get; set; }
     public bool IsDeleted { get; set; } = false;
     public DateTime? DeletedAt { get; set; }
+    [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+    public DateTime? UpdatedAt { get; set; }
 
     public Employee? Author { get; set; }
     public Employee? Recipient { get; set; }
