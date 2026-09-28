@@ -25,13 +25,13 @@ public class CreateNewsPostCommandHandler : IRequestHandler<CreateNewsPostComman
         IRepository<Post> postRepository,
         IRepository<Employee> employeeRepository,
         IUnitOfWork unitOfWork,
-        IValidator<CreateNewsPostCommand> validator,
+        IValidator<CreateNewsPostCommand>? validator = null,
         IFileStorageService? fileStorageService = null)
     {
         _postRepository = postRepository;
         _employeeRepository = employeeRepository;
         _unitOfWork = unitOfWork;
-        _validator = validator;
+        _validator = validator ?? new CreateNewsPostCommandValidator();
         _fileStorageService = fileStorageService;
     }
 

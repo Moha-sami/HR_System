@@ -27,7 +27,7 @@ public class ReactionConfiguration : IEntityTypeConfiguration<Reaction>
         builder.HasOne(r => r.Comment)
             .WithMany(c => c.Reactions)
             .HasForeignKey(r => r.CommentId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasOne(r => r.Recognition)
             .WithMany(rg => rg.Reactions)
