@@ -145,6 +145,59 @@ public class NewsController : ControllerBase
             return BadRequest(new { message = ex.Message });
         }
     }
+
+    /// <summary>
+    /// Updates an existing news post's content, media attachment, scheduling parameters, and lifecycle status.
+    /// </summary>
+    [HttpPut("{id:int}")]
+    [Consumes("multipart/form-data")]
+    [ProducesResponseType(typeof(NewsPostResponseDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> UpdateNewsPost(
+        [FromRoute] int id,
+        [FromForm] UpdateNewsPostModel model,
+        IFormFile? mediaFile,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            int? modifierId = null;
+            var rawId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (int.TryParse(rawId, out var parsedId))
+            {
+                modifierId = parsedId;
+            }
+
+            var file = mediaFile ?? model.MediaFile;
+
+            var command = new Buy2.Application.Features.News.UpdateNewsPost.UpdateNewsPostCommand(
+                Id: id,
+                Title: model.Title,
+                Content: model.Content,
+                Category: model.Category ?? "General",
+                Status: model.Status ?? "Draft",
+                ScheduledFor: model.ScheduledFor,
+                ModifierId: modifierId,
+                MediaFile: file
+            );
+
+            var result = await _mediator.Send(command, cancellationToken);
+            return Ok(result);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+        catch (FluentValidation.ValidationException ex)
+        {
+            return BadRequest(new { message = ex.Errors.FirstOrDefault()?.ErrorMessage ?? ex.Message });
+        }
+        catch (Exception ex) when (ex is InvalidOperationException or ArgumentException)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
 }
 
 public class CreateNewsPostModel
@@ -165,6 +218,26 @@ public class CreateNewsPostModel
     public DateTime? ScheduledFor { get; set; }
 
     public int? AuthorId { get; set; }
+
+    public IFormFile? MediaFile { get; set; }
+}
+
+public class UpdateNewsPostModel
+{
+    [Required]
+    [MaxLength(200)]
+    public string Title { get; set; } = string.Empty;
+
+    [Required]
+    public string Content { get; set; } = string.Empty;
+
+    [MaxLength(50)]
+    public string? Category { get; set; } = "General";
+
+    [MaxLength(30)]
+    public string? Status { get; set; } = "Draft";
+
+    public DateTime? ScheduledFor { get; set; }
 
     public IFormFile? MediaFile { get; set; }
 }
