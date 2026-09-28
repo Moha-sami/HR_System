@@ -61,4 +61,49 @@ public class NewsCommentsController : ControllerBase
             return NotFound(new { message = ex.Message });
         }
     }
+
+    /// <summary>
+    /// Adds a comment or threaded reply to a news post with author attribution and count increment.
+    /// </summary>
+    [HttpPost("{postId:int}/comments")]
+    [ProducesResponseType(typeof(CommentDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> CreateComment(
+        [FromRoute] int postId,
+        [FromBody] CreateCommentDto request,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            int? currentUserId = null;
+            var rawId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (int.TryParse(rawId, out var parsedId))
+            {
+                currentUserId = parsedId;
+            }
+
+            var command = new Buy2.Application.Features.News.Commands.CreateComment.CreateCommentCommand(
+                PostId: postId,
+                Content: request?.Content ?? string.Empty,
+                ParentCommentId: request?.ParentCommentId,
+                AuthorId: currentUserId
+            );
+
+            var result = await _mediator.Send(command, cancellationToken);
+            return StatusCode(StatusCodes.Status201Created, result);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+        catch (FluentValidation.ValidationException ex)
+        {
+            return BadRequest(new { message = ex.Errors.FirstOrDefault()?.ErrorMessage ?? ex.Message });
+        }
+        catch (Exception ex) when (ex is InvalidOperationException or ArgumentException)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
 }
