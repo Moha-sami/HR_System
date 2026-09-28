@@ -1,4 +1,5 @@
 using Buy2.Application.DTOs.Requests;
+using Buy2.Application.Features.Requests.ExportRequestsHistory;
 using Buy2.Application.Features.Requests.GetRequestsHistory;
 using Buy2.Application.Features.Requests.GetSubmittedRequests;
 using Buy2.Application.Features.Requests.ProcessDecision;
@@ -94,6 +95,38 @@ public class RequestsController : ControllerBase
 
         var result = await _mediator.Send(query, cancellationToken);
         return Ok(result);
+    }
+
+    /// <summary>
+    /// Exports the historical requests audit ledger to CSV or Excel (.xlsx) formats with applied filters.
+    /// </summary>
+    [HttpGet("history/export")]
+    [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> ExportRequestsHistory(
+        [FromQuery] string? format = "csv",
+        [FromQuery] string? search = null,
+        [FromQuery] DateTime? fromDate = null,
+        [FromQuery] DateTime? toDate = null,
+        [FromQuery] List<int>? requestTypeIds = null,
+        [FromQuery] string? overallStatus = null,
+        [FromQuery] string? sortBy = "SubmittedAt",
+        [FromQuery] bool sortDescending = true,
+        CancellationToken cancellationToken = default)
+    {
+        var query = new ExportRequestsHistoryQuery(
+            Format: format ?? "csv",
+            Search: search,
+            FromDate: fromDate,
+            ToDate: toDate,
+            RequestTypeIds: requestTypeIds,
+            OverallStatus: overallStatus,
+            SortBy: sortBy,
+            SortDescending: sortDescending
+        );
+
+        var result = await _mediator.Send(query, cancellationToken);
+        return File(result.Content, result.ContentType, result.FileName);
     }
 
     /// <summary>
