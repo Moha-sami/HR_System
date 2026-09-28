@@ -1,4 +1,5 @@
 using Buy2.Application.DTOs.Requests;
+using Buy2.Application.Features.Requests.GetRequestsHistory;
 using Buy2.Application.Features.Requests.GetSubmittedRequests;
 using Buy2.Application.Features.Requests.ProcessDecision;
 using Buy2.Application.Features.Requests.SubmitRequest;
@@ -51,6 +52,39 @@ public class RequestsController : ControllerBase
             RequestTypeIds: requestTypeIds,
             ManagerStatus: managerStatus,
             HrStatus: hrStatus,
+            OverallStatus: overallStatus,
+            SortBy: sortBy,
+            SortDescending: sortDescending,
+            PageNumber: pageNumber,
+            PageSize: pageSize
+        );
+
+        var result = await _mediator.Send(query, cancellationToken);
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Queries historical resolved requests audit ledger (Approved or Rejected) with multi-column sorting and filtering.
+    /// </summary>
+    [HttpGet("history")]
+    [ProducesResponseType(typeof(PaginatedListResult<RequestHistorySummaryDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetRequestsHistory(
+        [FromQuery] string? search,
+        [FromQuery] DateTime? fromDate,
+        [FromQuery] DateTime? toDate,
+        [FromQuery] List<int>? requestTypeIds,
+        [FromQuery] string? overallStatus,
+        [FromQuery] string? sortBy = "SubmittedAt",
+        [FromQuery] bool sortDescending = true,
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 20,
+        CancellationToken cancellationToken = default)
+    {
+        var query = new GetRequestsHistoryQuery(
+            Search: search,
+            FromDate: fromDate,
+            ToDate: toDate,
+            RequestTypeIds: requestTypeIds,
             OverallStatus: overallStatus,
             SortBy: sortBy,
             SortDescending: sortDescending,
