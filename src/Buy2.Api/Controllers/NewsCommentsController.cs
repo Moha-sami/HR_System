@@ -106,4 +106,53 @@ public class NewsCommentsController : ControllerBase
             return BadRequest(new { message = ex.Message });
         }
     }
+
+    /// <summary>
+    /// Updates a comment content by its author with validation and last-modified timestamp tracking.
+    /// </summary>
+    [HttpPut("comments/{commentId:int}")]
+    [ProducesResponseType(typeof(CommentDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> UpdateComment(
+        [FromRoute] int commentId,
+        [FromBody] UpdateCommentDto request,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            int? currentUserId = null;
+            var rawId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (int.TryParse(rawId, out var parsedId))
+            {
+                currentUserId = parsedId;
+            }
+
+            var command = new Buy2.Application.Features.News.Commands.UpdateComment.UpdateCommentCommand(
+                CommentId: commentId,
+                Content: request?.Content ?? string.Empty,
+                CallerId: currentUserId
+            );
+
+            var result = await _mediator.Send(command, cancellationToken);
+            return Ok(result);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, new { message = ex.Message });
+        }
+        catch (FluentValidation.ValidationException ex)
+        {
+            return BadRequest(new { message = ex.Errors.FirstOrDefault()?.ErrorMessage ?? ex.Message });
+        }
+        catch (Exception ex) when (ex is InvalidOperationException or ArgumentException)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
 }
