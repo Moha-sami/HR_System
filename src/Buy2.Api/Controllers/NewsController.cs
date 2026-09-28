@@ -1,10 +1,14 @@
 using Buy2.Application.DTOs.News;
 using Buy2.Application.DTOs.Requests;
+using Buy2.Application.Features.News.CreateNewsPost;
 using Buy2.Application.Features.News.GetNewsFeed;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
@@ -53,4 +57,76 @@ public class NewsController : ControllerBase
         var result = await _mediator.Send(query, cancellationToken);
         return Ok(result);
     }
+
+    /// <summary>
+    /// Creates a corporate news post with draft, scheduled, or published lifecycle status and optional media attachment.
+    /// </summary>
+    [HttpPost]
+    [Consumes("multipart/form-data")]
+    [ProducesResponseType(typeof(NewsPostResponseDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> CreateNewsPost(
+        [FromForm] CreateNewsPostModel model,
+        IFormFile? mediaFile,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var authorId = model.AuthorId;
+            if (!authorId.HasValue)
+            {
+                var rawId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (int.TryParse(rawId, out var parsedId))
+                {
+                    authorId = parsedId;
+                }
+            }
+
+            var file = mediaFile ?? model.MediaFile;
+
+            var command = new CreateNewsPostCommand(
+                Title: model.Title,
+                Content: model.Content,
+                Category: model.Category ?? "General",
+                Status: model.Status ?? "Draft",
+                ScheduledFor: model.ScheduledFor,
+                AuthorId: authorId,
+                MediaFile: file
+            );
+
+            var result = await _mediator.Send(command, cancellationToken);
+            return StatusCode(StatusCodes.Status201Created, result);
+        }
+        catch (FluentValidation.ValidationException ex)
+        {
+            return BadRequest(new { message = ex.Errors.FirstOrDefault()?.ErrorMessage ?? ex.Message });
+        }
+        catch (Exception ex) when (ex is InvalidOperationException or ArgumentException)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
 }
+
+public class CreateNewsPostModel
+{
+    [Required]
+    [MaxLength(200)]
+    public string Title { get; set; } = string.Empty;
+
+    [Required]
+    public string Content { get; set; } = string.Empty;
+
+    [MaxLength(50)]
+    public string? Category { get; set; } = "General";
+
+    [MaxLength(30)]
+    public string? Status { get; set; } = "Draft";
+
+    public DateTime? ScheduledFor { get; set; }
+
+    public int? AuthorId { get; set; }
+
+    public IFormFile? MediaFile { get; set; }
+}
+
