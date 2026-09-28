@@ -1,5 +1,6 @@
 using Buy2.Application.DTOs.Requests;
 using Buy2.Application.Features.Requests.GetSubmittedRequests;
+using Buy2.Application.Features.Requests.SubmitRequest;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -59,4 +60,73 @@ public class RequestsController : ControllerBase
         var result = await _mediator.Send(query, cancellationToken);
         return Ok(result);
     }
+
+    /// <summary>
+    /// Submits a new employee workplace request with category attributes and file attachments.
+    /// </summary>
+    [HttpPost]
+    [Consumes("multipart/form-data")]
+    [ProducesResponseType(typeof(SubmittedRequestResponseDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> SubmitRequest(
+        [FromForm] SubmitRequestModel model,
+        [FromForm] List<IFormFile>? attachments,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var employeeId = model.EmployeeId;
+            if (!employeeId.HasValue)
+            {
+                var rawId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                if (int.TryParse(rawId, out var parsedId))
+                {
+                    employeeId = parsedId;
+                }
+            }
+
+            if (!employeeId.HasValue || employeeId.Value <= 0)
+            {
+                return BadRequest(new { message = "Employee ID could not be identified from request or authentication token." });
+            }
+
+            var command = new SubmitRequestCommand(
+                EmployeeId: employeeId.Value,
+                RequestTypeId: model.RequestTypeId,
+                StartDate: model.StartDate,
+                EndDate: model.EndDate,
+                Reason: model.Reason,
+                CategoryValuesJson: model.CategoryValuesJson,
+                Attachments: attachments
+            );
+
+            var result = await _mediator.Send(command, cancellationToken);
+            return StatusCode(StatusCodes.Status201Created, result);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+        catch (Exception ex) when (ex is System.ComponentModel.DataAnnotations.ValidationException or InvalidOperationException or ArgumentException)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Submits a new employee workplace request via JSON.
+    /// </summary>
+    [HttpPost("json")]
+    [Consumes("application/json")]
+    [ProducesResponseType(typeof(SubmittedRequestResponseDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> SubmitRequestJson(
+        [FromBody] SubmitRequestModel model,
+        CancellationToken cancellationToken)
+    {
+        return await SubmitRequest(model, null, cancellationToken);
+    }
 }
+
