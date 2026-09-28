@@ -128,5 +128,27 @@ public class RequestsController : ControllerBase
     {
         return await SubmitRequest(model, null, cancellationToken);
     }
+
+    /// <summary>
+    /// Retrieves full details of a specific request including attachments, dual review notes, and prior submission history.
+    /// </summary>
+    [HttpGet("{id:int}")]
+    [ProducesResponseType(typeof(RequestDetailDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetRequestDetail(
+        [FromRoute] int id,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var result = await _mediator.Send(new Buy2.Application.Features.Requests.GetRequestDetail.GetRequestDetailQuery(id), cancellationToken);
+            return Ok(result);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+    }
 }
+
 
