@@ -39,6 +39,21 @@ public record CommentThreadDto(
     DateTime? UpdatedAt
 );
 
+public record CommentDto(
+    int Id,
+    int PostId,
+    int? ParentCommentId,
+    int AuthorId,
+    string AuthorName,
+    string? AuthorAvatar,
+    string Content,
+    bool IsModerated,
+    string? ModerationReason,
+    int LikesCount,
+    DateTime CreatedAt,
+    DateTime? UpdatedAt = null
+);
+
 public record CreateCommentDto(
     string Content,
     int? ParentCommentId = null
