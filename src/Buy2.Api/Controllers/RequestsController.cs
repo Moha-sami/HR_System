@@ -1,5 +1,6 @@
 using Buy2.Application.DTOs.Requests;
 using Buy2.Application.Features.Requests.GetSubmittedRequests;
+using Buy2.Application.Features.Requests.ProcessDecision;
 using Buy2.Application.Features.Requests.SubmitRequest;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -149,6 +150,53 @@ public class RequestsController : ControllerBase
             return NotFound(new { message = ex.Message });
         }
     }
+
+    /// <summary>
+    /// Processes a manager or HR review decision (Approval or Rejection) on an employee workplace request.
+    /// </summary>
+    [HttpPost("{id:int}/decision")]
+    [ProducesResponseType(typeof(ProcessDecisionResponseDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> ProcessDecision(
+        [FromRoute] int id,
+        [FromBody] ProcessDecisionModel model,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var reviewerId = model.ReviewerId;
+            if (!reviewerId.HasValue)
+            {
+                var rawId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                if (int.TryParse(rawId, out var parsedId))
+                {
+                    reviewerId = parsedId;
+                }
+            }
+
+            var command = new ProcessRequestDecisionCommand(
+                RequestId: id,
+                Tier: model.Tier,
+                Decision: model.Decision,
+                Comment: model.Comment,
+                RejectionReason: model.RejectionReason,
+                ReviewerId: reviewerId
+            );
+
+            var result = await _mediator.Send(command, cancellationToken);
+            return Ok(result);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+        catch (Exception ex) when (ex is System.ComponentModel.DataAnnotations.ValidationException or InvalidOperationException or ArgumentException)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
 }
+
 
 
