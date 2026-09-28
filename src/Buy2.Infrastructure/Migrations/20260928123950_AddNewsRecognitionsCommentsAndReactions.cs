@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -243,7 +243,7 @@ namespace Buy2.Infrastructure.Migrations
                 column: "CommentId",
                 principalTable: "Comments",
                 principalColumn: "Id",
-                onDelete: ReferentialAction.Cascade);
+                onDelete: ReferentialAction.Restrict);
 
             migrationBuilder.AddForeignKey(
                 name: "FK_Reactions_Recognitions_RecognitionId",

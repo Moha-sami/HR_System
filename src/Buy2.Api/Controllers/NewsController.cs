@@ -2,11 +2,13 @@ using Buy2.Application.DTOs.News;
 using Buy2.Application.DTOs.Requests;
 using Buy2.Application.Features.News.CreateNewsPost;
 using Buy2.Application.Features.News.GetNewsFeed;
+using Buy2.Application.Features.News.GetNewsPostDetail;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Security.Claims;
@@ -56,6 +58,43 @@ public class NewsController : ControllerBase
 
         var result = await _mediator.Send(query, cancellationToken);
         return Ok(result);
+    }
+
+    /// <summary>
+    /// Gets detailed news post with full article content, author metadata, reaction breakdown, and engagement counters.
+    /// </summary>
+    [HttpGet("{id:int}")]
+    [ProducesResponseType(typeof(NewsPostDetailDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetNewsPostDetail([FromRoute] int id, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var isElevated = User.IsInRole("Admin") ||
+                             User.IsInRole("HR") ||
+                             User.IsInRole("SuperAdmin") ||
+                             User.HasClaim(c => c.Type == ClaimTypes.Role && (c.Value == "Admin" || c.Value == "HR" || c.Value == "SuperAdmin"));
+
+            int? currentUserId = null;
+            var rawId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (int.TryParse(rawId, out var parsedId))
+            {
+                currentUserId = parsedId;
+            }
+
+            var query = new GetNewsPostDetailQuery(
+                Id: id,
+                CurrentUserId: currentUserId,
+                IsElevatedUser: isElevated
+            );
+
+            var result = await _mediator.Send(query, cancellationToken);
+            return Ok(result);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
     }
 
     /// <summary>

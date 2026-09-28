@@ -33,6 +33,8 @@ public record NewsPostDetailDto(
     DateTime? PublishedAt,
     int LikesCount,
     int CommentsCount,
+    System.Collections.Generic.Dictionary<string, int> ReactionBreakdown,
+    string? UserReaction,
     DateTime CreatedAt,
     DateTime? UpdatedAt
 );
