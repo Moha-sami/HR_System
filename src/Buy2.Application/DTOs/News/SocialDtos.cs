@@ -31,6 +31,7 @@ public record CommentThreadDto(
     bool IsModerated,
     string? ModerationReason,
     int LikesCount,
+    int RepliesCount,
     Dictionary<string, int> ReactionBreakdown,
     string? UserReaction,
     List<CommentReplyDto> Replies,
