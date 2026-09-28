@@ -155,4 +155,56 @@ public class NewsCommentsController : ControllerBase
             return BadRequest(new { message = ex.Message });
         }
     }
+
+    /// <summary>
+    /// Deletes a comment by author or moderates inappropriate content by administrator.
+    /// </summary>
+    [HttpDelete("comments/{commentId:int}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> DeleteComment(
+        [FromRoute] int commentId,
+        [FromQuery] string? reason = null,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var isElevated = User.IsInRole("Admin") ||
+                             User.IsInRole("HR") ||
+                             User.IsInRole("SuperAdmin") ||
+                             User.IsInRole("Moderator") ||
+                             User.HasClaim(c => c.Type == ClaimTypes.Role && (c.Value == "Admin" || c.Value == "HR" || c.Value == "SuperAdmin" || c.Value == "Moderator"));
+
+            int? currentUserId = null;
+            var rawId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (int.TryParse(rawId, out var parsedId))
+            {
+                currentUserId = parsedId;
+            }
+
+            var command = new Buy2.Application.Features.News.Commands.DeleteComment.DeleteCommentCommand(
+                CommentId: commentId,
+                CallerId: currentUserId,
+                IsElevatedUser: isElevated,
+                ModerationReason: reason
+            );
+
+            var result = await _mediator.Send(command, cancellationToken);
+            return Ok(new { message = "Comment successfully deleted." });
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, new { message = ex.Message });
+        }
+        catch (Exception ex) when (ex is InvalidOperationException or ArgumentException)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
 }
