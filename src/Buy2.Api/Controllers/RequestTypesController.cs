@@ -18,7 +18,6 @@ namespace Buy2.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/request-types")]
-[Route("api/v1/requestTypes")]
 [Authorize]
 public class RequestTypesController : ControllerBase
 {
