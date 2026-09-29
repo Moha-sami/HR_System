@@ -1,4 +1,5 @@
 using Buy2.Application.DTOs.Requests;
+using Buy2.Application.Features.Recognitions.Commands.DeleteRecognition;
 using Buy2.Application.Features.Recognitions.Commands.UpdateRecognition;
 using Buy2.Application.Features.Recognitions.Queries.GetRecognitionDetail;
 using Buy2.Application.Features.Recognitions.Queries.GetRecognitions;
@@ -216,6 +217,49 @@ public class RecognitionsController : ControllerBase
         catch (Exception ex) when (ex is InvalidOperationException or ArgumentException)
         {
             return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Soft-deletes a recognition post with points grant reversal safeguard.
+    /// </summary>
+    [HttpDelete("{id:int}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> DeleteRecognition(int id, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var isElevated = User.IsInRole("Admin") ||
+                             User.IsInRole("HR") ||
+                             User.IsInRole("SuperAdmin") ||
+                             User.IsInRole("Manager") ||
+                             User.HasClaim(c => c.Type == ClaimTypes.Role && (c.Value == "Admin" || c.Value == "HR" || c.Value == "SuperAdmin" || c.Value == "Manager"));
+
+            int? currentUserId = null;
+            var rawId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (int.TryParse(rawId, out var parsedId))
+            {
+                currentUserId = parsedId;
+            }
+
+            var command = new DeleteRecognitionCommand(
+                Id: id,
+                CurrentUserId: currentUserId,
+                IsElevatedUser: isElevated
+            );
+
+            await _mediator.Send(command, cancellationToken);
+            return NoContent();
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, new { message = ex.Message });
         }
     }
 }
