@@ -1,4 +1,5 @@
 using Buy2.Application.DTOs.Requests;
+using Buy2.Application.Features.Recognitions.Commands.UpdateRecognition;
 using Buy2.Application.Features.Recognitions.Queries.GetRecognitionDetail;
 using Buy2.Application.Features.Recognitions.Queries.GetRecognitions;
 using MediatR;
@@ -150,6 +151,73 @@ public class RecognitionsController : ControllerBase
             return BadRequest(new { message = ex.Message });
         }
     }
+
+    /// <summary>
+    /// Updates recognition content, points award, recipient, attachments, and scheduling.
+    /// </summary>
+    [HttpPut("{id:int}")]
+    [Consumes("multipart/form-data")]
+    [ProducesResponseType(typeof(Buy2.Application.DTOs.Recognitions.RecognitionResponseDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> UpdateRecognition(
+        int id,
+        [FromForm] UpdateRecognitionModel model,
+        IFormFile? attachmentFile,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var isElevated = User.IsInRole("Admin") ||
+                             User.IsInRole("HR") ||
+                             User.IsInRole("SuperAdmin") ||
+                             User.IsInRole("Manager") ||
+                             User.HasClaim(c => c.Type == ClaimTypes.Role && (c.Value == "Admin" || c.Value == "HR" || c.Value == "SuperAdmin" || c.Value == "Manager"));
+
+            int? currentUserId = null;
+            var rawId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (int.TryParse(rawId, out var parsedId))
+            {
+                currentUserId = parsedId;
+            }
+
+            var file = attachmentFile ?? model.AttachmentFile;
+
+            var command = new UpdateRecognitionCommand(
+                Id: id,
+                RecipientId: model.RecipientId,
+                Title: model.Title,
+                Narrative: model.Narrative,
+                AwardedPoints: model.AwardedPoints,
+                Badge: model.Badge,
+                Status: model.Status,
+                ScheduledFor: model.ScheduledFor,
+                ModifyingUserId: currentUserId,
+                IsElevatedUser: isElevated,
+                AttachmentFile: file
+            );
+
+            var result = await _mediator.Send(command, cancellationToken);
+            return Ok(result);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, new { message = ex.Message });
+        }
+        catch (FluentValidation.ValidationException ex)
+        {
+            return BadRequest(new { message = ex.Errors.FirstOrDefault()?.ErrorMessage ?? ex.Message });
+        }
+        catch (Exception ex) when (ex is InvalidOperationException or ArgumentException)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
 }
 
 public class CreateRecognitionModel
@@ -162,5 +230,17 @@ public class CreateRecognitionModel
     public string? Status { get; set; } = "Published";
     public DateTime? ScheduledFor { get; set; }
     public int? AuthorId { get; set; }
+    public IFormFile? AttachmentFile { get; set; }
+}
+
+public class UpdateRecognitionModel
+{
+    public int RecipientId { get; set; }
+    public string Title { get; set; } = string.Empty;
+    public string Narrative { get; set; } = string.Empty;
+    public int AwardedPoints { get; set; } = 0;
+    public string? Badge { get; set; }
+    public string? Status { get; set; }
+    public DateTime? ScheduledFor { get; set; }
     public IFormFile? AttachmentFile { get; set; }
 }
