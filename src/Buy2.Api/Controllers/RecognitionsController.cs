@@ -1,4 +1,5 @@
 using Buy2.Application.DTOs.Requests;
+using Buy2.Application.Features.Recognitions.Queries.GetRecognitionDetail;
 using Buy2.Application.Features.Recognitions.Queries.GetRecognitions;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -54,6 +55,44 @@ public class RecognitionsController : ControllerBase
 
         var result = await _mediator.Send(query, cancellationToken);
         return Ok(result);
+    }
+
+    /// <summary>
+    /// Retrieves detailed representation of a specific recognition post including recipient profile, points, and audit trail.
+    /// </summary>
+    [HttpGet("{id:int}")]
+    [ProducesResponseType(typeof(RecognitionDetailDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetRecognitionById(int id, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var isElevated = User.IsInRole("Admin") ||
+                             User.IsInRole("HR") ||
+                             User.IsInRole("SuperAdmin") ||
+                             User.IsInRole("Manager") ||
+                             User.HasClaim(c => c.Type == ClaimTypes.Role && (c.Value == "Admin" || c.Value == "HR" || c.Value == "SuperAdmin" || c.Value == "Manager"));
+
+            int? currentUserId = null;
+            var rawId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (int.TryParse(rawId, out var parsedId))
+            {
+                currentUserId = parsedId;
+            }
+
+            var query = new GetRecognitionDetailQuery(
+                Id: id,
+                CurrentUserId: currentUserId,
+                IsElevatedUser: isElevated
+            );
+
+            var result = await _mediator.Send(query, cancellationToken);
+            return Ok(result);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
     }
 
     /// <summary>
