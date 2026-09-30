@@ -136,43 +136,172 @@ function firstStockCount(availableStock?: string): number {
 
 export type CreateRewardDto = Omit<RewardItem, 'id'>;
 
-export interface RewardRedemption {
-  id: string;
-  rewardItemId: string | number;
-  employeeId: number;
-  voucherCode: string;
-  redeemedAt: string;
-  createdAt: string;
-}
-
 export type RewardListRow = RewardListDto;
 
-export type InventoryStatus = 'Available' | 'Redeemed';
+export type InventoryStatus = 'Available' | 'Redeemed' | 'Expired';
 
 export interface RewardInventoryItem {
   id: string;
-  rewardItemId: string | number;
   batchId: string;
-  fileName: string;
   voucherCode: string;
   status: InventoryStatus;
   createdAt: string;
-  redeemedAt: string | null;
-  employeeId: string | number | null;
 }
 
-export type CreateInventoryDto = Omit<RewardInventoryItem, 'id'>;
+export interface RewardInventoryListDto {
+  readonly id: number;
+  readonly batchId: number;
+  readonly date: string;
+  readonly voucherCode: string;
+  readonly status: InventoryStatus | number;
+}
 
-export interface EmployeeName {
-  id: string;
-  firstName: string;
-  lastName: string;
+export interface PageResultDto<T> {
+  readonly items: readonly T[];
+  readonly totalCount: number;
+  readonly page: number;
+  readonly pageSize: number;
+}
+
+export interface PaginatedVouchersResponseDto {
+  readonly vouchers: PageResultDto<RewardInventoryListDto>;
+  readonly availableCount: number;
+  readonly redeemedCount: number;
+  readonly expiredCount: number;
+}
+
+export interface VoucherInventoryFilter {
+  readonly page: number;
+  readonly pageSize: number;
+  readonly voucherCode?: string | null;
+  readonly batchId?: number | null;
+  readonly status?: InventoryStatus | 'All' | '' | null;
+  readonly dateFrom?: string | null;
+  readonly dateTo?: string | null;
+}
+
+export interface RewardInventoryPage {
+  readonly items: RewardInventoryItem[];
+  readonly totalCount: number;
+  readonly page: number;
+  readonly pageSize: number;
+  readonly availableCount: number;
+  readonly redeemedCount: number;
+  readonly expiredCount: number;
+}
+
+export interface VoucherUploadPreviewItemDto {
+  readonly voucherCode: string;
+  readonly isValid: boolean;
+  readonly error: string | null;
+}
+
+export interface VoucherUploadPreviewDto {
+  readonly batchId: number;
+  readonly totalFound: number;
+  readonly validCount: number;
+  readonly duplicateInFileCount: number;
+  readonly duplicateInDbCount: number;
+  readonly preview: readonly VoucherUploadPreviewItemDto[];
+}
+
+export interface VoucherUploadResultDto {
+  readonly batchId: number;
+  readonly totalUploaded: number;
+  readonly availableStock: number;
+  readonly expiryDate: string | null;
+}
+
+export interface UploadVouchersResponseDto {
+  readonly preview: VoucherUploadPreviewDto | null;
+  readonly result: VoucherUploadResultDto | null;
+}
+
+export interface BatchDeleteVouchersResultDto {
+  readonly deletedCount: number;
+  readonly skippedCount: number;
+  readonly message: string;
+}
+
+export interface RewardAnalyticsFilter {
+  readonly dateFrom?: string | null;
+  readonly dateTo?: string | null;
+  readonly timelinePeriod?: 'Weekly' | 'Monthly';
+  readonly searchTerm?: string | null;
+  readonly pageNumber: number;
+  readonly pageSize: number;
+}
+
+export interface RedemptionTimelinePointDto {
+  readonly periodLabel: string;
+  readonly dateFrom: string;
+  readonly dateTo: string;
+  readonly redemptionCount: number;
+  readonly totalPointsSpent: number;
+}
+
+export interface RewardTransactionItemDto {
+  readonly id: number;
+  readonly employeeId: number;
+  readonly employeeName: string;
+  readonly employeeCode: string;
+  readonly departmentName: string;
+  readonly voucherCode: string;
+  readonly redeemedAt: string;
+  readonly time: string;
+  readonly pointsDeducted: number;
+}
+
+export interface RewardAnalyticsDto {
+  readonly timeline: readonly RedemptionTimelinePointDto[];
+  readonly transactions: readonly RewardTransactionItemDto[];
+  readonly totalCount: number;
+  readonly pageNumber: number;
+  readonly pageSize: number;
+  readonly totalPages: number;
 }
 
 export interface UploadBatchPreview {
   clientId: string;
-  batchId: string;
+  file: File;
   fileName: string;
-  codes: string[];
+  batchId: string;
+  totalFound: number;
+  validCount: number;
+  duplicateCount: number;
   selected: boolean;
+  error: string | null;
+}
+
+export function mapInventoryStatus(status: InventoryStatus | number | string): InventoryStatus {
+  if (status === 1 || status === 'Available') {
+    return 'Available';
+  }
+  if (status === 2 || status === 'Redeemed') {
+    return 'Redeemed';
+  }
+  return 'Expired';
+}
+
+export function mapInventoryItem(dto: RewardInventoryListDto): RewardInventoryItem {
+  return {
+    id: String(dto.id),
+    batchId: String(dto.batchId),
+    voucherCode: dto.voucherCode,
+    status: mapInventoryStatus(dto.status),
+    createdAt: dto.date,
+  };
+}
+
+export function mapInventoryPage(response: PaginatedVouchersResponseDto): RewardInventoryPage {
+  const vouchers = response.vouchers;
+  return {
+    items: (vouchers?.items ?? []).map(mapInventoryItem),
+    totalCount: vouchers?.totalCount ?? 0,
+    page: vouchers?.page ?? 1,
+    pageSize: vouchers?.pageSize ?? 10,
+    availableCount: response.availableCount,
+    redeemedCount: response.redeemedCount,
+    expiredCount: response.expiredCount,
+  };
 }

@@ -12,18 +12,19 @@
         type="text"
         [placeholder]="'REWARD_MANAGEMENT.INVENTORY_SEARCH' | translate"
         [ngModel]="search()"
-        (ngModelChange)="search.set($event)"
+        (ngModelChange)="onSearch($event)"
       />
     </div>
-    <select [ngModel]="statusFilter()" (ngModelChange)="statusFilter.set($event)">
+    <select [ngModel]="statusFilter()" (ngModelChange)="onStatusChange($event)">
       <option value="">{{ 'REWARD_MANAGEMENT.FILTER_STATUS' | translate }}</option>
       <option value="Available">{{ 'REWARD_MANAGEMENT.STATUS_AVAILABLE' | translate }}</option>
       <option value="Redeemed">{{ 'REWARD_MANAGEMENT.STATUS_REDEEMED' | translate }}</option>
+      <option value="Expired">{{ 'REWARD_MANAGEMENT.STATUS_EXPIRED' | translate }}</option>
     </select>
     <input
       type="date"
       [ngModel]="createdDate()"
-      (ngModelChange)="createdDate.set($event)"
+      (ngModelChange)="onDateChange($event)"
       [attr.aria-label]="'REWARD_MANAGEMENT.COL_CREATED' | translate"
     />
     <input id="inventory-file-input" type="file" hidden multiple accept=".csv,.xlsx,.xls" (change)="onFileSelected($event)" />
@@ -34,12 +35,17 @@
 
   <app-table
     [columns]="columns()"
-    [rows]="filteredRows()"
+    [rows]="rows()"
     [cellTemplates]="cellTemplates()"
     [emptyMessage]="'REWARD_MANAGEMENT.NO_CODES' | translate"
   />
 
   <div class="table-footer">
+    <app-pagination
+      [totalPages]="totalPages()"
+      [initialPage]="page()"
+      (pageChanged)="onPageChanged($event)"
+    />
     <button
       type="button"
       class="btn-delete-selected"
@@ -61,11 +67,12 @@
 </ng-template>
 
 <ng-template #statusTemplate let-row>
-  <span class="status-badge" [class.status-badge--available]="row.status === 'Available'">
-    {{
-      (row.status === 'Available' ? 'REWARD_MANAGEMENT.STATUS_AVAILABLE' : 'REWARD_MANAGEMENT.STATUS_REDEEMED')
-        | translate
-    }}
+  <span
+    class="status-badge"
+    [class.status-badge--available]="row.status === 'Available'"
+    [class.status-badge--expired]="row.status === 'Expired'"
+  >
+    {{ statusLabel(row.status) }}
   </span>
 </ng-template>
 
@@ -118,7 +125,7 @@
                 </td>
                 <td>{{ batch.batchId }}</td>
                 <td>{{ batch.fileName }}</td>
-                <td>{{ batch.codes.length }}</td>
+                <td>{{ batch.validCount }} / {{ batch.totalFound }}</td>
                 <td>
                   <button type="button" class="icon-del" (click)="removeBatch(batch.clientId)">✕</button>
                 </td>
@@ -151,6 +158,9 @@
       <div class="warn-modal">
         <div class="warn-icon">!</div>
         <h3>{{ 'REWARD_MANAGEMENT.DELETE_CODES_CONFIRM' | translate }}</h3>
+        @if (deleteError()) {
+          <p class="error-text">{{ deleteError() }}</p>
+        }
         <div class="modal-actions">
           <button type="button" class="btn-text" [disabled]="isDeleting()" (click)="closeDeleteConfirm()">
             {{ 'COMMON.CANCEL' | translate }}

@@ -909,6 +909,7 @@
     "FILTER_STATUS": "تصفية حسب الحالة",
     "STATUS_AVAILABLE": "متاح",
     "STATUS_REDEEMED": "مسترد",
+    "STATUS_EXPIRED": "منتهي",
     "UPLOAD_EXCEL": "رفع ملف Excel",
     "COL_BATCH": "رقم الدفعة",
     "COL_CREATED": "تاريخ الإنشاء",

@@ -238,4 +238,116 @@ describe('RewardService', () => {
       },
     });
   });
+
+  it('should GET inventory from /rewards/{id}/inventory', () => {
+    service
+      .getInventory(12, { page: 1, pageSize: 10, status: 'Available', voucherCode: 'AMZ' })
+      .subscribe((page) => {
+        expect(page.items[0].id).toBe('9');
+        expect(page.items[0].status).toBe('Available');
+        expect(page.availableCount).toBe(4);
+      });
+
+    const req = httpMock.expectOne((request) => request.url === `${REWARDS_URL}/12/inventory`);
+    expect(req.request.method).toBe('GET');
+    expect(req.request.params.get('page')).toBe('1');
+    expect(req.request.params.get('status')).toBe('Available');
+    expect(req.request.params.get('voucherCode')).toBe('AMZ');
+    req.flush({
+      vouchers: {
+        items: [{ id: 9, batchId: 1001, date: '2026-09-01T00:00:00Z', voucherCode: 'AMZ-1', status: 'Available' }],
+        totalCount: 1,
+        page: 1,
+        pageSize: 10,
+      },
+      availableCount: 4,
+      redeemedCount: 1,
+      expiredCount: 0,
+    });
+  });
+
+  it('should POST inventory upload preview and confirm', () => {
+    const file = new File(['code'], 'vouchers.csv', { type: 'text/csv' });
+
+    service.previewInventoryUpload(12, file).subscribe((response) => {
+      expect(response.preview?.validCount).toBe(2);
+    });
+    const previewReq = httpMock.expectOne(`${REWARDS_URL}/12/inventory/upload`);
+    expect(previewReq.request.method).toBe('POST');
+    const previewBody = previewReq.request.body as FormData;
+    expect(previewBody.get('confirm')).toBe('false');
+    previewReq.flush({
+      preview: {
+        batchId: 4401,
+        totalFound: 2,
+        validCount: 2,
+        duplicateInFileCount: 0,
+        duplicateInDbCount: 0,
+        preview: [],
+      },
+      result: null,
+    });
+
+    service.confirmInventoryUpload(12, file, '4401').subscribe((response) => {
+      expect(response.result?.totalUploaded).toBe(2);
+    });
+    const confirmReq = httpMock.expectOne(`${REWARDS_URL}/12/inventory/upload`);
+    const confirmBody = confirmReq.request.body as FormData;
+    expect(confirmBody.get('confirm')).toBe('true');
+    expect(confirmBody.get('batchId')).toBe('4401');
+    confirmReq.flush(
+      {
+        preview: null,
+        result: { batchId: 4401, totalUploaded: 2, availableStock: 2, expiryDate: null },
+      },
+      { status: 201, statusText: 'Created' },
+    );
+  });
+
+  it('should POST delete-batch voucher ids', () => {
+    service.deleteInventoryBatch(12, [9, 10]).subscribe((result) => {
+      expect(result.deletedCount).toBe(2);
+    });
+
+    const req = httpMock.expectOne(`${REWARDS_URL}/12/inventory/delete-batch`);
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual([9, 10]);
+    req.flush({ deletedCount: 2, skippedCount: 0, message: 'ok' });
+  });
+
+  it('should GET analytics with date and period query params', () => {
+    service
+      .getAnalytics(12, {
+        dateFrom: '2026-09-01T00:00:00.000Z',
+        dateTo: '2026-09-30T23:59:59.999Z',
+        timelinePeriod: 'Weekly',
+        pageNumber: 1,
+        pageSize: 10,
+      })
+      .subscribe((response) => {
+        expect(response.totalCount).toBe(3);
+        expect(response.timeline[0].redemptionCount).toBe(3);
+      });
+
+    const req = httpMock.expectOne((request) => request.url === `${REWARDS_URL}/12/analytics`);
+    expect(req.request.method).toBe('GET');
+    expect(req.request.params.get('timelinePeriod')).toBe('Weekly');
+    expect(req.request.params.get('pageNumber')).toBe('1');
+    req.flush({
+      timeline: [
+        {
+          periodLabel: '01 Sep 2026',
+          dateFrom: '2026-09-01T00:00:00Z',
+          dateTo: '2026-09-07T00:00:00Z',
+          redemptionCount: 3,
+          totalPointsSpent: 300,
+        },
+      ],
+      transactions: [],
+      totalCount: 3,
+      pageNumber: 1,
+      pageSize: 10,
+      totalPages: 1,
+    });
+  });
 });

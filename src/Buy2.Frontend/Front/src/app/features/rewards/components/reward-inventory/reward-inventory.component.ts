@@ -1,42 +1,56 @@
 import {
   AfterViewInit,
   Component,
+  OnDestroy,
+  OnInit,
   TemplateRef,
   ViewChild,
   computed,
   inject,
   signal,
 } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
-import { forkJoin } from 'rxjs';
+import { Subject, debounceTime, distinctUntilChanged, forkJoin, takeUntil } from 'rxjs';
 import {
   CellContext,
   ColumnDef,
   TableComponent,
 } from '@app/shared/components/table/table.component';
+import { Pagination } from '@app/shared/components/pagination/pagination';
 import { ModalComponent } from '@app/shared/components/modal/modal.component';
 import { ModalBodyComponent } from '@app/shared/components/modal/modal-body.component';
-import type { CreateInventoryDto, InventoryStatus, UploadBatchPreview } from '../../models/reward.models';
+import type {
+  InventoryStatus,
+  RewardInventoryItem,
+  UploadBatchPreview,
+  VoucherInventoryFilter,
+} from '../../models/reward.models';
 import { RewardDetailsContext } from '../../services/reward-details.context';
 import { RewardService } from '../../services/reward.service';
-import {
-  isAllowedInventoryFile,
-  nextBatchId,
-  parseSpreadsheetCodes,
-} from '../../utils/parse-inventory-file';
+import { isAllowedInventoryFile } from '../../utils/parse-inventory-file';
 
 @Component({
   selector: 'app-reward-inventory',
   standalone: true,
-  imports: [FormsModule, TranslatePipe, TableComponent, ModalComponent, ModalBodyComponent],
+  imports: [
+    FormsModule,
+    TranslatePipe,
+    TableComponent,
+    Pagination,
+    ModalComponent,
+    ModalBodyComponent,
+  ],
   templateUrl: './reward-inventory.component.html',
   styleUrl: './reward-inventory.component.css',
 })
-export class RewardInventoryComponent implements AfterViewInit {
+export class RewardInventoryComponent implements OnInit, AfterViewInit, OnDestroy {
   readonly ctx = inject(RewardDetailsContext);
   private readonly rewardService = inject(RewardService);
   private readonly translate = inject(TranslateService);
+  private readonly destroy$ = new Subject<void>();
+  private readonly search$ = new Subject<string>();
 
   @ViewChild('checkTemplate') checkTemplate!: TemplateRef<CellContext>;
   @ViewChild('statusTemplate') statusTemplate!: TemplateRef<CellContext>;
@@ -45,6 +59,11 @@ export class RewardInventoryComponent implements AfterViewInit {
   readonly search = signal('');
   readonly statusFilter = signal<InventoryStatus | ''>('');
   readonly createdDate = signal('');
+  readonly page = signal(1);
+  readonly pageSize = 10;
+  readonly rows = signal<RewardInventoryItem[]>([]);
+  readonly totalCount = signal(0);
+  readonly loading = signal(false);
   readonly selectedIds = signal<Set<string>>(new Set());
   readonly cellTemplates = signal<Map<string, TemplateRef<CellContext>>>(new Map());
 
@@ -56,6 +75,11 @@ export class RewardInventoryComponent implements AfterViewInit {
   readonly isUploading = signal(false);
   readonly isDeleting = signal(false);
   readonly uploadError = signal<string | null>(null);
+  readonly deleteError = signal<string | null>(null);
+
+  readonly totalPages = computed(() =>
+    Math.max(1, Math.ceil(this.totalCount() / this.pageSize)),
+  );
 
   readonly columns = computed<ColumnDef[]>(() => [
     { key: 'select', label: '', width: '48px', align: 'center', template: 'checkTemplate' },
@@ -73,29 +97,24 @@ export class RewardInventoryComponent implements AfterViewInit {
     },
   ]);
 
-  readonly filteredRows = computed(() => {
-    const search = this.search().trim().toLowerCase();
-    const status = this.statusFilter();
-    const date = this.createdDate();
-    return this.ctx.inventory().filter((item) => {
-      const matchesSearch =
-        !search ||
-        item.batchId.toLowerCase().includes(search) ||
-        item.voucherCode.toLowerCase().includes(search);
-      const matchesStatus = !status || item.status === status;
-      const matchesDate = !date || item.createdAt.slice(0, 10) === date;
-      return matchesSearch && matchesStatus && matchesDate;
-    });
-  });
-
   readonly allFilteredSelected = computed(() => {
-    const rows = this.filteredRows();
+    const rows = this.rows();
     if (!rows.length) {
       return false;
     }
     const selected = this.selectedIds();
     return rows.every((row) => selected.has(row.id));
   });
+
+  ngOnInit(): void {
+    this.search$
+      .pipe(debounceTime(300), distinctUntilChanged(), takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.page.set(1);
+        this.loadInventory();
+      });
+    this.loadInventory();
+  }
 
   ngAfterViewInit(): void {
     this.cellTemplates.set(
@@ -105,6 +124,33 @@ export class RewardInventoryComponent implements AfterViewInit {
         ['createdTemplate', this.createdTemplate],
       ]),
     );
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  onSearch(value: string): void {
+    this.search.set(value);
+    this.search$.next(value);
+  }
+
+  onStatusChange(value: InventoryStatus | ''): void {
+    this.statusFilter.set(value);
+    this.page.set(1);
+    this.loadInventory();
+  }
+
+  onDateChange(value: string): void {
+    this.createdDate.set(value);
+    this.page.set(1);
+    this.loadInventory();
+  }
+
+  onPageChanged(page: number): void {
+    this.page.set(page);
+    this.loadInventory();
   }
 
   toggleRow(id: string, checked: boolean): void {
@@ -122,18 +168,28 @@ export class RewardInventoryComponent implements AfterViewInit {
       this.selectedIds.set(new Set());
       return;
     }
-    this.selectedIds.set(new Set(this.filteredRows().map((row) => row.id)));
+    this.selectedIds.set(new Set(this.rows().map((row) => row.id)));
   }
 
   isSelected(id: string): boolean {
     return this.selectedIds().has(id);
   }
 
+  statusLabel(status: InventoryStatus): string {
+    if (status === 'Available') {
+      return this.translate.instant('REWARD_MANAGEMENT.STATUS_AVAILABLE');
+    }
+    if (status === 'Redeemed') {
+      return this.translate.instant('REWARD_MANAGEMENT.STATUS_REDEEMED');
+    }
+    return this.translate.instant('REWARD_MANAGEMENT.STATUS_EXPIRED');
+  }
+
   triggerFilePicker(): void {
     document.getElementById('inventory-file-input')?.click();
   }
 
-  async onFileSelected(event: Event): Promise<void> {
+  onFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
     const files = Array.from(input.files ?? []);
     input.value = '';
@@ -141,29 +197,12 @@ export class RewardInventoryComponent implements AfterViewInit {
       return;
     }
 
-    const invalid = files.some((file) => !isAllowedInventoryFile(file.name));
-    if (invalid) {
+    if (files.some((file) => !isAllowedInventoryFile(file.name))) {
       this.showTypeError.set(true);
       return;
     }
 
-    await this.addFiles(files);
-  }
-
-  async addFiles(files: File[]): Promise<void> {
-    const next = [...this.batches()];
-    for (const file of files) {
-      const codes = await parseSpreadsheetCodes(file);
-      next.push({
-        clientId: `${file.name}-${Date.now()}-${Math.random()}`,
-        batchId: nextBatchId(),
-        fileName: file.name.replace(/\.[^.]+$/, ''),
-        codes,
-        selected: true,
-      });
-    }
-    this.batches.set(next);
-    this.showUploadPreview.set(true);
+    this.previewFiles(files);
   }
 
   removeBatch(clientId: string): void {
@@ -195,39 +234,27 @@ export class RewardInventoryComponent implements AfterViewInit {
 
   submitUpload(): void {
     const rewardId = this.ctx.rewardId();
-    const selected = this.batches().filter((batch) => batch.selected && batch.codes.length);
+    const selected = this.batches().filter((batch) => batch.selected && !batch.error);
     if (!rewardId || !selected.length || this.isUploading()) {
       return;
     }
 
     this.isUploading.set(true);
     this.uploadError.set(null);
-    const now = new Date().toISOString();
-    const requests = selected.flatMap((batch) =>
-      batch.codes.map((code) => {
-        const dto: CreateInventoryDto = {
-          rewardItemId: rewardId,
-          batchId: batch.batchId,
-          fileName: batch.fileName,
-          voucherCode: code,
-          status: 'Available',
-          createdAt: now,
-          redeemedAt: null,
-          employeeId: null,
-        };
-        return this.rewardService.createInventory(dto);
-      }),
-    );
-
-    forkJoin(requests).subscribe({
+    forkJoin(
+      selected.map((batch) =>
+        this.rewardService.confirmInventoryUpload(rewardId, batch.file, batch.batchId),
+      ),
+    ).subscribe({
       next: () => {
         this.isUploading.set(false);
         this.closeUploadPreview();
-        this.ctx.reloadInventory();
+        this.loadInventory();
+        this.ctx.reloadProfile();
       },
-      error: () => {
+      error: (error: HttpErrorResponse) => {
         this.isUploading.set(false);
-        this.uploadError.set(this.translate.instant('REWARD_MANAGEMENT.UPLOAD_SAVE_ERROR'));
+        this.uploadError.set(apiMessage(error, this.translate.instant('REWARD_MANAGEMENT.UPLOAD_SAVE_ERROR')));
       },
     });
   }
@@ -236,6 +263,7 @@ export class RewardInventoryComponent implements AfterViewInit {
     if (!this.selectedIds().size) {
       return;
     }
+    this.deleteError.set(null);
     this.showDeleteConfirm.set(true);
   }
 
@@ -247,20 +275,30 @@ export class RewardInventoryComponent implements AfterViewInit {
   }
 
   confirmDelete(): void {
-    const ids = [...this.selectedIds()];
-    if (!ids.length || this.isDeleting()) {
+    const rewardId = this.ctx.rewardId();
+    const ids = [...this.selectedIds()].map((id) => Number(id)).filter((id) => Number.isFinite(id));
+    if (!rewardId || !ids.length || this.isDeleting()) {
       return;
     }
     this.isDeleting.set(true);
-    forkJoin(ids.map((id) => this.rewardService.deleteInventory(id))).subscribe({
-      next: () => {
+    this.deleteError.set(null);
+    this.rewardService.deleteInventoryBatch(rewardId, ids).subscribe({
+      next: (result) => {
         this.isDeleting.set(false);
-        this.showDeleteConfirm.set(false);
-        this.selectedIds.set(new Set());
-        this.showDeleteSuccess.set(true);
-        this.ctx.reloadInventory();
+        if (result.deletedCount > 0) {
+          this.showDeleteConfirm.set(false);
+          this.selectedIds.set(new Set());
+          this.loadInventory();
+          this.ctx.reloadProfile();
+          this.showDeleteSuccess.set(true);
+        } else {
+          this.deleteError.set(result.message);
+        }
       },
-      error: () => this.isDeleting.set(false),
+      error: (error: HttpErrorResponse) => {
+        this.isDeleting.set(false);
+        this.deleteError.set(apiMessage(error, this.translate.instant('REWARD_MANAGEMENT.UPLOAD_SAVE_ERROR')));
+      },
     });
   }
 
@@ -270,6 +308,9 @@ export class RewardInventoryComponent implements AfterViewInit {
 
   formatCreated(iso: string): string {
     const date = new Date(iso);
+    if (Number.isNaN(date.getTime())) {
+      return iso;
+    }
     const dd = String(date.getDate()).padStart(2, '0');
     const mm = String(date.getMonth() + 1).padStart(2, '0');
     const yyyy = date.getFullYear();
@@ -279,4 +320,78 @@ export class RewardInventoryComponent implements AfterViewInit {
     hours = hours % 12 || 12;
     return `${dd}-${mm}-${yyyy} ${String(hours).padStart(2, '0')}:${minutes} ${suffix}`;
   }
+
+  private loadInventory(): void {
+    const rewardId = this.ctx.rewardId();
+    if (!rewardId) {
+      return;
+    }
+    this.loading.set(true);
+    this.rewardService.getInventory(rewardId, this.currentFilter()).subscribe({
+      next: (page) => {
+        this.rows.set(page.items);
+        this.totalCount.set(page.totalCount);
+        this.loading.set(false);
+      },
+      error: () => this.loading.set(false),
+    });
+  }
+
+  private currentFilter(): VoucherInventoryFilter {
+    const search = this.search().trim();
+    const date = this.createdDate();
+    const numericBatch = /^\d+$/.test(search) ? Number(search) : null;
+    return {
+      page: this.page(),
+      pageSize: this.pageSize,
+      voucherCode: search || null,
+      batchId: numericBatch,
+      status: this.statusFilter() || null,
+      dateFrom: date ? `${date}T00:00:00.000Z` : null,
+      dateTo: date ? `${date}T23:59:59.999Z` : null,
+    };
+  }
+
+  private previewFiles(files: File[]): void {
+    const rewardId = this.ctx.rewardId();
+    if (!rewardId) {
+      return;
+    }
+    this.isUploading.set(true);
+    this.uploadError.set(null);
+    forkJoin(files.map((file) => this.rewardService.previewInventoryUpload(rewardId, file))).subscribe({
+      next: (responses) => {
+        const next = [...this.batches()];
+        responses.forEach((response, index) => {
+          const file = files[index];
+          const preview = response.preview;
+          next.push({
+            clientId: `${file.name}-${Date.now()}-${index}`,
+            file,
+            fileName: file.name.replace(/\.[^.]+$/, ''),
+            batchId: String(preview?.batchId ?? ''),
+            totalFound: preview?.totalFound ?? 0,
+            validCount: preview?.validCount ?? 0,
+            duplicateCount: (preview?.duplicateInFileCount ?? 0) + (preview?.duplicateInDbCount ?? 0),
+            selected: (preview?.validCount ?? 0) > 0,
+            error: preview ? null : this.translate.instant('REWARD_MANAGEMENT.UPLOAD_SAVE_ERROR'),
+          });
+        });
+        this.batches.set(next);
+        this.isUploading.set(false);
+        this.showUploadPreview.set(true);
+      },
+      error: (error: HttpErrorResponse) => {
+        this.isUploading.set(false);
+        this.showTypeError.set(false);
+        this.showUploadPreview.set(true);
+        this.uploadError.set(apiMessage(error, this.translate.instant('REWARD_MANAGEMENT.UPLOAD_SAVE_ERROR')));
+      },
+    });
+  }
+}
+
+function apiMessage(error: HttpErrorResponse, fallback: string): string {
+  const message = error.error?.message;
+  return typeof message === 'string' && message.trim() ? message : fallback;
 }

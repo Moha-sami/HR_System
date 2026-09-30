@@ -4,18 +4,21 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { environment } from '../../../../environments/environment';
 import {
+  mapInventoryPage,
   mapRewardProfileToItem,
-  type CreateInventoryDto,
-  type EmployeeName,
+  type BatchDeleteVouchersResultDto,
   type PaginatedRewards,
-  type RewardCategory,
-  type RewardInventoryItem,
+  type PaginatedVouchersResponseDto,
+  type RewardAnalyticsDto,
+  type RewardAnalyticsFilter,
+  type RewardInventoryPage,
   type RewardItem,
   type RewardListFilter,
   type RewardProfileDto,
   type RewardProfileResponseDto,
-  type RewardRedemption,
   type RewardWriteInput,
+  type UploadVouchersResponseDto,
+  type VoucherInventoryFilter,
 } from '../models/reward.models';
 
 const REWARDS_API = `${environment.baseUrl}/rewards`;
@@ -62,15 +65,70 @@ export function buildRewardFormData(input: RewardWriteInput): FormData {
   return formData;
 }
 
+export function buildInventoryParams(filter: VoucherInventoryFilter): HttpParams {
+  let params = new HttpParams()
+    .set('page', filter.page.toString())
+    .set('pageSize', filter.pageSize.toString());
+
+  if (filter.voucherCode?.trim()) {
+    params = params.set('voucherCode', filter.voucherCode.trim());
+  }
+  if (filter.batchId != null) {
+    params = params.set('batchId', String(filter.batchId));
+  }
+  if (filter.status && filter.status !== 'All') {
+    params = params.set('status', filter.status);
+  }
+  if (filter.dateFrom) {
+    params = params.set('dateFrom', filter.dateFrom);
+  }
+  if (filter.dateTo) {
+    params = params.set('dateTo', filter.dateTo);
+  }
+
+  return params;
+}
+
+export function buildAnalyticsParams(filter: RewardAnalyticsFilter): HttpParams {
+  let params = new HttpParams()
+    .set('pageNumber', filter.pageNumber.toString())
+    .set('pageSize', filter.pageSize.toString());
+
+  if (filter.dateFrom) {
+    params = params.set('dateFrom', filter.dateFrom);
+  }
+  if (filter.dateTo) {
+    params = params.set('dateTo', filter.dateTo);
+  }
+  if (filter.timelinePeriod) {
+    params = params.set('timelinePeriod', filter.timelinePeriod);
+  }
+  if (filter.searchTerm?.trim()) {
+    params = params.set('searchTerm', filter.searchTerm.trim());
+  }
+
+  return params;
+}
+
+export function buildVoucherUploadFormData(
+  file: File,
+  confirm: boolean,
+  batchId?: string | null,
+): FormData {
+  const formData = new FormData();
+  formData.append('file', file, file.name);
+  formData.append('confirm', String(confirm));
+  if (batchId) {
+    formData.append('batchId', batchId);
+  }
+  return formData;
+}
+
 @Injectable({
   providedIn: 'root',
 })
 export class RewardService {
   private readonly http = inject(HttpClient);
-  private readonly categoriesUrl = `${environment.jsonServerUrl}/rewardCategories`;
-  private readonly redemptionsUrl = `${environment.jsonServerUrl}/rewardRedemptions`;
-  private readonly inventoryUrl = `${environment.jsonServerUrl}/rewardInventory`;
-  private readonly employeesUrl = `${environment.jsonServerUrl}/employees`;
 
   getRewards(filter: RewardListFilter): Observable<PaginatedRewards> {
     return this.http.get<PaginatedRewards>(REWARDS_API, {
@@ -100,29 +158,54 @@ export class RewardService {
     return this.http.delete<void>(`${REWARDS_API}/${id}`);
   }
 
-  getCategories(): Observable<RewardCategory[]> {
-    return this.http.get<RewardCategory[]>(this.categoriesUrl);
+  getInventory(
+    rewardId: number | string,
+    filter: VoucherInventoryFilter,
+  ): Observable<RewardInventoryPage> {
+    return this.http
+      .get<PaginatedVouchersResponseDto>(`${REWARDS_API}/${rewardId}/inventory`, {
+        params: buildInventoryParams(filter),
+      })
+      .pipe(map(mapInventoryPage));
   }
 
-  getRedemptions(): Observable<RewardRedemption[]> {
-    return this.http.get<RewardRedemption[]>(this.redemptionsUrl);
-  }
-
-  getInventory(rewardItemId: string): Observable<RewardInventoryItem[]> {
-    return this.http.get<RewardInventoryItem[]>(this.inventoryUrl).pipe(
-      map((items) => items.filter((item) => String(item.rewardItemId) === String(rewardItemId))),
+  previewInventoryUpload(
+    rewardId: number | string,
+    file: File,
+  ): Observable<UploadVouchersResponseDto> {
+    return this.http.post<UploadVouchersResponseDto>(
+      `${REWARDS_API}/${rewardId}/inventory/upload`,
+      buildVoucherUploadFormData(file, false),
     );
   }
 
-  createInventory(dto: CreateInventoryDto): Observable<RewardInventoryItem> {
-    return this.http.post<RewardInventoryItem>(this.inventoryUrl, dto);
+  confirmInventoryUpload(
+    rewardId: number | string,
+    file: File,
+    batchId: string,
+  ): Observable<UploadVouchersResponseDto> {
+    return this.http.post<UploadVouchersResponseDto>(
+      `${REWARDS_API}/${rewardId}/inventory/upload`,
+      buildVoucherUploadFormData(file, true, batchId),
+    );
   }
 
-  deleteInventory(id: string): Observable<void> {
-    return this.http.delete<void>(`${this.inventoryUrl}/${id}`);
+  deleteInventoryBatch(
+    rewardId: number | string,
+    voucherIds: readonly number[],
+  ): Observable<BatchDeleteVouchersResultDto> {
+    return this.http.post<BatchDeleteVouchersResultDto>(
+      `${REWARDS_API}/${rewardId}/inventory/delete-batch`,
+      voucherIds,
+    );
   }
 
-  getEmployees(): Observable<EmployeeName[]> {
-    return this.http.get<EmployeeName[]>(this.employeesUrl);
+  getAnalytics(
+    rewardId: number | string,
+    filter: RewardAnalyticsFilter,
+  ): Observable<RewardAnalyticsDto> {
+    return this.http.get<RewardAnalyticsDto>(`${REWARDS_API}/${rewardId}/analytics`, {
+      params: buildAnalyticsParams(filter),
+    });
   }
 }

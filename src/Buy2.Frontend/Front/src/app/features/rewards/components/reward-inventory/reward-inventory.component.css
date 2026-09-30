@@ -47,8 +47,11 @@
 
 .table-footer {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
   margin-top: 12px;
+  flex-wrap: wrap;
 }
 
 .btn-delete-selected,
@@ -79,6 +82,11 @@
 .status-badge--available {
   background: #ecfdf3;
   color: #039855;
+}
+
+.status-badge--expired {
+  background: #fef3c7;
+  color: #b45309;
 }
 
 .warn-modal,
