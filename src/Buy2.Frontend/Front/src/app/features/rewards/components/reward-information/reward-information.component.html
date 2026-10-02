@@ -18,8 +18,8 @@
             <button type="button" (click)="selectPeriod('custom')">{{ 'REWARD_MANAGEMENT.PERIOD_CUSTOM' | translate }}</button>
             @if (period() === 'custom') {
               <div class="custom-range">
-                <input type="date" [ngModel]="customFrom()" (ngModelChange)="customFrom.set($event)" />
-                <input type="date" [ngModel]="customTo()" (ngModelChange)="customTo.set($event)" />
+                <input type="date" [ngModel]="customFrom()" (ngModelChange)="customFrom.set($event); onCustomRangeChange()" />
+                <input type="date" [ngModel]="customTo()" (ngModelChange)="customTo.set($event); onCustomRangeChange()" />
               </div>
             }
           </div>
@@ -27,7 +27,7 @@
       </div>
     </div>
     <div class="chart">
-      @for (bar of chartBars(); track bar.label) {
+      @for (bar of chartBars(); track $index) {
         <div class="chart-col">
           <div class="bar" [style.height.%]="(bar.value / maxBar()) * 100">
             @if (bar.value) {
@@ -48,6 +48,13 @@
       [cellTemplates]="cellTemplates()"
       [emptyMessage]="'REWARD_MANAGEMENT.NO_TRANSACTIONS' | translate"
     />
+    <div class="tx-pager">
+      <app-pagination
+        [totalPages]="totalPages()"
+        [initialPage]="page()"
+        (pageChanged)="onPageChanged($event)"
+      />
+    </div>
   </div>
 </section>
 

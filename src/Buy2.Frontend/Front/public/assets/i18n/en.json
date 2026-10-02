@@ -909,6 +909,7 @@
     "FILTER_STATUS": "Filter by Status",
     "STATUS_AVAILABLE": "Available",
     "STATUS_REDEEMED": "Redeemed",
+    "STATUS_EXPIRED": "Expired",
     "UPLOAD_EXCEL": "Upload Excel File",
     "COL_BATCH": "Batch-ID",
     "COL_CREATED": "Creation Date",

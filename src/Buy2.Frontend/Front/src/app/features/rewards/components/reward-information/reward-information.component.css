@@ -122,3 +122,9 @@
   color: #6b7280;
   white-space: nowrap;
 }
+
+.tx-pager {
+  display: flex;
+  justify-content: center;
+  margin-top: 16px;
+}

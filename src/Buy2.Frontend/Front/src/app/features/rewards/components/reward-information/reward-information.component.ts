@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, TemplateRef, ViewChild, computed, inject, signal } from '@angular/core';
+import { AfterViewInit, Component, OnInit, TemplateRef, ViewChild, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import {
@@ -6,7 +6,10 @@ import {
   ColumnDef,
   TableComponent,
 } from '@app/shared/components/table/table.component';
+import { Pagination } from '@app/shared/components/pagination/pagination';
+import type { RewardAnalyticsDto, RewardAnalyticsFilter } from '../../models/reward.models';
 import { RewardDetailsContext } from '../../services/reward-details.context';
+import { RewardService } from '../../services/reward.service';
 
 type PeriodKey = '7d' | '30d' | 'month' | 'year' | 'custom';
 
@@ -18,12 +21,13 @@ interface ChartBar {
 @Component({
   selector: 'app-reward-information',
   standalone: true,
-  imports: [FormsModule, TranslatePipe, TableComponent],
+  imports: [FormsModule, TranslatePipe, TableComponent, Pagination],
   templateUrl: './reward-information.component.html',
   styleUrl: './reward-information.component.css',
 })
-export class RewardInformationComponent implements AfterViewInit {
+export class RewardInformationComponent implements OnInit, AfterViewInit {
   readonly ctx = inject(RewardDetailsContext);
+  private readonly rewardService = inject(RewardService);
   private readonly translate = inject(TranslateService);
 
   @ViewChild('codeTemplate') codeTemplate!: TemplateRef<CellContext>;
@@ -32,6 +36,10 @@ export class RewardInformationComponent implements AfterViewInit {
   readonly customFrom = signal('');
   readonly customTo = signal('');
   readonly periodOpen = signal(false);
+  readonly page = signal(1);
+  readonly pageSize = 10;
+  readonly analytics = signal<RewardAnalyticsDto | null>(null);
+  readonly loading = signal(false);
   readonly cellTemplates = signal<Map<string, TemplateRef<CellContext>>>(new Map());
 
   readonly columns = computed<ColumnDef[]>(() => [
@@ -46,79 +54,32 @@ export class RewardInformationComponent implements AfterViewInit {
     },
   ]);
 
-  readonly range = computed(() => {
-    const now = new Date();
-    const end = endOfDay(now);
-    switch (this.period()) {
-      case '7d':
-        return { start: addDays(now, -6), end };
-      case '30d':
-        return { start: addDays(now, -29), end };
-      case 'month':
-        return { start: new Date(now.getFullYear(), now.getMonth(), 1), end };
-      case 'year':
-        return { start: new Date(now.getFullYear(), 0, 1), end };
-      case 'custom': {
-        const from = this.customFrom() ? new Date(this.customFrom()) : addDays(now, -29);
-        const to = this.customTo() ? endOfDay(new Date(this.customTo())) : end;
-        return { start: from, end: to };
-      }
-    }
-  });
+  readonly totalInRange = computed(() => this.analytics()?.totalCount ?? 0);
 
-  readonly redemptionDatesInRange = computed(() => {
-    const { start, end } = this.range();
-    const dates: Date[] = [];
-    for (const item of this.ctx.inventory()) {
-      if (item.status !== 'Redeemed') {
-        continue;
-      }
-      const date = new Date(item.redeemedAt || item.createdAt);
-      if (date >= start && date <= end) {
-        dates.push(date);
-      }
-    }
-    for (const item of this.ctx.redemptions()) {
-      const date = new Date(item.redeemedAt);
-      if (date >= start && date <= end) {
-        dates.push(date);
-      }
-    }
-    return dates;
-  });
+  readonly totalPages = computed(() => Math.max(1, this.analytics()?.totalPages ?? 1));
 
-  readonly totalInRange = computed(() => this.redemptionDatesInRange().length);
-
-  readonly chartBars = computed<ChartBar[]>(() => {
-    const dates = this.redemptionDatesInRange();
-    const { start, end } = this.range();
-    const buckets = buildBuckets(start, end);
-    for (const date of dates) {
-      const key = closestBucket(date, buckets);
-      if (key) {
-        const bucket = buckets.find((item) => item.key === key);
-        if (bucket) {
-          bucket.value += 1;
-        }
-      }
-    }
-    return buckets.map((item) => ({ label: item.label, value: item.value }));
-  });
+  readonly chartBars = computed<ChartBar[]>(() =>
+    (this.analytics()?.timeline ?? []).map((point) => ({
+      label: point.periodLabel,
+      value: point.redemptionCount,
+    })),
+  );
 
   readonly maxBar = computed(() => Math.max(1, ...this.chartBars().map((bar) => bar.value)));
 
   readonly transactionRows = computed(() =>
-    this.ctx.redemptions().map((item) => {
-      const date = new Date(item.redeemedAt);
-      return {
-        id: item.id,
-        employeeName: this.ctx.employeeName(item.employeeId),
-        date: formatDisplayDate(date),
-        time: formatDisplayTime(date),
-        voucherCode: item.voucherCode,
-      };
-    }),
+    (this.analytics()?.transactions ?? []).map((item) => ({
+      id: item.id,
+      employeeName: item.employeeName || item.employeeCode || '—',
+      date: formatDisplayDate(new Date(item.redeemedAt)),
+      time: formatDisplayTime(new Date(item.redeemedAt)),
+      voucherCode: item.voucherCode,
+    })),
   );
+
+  ngOnInit(): void {
+    this.loadAnalytics();
+  }
 
   ngAfterViewInit(): void {
     this.cellTemplates.set(new Map([['codeTemplate', this.codeTemplate]]));
@@ -138,8 +99,77 @@ export class RewardInformationComponent implements AfterViewInit {
 
   selectPeriod(key: PeriodKey): void {
     this.period.set(key);
+    this.page.set(1);
     if (key !== 'custom') {
       this.periodOpen.set(false);
+      this.loadAnalytics();
+    }
+  }
+
+  onCustomRangeChange(): void {
+    if (this.period() !== 'custom') {
+      return;
+    }
+    this.page.set(1);
+    this.loadAnalytics();
+  }
+
+  onPageChanged(page: number): void {
+    this.page.set(page);
+    this.loadAnalytics();
+  }
+
+  private loadAnalytics(): void {
+    const rewardId = this.ctx.rewardId();
+    if (!rewardId) {
+      return;
+    }
+    this.loading.set(true);
+    this.rewardService.getAnalytics(rewardId, this.currentFilter()).subscribe({
+      next: (analytics) => {
+        this.analytics.set(analytics);
+        this.loading.set(false);
+      },
+      error: () => this.loading.set(false),
+    });
+  }
+
+  private currentFilter(): RewardAnalyticsFilter {
+    const { start, end, timelinePeriod } = resolveRange(
+      this.period(),
+      this.customFrom(),
+      this.customTo(),
+    );
+    return {
+      dateFrom: start.toISOString(),
+      dateTo: end.toISOString(),
+      timelinePeriod,
+      pageNumber: this.page(),
+      pageSize: this.pageSize,
+    };
+  }
+}
+
+function resolveRange(
+  period: PeriodKey,
+  customFrom: string,
+  customTo: string,
+): { start: Date; end: Date; timelinePeriod: 'Weekly' | 'Monthly' } {
+  const now = new Date();
+  const end = endOfDay(now);
+  switch (period) {
+    case '7d':
+      return { start: addDays(now, -6), end, timelinePeriod: 'Weekly' };
+    case '30d':
+      return { start: addDays(now, -29), end, timelinePeriod: 'Weekly' };
+    case 'month':
+      return { start: new Date(now.getFullYear(), now.getMonth(), 1), end, timelinePeriod: 'Monthly' };
+    case 'year':
+      return { start: new Date(now.getFullYear(), 0, 1), end, timelinePeriod: 'Monthly' };
+    case 'custom': {
+      const from = customFrom ? new Date(customFrom) : addDays(now, -29);
+      const to = customTo ? endOfDay(new Date(customTo)) : end;
+      return { start: from, end: to, timelinePeriod: 'Monthly' };
     }
   }
 }
@@ -157,39 +187,10 @@ function endOfDay(date: Date): Date {
   return next;
 }
 
-function buildBuckets(start: Date, end: Date): { key: string; label: string; value: number }[] {
-  const spanDays = Math.max(1, Math.round((end.getTime() - start.getTime()) / 86400000));
-  const count = Math.min(6, Math.max(4, Math.ceil(spanDays / 7)));
-  const buckets: { key: string; label: string; value: number }[] = [];
-  for (let i = 0; i < count; i++) {
-    const t = start.getTime() + ((end.getTime() - start.getTime()) * i) / Math.max(count - 1, 1);
-    const d = new Date(t);
-    buckets.push({
-      key: d.toISOString().slice(0, 10),
-      label: d.toLocaleDateString(undefined, { day: 'numeric', month: 'short' }),
-      value: 0,
-    });
-  }
-  return buckets;
-}
-
-function closestBucket(date: Date, buckets: { key: string }[]): string | null {
-  if (!buckets.length) {
-    return null;
-  }
-  let best = buckets[0].key;
-  let bestDiff = Infinity;
-  for (const bucket of buckets) {
-    const diff = Math.abs(new Date(bucket.key).getTime() - date.getTime());
-    if (diff < bestDiff) {
-      bestDiff = diff;
-      best = bucket.key;
-    }
-  }
-  return best;
-}
-
 function formatDisplayDate(date: Date): string {
+  if (Number.isNaN(date.getTime())) {
+    return '—';
+  }
   const dd = String(date.getDate()).padStart(2, '0');
   const mm = String(date.getMonth() + 1).padStart(2, '0');
   const yy = String(date.getFullYear()).slice(-2);
@@ -197,6 +198,9 @@ function formatDisplayDate(date: Date): string {
 }
 
 function formatDisplayTime(date: Date): string {
+  if (Number.isNaN(date.getTime())) {
+    return '—';
+  }
   let hours = date.getHours();
   const minutes = String(date.getMinutes()).padStart(2, '0');
   const suffix = hours >= 12 ? 'PM' : 'AM';
