@@ -94,4 +94,108 @@ describe('ShiftManagementService', () => {
       qualifications: ['Cashier Training'],
     });
   });
+
+  it('should fetch the daily schedule with query params and normalize it', () => {
+    service.getDailySchedule(3, '2026-10-02').subscribe((res) => {
+      expect(res.siteName).toBe('Cairo HQ');
+      expect(res.totalCost).toBe(450);
+      expect(res.week[0].status).toBe('CoveredAndPublished');
+      expect(res.blocks.length).toBe(1);
+      expect(res.blocks[0].startMin).toBe(540);
+      expect(res.blocks[0].endMin).toBe(720);
+    });
+
+    const req = httpMock.expectOne((r) => r.url.endsWith('/shifts/daily'));
+    expect(req.request.method).toBe('GET');
+    expect(req.request.params.get('siteId')).toBe('3');
+    expect(req.request.params.get('date')).toBe('2026-10-02');
+    req.flush({
+      siteId: 3,
+      siteName: 'Cairo HQ',
+      date: '2026-10-02',
+      isDayOff: false,
+      totalEstimatedLaborCost: 450,
+      weekCalendarStrip: [
+        { date: '2026-10-02', dayOfWeek: 5, status: 0, isSelected: true, isDayOff: false },
+      ],
+      hourlyTimeline: [
+        {
+          startHour: '09:00:00',
+          endHour: '10:00:00',
+          blocks: [
+            {
+              shiftId: 11,
+              siteId: 3,
+              jobRoleId: 10,
+              roleTitle: 'Cashier',
+              startTime: '2026-10-02T09:00:00+03:00',
+              endTime: '2026-10-02T12:00:00+03:00',
+              isPublished: false,
+              employeeId: null,
+              employeeName: null,
+              employeeAvatarUrl: null,
+              statusColorCode: '#22c55e',
+            },
+            {
+              shiftId: 12,
+              siteId: 3,
+              jobRoleId: 10,
+              roleTitle: 'Broken',
+              startTime: 'not-a-time',
+              endTime: '2026-10-02T12:00:00+03:00',
+              isPublished: false,
+              employeeId: null,
+              employeeName: null,
+              employeeAvatarUrl: null,
+              statusColorCode: null,
+            },
+          ],
+        },
+      ],
+    });
+  });
+
+  it('should POST a new shift block', () => {
+    service
+      .createShiftBlock({
+        siteId: 3,
+        date: '2026-10-02',
+        startTime: '09:00:00',
+        endTime: '12:00:00',
+        jobRoleId: 10,
+        dispatchPolicy: 0,
+      })
+      .subscribe((res) => expect(res.shiftId).toBe(11));
+
+    const req = httpMock.expectOne((r) => r.url.endsWith('/shifts/blocks'));
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body.jobRoleId).toBe(10);
+    req.flush({ shiftId: 11 });
+  });
+
+  it('should POST an assignment with override flags', () => {
+    service
+      .assignBlock(11, { employeeId: 100, confirmOverride: true, overrideReason: 'OK' })
+      .subscribe((res) => {
+        expect(res.hasConflicts).toBe(false);
+        expect(res.updatedCost).toBe(500);
+      });
+
+    const req = httpMock.expectOne((r) => r.url.endsWith('/shifts/blocks/11/assign'));
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({ employeeId: 100, confirmOverride: true, overrideReason: 'OK' });
+    req.flush({ success: true, hasConflicts: false, warnings: [], wasOverridden: true, updatedCost: 500 });
+  });
+
+  it('should DELETE an assignment with action params', () => {
+    service.removeBlock(11, 'DeleteBlock', true).subscribe((res) => {
+      expect(res.isDeleted).toBe(true);
+    });
+
+    const req = httpMock.expectOne((r) => r.url.endsWith('/shifts/blocks/11/assign'));
+    expect(req.request.method).toBe('DELETE');
+    expect(req.request.params.get('action')).toBe('DeleteBlock');
+    expect(req.request.params.get('confirmPublishedDeletion')).toBe('true');
+    req.flush({ shiftBlockId: 11, actionTaken: 1, isDeleted: true, updatedCost: 0, siteCoverageStatus: 3 });
+  });
 });

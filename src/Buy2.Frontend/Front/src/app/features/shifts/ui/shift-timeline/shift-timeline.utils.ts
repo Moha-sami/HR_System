@@ -6,6 +6,10 @@ export interface TimelineBlock {
   label: string;
   assigned: boolean;
   assigneeName?: string | null;
+  /** Backend status color (e.g. StatusColorCode); rendered as a dot. */
+  statusColor?: string | null;
+  /** Locked (e.g. published) bars hide all action affordances and reject drops. */
+  locked?: boolean;
 }
 
 export interface LanePlacement {

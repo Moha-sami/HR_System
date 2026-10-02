@@ -97,7 +97,8 @@
       "NO_RANGE": "Set a valid shift time range to see the timeline.",
       "EDIT_BLOCK": "Edit block",
       "ASSIGN_BLOCK": "Assign employee",
-      "DELETE_BLOCK": "Delete block"
+      "DELETE_BLOCK": "Delete block",
+      "LOCKED": "Locked (published)"
     },
     "STRIP": {
       "TITLE": "Employees",
@@ -139,6 +140,35 @@
       "HOURLY_RATE": "Hourly Rate",
       "CAREER_HOURS": "Hours completed so far since Join date",
       "QUALIFICATIONS": "Employee Qualifications"
+    },
+    "BOARD": {
+      "BACK": "Back to sites",
+      "COST": "Day cost",
+      "TEMPLATE_PICKER": "Shift templates",
+      "WEEK_PREV": "Previous week",
+      "WEEK_NEXT": "Next week",
+      "WEEK_TODAY": "Today",
+      "DAY_OFF": "Day off. Blocks cannot be posted or changed for this date.",
+      "ROLE_REQUIRED": "Select a job role.",
+      "TIME_INVALID": "Enter a valid start and end time.",
+      "POST_ERROR": "Failed to post the block.",
+      "LOAD_ERROR": "Failed to load the day schedule.",
+      "EMPTY_DAY": "No blocks for this day yet. Post the first block above.",
+      "PENDING_ASSIGN_HINT": "Pick an employee card to assign them to the selected block.",
+      "ASSIGN_ERROR": "Failed to assign the employee.",
+      "REMOVE_ERROR": "Failed to update the block.",
+      "CONFLICT_TITLE": "Assignment needs confirmation",
+      "OVERRIDE_REASON": "Reason (optional)",
+      "ASSIGN_ANYWAY": "Assign anyway",
+      "REMOVE_TITLE": "Update block",
+      "REMOVE_MESSAGE": "Unassign the employee or delete the block entirely?",
+      "UNASSIGN": "Unassign",
+      "CONFIRM_PUBLISHED": "I understand this deletes a published block.",
+      "WEEK_COVERED": "Covered",
+      "WEEK_MISSING": "Missing resources",
+      "WEEK_OVERTIME": "Overtime risk",
+      "WEEK_EMPTY": "No allocations",
+      "WEEK_DAY_OFF": "Day off"
     }
   },
   "AUTH": {

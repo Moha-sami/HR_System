@@ -114,4 +114,42 @@ describe('ShiftTimelineComponent', () => {
     await setup([], 540, 1020);
     expect(fixture.nativeElement.textContent).toContain('SHIFT_TEMPLATES.TIMELINE.EMPTY');
   });
+
+  it('should lock published bars: lock icon, status dot, no action buttons', async () => {
+    await setup(
+      [
+        {
+          id: 1,
+          start: 540,
+          end: 840,
+          label: 'Cashier',
+          assigned: true,
+          assigneeName: 'Sara',
+          statusColor: '#22c55e',
+          locked: true,
+        },
+      ],
+      540,
+      1020,
+    );
+    const bar = barEls()[0];
+    expect(bar.querySelector('[aria-label="SHIFT_TEMPLATES.TIMELINE.LOCKED"]')).not.toBeNull();
+    expect(bar.querySelector('[aria-label="SHIFT_TEMPLATES.TIMELINE.DELETE_BLOCK"]')).toBeNull();
+    expect(bar.querySelector('[aria-label="SHIFT_TEMPLATES.TIMELINE.ASSIGN_BLOCK"]')).toBeNull();
+    const dot = bar.querySelector('span[style*="background"]') as HTMLElement;
+    expect(dot?.style.background).toContain('rgb(34, 197, 94)');
+  });
+
+  it('should hide the edit button when hideEdit is set', async () => {
+    await setup(BLOCKS, 540, 1020);
+    fixture.componentRef.setInput('hideEdit', true);
+    fixture.detectChanges();
+
+    expect(
+      fixture.nativeElement.querySelector('[aria-label="SHIFT_TEMPLATES.TIMELINE.EDIT_BLOCK"]'),
+    ).toBeNull();
+    expect(
+      fixture.nativeElement.querySelector('[aria-label="SHIFT_TEMPLATES.TIMELINE.DELETE_BLOCK"]'),
+    ).not.toBeNull();
+  });
 });

@@ -100,6 +100,18 @@ describe('EmployeeStripComponent', () => {
     expect(text).toContain('SHIFT_TEMPLATES.STRIP.NO_SITES');
   });
 
+  it('should emit the clicked card for host preview or picker assign', async () => {
+    await setup([1]);
+    flushStrip([SARA, OMAR], 2);
+
+    const clicked: ShiftCandidateEmployee[] = [];
+    component.cardClick.subscribe((emp) => clicked.push(emp));
+    const card = fixture.nativeElement.querySelector('[role="button"]') as HTMLElement;
+    card.click();
+
+    expect(clicked).toEqual([SARA]);
+  });
+
   it('should load the next page when scrolled near the end', async () => {
     await setup([1]);
     flushStrip([SARA], 2);

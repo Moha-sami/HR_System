@@ -23,14 +23,14 @@ import { CandidatePreviewComponent } from '../candidate-preview/candidate-previe
 const STATUS_TINT: Record<string, string> = {
   Covered: 'bg-success-50',
   Shortage: 'bg-warning-50',
-  OvertimeRisk: 'bg-error-50',
+  OvertimeRisk: 'bg-purple-100',
   UnqualifiedAssignment: 'bg-error-50',
 };
 
 const STATUS_DOT: Record<string, string> = {
   Covered: 'bg-success-500',
   Shortage: 'bg-warning-500',
-  OvertimeRisk: 'bg-error-500',
+  OvertimeRisk: 'bg-purple-500',
   UnqualifiedAssignment: 'bg-error-500',
 };
 

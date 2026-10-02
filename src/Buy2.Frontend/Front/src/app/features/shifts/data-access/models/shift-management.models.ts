@@ -41,6 +41,122 @@ export interface SiteSmartSettingsUpdate {
   isSmartPostingEnabled: boolean;
 }
 
+/** Shift Management board (ticket B). Backend: GET /api/v1/shifts/daily and block endpoints. */
+
+export type WeekDayStatus =
+  | 'CoveredAndPublished'
+  | 'MissingResourcesOrUnpublished'
+  | 'OvertimeOrMisallocation'
+  | 'NoAllocations'
+  | 'DimmedDayOff';
+
+/** Raw calendar day; Status may arrive numeric (no string-enum converter). */
+export interface CalendarDayDto {
+  date: string;
+  dayOfWeek: number;
+  status: WeekDayStatus | number;
+  isSelected: boolean;
+  isDayOff: boolean;
+}
+
+export interface CalendarDay extends Omit<CalendarDayDto, 'status'> {
+  status: WeekDayStatus;
+}
+
+export interface DailyShiftBlockDto {
+  shiftId: number;
+  siteId: number;
+  jobRoleId: number;
+  roleTitle: string;
+  startTime: string;
+  endTime: string;
+  isPublished: boolean;
+  employeeId: number | null;
+  employeeName: string | null;
+  employeeAvatarUrl: string | null;
+  statusColorCode: string | null;
+}
+
+export interface TimelineIntervalDto {
+  startHour: string;
+  endHour: string;
+  blocks: DailyShiftBlockDto[];
+}
+
+export interface DailyScheduleDto {
+  siteId: number;
+  siteName: string;
+  date: string;
+  isDayOff: boolean;
+  totalEstimatedLaborCost: number;
+  weekCalendarStrip: CalendarDayDto[];
+  hourlyTimeline: TimelineIntervalDto[];
+}
+
+/** Board-ready block: times resolved to minutes since midnight. */
+export interface BoardBlock {
+  shiftId: number;
+  jobRoleId: number;
+  roleTitle: string;
+  startMin: number;
+  endMin: number;
+  isPublished: boolean;
+  employeeId: number | null;
+  employeeName: string | null;
+  statusColor: string | null;
+}
+
+export interface DailySchedule {
+  siteId: number;
+  siteName: string;
+  date: string;
+  isDayOff: boolean;
+  totalCost: number;
+  week: CalendarDay[];
+  blocks: BoardBlock[];
+}
+
+/** POST /api/v1/shifts/blocks body (DateOnly/TimeOnly as strings). */
+export interface CreateShiftBlockRequest {
+  siteId: number;
+  date: string;
+  startTime: string;
+  endTime: string;
+  jobRoleId: number;
+  dispatchPolicy: number;
+}
+
+/** POST /api/v1/shifts/blocks/{id}/assign body. */
+export interface AssignBlockRequest {
+  employeeId: number;
+  confirmOverride?: boolean;
+  overrideReason?: string | null;
+}
+
+export interface ConflictWarning {
+  conflictType: string | number;
+  message: string;
+  details?: string | null;
+}
+
+export interface AssignBlockResult {
+  success: boolean;
+  hasConflicts: boolean;
+  warnings: ConflictWarning[];
+  wasOverridden: boolean;
+  updatedCost: number;
+}
+
+export type BlockRemovalAction = 'UnassignOnly' | 'DeleteBlock';
+
+export interface RemoveBlockResult {
+  shiftBlockId: number;
+  actionTaken: string | number;
+  isDeleted: boolean;
+  updatedCost: number;
+  siteCoverageStatus: string | number;
+}
+
 /** GET /api/v1/shifts/candidates/{id}/preview (ShiftCandidatePreviewDto, camelCase). */
 export interface ShiftCandidatePreview {
   id: number;
