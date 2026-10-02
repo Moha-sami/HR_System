@@ -26,8 +26,8 @@
         <label class="form-label">{{ 'REQUESTS.TYPES.CATEGORY' | translate }}</label>
         <select class="form-control" formControlName="category" [class.is-invalid]="requestForm.get('category')?.invalid && requestForm.get('category')?.touched">
           <option value="" disabled selected>Select</option>
-          <option value="Leaves">Leaves</option>
-          <option value="Loans">Loans</option>
+          <option value="Leave">Leaves</option>
+          <option value="Loan">Loans</option>
           <option value="Other">Other</option>
         </select>
       </div>
@@ -42,7 +42,7 @@
         <textarea class="form-control" rows="4" formControlName="hint" placeholder="Write body here...."></textarea>
       </div>
 
-      <div class="form-group" *ngIf="requestForm.get('category')?.value === 'Leaves' || isEditMode">
+      <div class="form-group" *ngIf="requestForm.get('category')?.value === 'Leave' || isEditMode">
         <label class="form-label">{{ 'REQUESTS.TYPES.LEAVE_TYPE' | translate }}</label>
         <div class="radio-group">
           <label class="radio-label">
@@ -58,16 +58,16 @@
         </div>
       </div>
 
-      <div class="form-group" *ngIf="requestForm.get('category')?.value === 'Leaves' || isEditMode">
+      <div class="form-group" *ngIf="requestForm.get('category')?.value === 'Leave' || isEditMode">
         <label class="form-label">{{ 'REQUESTS.TYPES.LEAVE_PAY' | translate }}</label>
         <div class="radio-group">
           <label class="radio-label">
-            <input type="radio" formControlName="leaveType" value="Paid">
+            <input type="radio" formControlName="leavePay" value="Paid">
             <span class="radio-custom"></span>
             Paid
           </label>
           <label class="radio-label">
-            <input type="radio" formControlName="leaveType" value="Unpaid">
+            <input type="radio" formControlName="leavePay" value="Unpaid">
             <span class="radio-custom"></span>
             Unpaid
           </label>

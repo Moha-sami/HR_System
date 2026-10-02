@@ -1,4 +1,4 @@
-import { Component, inject, type OnInit } from '@angular/core';
+import { Component, inject, type OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute, RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
@@ -18,6 +18,7 @@ export class RequestTypeFormComponent implements OnInit {
   private requestTypeService = inject(RequestTypeService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
+  private cdr = inject(ChangeDetectorRef);
 
   requestForm!: FormGroup;
   isEditMode = false;
@@ -64,12 +65,18 @@ export class RequestTypeFormComponent implements OnInit {
       return;
     }
 
-    const formData = this.requestForm.value;
+    const formData = { ...this.requestForm.value };
+
+    if (formData.category !== 'Leave') {
+      formData.leaveType = null;
+      formData.leavePay = null;
+    }
 
     if (this.isEditMode && this.requestId) {
       this.requestTypeService.updateRequestType(this.requestId, formData).subscribe({
         next: () => {
-          this.router.navigate(['/requests/types']);
+          this.showSuccessModal = true;
+          this.cdr.detectChanges();
         },
         error: (err) => console.error('Error updating request type', err)
       });
@@ -77,6 +84,7 @@ export class RequestTypeFormComponent implements OnInit {
       this.requestTypeService.createRequestType(formData).subscribe({
         next: () => {
           this.showSuccessModal = true;
+          this.cdr.detectChanges();
         },
         error: (err) => console.error('Error creating request type', err)
       });
