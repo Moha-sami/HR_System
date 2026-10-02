@@ -1,4 +1,5 @@
 import { type ComponentFixture, TestBed } from '@angular/core/testing';
+import { vi } from 'vitest';
 import { PointsRewardsTabComponent } from './points-rewards-tab.component';
 import { EmployeeDetailService } from '../../../../services/employee-detail.service';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
@@ -28,13 +29,13 @@ describe('PointsRewardsTabComponent', () => {
     pointsTransactions: ReturnType<typeof signal<PaginatedEmployeePointsTransactions | null>>;
     pointsTransactionsLoading: ReturnType<typeof signal<boolean>>;
     pointsTransactionsError: ReturnType<typeof signal<string | null>>;
-    loadEmployeePointsSummary: jasmine.Spy;
-    loadEmployeePointsTransactions: jasmine.Spy;
-    clearEmployeePoints: jasmine.Spy;
+    loadEmployeePointsSummary: ReturnType<typeof vi.fn>;
+    loadEmployeePointsTransactions: ReturnType<typeof vi.fn>;
+    clearEmployeePoints: ReturnType<typeof vi.fn>;
   };
 
   let mockTranslateService: {
-    instant: jasmine.Spy;
+    instant: ReturnType<typeof vi.fn>;
   };
 
   let mockLanguageService: {
@@ -96,13 +97,13 @@ describe('PointsRewardsTabComponent', () => {
       pointsTransactions: signal(mockTransactionsResponse),
       pointsTransactionsLoading: signal(false),
       pointsTransactionsError: signal(null),
-      loadEmployeePointsSummary: jasmine.createSpy('loadEmployeePointsSummary'),
-      loadEmployeePointsTransactions: jasmine.createSpy('loadEmployeePointsTransactions'),
-      clearEmployeePoints: jasmine.createSpy('clearEmployeePoints'),
+      loadEmployeePointsSummary: vi.fn(),
+      loadEmployeePointsTransactions: vi.fn(),
+      clearEmployeePoints: vi.fn(),
     };
 
     mockTranslateService = {
-      instant: jasmine.createSpy('instant').and.callFake((key: string) => key),
+      instant: vi.fn((key: string) => key),
     };
 
     mockLanguageService = {
@@ -170,7 +171,7 @@ describe('PointsRewardsTabComponent', () => {
     expect(component.currentPage()).toBe(1);
     expect(mockEmployeeDetailService.loadEmployeePointsTransactions).toHaveBeenCalledWith(
       42,
-      jasmine.objectContaining({
+      expect.objectContaining({
         page: 1,
         pageSize: 10,
         type: 'Earned',
@@ -183,7 +184,7 @@ describe('PointsRewardsTabComponent', () => {
     expect(component.currentPage()).toBe(2);
     expect(mockEmployeeDetailService.loadEmployeePointsTransactions).toHaveBeenCalledWith(
       42,
-      jasmine.objectContaining({
+      expect.objectContaining({
         page: 2,
         pageSize: 10,
       }),
@@ -212,7 +213,7 @@ describe('PointsRewardsTabComponent', () => {
 
     expect(mockEmployeeDetailService.loadEmployeePointsTransactions).toHaveBeenCalledWith(
       42,
-      jasmine.objectContaining({
+      expect.objectContaining({
         triggeredBy: 'Supervisor Admin',
       }),
     );
