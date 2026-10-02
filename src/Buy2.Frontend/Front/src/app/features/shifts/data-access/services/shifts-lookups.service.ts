@@ -10,6 +10,7 @@ import type {
   ShiftsEmployeesPage,
   ShiftsJobRoleLookup,
   ShiftsJobsPage,
+  ShiftsRegionLookup,
   ShiftsSiteEmployee,
   ShiftsSiteLookup,
 } from '../models/shifts-lookups.models';
@@ -26,6 +27,11 @@ export class ShiftsLookupsService {
 
   getSites(): Observable<ShiftsSiteLookup[]> {
     return this.http.get<ShiftsSiteLookup[]>(`${API_BASE}/sites`);
+  }
+
+  /** Regions for the overview region filter (GET /sites/regions). */
+  getRegions(): Observable<ShiftsRegionLookup[]> {
+    return this.http.get<ShiftsRegionLookup[]>(`${API_BASE}/sites/regions`);
   }
 
   /** Job roles come from the paginated GET /jobs endpoint (no /job-roles route exists). */

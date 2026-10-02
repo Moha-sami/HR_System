@@ -82,7 +82,7 @@ export class Layout implements OnInit {
       route: '/scheduling',
       hasArrow: true,
       children: [
-        { labelKey: 'LAYOUT.NAV.SHIFT_MANAGEMENT', route: '/scheduling/shift-management', disabled: true },
+        { labelKey: 'LAYOUT.NAV.SHIFT_MANAGEMENT', route: '/scheduling/shift-management' },
         { labelKey: 'LAYOUT.NAV.EMPLOYEE_ASSIGNMENT', route: '/scheduling/employee-assignment', disabled: true },
         { labelKey: 'LAYOUT.NAV.SHIFT_MARKET', route: '/scheduling/shift-market', disabled: true },
         { labelKey: 'LAYOUT.NAV.SHIFT_TEMPLATES', route: '/scheduling/shift-templates' },

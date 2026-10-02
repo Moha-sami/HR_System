@@ -2,6 +2,7 @@ import type { Routes } from '@angular/router';
 import { ShiftsPlaceholderComponent } from './shifts-placeholder/shifts-placeholder.component';
 import { ShiftTemplateListComponent } from './shift-templates/shift-template-list/shift-template-list.component';
 import { ShiftTemplateEditorComponent } from './shift-templates/shift-template-editor/shift-template-editor.component';
+import { ShiftOverviewComponent } from './shift-management/shift-overview/shift-overview.component';
 
 export const SHIFTS_ROUTES: Routes = [
   { path: '', redirectTo: 'shift-templates', pathMatch: 'full' },
@@ -22,6 +23,11 @@ export const SHIFTS_ROUTES: Routes = [
   },
   {
     path: 'shift-management',
+    component: ShiftOverviewComponent,
+    data: { titleKey: 'LAYOUT.NAV.SHIFT_MANAGEMENT' },
+  },
+  {
+    path: 'shift-management/:siteId',
     component: ShiftsPlaceholderComponent,
     data: { titleKey: 'LAYOUT.NAV.SHIFT_MANAGEMENT' },
   },

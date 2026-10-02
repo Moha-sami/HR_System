@@ -114,6 +114,33 @@
       "RISK_NORMAL": "طبيعي"
     }
   },
+  "SHIFT_MANAGEMENT": {
+    "OVERVIEW": {
+      "TITLE": "إدارة الورديات",
+      "SEARCH_PLACEHOLDER": "ابحث عن المواقع...",
+      "ALL_REGIONS": "كل المناطق",
+      "SHIFTS_COUNT": "عدد الورديات",
+      "SMART_ASSIGNMENT": "التعيين الذكي",
+      "SMART_POSTING": "النشر الذكي",
+      "EXPORT": "تصدير",
+      "LOAD_ERROR": "فشل تحميل المواقع.",
+      "EMPTY": "لا توجد مواقع.",
+      "SMART_ERROR": "فشل تحديث الإعدادات الذكية."
+    },
+    "STATUS": {
+      "COVERED": "مغطاة",
+      "SHORTAGE": "نقص",
+      "OVERTIME_RISK": "خطر العمل الإضافي",
+      "UNQUALIFIED": "تعيين غير مؤهل"
+    },
+    "PREVIEW": {
+      "LOAD_ERROR": "فشل تحميل بيانات الموظف.",
+      "JOINED": "تاريخ الانضمام",
+      "HOURLY_RATE": "الأجر بالساعة",
+      "CAREER_HOURS": "الساعات المنجزة منذ الانضمام",
+      "QUALIFICATIONS": "مؤهلات الموظف"
+    }
+  },
   "AUTH": {
     "LOGIN": {
       "TITLE": "مرحباً بعودتك",

@@ -5,6 +5,11 @@ export interface ShiftsSiteLookup {
   siteName: string;
 }
 
+export interface ShiftsRegionLookup {
+  id: number;
+  name: string;
+}
+
 export interface ShiftsJobRoleLookup {
   id: number;
   title: string;

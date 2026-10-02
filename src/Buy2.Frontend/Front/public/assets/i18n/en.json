@@ -114,6 +114,33 @@
       "RISK_NORMAL": "Normal"
     }
   },
+  "SHIFT_MANAGEMENT": {
+    "OVERVIEW": {
+      "TITLE": "Shift Management",
+      "SEARCH_PLACEHOLDER": "Search sites...",
+      "ALL_REGIONS": "All regions",
+      "SHIFTS_COUNT": "Number of Shifts",
+      "SMART_ASSIGNMENT": "Smart Assignment",
+      "SMART_POSTING": "Smart Posting",
+      "EXPORT": "Export",
+      "LOAD_ERROR": "Failed to load sites.",
+      "EMPTY": "No sites found.",
+      "SMART_ERROR": "Failed to update smart settings."
+    },
+    "STATUS": {
+      "COVERED": "Covered",
+      "SHORTAGE": "Shortage",
+      "OVERTIME_RISK": "OT Risk",
+      "UNQUALIFIED": "Unqualified Assignment"
+    },
+    "PREVIEW": {
+      "LOAD_ERROR": "Failed to load employee preview.",
+      "JOINED": "Joined Date",
+      "HOURLY_RATE": "Hourly Rate",
+      "CAREER_HOURS": "Hours completed so far since Join date",
+      "QUALIFICATIONS": "Employee Qualifications"
+    }
+  },
   "AUTH": {
     "LOGIN": {
       "TITLE": "Welcome Back",

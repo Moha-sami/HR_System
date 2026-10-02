@@ -15,7 +15,7 @@ class MockTranslatePipe implements PipeTransform {
 
 /**
  * Ticket #325: Scheduling sidebar group — expandable, auto-expanding on
- * scheduling routes, three disabled coming-soon children, one live entry.
+ * scheduling routes, two disabled coming-soon children, two live entries.
  */
 describe('Layout scheduling group', () => {
   let fixture: ComponentFixture<Layout>;
@@ -104,7 +104,9 @@ describe('Layout scheduling group', () => {
   it('should toggle the group on parent click', async () => {
     await setup('/employees');
 
-    const toggle = fixture.nativeElement.querySelector('.nav-group-toggle') as HTMLElement;
+    const toggle = Array.from(
+      fixture.nativeElement.querySelectorAll('.nav-group-toggle'),
+    ).find((el) => (el as HTMLElement).textContent?.includes('LAYOUT.NAV.SCHEDULING')) as HTMLElement;
     toggle.click();
     fixture.detectChanges();
     expect(component.isGroupExpanded('/scheduling')).toBe(true);
@@ -120,12 +122,14 @@ describe('Layout scheduling group', () => {
     const disabled = Array.from(
       fixture.nativeElement.querySelectorAll('.nav-group-children .nav-child.is-disabled'),
     ).map((el) => (el as HTMLElement).getAttribute('aria-disabled'));
-    expect(disabled).toEqual(['true', 'true', 'true']);
+    expect(disabled).toEqual(['true', 'true']);
 
-    const live = fixture.nativeElement.querySelector(
-      '.nav-group-children .nav-child:not(.is-disabled) .nav-child-label',
-    ) as HTMLElement;
-    expect(live.textContent?.trim()).toBe('LAYOUT.NAV.SHIFT_TEMPLATES');
+    const live = Array.from(
+      fixture.nativeElement.querySelectorAll(
+        '.nav-group-children .nav-child:not(.is-disabled) .nav-child-label',
+      ),
+    ).map((el) => (el as HTMLElement).textContent?.trim());
+    expect(live).toEqual(['LAYOUT.NAV.SHIFT_MANAGEMENT', 'LAYOUT.NAV.SHIFT_TEMPLATES']);
   });
 
   it('should navigate natively on live children and keep disabled children inert', async () => {
@@ -139,7 +143,7 @@ describe('Layout scheduling group', () => {
     const disabled = Array.from(
       fixture.nativeElement.querySelectorAll('.nav-group-children .nav-child.is-disabled'),
     ) as HTMLElement[];
-    expect(disabled.length).toBe(3);
+    expect(disabled.length).toBe(2);
     for (const el of disabled) {
       expect(el.tagName).toBe('SPAN');
     }
