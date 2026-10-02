@@ -1,10 +1,14 @@
 export interface RequestType {
-  id: string;
+  id: number;
   category: string;
   name: string;
   hint: string;
-  leaveType?: 'Full' | 'Partial' | null;
-  leavePay?: 'Paid' | 'Unpaid' | null;
+  leaveType?: 'Full' | 'Partial' | string | null;
+  leavePay?: 'Paid' | 'Unpaid' | string | null;
   createdAt?: string;
   addedBy?: string;
+  requiresDates?: boolean;
+  requiresReason?: boolean;
+  isActive?: boolean;
+  isUtilized?: boolean;
 }

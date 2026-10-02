@@ -1,4 +1,4 @@
-import { Component, inject, type OnInit } from '@angular/core';
+import { Component, inject, type OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, Router } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
@@ -16,6 +16,7 @@ import type { RequestType } from '../../models/request-type.model';
 export class RequestTypesListComponent implements OnInit {
   private requestTypeService = inject(RequestTypeService);
   private router = inject(Router);
+  private cdr = inject(ChangeDetectorRef);
 
   requestTypes: RequestType[] = [];
   filteredTypes: RequestType[] = [];
@@ -24,7 +25,7 @@ export class RequestTypesListComponent implements OnInit {
   // Delete Modals State
   showDeleteConfirmModal = false;
   showDeleteSuccessModal = false;
-  requestToDeleteId: string | null = null;
+  requestToDeleteId: string | number | null = null;
 
   // Pagination
   currentPage = 1;
@@ -40,6 +41,7 @@ export class RequestTypesListComponent implements OnInit {
       next: (data) => {
         this.requestTypes = data;
         this.applyFilter();
+        this.cdr.detectChanges();
       },
       error: (err) => console.error('Error loading request types', err)
     });
@@ -57,7 +59,7 @@ export class RequestTypesListComponent implements OnInit {
     this.currentPage = 1;
   }
 
-  deleteRequestType(id: string): void {
+  deleteRequestType(id: string | number): void {
     this.requestToDeleteId = id;
     this.showDeleteConfirmModal = true;
   }
@@ -100,7 +102,7 @@ export class RequestTypesListComponent implements OnInit {
     }
   }
 
-  editRequestType(id: string): void {
+  editRequestType(id: string | number): void {
     this.router.navigate(['/requests/types/edit', id]);
   }
 }
