@@ -190,6 +190,15 @@
       "CONFIRM": "Save template",
       "SAVE_ERROR": "Failed to save the template.",
       "SUCCESS": "Template saved"
+    },
+    "PUBLISH": {
+      "BUTTON": "Publish",
+      "TITLE": "Publish day",
+      "UNQUALIFIED": "Unqualified assignments",
+      "OVERTIME": "Overtime violations",
+      "JUSTIFICATION_PLACEHOLDER": "Overtime justification (optional)",
+      "CONFIRM": "Confirm publish",
+      "PUBLISH_ERROR": "Failed to publish the day."
     }
   },
   "AUTH": {

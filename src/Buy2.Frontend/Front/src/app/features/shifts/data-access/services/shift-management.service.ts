@@ -15,6 +15,10 @@ import type {
   DailySchedule,
   DailyScheduleDto,
   DailyShiftBlockDto,
+  PublishCommitRequest,
+  PublishCommitResult,
+  PublishPreflightRequest,
+  PublishPreflightResult,
   RemoveBlockResult,
   SaveAsTemplateResult,
   ShiftCandidatePreview,
@@ -118,6 +122,16 @@ export class ShiftManagementService {
       `${API_BASE}/sites/${siteId}/dates/${date}/save-as-template`,
       { name },
     );
+  }
+
+  /** Ticket #420: POST /api/v1/shifts/publish/preflight. */
+  publishPreflight(req: PublishPreflightRequest): Observable<PublishPreflightResult> {
+    return this.http.post<PublishPreflightResult>(`${API_BASE}/shifts/publish/preflight`, req);
+  }
+
+  /** Ticket #420: POST /api/v1/shifts/publish/commit. */
+  publishCommit(req: PublishCommitRequest): Observable<PublishCommitResult> {
+    return this.http.post<PublishCommitResult>(`${API_BASE}/shifts/publish/commit`, req);
   }
 }
 

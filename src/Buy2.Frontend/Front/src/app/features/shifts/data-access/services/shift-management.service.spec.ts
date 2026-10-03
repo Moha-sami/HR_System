@@ -245,4 +245,92 @@ describe('ShiftManagementService', () => {
     expect(req.request.body).toEqual({ name: null });
     req.flush({ id: 8, name: 'Cairo HQ 2026-10-02', totalBlockCount: 2 });
   });
+
+  it('should POST publish preflight with site and target dates', () => {
+    service.publishPreflight({ siteId: 3, targetDates: ['2026-10-02'] }).subscribe((res) => {
+      expect(res.hasExceptions).toBe(true);
+      expect(res.unqualifiedCount).toBe(1);
+      expect(res.overtimeCount).toBe(1);
+    });
+
+    const req = httpMock.expectOne((r) => r.url.endsWith('/shifts/publish/preflight'));
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({ siteId: 3, targetDates: ['2026-10-02'] });
+    req.flush({
+      siteId: 3,
+      totalUnpublishedShiftsScanned: 2,
+      totalDatesScanned: 1,
+      scannedDates: ['2026-10-02'],
+      unqualifiedAssignees: [
+        {
+          shiftId: 11,
+          employeeId: 100,
+          employeeName: 'Sara',
+          requiredRoleId: 10,
+          requiredRoleTitle: 'Cashier',
+          employeeRoleId: 12,
+          employeeRoleTitle: 'Cleaner',
+          date: '2026-10-02',
+          start: '09:00:00',
+          end: '13:00:00',
+          formattedTime: '09:00 AM - 01:00 PM',
+        },
+      ],
+      overtimeViolations: [
+        {
+          shiftId: 12,
+          employeeId: 101,
+          employeeName: 'Omar',
+          requiredRoleId: 10,
+          requiredRoleTitle: 'Cashier',
+          employeeRoleId: 10,
+          employeeRoleTitle: 'Cashier',
+          date: '2026-10-02',
+          start: '13:00:00',
+          end: '21:00:00',
+          formattedTime: '01:00 PM - 09:00 PM',
+          shiftHours: 8,
+          totalWeeklyHours: 44,
+          projectedOvertimeHours: 4,
+          violationReason: 'Exceeds 40h weekly limit',
+        },
+      ],
+      unqualifiedCount: 1,
+      overtimeCount: 1,
+      hasExceptions: true,
+      canPublishImmediately: false,
+    });
+  });
+
+  it('should POST publish commit with resolutions and justification', () => {
+    service
+      .publishCommit({
+        siteId: 3,
+        targetDates: ['2026-10-02'],
+        exceptionResolutions: { 11: 1, 12: 2 },
+        overtimeJustification: 'Holiday cover',
+      })
+      .subscribe((res) => {
+        expect(res.success).toBe(true);
+        expect(res.publishedImmediatelyCount).toBe(1);
+        expect(res.skippedCount).toBe(1);
+      });
+
+    const req = httpMock.expectOne((r) => r.url.endsWith('/shifts/publish/commit'));
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({
+      siteId: 3,
+      targetDates: ['2026-10-02'],
+      exceptionResolutions: { 11: 1, 12: 2 },
+      overtimeJustification: 'Holiday cover',
+    });
+    req.flush({
+      success: true,
+      publishedImmediatelyCount: 1,
+      pendingHrApprovalCount: 0,
+      skippedCount: 1,
+      ids: [11],
+      message: 'Published 1 shift, skipped 1.',
+    });
+  });
 });

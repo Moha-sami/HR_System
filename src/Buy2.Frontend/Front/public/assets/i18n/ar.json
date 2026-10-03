@@ -190,6 +190,15 @@
       "CONFIRM": "حفظ القالب",
       "SAVE_ERROR": "فشل حفظ القالب.",
       "SUCCESS": "تم حفظ القالب"
+    },
+    "PUBLISH": {
+      "BUTTON": "نشر",
+      "TITLE": "نشر اليوم",
+      "UNQUALIFIED": "تعيينات غير مؤهلة",
+      "OVERTIME": "مخالفات العمل الإضافي",
+      "JUSTIFICATION_PLACEHOLDER": "مبرر العمل الإضافي (اختياري)",
+      "CONFIRM": "تأكيد النشر",
+      "PUBLISH_ERROR": "فشل نشر اليوم."
     }
   },
   "AUTH": {

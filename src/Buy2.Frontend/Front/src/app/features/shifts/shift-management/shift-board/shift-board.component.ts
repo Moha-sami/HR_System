@@ -19,6 +19,9 @@ import type {
   BoardBlock,
   ConflictWarning,
   DailySchedule,
+  PublishCommitResult,
+  PublishPreflightResult,
+  PublishResolution,
 } from '../../data-access/models/shift-management.models';
 import type { ShiftCandidateEmployee } from '../../data-access/models/shifts-lookups.models';
 import {
@@ -116,6 +119,13 @@ export class ShiftBoardComponent implements OnInit, OnDestroy {
   readonly saveError = signal<string | null>(null);
   readonly saving = signal(false);
   readonly savedTemplateName = signal<string | null>(null);
+
+  readonly showPublishModal = signal(false);
+  readonly preflight = signal<PublishPreflightResult | null>(null);
+  readonly justification = signal('');
+  readonly publishError = signal<string | null>(null);
+  readonly publishing = signal(false);
+  readonly publishSuccess = signal<PublishCommitResult | null>(null);
 
   readonly conflict = signal<{
     shiftId: number;
@@ -264,6 +274,75 @@ export class ShiftBoardComponent implements OnInit, OnDestroy {
         error: (err: { error?: { message?: string } }) => {
           this.saving.set(false);
           this.saveError.set(err?.error?.message ?? 'SHIFT_MANAGEMENT.SAVE.SAVE_ERROR');
+        },
+      });
+  }
+
+  openPublish(): void {
+    this.publishError.set(null);
+    this.publishSuccess.set(null);
+    this.preflight.set(null);
+    this.publishing.set(true);
+    this.managementService
+      .publishPreflight({ siteId: this.siteId(), targetDates: [this.selectedDate()] })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res) => {
+          this.publishing.set(false);
+          if (!res.hasExceptions) {
+            this.commitPublish(res, {});
+            return;
+          }
+          this.preflight.set(res);
+          this.justification.set('');
+          this.showPublishModal.set(true);
+        },
+        error: (err: { error?: { message?: string } }) => {
+          this.publishing.set(false);
+          this.publishError.set(err?.error?.message ?? 'SHIFT_MANAGEMENT.PUBLISH.PUBLISH_ERROR');
+        },
+      });
+  }
+
+  closePublishModal(): void {
+    this.showPublishModal.set(false);
+  }
+
+  confirmPublish(): void {
+    const pre = this.preflight();
+    if (pre === null) return;
+    const resolutions: Record<number, PublishResolution> = {};
+    for (const v of [...pre.unqualifiedAssignees, ...pre.overtimeViolations]) {
+      resolutions[v.shiftId] = 1;
+    }
+    this.commitPublish(pre, resolutions);
+  }
+
+  private commitPublish(
+    pre: PublishPreflightResult,
+    resolutions: Record<number, PublishResolution>,
+  ): void {
+    const just = this.justification().trim();
+    this.publishError.set(null);
+    this.publishing.set(true);
+    this.managementService
+      .publishCommit({
+        siteId: pre.siteId,
+        targetDates: [...pre.scannedDates],
+        ...(Object.keys(resolutions).length > 0 ? { exceptionResolutions: resolutions } : {}),
+        ...(just ? { overtimeJustification: just } : {}),
+      })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res) => {
+          this.publishing.set(false);
+          this.publishSuccess.set(res);
+          this.showPublishModal.set(true);
+          this.loadDay();
+        },
+        error: (err: { error?: { message?: string } }) => {
+          this.publishing.set(false);
+          this.publishError.set(err?.error?.message ?? 'SHIFT_MANAGEMENT.PUBLISH.PUBLISH_ERROR');
         },
       });
   }

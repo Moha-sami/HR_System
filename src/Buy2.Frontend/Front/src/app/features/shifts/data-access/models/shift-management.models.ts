@@ -204,3 +204,73 @@ export interface ShiftCandidatePreview {
   careerCompletedHours: number;
   qualifications: string[];
 }
+
+/** Ticket #420: POST /api/v1/shifts/publish/preflight + /commit. */
+export interface PublishPreflightRequest {
+  siteId: number;
+  targetDates?: string[];
+  allUnpublishedDays?: boolean;
+  targetRoleIds?: number[];
+}
+
+export interface UnqualifiedAssignee {
+  shiftId: number;
+  employeeId: number;
+  employeeName: string;
+  requiredRoleId: number;
+  requiredRoleTitle: string;
+  employeeRoleId: number;
+  employeeRoleTitle: string;
+  date: string;
+  start: string;
+  end: string;
+  formattedTime: string;
+}
+
+export interface OvertimeViolation {
+  shiftId: number;
+  employeeId: number;
+  employeeName: string;
+  requiredRoleId: number;
+  requiredRoleTitle: string;
+  employeeRoleId: number;
+  employeeRoleTitle: string;
+  date: string;
+  start: string;
+  end: string;
+  formattedTime: string;
+  shiftHours: number;
+  totalWeeklyHours: number;
+  projectedOvertimeHours: number;
+  violationReason: string;
+}
+
+export interface PublishPreflightResult {
+  siteId: number;
+  totalUnpublishedShiftsScanned: number;
+  totalDatesScanned: number;
+  scannedDates: string[];
+  unqualifiedAssignees: UnqualifiedAssignee[];
+  overtimeViolations: OvertimeViolation[];
+  unqualifiedCount: number;
+  overtimeCount: number;
+  hasExceptions: boolean;
+  canPublishImmediately: boolean;
+}
+
+/** 1 = Publish, 2 = Skip (backend PublishConflictResolution enum). */
+export type PublishResolution = 1 | 2;
+
+export interface PublishCommitRequest extends PublishPreflightRequest {
+  exceptionResolutions?: Record<number, PublishResolution>;
+  overtimeJustification?: string;
+}
+
+export interface PublishCommitResult {
+  success: boolean;
+  publishedImmediatelyCount: number;
+  pendingHrApprovalCount: number;
+  skippedCount: number;
+  ids: number[];
+  message: string;
+}

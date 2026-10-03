@@ -162,6 +162,53 @@ describe('ShiftBoardComponent', () => {
     fixture.detectChanges();
   }
 
+  function dirtyPreflight(): Record<string, unknown> {
+    return {
+      siteId: 3,
+      totalUnpublishedShiftsScanned: 2,
+      totalDatesScanned: 1,
+      scannedDates: ['2026-10-02'],
+      unqualifiedAssignees: [
+        {
+          shiftId: 11,
+          employeeId: 100,
+          employeeName: 'Sara',
+          requiredRoleId: 10,
+          requiredRoleTitle: 'Cashier',
+          employeeRoleId: 12,
+          employeeRoleTitle: 'Cleaner',
+          date: '2026-10-02',
+          start: '09:00:00',
+          end: '13:00:00',
+          formattedTime: '09:00 AM - 01:00 PM',
+        },
+      ],
+      overtimeViolations: [
+        {
+          shiftId: 12,
+          employeeId: 101,
+          employeeName: 'Omar',
+          requiredRoleId: 10,
+          requiredRoleTitle: 'Cashier',
+          employeeRoleId: 10,
+          employeeRoleTitle: 'Cashier',
+          date: '2026-10-02',
+          start: '13:00:00',
+          end: '21:00:00',
+          formattedTime: '01:00 PM - 09:00 PM',
+          shiftHours: 8,
+          totalWeeklyHours: 44,
+          projectedOvertimeHours: 4,
+          violationReason: 'Exceeds 40h weekly limit',
+        },
+      ],
+      unqualifiedCount: 1,
+      overtimeCount: 1,
+      hasExceptions: true,
+      canPublishImmediately: false,
+    };
+  }
+
   afterEach(() => httpMock.verify());
 
   it('should load the day schedule with site id and date on init', async () => {
@@ -428,6 +475,92 @@ describe('ShiftBoardComponent', () => {
     expect(component.saveError()).toBe('Day has no blocks.');
     expect(component.showSaveModal()).toBe(true);
     expect(component.schedule()?.blocks.length).toBe(1);
+    httpMock.expectNone((r) => r.url.endsWith('/shifts/daily'));
+  });
+
+  it('should open the exception modal on dirty preflight and commit on confirm', async () => {
+    await setup();
+    flushRoles();
+    flushDay();
+
+    component.openPublish();
+
+    const pre = httpMock.expectOne((r) => r.url.endsWith('/shifts/publish/preflight'));
+    expect(pre.request.method).toBe('POST');
+    expect(pre.request.body).toEqual({ siteId: 3, targetDates: [component.selectedDate()] });
+    pre.flush(dirtyPreflight());
+    fixture.detectChanges();
+
+    expect(component.showPublishModal()).toBe(true);
+    expect(component.preflight()?.unqualifiedCount).toBe(1);
+
+    component.justification.set('Holiday cover');
+    component.confirmPublish();
+
+    const commit = httpMock.expectOne((r) => r.url.endsWith('/shifts/publish/commit'));
+    expect(commit.request.body).toEqual({
+      siteId: 3,
+      targetDates: ['2026-10-02'],
+      exceptionResolutions: { 11: 1, 12: 1 },
+      overtimeJustification: 'Holiday cover',
+    });
+    commit.flush({
+      success: true,
+      publishedImmediatelyCount: 1,
+      pendingHrApprovalCount: 0,
+      skippedCount: 1,
+      ids: [11],
+      message: 'Published 1 shift, skipped 1.',
+    });
+    flushDay();
+
+    expect(component.publishSuccess()?.publishedImmediatelyCount).toBe(1);
+  });
+
+  it('should commit directly with success feedback on clean preflight', async () => {
+    await setup();
+    flushRoles();
+    flushDay();
+
+    component.openPublish();
+
+    const pre = httpMock.expectOne((r) => r.url.endsWith('/shifts/publish/preflight'));
+    pre.flush({ ...dirtyPreflight(), unqualifiedAssignees: [], overtimeViolations: [], unqualifiedCount: 0, overtimeCount: 0, hasExceptions: false, canPublishImmediately: true, totalUnpublishedShiftsScanned: 1 });
+
+    const commit = httpMock.expectOne((r) => r.url.endsWith('/shifts/publish/commit'));
+    expect(commit.request.body).toEqual({ siteId: 3, targetDates: ['2026-10-02'] });
+    commit.flush({
+      success: true,
+      publishedImmediatelyCount: 1,
+      pendingHrApprovalCount: 0,
+      skippedCount: 0,
+      ids: [11],
+      message: 'Published 1 shift.',
+    });
+    flushDay();
+
+    expect(component.showPublishModal()).toBe(true);
+    expect(component.publishSuccess()?.message).toBe('Published 1 shift.');
+  });
+
+  it('should leave the board untouched on publish cancel', async () => {
+    await setup();
+    flushRoles();
+    flushDay();
+
+    component.openPublish();
+
+    const pre = httpMock.expectOne((r) => r.url.endsWith('/shifts/publish/preflight'));
+    pre.flush(dirtyPreflight());
+    fixture.detectChanges();
+    expect(component.showPublishModal()).toBe(true);
+
+    component.closePublishModal();
+
+    expect(component.showPublishModal()).toBe(false);
+    expect(component.publishSuccess()).toBeNull();
+    expect(component.schedule()?.blocks.length).toBe(1);
+    httpMock.expectNone((r) => r.url.endsWith('/shifts/publish/commit'));
     httpMock.expectNone((r) => r.url.endsWith('/shifts/daily'));
   });
 });

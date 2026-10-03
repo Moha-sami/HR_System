@@ -32,8 +32,20 @@
       >
         {{ 'SHIFT_MANAGEMENT.SAVE.BUTTON' | translate }}
       </app-button>
+      <app-button
+        variant="primary"
+        [loading]="publishing()"
+        [disabled]="publishing()"
+        (clicked)="openPublish()"
+      >
+        {{ 'SHIFT_MANAGEMENT.PUBLISH.BUTTON' | translate }}
+      </app-button>
     </div>
   </div>
+
+  @if (publishError() && !showPublishModal()) {
+    <p role="alert" class="mb-4 text-sm text-error-600">{{ publishError() }}</p>
+  }
 
   <!-- ── Loading / load error ────────────────────────────────── -->
   @if (loading()) {
@@ -332,6 +344,73 @@
 }
 
 <!-- ── Save day as template ──────────────────────────────── -->
+@if (showPublishModal()) {
+  <app-modal
+    size="small"
+    [showHeader]="false"
+    [showActions]="false"
+    (closed)="closePublishModal()"
+  >
+    <app-modal-body>
+      <div class="flex flex-col gap-3 p-2">
+        <h3 class="text-lg font-semibold text-neutral-900">{{ 'SHIFT_MANAGEMENT.PUBLISH.TITLE' | translate }}</h3>
+        @if (publishSuccess() === null) {
+          @if ((preflight()?.unqualifiedAssignees?.length ?? 0) > 0) {
+            <h4 class="text-sm font-medium text-neutral-700">{{ 'SHIFT_MANAGEMENT.PUBLISH.UNQUALIFIED' | translate }}</h4>
+            <ul class="flex flex-col gap-1">
+              @for (v of preflight()?.unqualifiedAssignees ?? []; track v.shiftId) {
+                <li class="text-sm text-neutral-600">
+                  {{ v.employeeName }} · {{ v.requiredRoleTitle }} ({{ v.employeeRoleTitle }}) · {{ v.formattedTime }}
+                </li>
+              }
+            </ul>
+          }
+          @if ((preflight()?.overtimeViolations?.length ?? 0) > 0) {
+            <h4 class="text-sm font-medium text-neutral-700">{{ 'SHIFT_MANAGEMENT.PUBLISH.OVERTIME' | translate }}</h4>
+            <ul class="flex flex-col gap-1">
+              @for (v of preflight()?.overtimeViolations ?? []; track v.shiftId) {
+                <li class="text-sm text-neutral-600">
+                  {{ v.employeeName }} · {{ v.violationReason }} · {{ v.formattedTime }}
+                </li>
+              }
+            </ul>
+          }
+          <input
+            type="text"
+            class="w-full rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2 text-sm outline-none focus:border-primary-500"
+            [placeholder]="'SHIFT_MANAGEMENT.PUBLISH.JUSTIFICATION_PLACEHOLDER' | translate"
+            [ngModel]="justification()"
+            (ngModelChange)="justification.set($event)"
+          />
+          @if (publishError()) {
+            <p role="alert" class="text-sm text-error-600">{{ publishError() }}</p>
+          }
+          <div class="mt-1 flex items-center justify-end gap-3">
+            <app-button variant="secondary" (clicked)="closePublishModal()">
+              {{ 'COMMON.CANCEL' | translate }}
+            </app-button>
+            <app-button
+              variant="primary"
+              [loading]="publishing()"
+              [disabled]="publishing()"
+              (clicked)="confirmPublish()"
+            >
+              {{ 'SHIFT_MANAGEMENT.PUBLISH.CONFIRM' | translate }}
+            </app-button>
+          </div>
+        } @else {
+          <p class="text-sm text-neutral-600">{{ publishSuccess()?.message }}</p>
+          <div class="mt-1 flex items-center justify-end gap-3">
+            <app-button variant="primary" (clicked)="closePublishModal()">
+              {{ 'COMMON.OK' | translate }}
+            </app-button>
+          </div>
+        }
+      </div>
+    </app-modal-body>
+  </app-modal>
+}
+
 @if (showSaveModal()) {
   <app-modal
     size="small"
