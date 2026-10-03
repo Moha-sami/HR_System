@@ -274,3 +274,61 @@ export interface PublishCommitResult {
   ids: number[];
   message: string;
 }
+
+/** Ticket #422: POST /api/v1/shifts/copy/preflight + /commit. DayOfWeek as 0 (Sunday)..6. */
+export interface CopyPreflightRequest {
+  siteId: number;
+  sourceDate: string;
+  targetDates?: string[];
+  recurringDays?: number[];
+  weekCount?: number;
+}
+
+export interface ShiftConflictSummary {
+  shiftId: number;
+  shiftName: string;
+  startTime: string;
+  endTime: string;
+  jobRoleTitle: string | null;
+  employeeName: string | null;
+}
+
+export interface ConflictingDate {
+  date: string;
+  shiftCount: number;
+  shiftNames: string[];
+  existingShifts: ShiftConflictSummary[];
+}
+
+export interface CopyPreflightResult {
+  siteId: number;
+  sourceDate: string;
+  totalTargetDates: number;
+  conflictFreeDates: string[];
+  conflictingDates: ConflictingDate[];
+  hasConflicts: boolean;
+}
+
+/** 1 = Replace, 2 = KeepExisting (backend CopyConflictResolution). Keys are ISO dates. */
+export type CopyDateResolution = 1 | 2;
+
+export interface CopyCommitRequest {
+  siteId: number;
+  sourceDate: string;
+  targetDates?: string[];
+  dateResolutions?: Record<string, CopyDateResolution>;
+  bulkReplaceAll?: boolean;
+  copyAssignments?: boolean;
+}
+
+export interface CopyCommitResult {
+  success: boolean;
+  totalDatesProcessed: number;
+  copiedDatesCount: number;
+  skippedDatesCount: number;
+  totalShiftsCreated: number;
+  totalShiftsReplaced: number;
+  copiedDates: string[];
+  skippedDates: string[];
+  message: string;
+}

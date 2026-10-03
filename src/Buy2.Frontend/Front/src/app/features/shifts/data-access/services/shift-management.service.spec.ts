@@ -333,4 +333,74 @@ describe('ShiftManagementService', () => {
       message: 'Published 1 shift, skipped 1.',
     });
   });
+
+  it('should POST copy preflight with source and targets', () => {
+    service
+      .copyPreflight({ siteId: 3, sourceDate: '2026-10-02', targetDates: ['2026-10-03'] })
+      .subscribe((res) => {
+        expect(res.hasConflicts).toBe(true);
+        expect(res.conflictingDates.length).toBe(1);
+      });
+
+    const req = httpMock.expectOne((r) => r.url.endsWith('/shifts/copy/preflight'));
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({
+      siteId: 3,
+      sourceDate: '2026-10-02',
+      targetDates: ['2026-10-03'],
+    });
+    req.flush({
+      siteId: 3,
+      sourceDate: '2026-10-02',
+      totalTargetDates: 1,
+      conflictFreeDates: [],
+      conflictingDates: [
+        {
+          date: '2026-10-03',
+          shiftCount: 2,
+          shiftNames: ['Morning', 'Evening'],
+          existingShifts: [],
+        },
+      ],
+      hasConflicts: true,
+    });
+  });
+
+  it('should POST copy commit with resolutions and flags', () => {
+    service
+      .copyCommit({
+        siteId: 3,
+        sourceDate: '2026-10-02',
+        targetDates: ['2026-10-03', '2026-10-04'],
+        dateResolutions: { '2026-10-03': 1 },
+        bulkReplaceAll: false,
+        copyAssignments: true,
+      })
+      .subscribe((res) => {
+        expect(res.success).toBe(true);
+        expect(res.copiedDatesCount).toBe(2);
+      });
+
+    const req = httpMock.expectOne((r) => r.url.endsWith('/shifts/copy/commit'));
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({
+      siteId: 3,
+      sourceDate: '2026-10-02',
+      targetDates: ['2026-10-03', '2026-10-04'],
+      dateResolutions: { '2026-10-03': 1 },
+      bulkReplaceAll: false,
+      copyAssignments: true,
+    });
+    req.flush({
+      success: true,
+      totalDatesProcessed: 2,
+      copiedDatesCount: 2,
+      skippedDatesCount: 0,
+      totalShiftsCreated: 4,
+      totalShiftsReplaced: 2,
+      copiedDates: ['2026-10-03', '2026-10-04'],
+      skippedDates: [],
+      message: 'Copied 2 dates.',
+    });
+  });
 });

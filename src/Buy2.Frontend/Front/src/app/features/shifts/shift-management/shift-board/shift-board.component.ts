@@ -18,6 +18,9 @@ import type { ShiftsJobRoleLookup } from '../../data-access/models/shifts-lookup
 import type {
   BoardBlock,
   ConflictWarning,
+  CopyCommitResult,
+  CopyDateResolution,
+  CopyPreflightResult,
   DailySchedule,
   PublishCommitResult,
   PublishPreflightResult,
@@ -126,6 +129,37 @@ export class ShiftBoardComponent implements OnInit, OnDestroy {
   readonly publishError = signal<string | null>(null);
   readonly publishing = signal(false);
   readonly publishSuccess = signal<PublishCommitResult | null>(null);
+
+  readonly showCopyModal = signal(false);
+  readonly copyMode = signal<'dates' | 'recurring'>('dates');
+  readonly pickedCopyDates = signal<string[]>([]);
+  readonly pickedWeekdays = signal<number[]>([]);
+  readonly copyWeekCount = signal(1);
+  readonly copyAssignments = signal(true);
+  readonly copyPreflight = signal<CopyPreflightResult | null>(null);
+  readonly resolvedCopyTargets = signal<string[]>([]);
+  readonly skipCopyDates = signal<string[]>([]);
+  readonly replaceAllCopy = signal(false);
+  readonly copyError = signal<string | null>(null);
+  readonly copying = signal(false);
+  readonly copySuccess = signal<CopyCommitResult | null>(null);
+
+  /** Next 14 days after the selected date, as ISO strings. */
+  readonly copyDayOptions = computed<string[]>(() => {
+    const out: string[] = [];
+    for (let i = 1; i <= 14; i++) out.push(addDays(this.selectedDate(), i));
+    return out;
+  });
+
+  /** Weekday picker labels, Sunday (0) first, localized. */
+  readonly weekdayOptions = computed<{ value: number; label: string }[]>(() => {
+    const locale = this.translate.currentLang() === 'ar' ? 'ar' : 'en';
+    const fmt = new Intl.DateTimeFormat(locale, { weekday: 'short' });
+    return Array.from({ length: 7 }, (_, value) => ({
+      value,
+      label: fmt.format(new Date(2026, 9, 4 + value)),
+    }));
+  });
 
   readonly conflict = signal<{
     shiftId: number;
@@ -343,6 +377,126 @@ export class ShiftBoardComponent implements OnInit, OnDestroy {
         error: (err: { error?: { message?: string } }) => {
           this.publishing.set(false);
           this.publishError.set(err?.error?.message ?? 'SHIFT_MANAGEMENT.PUBLISH.PUBLISH_ERROR');
+        },
+      });
+  }
+
+  openCopy(): void {
+    this.copyMode.set('dates');
+    this.pickedCopyDates.set([]);
+    this.pickedWeekdays.set([]);
+    this.copyWeekCount.set(1);
+    this.copyAssignments.set(true);
+    this.copyPreflight.set(null);
+    this.resolvedCopyTargets.set([]);
+    this.skipCopyDates.set([]);
+    this.replaceAllCopy.set(false);
+    this.copyError.set(null);
+    this.copySuccess.set(null);
+    this.showCopyModal.set(true);
+  }
+
+  closeCopyModal(): void {
+    this.showCopyModal.set(false);
+  }
+
+  toggleCopyDate(iso: string, checked: boolean): void {
+    this.pickedCopyDates.update((dates) =>
+      checked ? [...dates, iso] : dates.filter((d) => d !== iso),
+    );
+  }
+
+  toggleWeekday(value: number, checked: boolean): void {
+    this.pickedWeekdays.update((days) =>
+      checked ? [...days, value] : days.filter((d) => d !== value),
+    );
+  }
+
+  toggleSkipCopyDate(iso: string, checked: boolean): void {
+    this.skipCopyDates.update((dates) =>
+      checked ? [...dates, iso] : dates.filter((d) => d !== iso),
+    );
+  }
+
+  runCopyPreflight(): void {
+    const datesMode = this.copyMode() === 'dates';
+    const targets = datesMode ? this.pickedCopyDates() : this.pickedWeekdays();
+    if (targets.length === 0 || (!datesMode && this.copyWeekCount() < 1)) {
+      this.copyError.set('SHIFT_MANAGEMENT.COPY.TARGETS_REQUIRED');
+      return;
+    }
+    this.copyError.set(null);
+    this.copying.set(true);
+    this.managementService
+      .copyPreflight({
+        siteId: this.siteId(),
+        sourceDate: this.selectedDate(),
+        ...(datesMode
+          ? { targetDates: [...this.pickedCopyDates()] }
+          : { recurringDays: [...this.pickedWeekdays()], weekCount: this.copyWeekCount() }),
+      })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res) => {
+          this.copying.set(false);
+          this.resolvedCopyTargets.set([
+            ...res.conflictFreeDates,
+            ...res.conflictingDates.map((d) => d.date),
+          ]);
+          if (!res.hasConflicts) {
+            this.commitCopy({});
+            return;
+          }
+          this.copyPreflight.set(res);
+          this.skipCopyDates.set([]);
+          this.replaceAllCopy.set(false);
+        },
+        error: (err: { error?: { message?: string } }) => {
+          this.copying.set(false);
+          this.copyError.set(err?.error?.message ?? 'SHIFT_MANAGEMENT.COPY.COPY_ERROR');
+        },
+      });
+  }
+
+  confirmCopy(): void {
+    const pre = this.copyPreflight();
+    if (pre === null) return;
+    if (this.replaceAllCopy()) {
+      this.commitCopy({ bulkReplaceAll: true });
+      return;
+    }
+    const resolutions: Record<string, CopyDateResolution> = {};
+    for (const d of pre.conflictingDates) {
+      resolutions[d.date] = this.skipCopyDates().includes(d.date) ? 2 : 1;
+    }
+    this.commitCopy({ dateResolutions: resolutions });
+  }
+
+  private commitCopy(extra: {
+    dateResolutions?: Record<string, CopyDateResolution>;
+    bulkReplaceAll?: boolean;
+  }): void {
+    this.copyError.set(null);
+    this.copying.set(true);
+    this.managementService
+      .copyCommit({
+        siteId: this.siteId(),
+        sourceDate: this.selectedDate(),
+        targetDates: [...this.resolvedCopyTargets()],
+        copyAssignments: this.copyAssignments(),
+        ...extra,
+      })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res) => {
+          this.copying.set(false);
+          this.copySuccess.set(res);
+          this.showCopyModal.set(true);
+          this.loadDay();
+        },
+        error: (err: { error?: { message?: string } }) => {
+          this.copying.set(false);
+          this.copyError.set(err?.error?.message ?? 'SHIFT_MANAGEMENT.COPY.COPY_ERROR');
         },
       });
   }

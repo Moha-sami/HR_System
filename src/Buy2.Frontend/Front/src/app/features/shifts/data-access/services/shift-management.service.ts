@@ -12,6 +12,10 @@ import type {
   BoardBlock,
   CalendarDay,
   CreateShiftBlockRequest,
+  CopyCommitRequest,
+  CopyCommitResult,
+  CopyPreflightRequest,
+  CopyPreflightResult,
   DailySchedule,
   DailyScheduleDto,
   DailyShiftBlockDto,
@@ -132,6 +136,16 @@ export class ShiftManagementService {
   /** Ticket #420: POST /api/v1/shifts/publish/commit. */
   publishCommit(req: PublishCommitRequest): Observable<PublishCommitResult> {
     return this.http.post<PublishCommitResult>(`${API_BASE}/shifts/publish/commit`, req);
+  }
+
+  /** Ticket #422: POST /api/v1/shifts/copy/preflight. */
+  copyPreflight(req: CopyPreflightRequest): Observable<CopyPreflightResult> {
+    return this.http.post<CopyPreflightResult>(`${API_BASE}/shifts/copy/preflight`, req);
+  }
+
+  /** Ticket #422: POST /api/v1/shifts/copy/commit. */
+  copyCommit(req: CopyCommitRequest): Observable<CopyCommitResult> {
+    return this.http.post<CopyCommitResult>(`${API_BASE}/shifts/copy/commit`, req);
   }
 }
 

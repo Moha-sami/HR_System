@@ -40,6 +40,12 @@
       >
         {{ 'SHIFT_MANAGEMENT.PUBLISH.BUTTON' | translate }}
       </app-button>
+      <app-button
+        variant="primary"
+        (clicked)="openCopy()"
+      >
+        {{ 'SHIFT_MANAGEMENT.COPY.BUTTON' | translate }}
+      </app-button>
     </div>
   </div>
 
@@ -344,6 +350,157 @@
 }
 
 <!-- ── Save day as template ──────────────────────────────── -->
+@if (showCopyModal()) {
+  <app-modal
+    size="small"
+    [showHeader]="false"
+    [showActions]="false"
+    (closed)="closeCopyModal()"
+  >
+    <app-modal-body>
+      <div class="flex flex-col gap-3 p-2">
+        <h3 class="text-lg font-semibold text-neutral-900">{{ 'SHIFT_MANAGEMENT.COPY.TITLE' | translate }}</h3>
+        @if (copySuccess() === null) {
+          <p class="text-sm text-neutral-600">
+            {{ 'SHIFT_MANAGEMENT.COPY.SOURCE' | translate }}: {{ selectedDate() }}
+          </p>
+          @if (copyPreflight() === null) {
+            <div class="flex items-center gap-3">
+              <button
+                type="button"
+                class="rounded-md px-3 py-1.5 text-sm font-medium"
+                [class.text-primary-600]="copyMode() === 'dates'"
+                [class.text-neutral-500]="copyMode() !== 'dates'"
+                (click)="copyMode.set('dates')"
+              >
+                {{ 'SHIFT_MANAGEMENT.COPY.MODE_DATES' | translate }}
+              </button>
+              <button
+                type="button"
+                class="rounded-md px-3 py-1.5 text-sm font-medium"
+                [class.text-primary-600]="copyMode() === 'recurring'"
+                [class.text-neutral-500]="copyMode() !== 'recurring'"
+                (click)="copyMode.set('recurring')"
+              >
+                {{ 'SHIFT_MANAGEMENT.COPY.MODE_RECURRING' | translate }}
+              </button>
+            </div>
+            @if (copyMode() === 'dates') {
+              <div class="flex max-h-48 flex-col gap-1 overflow-y-auto">
+                @for (iso of copyDayOptions(); track iso) {
+                  <label class="flex cursor-pointer items-center gap-2 px-1 py-1 text-sm text-neutral-700 hover:bg-neutral-50">
+                    <input
+                      type="checkbox"
+                      class="size-4 accent-primary-600"
+                      [checked]="pickedCopyDates().includes(iso)"
+                      (change)="toggleCopyDate(iso, $any($event.target).checked)"
+                    />
+                    {{ iso }}
+                  </label>
+                }
+              </div>
+            } @else {
+              <div class="flex flex-wrap gap-2">
+                @for (day of weekdayOptions(); track day.value) {
+                  <label class="flex cursor-pointer items-center gap-1 text-sm text-neutral-700">
+                    <input
+                      type="checkbox"
+                      class="size-4 accent-primary-600"
+                      [checked]="pickedWeekdays().includes(day.value)"
+                      (change)="toggleWeekday(day.value, $any($event.target).checked)"
+                    />
+                    {{ day.label }}
+                  </label>
+                }
+              </div>
+              <label class="flex items-center gap-2 text-sm text-neutral-600">
+                {{ 'SHIFT_MANAGEMENT.COPY.WEEKS' | translate }}
+                <input
+                  type="number"
+                  min="1"
+                  max="12"
+                  class="w-20 rounded-lg border border-neutral-200 bg-neutral-50 px-2 py-1 text-sm outline-none focus:border-primary-500"
+                  [ngModel]="copyWeekCount()"
+                  (ngModelChange)="copyWeekCount.set($event)"
+                />
+              </label>
+            }
+            <label class="flex cursor-pointer items-center gap-2 text-sm text-neutral-600">
+              <input
+                type="checkbox"
+                class="size-4 accent-primary-600"
+                [checked]="copyAssignments()"
+                (change)="copyAssignments.set($any($event.target).checked)"
+              />
+              {{ 'SHIFT_MANAGEMENT.COPY.ASSIGNMENTS' | translate }}
+            </label>
+          } @else {
+            <h4 class="text-sm font-medium text-neutral-700">{{ 'SHIFT_MANAGEMENT.COPY.CONFLICTS' | translate }}</h4>
+            <ul class="flex max-h-48 flex-col gap-1 overflow-y-auto">
+              @for (d of copyPreflight()?.conflictingDates ?? []; track d.date) {
+                <li>
+                  <label class="flex cursor-pointer items-center gap-2 px-1 py-1 text-sm text-neutral-600 hover:bg-neutral-50">
+                    <input
+                      type="checkbox"
+                      class="size-4 accent-primary-600"
+                      [checked]="skipCopyDates().includes(d.date)"
+                      (change)="toggleSkipCopyDate(d.date, $any($event.target).checked)"
+                    />
+                    {{ d.date }} · {{ d.shiftCount }} ({{ 'SHIFT_MANAGEMENT.COPY.SKIP' | translate }})
+                  </label>
+                </li>
+              }
+            </ul>
+            <label class="flex cursor-pointer items-center gap-2 text-sm text-neutral-600">
+              <input
+                type="checkbox"
+                class="size-4 accent-primary-600"
+                [checked]="replaceAllCopy()"
+                (change)="replaceAllCopy.set($any($event.target).checked)"
+              />
+              {{ 'SHIFT_MANAGEMENT.COPY.REPLACE_ALL' | translate }}
+            </label>
+          }
+          @if (copyError()) {
+            <p role="alert" class="text-sm text-error-600">{{ copyError() }}</p>
+          }
+          <div class="mt-1 flex items-center justify-end gap-3">
+            <app-button variant="secondary" (clicked)="closeCopyModal()">
+              {{ 'COMMON.CANCEL' | translate }}
+            </app-button>
+            @if (copyPreflight() === null) {
+              <app-button
+                variant="primary"
+                [loading]="copying()"
+                [disabled]="copying()"
+                (clicked)="runCopyPreflight()"
+              >
+                {{ 'SHIFT_MANAGEMENT.COPY.CHECK' | translate }}
+              </app-button>
+            } @else {
+              <app-button
+                variant="primary"
+                [loading]="copying()"
+                [disabled]="copying()"
+                (clicked)="confirmCopy()"
+              >
+                {{ 'SHIFT_MANAGEMENT.COPY.CONFIRM' | translate }}
+              </app-button>
+            }
+          </div>
+        } @else {
+          <p class="text-sm text-neutral-600">{{ copySuccess()?.message }}</p>
+          <div class="mt-1 flex items-center justify-end gap-3">
+            <app-button variant="primary" (clicked)="closeCopyModal()">
+              {{ 'COMMON.OK' | translate }}
+            </app-button>
+          </div>
+        }
+      </div>
+    </app-modal-body>
+  </app-modal>
+}
+
 @if (showPublishModal()) {
   <app-modal
     size="small"

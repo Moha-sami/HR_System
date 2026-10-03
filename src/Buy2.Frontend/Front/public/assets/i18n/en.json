@@ -199,6 +199,22 @@
       "JUSTIFICATION_PLACEHOLDER": "Overtime justification (optional)",
       "CONFIRM": "Confirm publish",
       "PUBLISH_ERROR": "Failed to publish the day."
+    },
+    "COPY": {
+      "BUTTON": "Copy day",
+      "TITLE": "Copy day to dates",
+      "SOURCE": "Source",
+      "MODE_DATES": "Dates",
+      "MODE_RECURRING": "Recurring",
+      "WEEKS": "Weeks",
+      "ASSIGNMENTS": "Copy employee assignments",
+      "CHECK": "Check conflicts",
+      "CONFLICTS": "Dates with existing shifts",
+      "SKIP": "skip",
+      "REPLACE_ALL": "Replace all conflicting dates",
+      "CONFIRM": "Confirm copy",
+      "TARGETS_REQUIRED": "Pick at least one target date.",
+      "COPY_ERROR": "Failed to copy the day."
     }
   },
   "AUTH": {

@@ -199,6 +199,22 @@
       "JUSTIFICATION_PLACEHOLDER": "مبرر العمل الإضافي (اختياري)",
       "CONFIRM": "تأكيد النشر",
       "PUBLISH_ERROR": "فشل نشر اليوم."
+    },
+    "COPY": {
+      "BUTTON": "نسخ اليوم",
+      "TITLE": "نسخ اليوم إلى تواريخ",
+      "SOURCE": "المصدر",
+      "MODE_DATES": "تواريخ",
+      "MODE_RECURRING": "متكرر",
+      "WEEKS": "أسابيع",
+      "ASSIGNMENTS": "نسخ تعيينات الموظفين",
+      "CHECK": "فحص التعارضات",
+      "CONFLICTS": "تواريخ بها ورديات موجودة",
+      "SKIP": "تخطي",
+      "REPLACE_ALL": "استبدال كل التواريخ المتعارضة",
+      "CONFIRM": "تأكيد النسخ",
+      "TARGETS_REQUIRED": "اختر تاريخا واحدا على الأقل.",
+      "COPY_ERROR": "فشل نسخ اليوم."
     }
   },
   "AUTH": {

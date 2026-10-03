@@ -162,6 +162,24 @@ describe('ShiftBoardComponent', () => {
     fixture.detectChanges();
   }
 
+  function copyPreflightPayload(): Record<string, unknown> {
+    return {
+      siteId: 3,
+      sourceDate: component.selectedDate(),
+      totalTargetDates: 2,
+      conflictFreeDates: ['2026-10-04'],
+      conflictingDates: [
+        {
+          date: '2026-10-03',
+          shiftCount: 2,
+          shiftNames: ['Morning', 'Evening'],
+          existingShifts: [],
+        },
+      ],
+      hasConflicts: true,
+    };
+  }
+
   function dirtyPreflight(): Record<string, unknown> {
     return {
       siteId: 3,
@@ -561,6 +579,108 @@ describe('ShiftBoardComponent', () => {
     expect(component.publishSuccess()).toBeNull();
     expect(component.schedule()?.blocks.length).toBe(1);
     httpMock.expectNone((r) => r.url.endsWith('/shifts/publish/commit'));
+    httpMock.expectNone((r) => r.url.endsWith('/shifts/daily'));
+  });
+
+  it('should open the conflict view on dirty copy preflight and commit skip/replace', async () => {
+    await setup();
+    flushRoles();
+    flushDay();
+
+    component.openCopy();
+    component.toggleCopyDate('2026-10-03', true);
+    component.toggleCopyDate('2026-10-04', true);
+    component.runCopyPreflight();
+
+    const pre = httpMock.expectOne((r) => r.url.endsWith('/shifts/copy/preflight'));
+    expect(pre.request.method).toBe('POST');
+    expect(pre.request.body).toEqual({
+      siteId: 3,
+      sourceDate: component.selectedDate(),
+      targetDates: ['2026-10-03', '2026-10-04'],
+    });
+    pre.flush(copyPreflightPayload());
+    fixture.detectChanges();
+
+    expect(component.copyPreflight()?.hasConflicts).toBe(true);
+
+    component.toggleSkipCopyDate('2026-10-03', true);
+    component.confirmCopy();
+
+    const commit = httpMock.expectOne((r) => r.url.endsWith('/shifts/copy/commit'));
+    expect(commit.request.body).toEqual({
+      siteId: 3,
+      sourceDate: component.selectedDate(),
+      targetDates: ['2026-10-04', '2026-10-03'],
+      copyAssignments: true,
+      dateResolutions: { '2026-10-03': 2 },
+    });
+    commit.flush({
+      success: true,
+      totalDatesProcessed: 2,
+      copiedDatesCount: 1,
+      skippedDatesCount: 1,
+      totalShiftsCreated: 2,
+      totalShiftsReplaced: 0,
+      copiedDates: ['2026-10-04'],
+      skippedDates: ['2026-10-03'],
+      message: 'Copied 1 date, skipped 1.',
+    });
+    flushDay();
+
+    expect(component.copySuccess()?.copiedDatesCount).toBe(1);
+  });
+
+  it('should commit directly with success on conflict-free copy preflight', async () => {
+    await setup();
+    flushRoles();
+    flushDay();
+
+    component.openCopy();
+    component.toggleCopyDate('2026-10-04', true);
+    component.runCopyPreflight();
+
+    const pre = httpMock.expectOne((r) => r.url.endsWith('/shifts/copy/preflight'));
+    pre.flush({ ...copyPreflightPayload(), conflictFreeDates: ['2026-10-04'], conflictingDates: [], hasConflicts: false, totalTargetDates: 1 });
+
+    const commit = httpMock.expectOne((r) => r.url.endsWith('/shifts/copy/commit'));
+    expect(commit.request.body.targetDates).toEqual(['2026-10-04']);
+    commit.flush({
+      success: true,
+      totalDatesProcessed: 1,
+      copiedDatesCount: 1,
+      skippedDatesCount: 0,
+      totalShiftsCreated: 2,
+      totalShiftsReplaced: 0,
+      copiedDates: ['2026-10-04'],
+      skippedDates: [],
+      message: 'Copied 1 date.',
+    });
+    flushDay();
+
+    expect(component.copySuccess()?.message).toBe('Copied 1 date.');
+  });
+
+  it('should leave the board untouched on copy cancel', async () => {
+    await setup();
+    flushRoles();
+    flushDay();
+
+    component.openCopy();
+    component.toggleCopyDate('2026-10-03', true);
+    component.runCopyPreflight();
+
+    const pre = httpMock.expectOne((r) => r.url.endsWith('/shifts/copy/preflight'));
+    pre.flush(copyPreflightPayload());
+    fixture.detectChanges();
+    expect(component.copyPreflight()?.hasConflicts).toBe(true);
+
+    component.closeCopyModal();
+
+    expect(component.showCopyModal()).toBe(false);
+    expect(component.copySuccess()).toBeNull();
+    expect(component.schedule()?.blocks.length).toBe(1);
+    httpMock.expectNone((r) => r.url.endsWith('/shifts/copy/commit'));
     httpMock.expectNone((r) => r.url.endsWith('/shifts/daily'));
   });
 });
