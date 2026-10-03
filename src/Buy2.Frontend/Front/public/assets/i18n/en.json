@@ -169,6 +169,19 @@
       "WEEK_OVERTIME": "Overtime risk",
       "WEEK_EMPTY": "No allocations",
       "WEEK_DAY_OFF": "Day off"
+    },
+    "PICKER": {
+      "TITLE": "Apply shift template",
+      "SEARCH_PLACEHOLDER": "Search templates...",
+      "LOAD_ERROR": "Failed to load templates.",
+      "EMPTY": "No templates found.",
+      "ASSIGNED_SITES": "Assigned sites",
+      "KEEP_EXISTING": "Keep existing blocks",
+      "REPLACE": "Replace with template",
+      "APPLY": "Apply template",
+      "TEMPLATE_REQUIRED": "Select a template first.",
+      "APPLY_ERROR": "Failed to apply the template.",
+      "WARNINGS_TITLE": "Applied with warnings:"
     }
   },
   "AUTH": {

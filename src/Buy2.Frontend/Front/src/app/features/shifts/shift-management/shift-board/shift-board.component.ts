@@ -35,6 +35,7 @@ import { ButtonComponent } from '@app/shared/components/button/button.component'
 import { ModalComponent } from '@app/shared/components/modal/modal.component';
 import { ModalBodyComponent } from '@app/shared/components/modal/modal-body.component';
 import { CandidatePreviewComponent } from '../candidate-preview/candidate-preview.component';
+import { TemplatePickerComponent } from '../template-picker/template-picker.component';
 
 const WEEK_DOT: Record<string, string> = {
   CoveredAndPublished: 'bg-success-500',
@@ -76,6 +77,7 @@ function addDays(iso: string, delta: number): string {
     EmployeeStripComponent,
     ShiftTimelineComponent,
     CandidatePreviewComponent,
+    TemplatePickerComponent,
     CdkDropListGroup,
   ],
   templateUrl: './shift-board.component.html',
@@ -107,6 +109,7 @@ export class ShiftBoardComponent implements OnInit, OnDestroy {
 
   readonly pendingAssign = signal<number | null>(null);
   readonly previewEmployeeId = signal<number | null>(null);
+  readonly showPicker = signal(false);
 
   readonly conflict = signal<{
     shiftId: number;
@@ -214,6 +217,19 @@ export class ShiftBoardComponent implements OnInit, OnDestroy {
 
   backToOverview(): void {
     this.router.navigate(['/scheduling/shift-management']);
+  }
+
+  openPicker(): void {
+    this.showPicker.set(true);
+  }
+
+  closePicker(): void {
+    this.showPicker.set(false);
+  }
+
+  onPickerApplied(): void {
+    this.showPicker.set(false);
+    this.loadDay();
   }
 
   postBlock(): void {

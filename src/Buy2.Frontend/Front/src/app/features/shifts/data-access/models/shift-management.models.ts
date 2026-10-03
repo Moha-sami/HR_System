@@ -157,6 +157,33 @@ export interface RemoveBlockResult {
   siteCoverageStatus: string | number;
 }
 
+/** Ticket C: POST /api/v1/sites/{siteId}/dates/{date}/apply-template body. */
+export type TemplateKeepMode = 'existing' | 'new';
+
+export interface ApplyTemplateRequest {
+  templateId: number;
+  keep: TemplateKeepMode;
+}
+
+export interface ApplyTemplateWarning {
+  employeeId: number | null;
+  employeeName: string;
+  role: string;
+  reason: string;
+  code: string;
+}
+
+export interface ApplyTemplateResult {
+  siteId: number;
+  date: string;
+  templateId: number;
+  warnings: ApplyTemplateWarning[];
+  totalLaborCost: number;
+  regularCost: number;
+  overtimeCost: number;
+  prunedCount: number;
+}
+
 /** GET /api/v1/shifts/candidates/{id}/preview (ShiftCandidatePreviewDto, camelCase). */
 export interface ShiftCandidatePreview {
   id: number;

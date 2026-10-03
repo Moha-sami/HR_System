@@ -198,4 +198,29 @@ describe('ShiftManagementService', () => {
     expect(req.request.params.get('confirmPublishedDeletion')).toBe('true');
     req.flush({ shiftBlockId: 11, actionTaken: 1, isDeleted: true, updatedCost: 0, siteCoverageStatus: 3 });
   });
+
+  it('should POST template apply with id and keep mode', () => {
+    service
+      .applyTemplate(3, '2026-10-02', { templateId: 1, keep: 'existing' })
+      .subscribe((res) => {
+        expect(res.warnings.length).toBe(0);
+        expect(res.totalLaborCost).toBe(400);
+      });
+
+    const req = httpMock.expectOne((r) =>
+      r.url.endsWith('/sites/3/dates/2026-10-02/apply-template'),
+    );
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({ templateId: 1, keep: 'existing' });
+    req.flush({
+      siteId: 3,
+      date: '2026-10-02',
+      templateId: 1,
+      warnings: [],
+      totalLaborCost: 400,
+      regularCost: 400,
+      overtimeCost: 0,
+      prunedCount: 0,
+    });
+  });
 });

@@ -22,8 +22,7 @@
       }
       <app-button
         variant="secondary"
-        [disabled]="true"
-        [attr.title]="'SCHEDULING.COMING_SOON' | translate"
+        (clicked)="openPicker()"
       >
         {{ 'SHIFT_MANAGEMENT.BOARD.TEMPLATE_PICKER' | translate }}
       </app-button>
@@ -313,5 +312,15 @@
   <app-candidate-preview
     [employeeId]="previewEmployeeId()"
     (closed)="previewEmployeeId.set(null)"
+  />
+}
+
+<!-- ── Template picker ─────────────────────────────────────── -->
+@if (showPicker()) {
+  <app-template-picker
+    [siteId]="siteId()"
+    [date]="selectedDate()"
+    (applied)="onPickerApplied()"
+    (closed)="closePicker()"
   />
 }

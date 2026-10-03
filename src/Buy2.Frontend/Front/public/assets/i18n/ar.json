@@ -169,6 +169,19 @@
       "WEEK_OVERTIME": "خطر العمل الإضافي",
       "WEEK_EMPTY": "لا توجد تخصيصات",
       "WEEK_DAY_OFF": "يوم إجازة"
+    },
+    "PICKER": {
+      "TITLE": "تطبيق قالب وردية",
+      "SEARCH_PLACEHOLDER": "ابحث عن القوالب...",
+      "LOAD_ERROR": "فشل تحميل القوالب.",
+      "EMPTY": "لا توجد قوالب.",
+      "ASSIGNED_SITES": "المواقع المسندة",
+      "KEEP_EXISTING": "الاحتفاظ بالمقاطع الحالية",
+      "REPLACE": "استبدال بالقالب",
+      "APPLY": "تطبيق القالب",
+      "TEMPLATE_REQUIRED": "اختر قالباً أولاً.",
+      "APPLY_ERROR": "فشل تطبيق القالب.",
+      "WARNINGS_TITLE": "تم التطبيق مع تحذيرات:"
     }
   },
   "AUTH": {

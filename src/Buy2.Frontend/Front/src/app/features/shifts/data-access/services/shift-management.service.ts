@@ -4,6 +4,8 @@ import type { Observable } from 'rxjs';
 import { map } from 'rxjs';
 import { environment } from '../../../../../environments/environment';
 import type {
+  ApplyTemplateRequest,
+  ApplyTemplateResult,
   AssignBlockRequest,
   AssignBlockResult,
   BlockRemovalAction,
@@ -95,6 +97,18 @@ export class ShiftManagementService {
     return this.http.delete<RemoveBlockResult>(`${API_BASE}/shifts/blocks/${id}/assign`, {
       params,
     });
+  }
+
+  /** Ticket C: POST /api/v1/sites/{siteId}/dates/{date}/apply-template. */
+  applyTemplate(
+    siteId: number,
+    date: string,
+    req: ApplyTemplateRequest,
+  ): Observable<ApplyTemplateResult> {
+    return this.http.post<ApplyTemplateResult>(
+      `${API_BASE}/sites/${siteId}/dates/${date}/apply-template`,
+      { templateId: req.templateId, keep: req.keep },
+    );
   }
 }
 

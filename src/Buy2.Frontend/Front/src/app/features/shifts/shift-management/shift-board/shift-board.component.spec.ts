@@ -8,6 +8,7 @@ import { ShiftBoardComponent } from './shift-board.component';
 import { EmployeeStripComponent } from '../../shift-templates/employee-strip/employee-strip.component';
 import { ShiftTimelineComponent } from '../../ui/shift-timeline/shift-timeline.component';
 import { CandidatePreviewComponent } from '../candidate-preview/candidate-preview.component';
+import { TemplatePickerComponent } from '../template-picker/template-picker.component';
 import type { ShiftCandidateEmployee } from '../../data-access/models/shifts-lookups.models';
 
 @Pipe({ name: 'translate', standalone: true })
@@ -43,6 +44,15 @@ class StubTimelineComponent {
 @Component({ selector: 'app-candidate-preview', standalone: true, template: '' })
 class StubPreviewComponent {
   readonly employeeId = input<number | null>(null);
+  readonly closed = output<void>();
+}
+
+/** Picker stub: apply flow lives in the picker's own spec. */
+@Component({ selector: 'app-template-picker', standalone: true, template: '' })
+class StubPickerComponent {
+  readonly siteId = input(0);
+  readonly date = input('');
+  readonly applied = output<void>();
   readonly closed = output<void>();
 }
 
@@ -119,9 +129,18 @@ describe('ShiftBoardComponent', () => {
             EmployeeStripComponent,
             ShiftTimelineComponent,
             CandidatePreviewComponent,
+            TemplatePickerComponent,
           ],
         },
-        add: { imports: [MockTranslatePipe, StubStripComponent, StubTimelineComponent, StubPreviewComponent] },
+        add: {
+          imports: [
+            MockTranslatePipe,
+            StubStripComponent,
+            StubTimelineComponent,
+            StubPreviewComponent,
+            StubPickerComponent,
+          ],
+        },
       })
       .compileComponents();
 
@@ -328,5 +347,32 @@ describe('ShiftBoardComponent', () => {
     fixture.detectChanges();
 
     expect(component.timelineBlocks()[0].locked).toBe(true);
+  });
+
+  it('should open the picker and reload the day after an apply', async () => {
+    await setup();
+    flushRoles();
+    flushDay();
+
+    expect(component.showPicker()).toBe(false);
+    component.openPicker();
+    expect(component.showPicker()).toBe(true);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('app-template-picker')).not.toBeNull();
+
+    component.onPickerApplied();
+    expect(component.showPicker()).toBe(false);
+    flushDay();
+  });
+
+  it('should close the picker without reloading', async () => {
+    await setup();
+    flushRoles();
+    flushDay();
+
+    component.openPicker();
+    component.closePicker();
+    expect(component.showPicker()).toBe(false);
+    httpMock.expectNone((r) => r.url.endsWith('/shifts/daily'));
   });
 });
