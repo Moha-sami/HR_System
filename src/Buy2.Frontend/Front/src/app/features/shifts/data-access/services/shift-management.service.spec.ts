@@ -223,4 +223,26 @@ describe('ShiftManagementService', () => {
       prunedCount: 0,
     });
   });
+
+  it('should POST save-as-template with the name', () => {
+    service.saveAsTemplate(3, '2026-10-02', 'Morning rush').subscribe((res) => {
+      expect(res.id).toBe(7);
+      expect(res.name).toBe('Morning rush');
+    });
+
+    const req = httpMock.expectOne((r) =>
+      r.url.endsWith('/sites/3/dates/2026-10-02/save-as-template'),
+    );
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({ name: 'Morning rush' });
+    req.flush({ id: 7, name: 'Morning rush', totalBlockCount: 4 });
+  });
+
+  it('should POST save-as-template with null name when unnamed', () => {
+    service.saveAsTemplate(3, '2026-10-02', null).subscribe();
+
+    const req = httpMock.expectOne((r) => r.url.endsWith('/save-as-template'));
+    expect(req.request.body).toEqual({ name: null });
+    req.flush({ id: 8, name: 'Cairo HQ 2026-10-02', totalBlockCount: 2 });
+  });
 });

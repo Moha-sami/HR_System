@@ -184,6 +184,13 @@ export interface ApplyTemplateResult {
   prunedCount: number;
 }
 
+/** Ticket #421: POST /api/v1/sites/{siteId}/dates/{date}/save-as-template. */
+export interface SaveAsTemplateResult {
+  id: number;
+  name: string;
+  totalBlockCount: number;
+}
+
 /** GET /api/v1/shifts/candidates/{id}/preview (ShiftCandidatePreviewDto, camelCase). */
 export interface ShiftCandidatePreview {
   id: number;

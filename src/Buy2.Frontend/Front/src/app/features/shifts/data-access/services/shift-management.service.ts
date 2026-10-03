@@ -16,6 +16,7 @@ import type {
   DailyScheduleDto,
   DailyShiftBlockDto,
   RemoveBlockResult,
+  SaveAsTemplateResult,
   ShiftCandidatePreview,
   SiteShiftOverviewCard,
   SiteShiftsOverviewFilter,
@@ -108,6 +109,14 @@ export class ShiftManagementService {
     return this.http.post<ApplyTemplateResult>(
       `${API_BASE}/sites/${siteId}/dates/${date}/apply-template`,
       { templateId: req.templateId, keep: req.keep },
+    );
+  }
+
+  /** Ticket #421: POST /api/v1/sites/{siteId}/dates/{date}/save-as-template. */
+  saveAsTemplate(siteId: number, date: string, name: string | null): Observable<SaveAsTemplateResult> {
+    return this.http.post<SaveAsTemplateResult>(
+      `${API_BASE}/sites/${siteId}/dates/${date}/save-as-template`,
+      { name },
     );
   }
 }

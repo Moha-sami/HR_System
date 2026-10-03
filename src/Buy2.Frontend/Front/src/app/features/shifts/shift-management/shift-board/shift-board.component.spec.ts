@@ -375,4 +375,59 @@ describe('ShiftBoardComponent', () => {
     expect(component.showPicker()).toBe(false);
     httpMock.expectNone((r) => r.url.endsWith('/shifts/daily'));
   });
+
+  it('should save the day as template with the entered name', async () => {
+    await setup();
+    flushRoles();
+    flushDay();
+
+    component.openSaveModal();
+    expect(component.showSaveModal()).toBe(true);
+    component.saveName.set('Morning rush');
+    component.confirmSave();
+
+    const req = httpMock.expectOne((r) =>
+      r.url.endsWith(`/sites/3/dates/${component.selectedDate()}/save-as-template`),
+    );
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({ name: 'Morning rush' });
+    req.flush({ id: 7, name: 'Morning rush', totalBlockCount: 4 });
+    fixture.detectChanges();
+
+    expect(component.savedTemplateName()).toBe('Morning rush');
+    expect(component.showSaveModal()).toBe(true);
+  });
+
+  it('should send null name when the name is blank', async () => {
+    await setup();
+    flushRoles();
+    flushDay();
+
+    component.openSaveModal();
+    component.saveName.set('   ');
+    component.confirmSave();
+
+    const req = httpMock.expectOne((r) => r.url.endsWith('/save-as-template'));
+    expect(req.request.body).toEqual({ name: null });
+    req.flush({ id: 8, name: 'Cairo HQ 2026-10-02', totalBlockCount: 2 });
+    expect(component.savedTemplateName()).toBe('Cairo HQ 2026-10-02');
+  });
+
+  it('should show backend save errors inline without touching the board', async () => {
+    await setup();
+    flushRoles();
+    flushDay();
+
+    component.openSaveModal();
+    component.confirmSave();
+
+    const req = httpMock.expectOne((r) => r.url.endsWith('/save-as-template'));
+    req.flush({ message: 'Day has no blocks.' }, { status: 400, statusText: 'Bad Request' });
+    fixture.detectChanges();
+
+    expect(component.saveError()).toBe('Day has no blocks.');
+    expect(component.showSaveModal()).toBe(true);
+    expect(component.schedule()?.blocks.length).toBe(1);
+    httpMock.expectNone((r) => r.url.endsWith('/shifts/daily'));
+  });
 });

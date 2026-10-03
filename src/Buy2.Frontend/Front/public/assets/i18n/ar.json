@@ -182,6 +182,14 @@
       "TEMPLATE_REQUIRED": "اختر قالباً أولاً.",
       "APPLY_ERROR": "فشل تطبيق القالب.",
       "WARNINGS_TITLE": "تم التطبيق مع تحذيرات:"
+    },
+    "SAVE": {
+      "BUTTON": "حفظ كقالب",
+      "TITLE": "حفظ اليوم كقالب",
+      "NAME_PLACEHOLDER": "اسم القالب (اختياري)",
+      "CONFIRM": "حفظ القالب",
+      "SAVE_ERROR": "فشل حفظ القالب.",
+      "SUCCESS": "تم حفظ القالب"
     }
   },
   "AUTH": {

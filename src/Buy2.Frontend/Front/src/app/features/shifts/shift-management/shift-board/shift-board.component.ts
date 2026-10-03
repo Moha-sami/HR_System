@@ -111,6 +111,12 @@ export class ShiftBoardComponent implements OnInit, OnDestroy {
   readonly previewEmployeeId = signal<number | null>(null);
   readonly showPicker = signal(false);
 
+  readonly showSaveModal = signal(false);
+  readonly saveName = signal('');
+  readonly saveError = signal<string | null>(null);
+  readonly saving = signal(false);
+  readonly savedTemplateName = signal<string | null>(null);
+
   readonly conflict = signal<{
     shiftId: number;
     employee: ShiftCandidateEmployee;
@@ -230,6 +236,36 @@ export class ShiftBoardComponent implements OnInit, OnDestroy {
   onPickerApplied(): void {
     this.showPicker.set(false);
     this.loadDay();
+  }
+
+  openSaveModal(): void {
+    this.saveName.set('');
+    this.saveError.set(null);
+    this.savedTemplateName.set(null);
+    this.showSaveModal.set(true);
+  }
+
+  closeSaveModal(): void {
+    this.showSaveModal.set(false);
+  }
+
+  confirmSave(): void {
+    const name = this.saveName().trim();
+    this.saveError.set(null);
+    this.saving.set(true);
+    this.managementService
+      .saveAsTemplate(this.siteId(), this.selectedDate(), name ? name : null)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res) => {
+          this.saving.set(false);
+          this.savedTemplateName.set(res.name);
+        },
+        error: (err: { error?: { message?: string } }) => {
+          this.saving.set(false);
+          this.saveError.set(err?.error?.message ?? 'SHIFT_MANAGEMENT.SAVE.SAVE_ERROR');
+        },
+      });
   }
 
   postBlock(): void {

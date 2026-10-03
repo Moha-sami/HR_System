@@ -21,10 +21,16 @@
         </span>
       }
       <app-button
-        variant="secondary"
+        variant="primary"
         (clicked)="openPicker()"
       >
         {{ 'SHIFT_MANAGEMENT.BOARD.TEMPLATE_PICKER' | translate }}
+      </app-button>
+      <app-button
+        variant="primary"
+        (clicked)="openSaveModal()"
+      >
+        {{ 'SHIFT_MANAGEMENT.SAVE.BUTTON' | translate }}
       </app-button>
     </div>
   </div>
@@ -323,4 +329,54 @@
     (applied)="onPickerApplied()"
     (closed)="closePicker()"
   />
+}
+
+<!-- ── Save day as template ──────────────────────────────── -->
+@if (showSaveModal()) {
+  <app-modal
+    size="small"
+    [showHeader]="false"
+    [showActions]="false"
+    (closed)="closeSaveModal()"
+  >
+    <app-modal-body>
+      <div class="flex flex-col gap-3 p-2">
+        <h3 class="text-lg font-semibold text-neutral-900">{{ 'SHIFT_MANAGEMENT.SAVE.TITLE' | translate }}</h3>
+        @if (savedTemplateName() === null) {
+          <input
+            type="text"
+            class="w-full rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2 text-sm outline-none focus:border-primary-500"
+            [placeholder]="'SHIFT_MANAGEMENT.SAVE.NAME_PLACEHOLDER' | translate"
+            [ngModel]="saveName()"
+            (ngModelChange)="saveName.set($event)"
+          />
+          @if (saveError()) {
+            <p role="alert" class="text-sm text-error-600">{{ saveError() }}</p>
+          }
+          <div class="mt-1 flex items-center justify-end gap-3">
+            <app-button variant="secondary" (clicked)="closeSaveModal()">
+              {{ 'COMMON.CANCEL' | translate }}
+            </app-button>
+            <app-button
+              variant="primary"
+              [loading]="saving()"
+              [disabled]="saving()"
+              (clicked)="confirmSave()"
+            >
+              {{ 'SHIFT_MANAGEMENT.SAVE.CONFIRM' | translate }}
+            </app-button>
+          </div>
+        } @else {
+          <p class="text-sm text-neutral-600">
+            {{ 'SHIFT_MANAGEMENT.SAVE.SUCCESS' | translate }}: {{ savedTemplateName() }}
+          </p>
+          <div class="mt-1 flex items-center justify-end gap-3">
+            <app-button variant="primary" (clicked)="closeSaveModal()">
+              {{ 'COMMON.OK' | translate }}
+            </app-button>
+          </div>
+        }
+      </div>
+    </app-modal-body>
+  </app-modal>
 }

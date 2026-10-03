@@ -182,6 +182,14 @@
       "TEMPLATE_REQUIRED": "Select a template first.",
       "APPLY_ERROR": "Failed to apply the template.",
       "WARNINGS_TITLE": "Applied with warnings:"
+    },
+    "SAVE": {
+      "BUTTON": "Save as template",
+      "TITLE": "Save day as template",
+      "NAME_PLACEHOLDER": "Template name (optional)",
+      "CONFIRM": "Save template",
+      "SAVE_ERROR": "Failed to save the template.",
+      "SUCCESS": "Template saved"
     }
   },
   "AUTH": {
