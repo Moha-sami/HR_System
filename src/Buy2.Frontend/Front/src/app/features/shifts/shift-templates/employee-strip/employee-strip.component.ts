@@ -45,6 +45,9 @@ export class EmployeeStripComponent {
 
   readonly pageLoaded = output<{ page: number; items: ShiftCandidateEmployee[] }>();
 
+  /** Card click (preview or picker-assign, decided by the host). CDK suppresses the click after a drag. */
+  readonly cardClick = output<ShiftCandidateEmployee>();
+
   readonly items = signal<ShiftCandidateEmployee[]>([]);
   readonly totalCount = signal(0);
   readonly page = signal(1);
@@ -88,9 +91,9 @@ export class EmployeeStripComponent {
 
   private static readonly AVATAR_TONES = [
     'bg-primary-50 text-primary-700',
-    'bg-success-50 text-success-700',
-    'bg-warning-100 text-warning-800',
-    'bg-error-50 text-error-800',
+    'bg-neutral-100 text-neutral-600',
+    'bg-primary-100 text-primary-800',
+    'bg-neutral-200 text-neutral-700',
   ];
 
   /** Initials avatar text derived from the employee name (any script). */
@@ -115,7 +118,7 @@ export class EmployeeStripComponent {
       case 'TopPerformer':
         return 'bg-success-50 text-success-700';
       case 'OvertimeRisk':
-        return 'bg-warning-50 text-warning-700';
+        return 'bg-purple-100 text-purple-700';
       case 'Warning':
         return 'bg-error-50 text-error-600';
       default:

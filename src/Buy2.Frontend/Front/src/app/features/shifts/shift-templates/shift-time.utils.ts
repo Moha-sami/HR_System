@@ -63,3 +63,21 @@ export function splitTime(totalMinutes: number): TimeParts {
 export function rangesOverlap(startA: number, endA: number, startB: number, endB: number): boolean {
   return startA < endB && startB < endA;
 }
+
+/** Parse an ISO DateTimeOffset wall time into minutes since midnight. Null when invalid. */
+export function parseIsoMinutes(value: string): number | null {
+  const match = /T(\d{2}):(\d{2})/.exec(value);
+  if (!match) return null;
+  const hour = Number(match[1]);
+  const minute = Number(match[2]);
+  if (hour > 23 || minute > 59) return null;
+  return hour * 60 + minute;
+}
+
+/** Format minutes since midnight as TimeOnly 'HH:mm:ss'. */
+export function formatTimeOnly(totalMinutes: number): string {
+  const normalized = ((totalMinutes % 1440) + 1440) % 1440;
+  const hour = String(Math.floor(normalized / 60)).padStart(2, '0');
+  const minute = String(normalized % 60).padStart(2, '0');
+  return `${hour}:${minute}:00`;
+}

@@ -1,5 +1,6 @@
 import { type ComponentFixture, TestBed } from '@angular/core/testing';
 import { of, throwError } from 'rxjs';
+import { vi } from 'vitest';
 import { DocumentsTabComponent } from './documents-tab.component';
 import { EmployeeDetailService } from '../../../../services/employee-detail.service';
 import { TranslatePipe } from '@ngx-translate/core';
@@ -21,9 +22,9 @@ describe('DocumentsTabComponent', () => {
     documents: ReturnType<typeof signal<readonly EmployeeDocumentDto[]>>;
     documentsLoading: ReturnType<typeof signal<boolean>>;
     documentsError: ReturnType<typeof signal<string | null>>;
-    loadEmployeeDocuments: jasmine.Spy;
-    uploadEmployeeDocument: jasmine.Spy;
-    deleteEmployeeDocument: jasmine.Spy;
+    loadEmployeeDocuments: ReturnType<typeof vi.fn>;
+    uploadEmployeeDocument: ReturnType<typeof vi.fn>;
+    deleteEmployeeDocument: ReturnType<typeof vi.fn>;
   };
 
   const mockEmployee = {
@@ -62,9 +63,9 @@ describe('DocumentsTabComponent', () => {
       documents: signal(mockDocuments),
       documentsLoading: signal(false),
       documentsError: signal(null),
-      loadEmployeeDocuments: jasmine.createSpy('loadEmployeeDocuments'),
-      uploadEmployeeDocument: jasmine.createSpy('uploadEmployeeDocument').and.returnValue(of(104)),
-      deleteEmployeeDocument: jasmine.createSpy('deleteEmployeeDocument').and.returnValue(of(undefined)),
+      loadEmployeeDocuments: vi.fn(),
+      uploadEmployeeDocument: vi.fn(() => of(104)),
+      deleteEmployeeDocument: vi.fn(() => of(undefined)),
     };
 
     await TestBed.configureTestingModule({

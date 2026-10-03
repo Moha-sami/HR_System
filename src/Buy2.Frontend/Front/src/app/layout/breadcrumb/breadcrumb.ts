@@ -86,6 +86,15 @@ export class BreadcrumbComponent {
       return;
     }
 
+    if (segments[0] === 'scheduling' && segments[1] === 'shift-management' && segments.length === 3) {
+      this.items.set([
+        { label: '', url: '/scheduling', isActive: false, translationKey: 'LAYOUT.NAV.SCHEDULING' },
+        { label: '', url: '/scheduling/shift-management', isActive: false, translationKey: 'LAYOUT.NAV.SHIFT_MANAGEMENT' },
+        { label: '', url, isActive: true, translationKey: 'LAYOUT.NAV.SHIFT_MANAGEMENT' },
+      ]);
+      return;
+    }
+
     if (segments.length === 0) {
       this.items.set([]);
       return;

@@ -38,6 +38,17 @@ describe('ShiftsLookupsService', () => {
     expect(result).toEqual(sites);
   });
 
+  it('should GET the region list for the overview region filter', () => {
+    const regions = [{ id: 2, name: 'Cairo' }];
+    let result: typeof regions | undefined;
+    service.getRegions().subscribe((r) => (result = r));
+
+    const req = httpMock.expectOne(`${API_BASE}/sites/regions`);
+    expect(req.request.method).toBe('GET');
+    req.flush(regions);
+    expect(result).toEqual(regions);
+  });
+
   it('should GET the job-role list from the paginated /jobs endpoint', () => {
     const roles = [{ id: 3, title: 'Cashier' }];
     let result: typeof roles | undefined;

@@ -1,0 +1,120 @@
+<app-modal
+  size="medium"
+  [showHeader]="false"
+  [showActions]="false"
+  (closed)="closed.emit()"
+>
+  <app-modal-body>
+    <div class="flex flex-col gap-3 p-2">
+      <h3 class="text-lg font-semibold text-neutral-900">
+        {{ 'SHIFT_MANAGEMENT.PICKER.TITLE' | translate }}
+      </h3>
+
+      @if (resultWarnings() === null) {
+        <input
+          type="text"
+          class="w-full rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2 text-sm outline-none focus:border-primary-500"
+          [placeholder]="'SHIFT_MANAGEMENT.PICKER.SEARCH_PLACEHOLDER' | translate"
+          [ngModel]="searchTerm()"
+          (ngModelChange)="onSearchInput($event)"
+        />
+
+        @if (loading()) {
+          <div class="flex items-center justify-center gap-3 py-6">
+            <span class="size-6 animate-spin rounded-full border-2 border-primary-200 border-t-primary-600"></span>
+            <p class="text-sm text-neutral-500">{{ 'COMMON.LOADING' | translate }}</p>
+          </div>
+        }
+        @if (loadError() && !loading()) {
+          <p role="alert" class="text-sm text-error-600">{{ 'SHIFT_MANAGEMENT.PICKER.LOAD_ERROR' | translate }}</p>
+        }
+
+        @if (!loading() && !loadError()) {
+          @if (templates().length === 0) {
+            <p class="py-4 text-center text-sm text-neutral-400">
+              {{ 'SHIFT_MANAGEMENT.PICKER.EMPTY' | translate }}
+            </p>
+          } @else {
+            <ul class="max-h-64 divide-y divide-neutral-200 overflow-y-auto rounded-lg border border-neutral-200">
+              @for (template of templates(); track template.id) {
+                <li>
+                  <label class="flex cursor-pointer items-center gap-3 px-4 py-2.5 hover:bg-neutral-50">
+                    <input
+                      type="radio"
+                      name="board-template"
+                      class="size-4 accent-primary-600"
+                      [checked]="selectedTemplateId() === template.id"
+                      (change)="selectTemplate(template.id)"
+                    />
+                    <span class="min-w-0 flex-1">
+                      <span class="block truncate text-sm font-medium text-neutral-800">{{ template.name }}</span>
+                      <span class="block text-xs text-neutral-500">
+                        {{ 'SHIFT_MANAGEMENT.PICKER.ASSIGNED_SITES' | translate }}: {{ template.numberOfAssignedSites }}
+                      </span>
+                    </span>
+                  </label>
+                </li>
+              }
+            </ul>
+          }
+        }
+
+        <div class="flex flex-wrap items-center gap-4" role="radiogroup" aria-label="Keep mode">
+          <label class="flex cursor-pointer items-center gap-2 text-sm text-neutral-700">
+            <input
+              type="radio"
+              name="board-keep-mode"
+              class="size-4 accent-primary-600"
+              [checked]="keepMode() === 'existing'"
+              (change)="setKeepMode('existing')"
+            />
+            {{ 'SHIFT_MANAGEMENT.PICKER.KEEP_EXISTING' | translate }}
+          </label>
+          <label class="flex cursor-pointer items-center gap-2 text-sm text-neutral-700">
+            <input
+              type="radio"
+              name="board-keep-mode"
+              class="size-4 accent-primary-600"
+              [checked]="keepMode() === 'new'"
+              (change)="setKeepMode('new')"
+            />
+            {{ 'SHIFT_MANAGEMENT.PICKER.REPLACE' | translate }}
+          </label>
+        </div>
+
+        @if (applyError()) {
+          <p role="alert" class="text-sm text-error-600">{{ applyError() }}</p>
+        }
+
+        <div class="mt-1 flex items-center justify-end gap-3">
+          <app-button variant="secondary" (clicked)="closed.emit()">
+            {{ 'COMMON.CANCEL' | translate }}
+          </app-button>
+          <app-button
+            variant="primary"
+            [loading]="applying()"
+            [disabled]="applying()"
+            (clicked)="apply()"
+          >
+            {{ 'SHIFT_MANAGEMENT.PICKER.APPLY' | translate }}
+          </app-button>
+        </div>
+      } @else {
+        <p class="text-sm text-neutral-600">{{ 'SHIFT_MANAGEMENT.PICKER.WARNINGS_TITLE' | translate }}</p>
+        <ul class="max-h-64 divide-y divide-neutral-200 overflow-y-auto rounded-lg border border-neutral-200">
+          @for (warning of resultWarnings() ?? []; track warning.code + warning.employeeName) {
+            <li class="px-4 py-2.5 text-sm">
+              <p class="font-medium text-neutral-800">{{ warning.employeeName }} · {{ warning.role }}</p>
+              <p class="text-warning-800">{{ warning.reason }}</p>
+            </li>
+          }
+        </ul>
+        <div class="mt-1 flex items-center justify-end gap-3">
+          <app-button variant="primary" (clicked)="doneAfterWarnings()">
+            {{ 'COMMON.OK' | translate }}
+          </app-button>
+        </div>
+      }
+    </div>
+  </app-modal-body>
+</app-modal>

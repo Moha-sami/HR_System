@@ -97,7 +97,8 @@
       "NO_RANGE": "Set a valid shift time range to see the timeline.",
       "EDIT_BLOCK": "Edit block",
       "ASSIGN_BLOCK": "Assign employee",
-      "DELETE_BLOCK": "Delete block"
+      "DELETE_BLOCK": "Delete block",
+      "LOCKED": "Locked (published)"
     },
     "STRIP": {
       "TITLE": "Employees",
@@ -112,6 +113,112 @@
       "RISK_OVERTIME": "Overtime risk",
       "RISK_WARNING": "Warning",
       "RISK_NORMAL": "Normal"
+    }
+  },
+  "SHIFT_MANAGEMENT": {
+    "OVERVIEW": {
+      "TITLE": "Shift Management",
+      "SEARCH_PLACEHOLDER": "Search sites...",
+      "ALL_REGIONS": "All regions",
+      "SHIFTS_COUNT": "Number of Shifts",
+      "SMART_ASSIGNMENT": "Smart Assignment",
+      "SMART_POSTING": "Smart Posting",
+      "EXPORT": "Export",
+      "LOAD_ERROR": "Failed to load sites.",
+      "EMPTY": "No sites found.",
+      "SMART_ERROR": "Failed to update smart settings."
+    },
+    "STATUS": {
+      "COVERED": "Covered",
+      "SHORTAGE": "Shortage",
+      "OVERTIME_RISK": "OT Risk",
+      "UNQUALIFIED": "Unqualified Assignment"
+    },
+    "PREVIEW": {
+      "LOAD_ERROR": "Failed to load employee preview.",
+      "JOINED": "Joined Date",
+      "HOURLY_RATE": "Hourly Rate",
+      "CAREER_HOURS": "Hours completed so far since Join date",
+      "QUALIFICATIONS": "Employee Qualifications"
+    },
+    "BOARD": {
+      "BACK": "Back to sites",
+      "COST": "Day cost",
+      "TEMPLATE_PICKER": "Shift templates",
+      "WEEK_PREV": "Previous week",
+      "WEEK_NEXT": "Next week",
+      "WEEK_TODAY": "Today",
+      "DAY_OFF": "Day off. Blocks cannot be posted or changed for this date.",
+      "ROLE_REQUIRED": "Select a job role.",
+      "TIME_INVALID": "Enter a valid start and end time.",
+      "POST_ERROR": "Failed to post the block.",
+      "LOAD_ERROR": "Failed to load the day schedule.",
+      "EMPTY_DAY": "No blocks for this day yet. Post the first block above.",
+      "PENDING_ASSIGN_HINT": "Pick an employee card to assign them to the selected block.",
+      "ASSIGN_ERROR": "Failed to assign the employee.",
+      "REMOVE_ERROR": "Failed to update the block.",
+      "CONFLICT_TITLE": "Assignment needs confirmation",
+      "OVERRIDE_REASON": "Reason (optional)",
+      "ASSIGN_ANYWAY": "Assign anyway",
+      "REMOVE_TITLE": "Update block",
+      "REMOVE_MESSAGE": "Unassign the employee or delete the block entirely?",
+      "UNASSIGN": "Unassign",
+      "CONFIRM_PUBLISHED": "I understand this deletes a published block.",
+      "WEEK_COVERED": "Covered",
+      "WEEK_MISSING": "Missing resources",
+      "WEEK_OVERTIME": "Overtime risk",
+      "WEEK_EMPTY": "No allocations",
+      "WEEK_DAY_OFF": "Day off"
+    },
+    "PICKER": {
+      "TITLE": "Apply shift template",
+      "SEARCH_PLACEHOLDER": "Search templates...",
+      "LOAD_ERROR": "Failed to load templates.",
+      "EMPTY": "No templates found.",
+      "ASSIGNED_SITES": "Assigned sites",
+      "KEEP_EXISTING": "Keep existing blocks",
+      "REPLACE": "Replace with template",
+      "APPLY": "Apply template",
+      "TEMPLATE_REQUIRED": "Select a template first.",
+      "APPLY_ERROR": "Failed to apply the template.",
+      "WARNINGS_TITLE": "Applied with warnings:"
+    },
+    "SAVE": {
+      "BUTTON": "Save as template",
+      "TITLE": "Save day as template",
+      "NAME_PLACEHOLDER": "Template name (optional)",
+      "CONFIRM": "Save template",
+      "SAVE_ERROR": "Failed to save the template.",
+      "SUCCESS": "Template saved"
+    },
+    "PUBLISH": {
+      "BUTTON": "Publish",
+      "TITLE": "Publish day",
+      "UNQUALIFIED": "Unqualified assignments",
+      "OVERTIME": "Overtime violations",
+      "JUSTIFICATION_PLACEHOLDER": "Overtime justification (optional)",
+      "CONFIRM": "Confirm publish",
+      "PUBLISH_ERROR": "Failed to publish the day."
+    },
+    "VALIDATE": {
+      "TITLE": "Warnings found — post anyway?",
+      "CONFIRM": "Post anyway"
+    },
+    "COPY": {
+      "BUTTON": "Copy day",
+      "TITLE": "Copy day to dates",
+      "SOURCE": "Source",
+      "MODE_DATES": "Dates",
+      "MODE_RECURRING": "Recurring",
+      "WEEKS": "Weeks",
+      "ASSIGNMENTS": "Copy employee assignments",
+      "CHECK": "Check conflicts",
+      "CONFLICTS": "Dates with existing shifts",
+      "SKIP": "skip",
+      "REPLACE_ALL": "Replace all conflicting dates",
+      "CONFIRM": "Confirm copy",
+      "TARGETS_REQUIRED": "Pick at least one target date.",
+      "COPY_ERROR": "Failed to copy the day."
     }
   },
   "AUTH": {

@@ -97,7 +97,8 @@
       "NO_RANGE": "حدد نطاقاً زمنياً صحيحاً للوردية لرؤية الخط الزمني.",
       "EDIT_BLOCK": "تعديل المقطع",
       "ASSIGN_BLOCK": "إسناد موظف",
-      "DELETE_BLOCK": "حذف المقطع"
+      "DELETE_BLOCK": "حذف المقطع",
+      "LOCKED": "مقفل (منشور)"
     },
     "STRIP": {
       "TITLE": "الموظفون",
@@ -112,6 +113,112 @@
       "RISK_OVERTIME": "خطر عمل إضافي",
       "RISK_WARNING": "تحذير",
       "RISK_NORMAL": "طبيعي"
+    }
+  },
+  "SHIFT_MANAGEMENT": {
+    "OVERVIEW": {
+      "TITLE": "إدارة الورديات",
+      "SEARCH_PLACEHOLDER": "ابحث عن المواقع...",
+      "ALL_REGIONS": "كل المناطق",
+      "SHIFTS_COUNT": "عدد الورديات",
+      "SMART_ASSIGNMENT": "التعيين الذكي",
+      "SMART_POSTING": "النشر الذكي",
+      "EXPORT": "تصدير",
+      "LOAD_ERROR": "فشل تحميل المواقع.",
+      "EMPTY": "لا توجد مواقع.",
+      "SMART_ERROR": "فشل تحديث الإعدادات الذكية."
+    },
+    "STATUS": {
+      "COVERED": "مغطاة",
+      "SHORTAGE": "نقص",
+      "OVERTIME_RISK": "خطر العمل الإضافي",
+      "UNQUALIFIED": "تعيين غير مؤهل"
+    },
+    "PREVIEW": {
+      "LOAD_ERROR": "فشل تحميل بيانات الموظف.",
+      "JOINED": "تاريخ الانضمام",
+      "HOURLY_RATE": "الأجر بالساعة",
+      "CAREER_HOURS": "الساعات المنجزة منذ الانضمام",
+      "QUALIFICATIONS": "مؤهلات الموظف"
+    },
+    "BOARD": {
+      "BACK": "عودة إلى المواقع",
+      "COST": "تكلفة اليوم",
+      "TEMPLATE_PICKER": "قوالب الورديات",
+      "WEEK_PREV": "الأسبوع السابق",
+      "WEEK_NEXT": "الأسبوع التالي",
+      "WEEK_TODAY": "اليوم",
+      "DAY_OFF": "يوم إجازة. لا يمكن إضافة مقاطع أو تعديلها في هذا التاريخ.",
+      "ROLE_REQUIRED": "اختر الدور الوظيفي.",
+      "TIME_INVALID": "أدخل وقت بداية ونهاية صحيحين.",
+      "POST_ERROR": "فشل إضافة المقطع.",
+      "LOAD_ERROR": "فشل تحميل جدول اليوم.",
+      "EMPTY_DAY": "لا توجد مقاطع لهذا اليوم بعد. أضف أول مقطع أعلاه.",
+      "PENDING_ASSIGN_HINT": "اختر بطاقة موظف لإسناده إلى المقطع المحدد.",
+      "ASSIGN_ERROR": "فشل إسناد الموظف.",
+      "REMOVE_ERROR": "فشل تحديث المقطع.",
+      "CONFLICT_TITLE": "التعيين يحتاج إلى تأكيد",
+      "OVERRIDE_REASON": "السبب (اختياري)",
+      "ASSIGN_ANYWAY": "إسناد على أي حال",
+      "REMOVE_TITLE": "تحديث المقطع",
+      "REMOVE_MESSAGE": "إلغاء إسناد الموظف أم حذف المقطع نهائياً؟",
+      "UNASSIGN": "إلغاء الإسناد",
+      "CONFIRM_PUBLISHED": "أدرك أن هذا سيحذف مقطعاً منشوراً.",
+      "WEEK_COVERED": "مغطاة",
+      "WEEK_MISSING": "نقص في الموارد",
+      "WEEK_OVERTIME": "خطر العمل الإضافي",
+      "WEEK_EMPTY": "لا توجد تخصيصات",
+      "WEEK_DAY_OFF": "يوم إجازة"
+    },
+    "PICKER": {
+      "TITLE": "تطبيق قالب وردية",
+      "SEARCH_PLACEHOLDER": "ابحث عن القوالب...",
+      "LOAD_ERROR": "فشل تحميل القوالب.",
+      "EMPTY": "لا توجد قوالب.",
+      "ASSIGNED_SITES": "المواقع المسندة",
+      "KEEP_EXISTING": "الاحتفاظ بالمقاطع الحالية",
+      "REPLACE": "استبدال بالقالب",
+      "APPLY": "تطبيق القالب",
+      "TEMPLATE_REQUIRED": "اختر قالباً أولاً.",
+      "APPLY_ERROR": "فشل تطبيق القالب.",
+      "WARNINGS_TITLE": "تم التطبيق مع تحذيرات:"
+    },
+    "SAVE": {
+      "BUTTON": "حفظ كقالب",
+      "TITLE": "حفظ اليوم كقالب",
+      "NAME_PLACEHOLDER": "اسم القالب (اختياري)",
+      "CONFIRM": "حفظ القالب",
+      "SAVE_ERROR": "فشل حفظ القالب.",
+      "SUCCESS": "تم حفظ القالب"
+    },
+    "PUBLISH": {
+      "BUTTON": "نشر",
+      "TITLE": "نشر اليوم",
+      "UNQUALIFIED": "تعيينات غير مؤهلة",
+      "OVERTIME": "مخالفات العمل الإضافي",
+      "JUSTIFICATION_PLACEHOLDER": "مبرر العمل الإضافي (اختياري)",
+      "CONFIRM": "تأكيد النشر",
+      "PUBLISH_ERROR": "فشل نشر اليوم."
+    },
+    "VALIDATE": {
+      "TITLE": "تم العثور على تحذيرات — هل تريد النشر على أي حال؟",
+      "CONFIRM": "انشر على أي حال"
+    },
+    "COPY": {
+      "BUTTON": "نسخ اليوم",
+      "TITLE": "نسخ اليوم إلى تواريخ",
+      "SOURCE": "المصدر",
+      "MODE_DATES": "تواريخ",
+      "MODE_RECURRING": "متكرر",
+      "WEEKS": "أسابيع",
+      "ASSIGNMENTS": "نسخ تعيينات الموظفين",
+      "CHECK": "فحص التعارضات",
+      "CONFLICTS": "تواريخ بها ورديات موجودة",
+      "SKIP": "تخطي",
+      "REPLACE_ALL": "استبدال كل التواريخ المتعارضة",
+      "CONFIRM": "تأكيد النسخ",
+      "TARGETS_REQUIRED": "اختر تاريخا واحدا على الأقل.",
+      "COPY_ERROR": "فشل نسخ اليوم."
     }
   },
   "AUTH": {

@@ -20,6 +20,8 @@ interface BarView {
   time: string;
   assigned: boolean;
   assigneeName: string | null;
+  statusColor: string | null;
+  locked: boolean;
   top: number;
   startPct: number;
   widthPct: number;
@@ -59,6 +61,9 @@ export class ShiftTimelineComponent {
   readonly deleteBlock = output<string | number>();
   readonly dropOnBlock = output<{ id: string | number; data: unknown }>();
 
+  /** Hosts without an edit affordance (e.g. no update endpoint) hide the edit button. */
+  readonly hideEdit = input(false);
+
   readonly valid = computed(() => {
     const start = this.rangeStart();
     const end = this.rangeEnd();
@@ -84,6 +89,8 @@ export class ShiftTimelineComponent {
       time: `${this.tickLabel(b.start)} - ${this.tickLabel(b.end)}`,
       assigned: b.assigned,
       assigneeName: b.assigneeName ?? null,
+      statusColor: b.statusColor ?? null,
+      locked: b.locked ?? false,
       top: (byId.get(b.id) ?? 0) * LANE_HEIGHT,
       startPct: toPercent(b.start, start, end),
       widthPct: Math.max(toPercent(b.end, start, end) - toPercent(b.start, start, end), 0),

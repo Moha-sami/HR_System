@@ -1,0 +1,651 @@
+<div class="p-6" cdkDropListGroup>
+  <!-- ── Header ──────────────────────────────────────────────── -->
+  <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+    <div class="flex items-center gap-3">
+      <button
+        type="button"
+        class="rounded-md px-2 py-1 text-sm font-medium text-primary-600 hover:bg-primary-50"
+        (click)="backToOverview()"
+      >
+        {{ 'SHIFT_MANAGEMENT.BOARD.BACK' | translate }}
+      </button>
+      <h1 class="text-2xl font-semibold text-neutral-500">
+        {{ schedule()?.siteName ?? '' }}
+      </h1>
+      <span class="text-2xl font-semibold text-primary-600">{{ selectedDate() }}</span>
+    </div>
+    <div class="flex items-center gap-3">
+      @if (schedule() !== null) {
+        <span class="text-sm text-neutral-600">
+          {{ 'SHIFT_MANAGEMENT.BOARD.COST' | translate }}: {{ schedule()?.totalCost }}
+        </span>
+      }
+      <app-button
+        variant="primary"
+        (clicked)="openPicker()"
+      >
+        {{ 'SHIFT_MANAGEMENT.BOARD.TEMPLATE_PICKER' | translate }}
+      </app-button>
+      <app-button
+        variant="primary"
+        (clicked)="openSaveModal()"
+      >
+        {{ 'SHIFT_MANAGEMENT.SAVE.BUTTON' | translate }}
+      </app-button>
+      <app-button
+        variant="primary"
+        [loading]="publishing()"
+        [disabled]="publishing()"
+        (clicked)="openPublish()"
+      >
+        {{ 'SHIFT_MANAGEMENT.PUBLISH.BUTTON' | translate }}
+      </app-button>
+      <app-button
+        variant="primary"
+        (clicked)="openCopy()"
+      >
+        {{ 'SHIFT_MANAGEMENT.COPY.BUTTON' | translate }}
+      </app-button>
+    </div>
+  </div>
+
+  @if (publishError() && !showPublishModal()) {
+    <p role="alert" class="mb-4 text-sm text-error-600">{{ publishError() }}</p>
+  }
+
+  <!-- ── Loading / load error ────────────────────────────────── -->
+  @if (loading()) {
+    <div class="flex items-center justify-center gap-3 py-10">
+      <span class="size-6 animate-spin rounded-full border-2 border-primary-200 border-t-primary-600"></span>
+      <p class="text-sm text-neutral-500">{{ 'COMMON.LOADING' | translate }}</p>
+    </div>
+  }
+  @if (loadError() && !loading()) {
+    <div class="mb-4 flex items-center justify-between rounded-lg border border-error-200 bg-error-50 px-4 py-3">
+      <p class="text-sm text-error-600">{{ 'SHIFT_MANAGEMENT.BOARD.LOAD_ERROR' | translate }}</p>
+      <button
+        type="button"
+        class="rounded-md px-3 py-1.5 text-sm font-medium text-primary-600 hover:bg-primary-50"
+        (click)="loadDay()"
+      >
+        {{ 'COMMON.RETRY' | translate }}
+      </button>
+    </div>
+  }
+
+  @if (!loading() && !loadError() && schedule() !== null) {
+    <!-- ── Week strip ────────────────────────────────────────── -->
+    <div class="mb-4 flex items-center gap-2">
+      <button
+        type="button"
+        class="rounded-md px-2 py-1 text-sm font-medium text-primary-600 hover:bg-primary-50"
+        [attr.aria-label]="'SHIFT_MANAGEMENT.BOARD.WEEK_PREV' | translate"
+        (click)="shiftWeek(-7)"
+      >
+        ‹
+      </button>
+      <button
+        type="button"
+        class="rounded-md px-2 py-1 text-sm font-medium text-primary-600 hover:bg-primary-50"
+        (click)="goToday()"
+      >
+        {{ 'SHIFT_MANAGEMENT.BOARD.WEEK_TODAY' | translate }}
+      </button>
+      @for (day of schedule()?.week ?? []; track day.date) {
+        <button
+          type="button"
+          class="flex min-w-14 flex-col items-center rounded-lg border px-2 py-1.5 text-sm"
+          [class.border-primary-600]="day.date === selectedDate()"
+          [class.bg-primary-50]="day.date === selectedDate()"
+          [class.border-neutral-200]="day.date !== selectedDate()"
+          [class.opacity-50]="day.isDayOff"
+          (click)="selectDay(day.date)"
+        >
+          <span class="text-xs text-neutral-500">{{ dayName(day.date) }}</span>
+          <span class="font-medium text-neutral-800">{{ dayNumber(day.date) }}</span>
+          <span class="mt-1 size-2 rounded-full" [ngClass]="weekDot(day.status)"></span>
+        </button>
+      }
+      <button
+        type="button"
+        class="rounded-md px-2 py-1 text-sm font-medium text-primary-600 hover:bg-primary-50"
+        [attr.aria-label]="'SHIFT_MANAGEMENT.BOARD.WEEK_NEXT' | translate"
+        (click)="shiftWeek(7)"
+      >
+        ›
+      </button>
+    </div>
+    <div class="mb-4 flex flex-wrap gap-3 text-xs text-neutral-500">
+      <span class="flex items-center gap-1">
+        <span class="size-2 rounded-full bg-success-500" aria-hidden="true"></span>
+        {{ 'SHIFT_MANAGEMENT.BOARD.WEEK_COVERED' | translate }}
+      </span>
+      <span class="flex items-center gap-1">
+        <span class="size-2 rounded-full bg-warning-500" aria-hidden="true"></span>
+        {{ 'SHIFT_MANAGEMENT.BOARD.WEEK_MISSING' | translate }}
+      </span>
+      <span class="flex items-center gap-1">
+        <span class="size-2 rounded-full bg-purple-500" aria-hidden="true"></span>
+        {{ 'SHIFT_MANAGEMENT.BOARD.WEEK_OVERTIME' | translate }}
+      </span>
+      <span class="flex items-center gap-1">
+        <span class="size-2 rounded-full bg-neutral-300" aria-hidden="true"></span>
+        {{ 'SHIFT_MANAGEMENT.BOARD.WEEK_EMPTY' | translate }}
+      </span>
+      <span class="flex items-center gap-1">
+        <span class="size-2 rounded-full bg-neutral-200" aria-hidden="true"></span>
+        {{ 'SHIFT_MANAGEMENT.BOARD.WEEK_DAY_OFF' | translate }}
+      </span>
+    </div>
+    @if (schedule()?.isDayOff) {
+      <p class="mb-4 rounded-lg border border-neutral-200 bg-neutral-50 px-4 py-3 text-sm text-neutral-500">
+        {{ 'SHIFT_MANAGEMENT.BOARD.DAY_OFF' | translate }}
+      </p>
+    }
+
+    <!-- ── Slim builder ──────────────────────────────────────── -->
+    <div class="mb-3 flex flex-wrap items-center gap-3">
+      <span class="text-sm text-neutral-600">{{ 'SHIFT_TEMPLATES.EDITOR.BLOCK_START' | translate }}</span>
+      <input
+        type="text"
+        class="w-16 rounded-lg border border-neutral-200 bg-neutral-50 px-2 py-2 text-center text-sm outline-none focus:border-primary-500 disabled:opacity-50"
+        aria-label="Block start time"
+        [disabled]="(schedule()?.isDayOff ?? false)"
+        [ngModel]="rowStartHm()"
+        (ngModelChange)="rowStartHm.set($event)"
+      />
+      <select
+        class="rounded-lg border border-neutral-200 bg-neutral-50 px-2 py-2 text-sm text-primary-600 outline-none focus:border-primary-500 disabled:opacity-50"
+        aria-label="Block start meridiem"
+        [disabled]="(schedule()?.isDayOff ?? false)"
+        [ngModel]="rowStartMer()"
+        (ngModelChange)="rowStartMer.set($event)"
+      >
+        <option value="AM">AM</option>
+        <option value="PM">PM</option>
+      </select>
+
+      <span class="text-sm text-neutral-600">{{ 'SHIFT_TEMPLATES.EDITOR.BLOCK_END' | translate }}</span>
+      <input
+        type="text"
+        class="w-16 rounded-lg border border-neutral-200 bg-neutral-50 px-2 py-2 text-center text-sm outline-none focus:border-primary-500 disabled:opacity-50"
+        aria-label="Block end time"
+        [disabled]="(schedule()?.isDayOff ?? false)"
+        [ngModel]="rowEndHm()"
+        (ngModelChange)="rowEndHm.set($event)"
+      />
+      <select
+        class="rounded-lg border border-neutral-200 bg-neutral-50 px-2 py-2 text-sm text-primary-600 outline-none focus:border-primary-500 disabled:opacity-50"
+        aria-label="Block end meridiem"
+        [disabled]="(schedule()?.isDayOff ?? false)"
+        [ngModel]="rowEndMer()"
+        (ngModelChange)="rowEndMer.set($event)"
+      >
+        <option value="AM">AM</option>
+        <option value="PM">PM</option>
+      </select>
+
+      <span class="text-sm text-neutral-600">{{ 'SHIFT_TEMPLATES.EDITOR.ROLE' | translate }}</span>
+      <select
+        class="rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2 text-sm outline-none focus:border-primary-500 disabled:opacity-50"
+        aria-label="Block job role"
+        [disabled]="(schedule()?.isDayOff ?? false)"
+        [ngModel]="rowRoleId()"
+        (ngModelChange)="rowRoleId.set($event === '' ? null : +$event)"
+      >
+        <option [ngValue]="null">—</option>
+        @for (role of roles(); track role.id) {
+          <option [ngValue]="role.id">{{ role.title }}</option>
+        }
+      </select>
+
+      <app-button
+        variant="primary"
+        [loading]="posting()"
+        [disabled]="posting() || (schedule()?.isDayOff ?? false)"
+        (clicked)="postBlock()"
+      >
+        {{ 'SHIFT_TEMPLATES.EDITOR.POST_BLOCK' | translate }}
+      </app-button>
+    </div>
+    @if (rowError()) {
+      <p role="alert" class="mb-3 text-sm text-error-600">{{ rowError() | translate }}</p>
+    }
+
+    <!-- ── Candidate strip ───────────────────────────────────── -->
+    <app-employee-strip
+      [siteIds]="[siteId()]"
+      [assignedIds]="assignedIds()"
+      (cardClick)="onStripClick($event)"
+    />
+    @if (pendingAssign() !== null) {
+      <div class="mb-3 flex items-center justify-between rounded-lg border border-primary-200 bg-primary-50 px-4 py-2">
+        <p class="text-sm text-primary-700">{{ 'SHIFT_MANAGEMENT.BOARD.PENDING_ASSIGN_HINT' | translate }}</p>
+        <button
+          type="button"
+          class="text-sm font-medium text-primary-600 hover:text-primary-800"
+          (click)="cancelPendingAssign()"
+        >
+          {{ 'COMMON.CANCEL' | translate }}
+        </button>
+      </div>
+    }
+
+    <!-- ── Day timeline ──────────────────────────────────────── -->
+    @if (timelineBlocks().length > 0) {
+      <app-shift-timeline
+        [blocks]="timelineBlocks()"
+        [rangeStart]="rangeStart()"
+        [rangeEnd]="rangeEnd()"
+        [hideEdit]="true"
+        (assignBlock)="onTimelineAssign($event)"
+        (deleteBlock)="onTimelineDelete($event)"
+        (dropOnBlock)="onStripDrop($event)"
+      />
+    } @else {
+      <p class="mb-4 rounded-lg border border-dashed border-neutral-300 bg-neutral-50 px-4 py-6 text-center text-sm text-neutral-400">
+        {{ 'SHIFT_MANAGEMENT.BOARD.EMPTY_DAY' | translate }}
+      </p>
+    }
+
+    @if (actionError()) {
+      <p role="alert" class="mb-4 text-sm text-error-600">{{ actionError() | translate }}</p>
+    }
+  }
+</div>
+
+<!-- ── Conflict confirm modal ──────────────────────────────── -->
+@if (conflict() !== null) {
+  <app-modal
+    size="small"
+    [showHeader]="false"
+    [showActions]="false"
+    (closed)="closeConflict()"
+  >
+    <app-modal-body>
+      <div class="flex flex-col gap-3 p-2">
+        <h3 class="text-lg font-semibold text-neutral-900">{{ 'SHIFT_MANAGEMENT.BOARD.CONFLICT_TITLE' | translate }}</h3>
+        @for (warning of conflict()?.warnings ?? []; track warning.message) {
+          <p class="text-sm text-warning-800">{{ warning.message }}</p>
+        }
+        <input
+          type="text"
+          class="w-full rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2 text-sm outline-none focus:border-primary-500"
+          [placeholder]="'SHIFT_MANAGEMENT.BOARD.OVERRIDE_REASON' | translate"
+          [ngModel]="overrideReason()"
+          (ngModelChange)="overrideReason.set($event)"
+        />
+        <div class="mt-1 flex items-center justify-end gap-3">
+          <app-button variant="secondary" (clicked)="closeConflict()">
+            {{ 'COMMON.CANCEL' | translate }}
+          </app-button>
+          <app-button variant="primary" [loading]="assigning()" [disabled]="assigning()" (clicked)="confirmConflict()">
+            {{ 'SHIFT_MANAGEMENT.BOARD.ASSIGN_ANYWAY' | translate }}
+          </app-button>
+        </div>
+      </div>
+    </app-modal-body>
+  </app-modal>
+}
+
+<!-- ── Unassign / delete modal ─────────────────────────────── -->
+@if (removeTarget() !== null) {
+  <app-modal
+    size="small"
+    [showHeader]="false"
+    [showActions]="false"
+    (closed)="closeRemove()"
+  >
+    <app-modal-body>
+      <div class="flex flex-col gap-3 p-2">
+        <h3 class="text-lg font-semibold text-neutral-900">{{ 'SHIFT_MANAGEMENT.BOARD.REMOVE_TITLE' | translate }}</h3>
+        <p class="text-sm text-neutral-600">{{ 'SHIFT_MANAGEMENT.BOARD.REMOVE_MESSAGE' | translate }}</p>
+        @if (removeTarget()?.isPublished) {
+          <label class="flex cursor-pointer items-center gap-2 text-sm text-neutral-700">
+            <input
+              type="checkbox"
+              class="size-4 accent-error-600"
+              [checked]="confirmPublished()"
+              (change)="toggleConfirmPublished($event)"
+            />
+            {{ 'SHIFT_MANAGEMENT.BOARD.CONFIRM_PUBLISHED' | translate }}
+          </label>
+        }
+        <div class="mt-1 flex items-center justify-end gap-3">
+          @if (removeTarget()?.employeeId !== null) {
+            <app-button variant="secondary" [disabled]="removing()" (clicked)="unassignBlock()">
+              {{ 'SHIFT_MANAGEMENT.BOARD.UNASSIGN' | translate }}
+            </app-button>
+          }
+          <app-button
+            variant="danger"
+            [loading]="removing()"
+            [disabled]="removing() || ((removeTarget()?.isPublished ?? false) && !confirmPublished())"
+            (clicked)="deleteBlock()"
+          >
+            {{ 'COMMON.DELETE' | translate }}
+          </app-button>
+        </div>
+      </div>
+    </app-modal-body>
+  </app-modal>
+}
+
+<!-- ── Candidate preview ───────────────────────────────────── -->
+@if (previewEmployeeId() !== null) {
+  <app-candidate-preview
+    [employeeId]="previewEmployeeId()"
+    (closed)="previewEmployeeId.set(null)"
+  />
+}
+
+<!-- ── Template picker ─────────────────────────────────────── -->
+@if (showPicker()) {
+  <app-template-picker
+    [siteId]="siteId()"
+    [date]="selectedDate()"
+    (applied)="onPickerApplied()"
+    (closed)="closePicker()"
+  />
+}
+
+<!-- ── Save day as template ──────────────────────────────── -->
+@if (showCopyModal()) {
+  <app-modal
+    size="small"
+    [showHeader]="false"
+    [showActions]="false"
+    (closed)="closeCopyModal()"
+  >
+    <app-modal-body>
+      <div class="flex flex-col gap-3 p-2">
+        <h3 class="text-lg font-semibold text-neutral-900">{{ 'SHIFT_MANAGEMENT.COPY.TITLE' | translate }}</h3>
+        @if (copySuccess() === null) {
+          <p class="text-sm text-neutral-600">
+            {{ 'SHIFT_MANAGEMENT.COPY.SOURCE' | translate }}: {{ selectedDate() }}
+          </p>
+          @if (copyPreflight() === null) {
+            <div class="flex items-center gap-3">
+              <button
+                type="button"
+                class="rounded-md px-3 py-1.5 text-sm font-medium"
+                [class.text-primary-600]="copyMode() === 'dates'"
+                [class.text-neutral-500]="copyMode() !== 'dates'"
+                (click)="copyMode.set('dates')"
+              >
+                {{ 'SHIFT_MANAGEMENT.COPY.MODE_DATES' | translate }}
+              </button>
+              <button
+                type="button"
+                class="rounded-md px-3 py-1.5 text-sm font-medium"
+                [class.text-primary-600]="copyMode() === 'recurring'"
+                [class.text-neutral-500]="copyMode() !== 'recurring'"
+                (click)="copyMode.set('recurring')"
+              >
+                {{ 'SHIFT_MANAGEMENT.COPY.MODE_RECURRING' | translate }}
+              </button>
+            </div>
+            @if (copyMode() === 'dates') {
+              <div class="flex max-h-48 flex-col gap-1 overflow-y-auto">
+                @for (iso of copyDayOptions(); track iso) {
+                  <label class="flex cursor-pointer items-center gap-2 px-1 py-1 text-sm text-neutral-700 hover:bg-neutral-50">
+                    <input
+                      type="checkbox"
+                      class="size-4 accent-primary-600"
+                      [checked]="pickedCopyDates().includes(iso)"
+                      (change)="toggleCopyDate(iso, $any($event.target).checked)"
+                    />
+                    {{ iso }}
+                  </label>
+                }
+              </div>
+            } @else {
+              <div class="flex flex-wrap gap-2">
+                @for (day of weekdayOptions(); track day.value) {
+                  <label class="flex cursor-pointer items-center gap-1 text-sm text-neutral-700">
+                    <input
+                      type="checkbox"
+                      class="size-4 accent-primary-600"
+                      [checked]="pickedWeekdays().includes(day.value)"
+                      (change)="toggleWeekday(day.value, $any($event.target).checked)"
+                    />
+                    {{ day.label }}
+                  </label>
+                }
+              </div>
+              <label class="flex items-center gap-2 text-sm text-neutral-600">
+                {{ 'SHIFT_MANAGEMENT.COPY.WEEKS' | translate }}
+                <input
+                  type="number"
+                  min="1"
+                  max="12"
+                  class="w-20 rounded-lg border border-neutral-200 bg-neutral-50 px-2 py-1 text-sm outline-none focus:border-primary-500"
+                  [ngModel]="copyWeekCount()"
+                  (ngModelChange)="copyWeekCount.set($event)"
+                />
+              </label>
+            }
+            <label class="flex cursor-pointer items-center gap-2 text-sm text-neutral-600">
+              <input
+                type="checkbox"
+                class="size-4 accent-primary-600"
+                [checked]="copyAssignments()"
+                (change)="copyAssignments.set($any($event.target).checked)"
+              />
+              {{ 'SHIFT_MANAGEMENT.COPY.ASSIGNMENTS' | translate }}
+            </label>
+          } @else {
+            <h4 class="text-sm font-medium text-neutral-700">{{ 'SHIFT_MANAGEMENT.COPY.CONFLICTS' | translate }}</h4>
+            <ul class="flex max-h-48 flex-col gap-1 overflow-y-auto">
+              @for (d of copyPreflight()?.conflictingDates ?? []; track d.date) {
+                <li>
+                  <label class="flex cursor-pointer items-center gap-2 px-1 py-1 text-sm text-neutral-600 hover:bg-neutral-50">
+                    <input
+                      type="checkbox"
+                      class="size-4 accent-primary-600"
+                      [checked]="skipCopyDates().includes(d.date)"
+                      (change)="toggleSkipCopyDate(d.date, $any($event.target).checked)"
+                    />
+                    {{ d.date }} · {{ d.shiftCount }} ({{ 'SHIFT_MANAGEMENT.COPY.SKIP' | translate }})
+                  </label>
+                </li>
+              }
+            </ul>
+            <label class="flex cursor-pointer items-center gap-2 text-sm text-neutral-600">
+              <input
+                type="checkbox"
+                class="size-4 accent-primary-600"
+                [checked]="replaceAllCopy()"
+                (change)="replaceAllCopy.set($any($event.target).checked)"
+              />
+              {{ 'SHIFT_MANAGEMENT.COPY.REPLACE_ALL' | translate }}
+            </label>
+          }
+          @if (copyError()) {
+            <p role="alert" class="text-sm text-error-600">{{ copyError() }}</p>
+          }
+          <div class="mt-1 flex items-center justify-end gap-3">
+            <app-button variant="secondary" (clicked)="closeCopyModal()">
+              {{ 'COMMON.CANCEL' | translate }}
+            </app-button>
+            @if (copyPreflight() === null) {
+              <app-button
+                variant="primary"
+                [loading]="copying()"
+                [disabled]="copying()"
+                (clicked)="runCopyPreflight()"
+              >
+                {{ 'SHIFT_MANAGEMENT.COPY.CHECK' | translate }}
+              </app-button>
+            } @else {
+              <app-button
+                variant="primary"
+                [loading]="copying()"
+                [disabled]="copying()"
+                (clicked)="confirmCopy()"
+              >
+                {{ 'SHIFT_MANAGEMENT.COPY.CONFIRM' | translate }}
+              </app-button>
+            }
+          </div>
+        } @else {
+          <p class="text-sm text-neutral-600">{{ copySuccess()?.message }}</p>
+          <div class="mt-1 flex items-center justify-end gap-3">
+            <app-button variant="primary" (clicked)="closeCopyModal()">
+              {{ 'COMMON.OK' | translate }}
+            </app-button>
+          </div>
+        }
+      </div>
+    </app-modal-body>
+  </app-modal>
+}
+
+@if (showPublishModal()) {
+  <app-modal
+    size="small"
+    [showHeader]="false"
+    [showActions]="false"
+    (closed)="closePublishModal()"
+  >
+    <app-modal-body>
+      <div class="flex flex-col gap-3 p-2">
+        <h3 class="text-lg font-semibold text-neutral-900">{{ 'SHIFT_MANAGEMENT.PUBLISH.TITLE' | translate }}</h3>
+        @if (publishSuccess() === null) {
+          @if ((preflight()?.unqualifiedAssignees?.length ?? 0) > 0) {
+            <h4 class="text-sm font-medium text-neutral-700">{{ 'SHIFT_MANAGEMENT.PUBLISH.UNQUALIFIED' | translate }}</h4>
+            <ul class="flex flex-col gap-1">
+              @for (v of preflight()?.unqualifiedAssignees ?? []; track v.shiftId) {
+                <li class="text-sm text-neutral-600">
+                  {{ v.employeeName }} · {{ v.requiredRoleTitle }} ({{ v.employeeRoleTitle }}) · {{ v.formattedTime }}
+                </li>
+              }
+            </ul>
+          }
+          @if ((preflight()?.overtimeViolations?.length ?? 0) > 0) {
+            <h4 class="text-sm font-medium text-neutral-700">{{ 'SHIFT_MANAGEMENT.PUBLISH.OVERTIME' | translate }}</h4>
+            <ul class="flex flex-col gap-1">
+              @for (v of preflight()?.overtimeViolations ?? []; track v.shiftId) {
+                <li class="text-sm text-neutral-600">
+                  {{ v.employeeName }} · {{ v.violationReason }} · {{ v.formattedTime }}
+                </li>
+              }
+            </ul>
+          }
+          <input
+            type="text"
+            class="w-full rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2 text-sm outline-none focus:border-primary-500"
+            [placeholder]="'SHIFT_MANAGEMENT.PUBLISH.JUSTIFICATION_PLACEHOLDER' | translate"
+            [ngModel]="justification()"
+            (ngModelChange)="justification.set($event)"
+          />
+          @if (publishError()) {
+            <p role="alert" class="text-sm text-error-600">{{ publishError() }}</p>
+          }
+          <div class="mt-1 flex items-center justify-end gap-3">
+            <app-button variant="secondary" (clicked)="closePublishModal()">
+              {{ 'COMMON.CANCEL' | translate }}
+            </app-button>
+            <app-button
+              variant="primary"
+              [loading]="publishing()"
+              [disabled]="publishing()"
+              (clicked)="confirmPublish()"
+            >
+              {{ 'SHIFT_MANAGEMENT.PUBLISH.CONFIRM' | translate }}
+            </app-button>
+          </div>
+        } @else {
+          <p class="text-sm text-neutral-600">{{ publishSuccess()?.message }}</p>
+          <div class="mt-1 flex items-center justify-end gap-3">
+            <app-button variant="primary" (clicked)="closePublishModal()">
+              {{ 'COMMON.OK' | translate }}
+            </app-button>
+          </div>
+        }
+      </div>
+    </app-modal-body>
+  </app-modal>
+}
+
+@if (showValidateModal()) {
+  <app-modal
+    size="small"
+    [showHeader]="false"
+    [showActions]="false"
+    (closed)="closeValidateModal()"
+  >
+    <app-modal-body>
+      <div class="flex flex-col gap-3 p-2">
+        <h3 class="text-lg font-semibold text-neutral-900">{{ 'SHIFT_MANAGEMENT.VALIDATE.TITLE' | translate }}</h3>
+        <ul class="flex flex-col gap-1">
+          @for (w of validateWarnings(); track w) {
+            <li class="text-sm text-neutral-600">{{ w }}</li>
+          }
+        </ul>
+        <div class="mt-1 flex items-center justify-end gap-3">
+          <app-button variant="secondary" (clicked)="closeValidateModal()">
+            {{ 'COMMON.CANCEL' | translate }}
+          </app-button>
+          <app-button
+            variant="primary"
+            [loading]="posting()"
+            [disabled]="posting()"
+            (clicked)="confirmValidatePost()"
+          >
+            {{ 'SHIFT_MANAGEMENT.VALIDATE.CONFIRM' | translate }}
+          </app-button>
+        </div>
+      </div>
+    </app-modal-body>
+  </app-modal>
+}
+
+@if (showSaveModal()) {
+  <app-modal
+    size="small"
+    [showHeader]="false"
+    [showActions]="false"
+    (closed)="closeSaveModal()"
+  >
+    <app-modal-body>
+      <div class="flex flex-col gap-3 p-2">
+        <h3 class="text-lg font-semibold text-neutral-900">{{ 'SHIFT_MANAGEMENT.SAVE.TITLE' | translate }}</h3>
+        @if (savedTemplateName() === null) {
+          <input
+            type="text"
+            class="w-full rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2 text-sm outline-none focus:border-primary-500"
+            [placeholder]="'SHIFT_MANAGEMENT.SAVE.NAME_PLACEHOLDER' | translate"
+            [ngModel]="saveName()"
+            (ngModelChange)="saveName.set($event)"
+          />
+          @if (saveError()) {
+            <p role="alert" class="text-sm text-error-600">{{ saveError() }}</p>
+          }
+          <div class="mt-1 flex items-center justify-end gap-3">
+            <app-button variant="secondary" (clicked)="closeSaveModal()">
+              {{ 'COMMON.CANCEL' | translate }}
+            </app-button>
+            <app-button
+              variant="primary"
+              [loading]="saving()"
+              [disabled]="saving()"
+              (clicked)="confirmSave()"
+            >
+              {{ 'SHIFT_MANAGEMENT.SAVE.CONFIRM' | translate }}
+            </app-button>
+          </div>
+        } @else {
+          <p class="text-sm text-neutral-600">
+            {{ 'SHIFT_MANAGEMENT.SAVE.SUCCESS' | translate }}: {{ savedTemplateName() }}
+          </p>
+          <div class="mt-1 flex items-center justify-end gap-3">
+            <app-button variant="primary" (clicked)="closeSaveModal()">
+              {{ 'COMMON.OK' | translate }}
+            </app-button>
+          </div>
+        }
+      </div>
+    </app-modal-body>
+  </app-modal>
+}

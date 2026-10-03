@@ -5,7 +5,9 @@ import {
 } from 'vitest';
 import {
   formatBackendTime,
+  formatTimeOnly,
   parseBackendTime,
+  parseIsoMinutes,
   parseTimeInput,
   rangesOverlap,
   splitTime,
@@ -47,5 +49,18 @@ describe('shift-time.utils', () => {
     expect(rangesOverlap(540, 660, 600, 720)).toBe(true);
     expect(rangesOverlap(540, 660, 660, 720)).toBe(false);
     expect(rangesOverlap(660, 720, 540, 660)).toBe(false);
+  });
+
+  it('should parse ISO wall times into minutes since midnight', () => {
+    expect(parseIsoMinutes('2026-10-02T09:00:00+03:00')).toBe(540);
+    expect(parseIsoMinutes('2026-10-02T17:30:00Z')).toBe(1050);
+    expect(parseIsoMinutes('not-a-time')).toBeNull();
+    expect(parseIsoMinutes('2026-10-02T25:00:00+03:00')).toBeNull();
+  });
+
+  it('should format minutes as TimeOnly strings', () => {
+    expect(formatTimeOnly(540)).toBe('09:00:00');
+    expect(formatTimeOnly(1020)).toBe('17:00:00');
+    expect(formatTimeOnly(0)).toBe('00:00:00');
   });
 });
