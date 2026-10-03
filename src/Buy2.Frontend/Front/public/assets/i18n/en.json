@@ -200,6 +200,10 @@
       "CONFIRM": "Confirm publish",
       "PUBLISH_ERROR": "Failed to publish the day."
     },
+    "VALIDATE": {
+      "TITLE": "Warnings found — post anyway?",
+      "CONFIRM": "Post anyway"
+    },
     "COPY": {
       "BUTTON": "Copy day",
       "TITLE": "Copy day to dates",

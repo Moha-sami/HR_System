@@ -19,6 +19,8 @@ import type {
   DailySchedule,
   DailyScheduleDto,
   DailyShiftBlockDto,
+  DraftShift,
+  DraftValidationResult,
   PublishCommitRequest,
   PublishCommitResult,
   PublishPreflightRequest,
@@ -146,6 +148,11 @@ export class ShiftManagementService {
   /** Ticket #422: POST /api/v1/shifts/copy/commit. */
   copyCommit(req: CopyCommitRequest): Observable<CopyCommitResult> {
     return this.http.post<CopyCommitResult>(`${API_BASE}/shifts/copy/commit`, req);
+  }
+
+  /** Ticket #423: POST /api/v1/schedules/validate-draft. */
+  validateDraft(shifts: DraftShift[]): Observable<DraftValidationResult> {
+    return this.http.post<DraftValidationResult>(`${API_BASE}/schedules/validate-draft`, shifts);
   }
 }
 

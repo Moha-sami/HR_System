@@ -144,6 +144,10 @@ export class ShiftBoardComponent implements OnInit, OnDestroy {
   readonly copying = signal(false);
   readonly copySuccess = signal<CopyCommitResult | null>(null);
 
+  readonly showValidateModal = signal(false);
+  readonly validateWarnings = signal<string[]>([]);
+  readonly pendingPost = signal<{ start: number; end: number; roleId: number } | null>(null);
+
   /** Next 14 days after the selected date, as ISO strings. */
   readonly copyDayOptions = computed<string[]>(() => {
     const out: string[] = [];
@@ -515,7 +519,58 @@ export class ShiftBoardComponent implements OnInit, OnDestroy {
       return;
     }
     this.rowError.set(null);
+    const date = this.selectedDate();
     this.posting.set(true);
+    this.managementService
+      .validateDraft([
+        {
+          employeeId: 0,
+          jobRoleId: roleId,
+          siteId: this.siteId(),
+          startTime: `${date}T${formatTimeOnly(start)}`,
+          endTime: `${date}T${formatTimeOnly(end)}`,
+        },
+      ])
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res) => {
+          if (res.errors.length > 0) {
+            this.posting.set(false);
+            this.rowError.set(res.errors.join('; '));
+            return;
+          }
+          if (res.warnings.length > 0) {
+            this.posting.set(false);
+            this.pendingPost.set({ start, end, roleId });
+            this.validateWarnings.set([...res.warnings]);
+            this.showValidateModal.set(true);
+            return;
+          }
+          this.doPost(start, end, roleId);
+        },
+        error: () => {
+          this.posting.set(false);
+          this.rowError.set('SHIFT_MANAGEMENT.BOARD.POST_ERROR');
+        },
+      });
+  }
+
+  closeValidateModal(): void {
+    this.showValidateModal.set(false);
+    this.pendingPost.set(null);
+  }
+
+  confirmValidatePost(): void {
+    const pending = this.pendingPost();
+    this.showValidateModal.set(false);
+    this.pendingPost.set(null);
+    if (pending === null) return;
+    this.rowError.set(null);
+    this.posting.set(true);
+    this.doPost(pending.start, pending.end, pending.roleId);
+  }
+
+  private doPost(start: number, end: number, roleId: number): void {
     this.managementService
       .createShiftBlock({
         siteId: this.siteId(),
@@ -611,6 +666,48 @@ export class ShiftBoardComponent implements OnInit, OnDestroy {
     employee: ShiftCandidateEmployee,
     shiftId: string | number,
     confirm = false,
+  ): void {
+    if (!confirm) {
+      const block = (this.schedule()?.blocks ?? []).find((b) => b.shiftId === Number(shiftId));
+      if (block !== undefined) {
+        const date = this.selectedDate();
+        this.actionError.set(null);
+        this.assigning.set(true);
+        this.managementService
+          .validateDraft([
+            {
+              employeeId: employee.id,
+              jobRoleId: block.jobRoleId,
+              siteId: this.siteId(),
+              startTime: `${date}T${formatTimeOnly(block.startMin)}`,
+              endTime: `${date}T${formatTimeOnly(block.endMin)}`,
+            },
+          ])
+          .pipe(takeUntil(this.destroy$))
+          .subscribe({
+            next: (res) => {
+              if (res.errors.length > 0) {
+                this.assigning.set(false);
+                this.actionError.set(res.errors.join('; '));
+                return;
+              }
+              this.doAssign(employee, shiftId, false);
+            },
+            error: () => {
+              this.assigning.set(false);
+              this.actionError.set('SHIFT_MANAGEMENT.BOARD.ASSIGN_ERROR');
+            },
+          });
+        return;
+      }
+    }
+    this.doAssign(employee, shiftId, confirm);
+  }
+
+  private doAssign(
+    employee: ShiftCandidateEmployee,
+    shiftId: string | number,
+    confirm: boolean,
   ): void {
     this.actionError.set(null);
     this.assigning.set(true);

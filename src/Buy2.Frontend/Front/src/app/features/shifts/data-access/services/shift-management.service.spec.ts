@@ -403,4 +403,34 @@ describe('ShiftManagementService', () => {
       message: 'Copied 2 dates.',
     });
   });
+
+  it('should POST draft shifts to validate-draft', () => {
+    service
+      .validateDraft([
+        {
+          employeeId: 100,
+          jobRoleId: 10,
+          siteId: 3,
+          startTime: '2026-10-02T09:00:00',
+          endTime: '2026-10-02T13:00:00',
+        },
+      ])
+      .subscribe((res) => {
+        expect(res.isValid).toBe(false);
+        expect(res.errors).toEqual(['Unqualified for Cashier.']);
+      });
+
+    const req = httpMock.expectOne((r) => r.url.endsWith('/schedules/validate-draft'));
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual([
+      {
+        employeeId: 100,
+        jobRoleId: 10,
+        siteId: 3,
+        startTime: '2026-10-02T09:00:00',
+        endTime: '2026-10-02T13:00:00',
+      },
+    ]);
+    req.flush({ isValid: false, warnings: [], errors: ['Unqualified for Cashier.'] });
+  });
 });

@@ -332,3 +332,18 @@ export interface CopyCommitResult {
   skippedDates: string[];
   message: string;
 }
+
+/** Ticket #423: POST /api/v1/schedules/validate-draft. Times are local ISO strings. */
+export interface DraftShift {
+  employeeId: number;
+  jobRoleId: number;
+  siteId: number;
+  startTime: string;
+  endTime: string;
+}
+
+export interface DraftValidationResult {
+  isValid: boolean;
+  warnings: string[];
+  errors: string[];
+}

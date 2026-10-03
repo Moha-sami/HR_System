@@ -162,6 +162,13 @@ describe('ShiftBoardComponent', () => {
     fixture.detectChanges();
   }
 
+  function flushValidate(result: Record<string, unknown> = { isValid: true, warnings: [], errors: [] }): void {
+    const req = httpMock.expectOne((r) => r.url.endsWith('/schedules/validate-draft'));
+    expect(req.request.method).toBe('POST');
+    req.flush(result);
+    fixture.detectChanges();
+  }
+
   function copyPreflightPayload(): Record<string, unknown> {
     return {
       siteId: 3,
@@ -272,6 +279,7 @@ describe('ShiftBoardComponent', () => {
 
     component.rowRoleId.set(10);
     component.postBlock();
+    flushValidate();
 
     const post = httpMock.expectOne((r) => r.url.endsWith('/shifts/blocks'));
     expect(post.request.method).toBe('POST');
@@ -305,6 +313,7 @@ describe('ShiftBoardComponent', () => {
     flushDay();
 
     component.onStripDrop({ id: 11, data: SARA });
+    flushValidate();
 
     const req = httpMock.expectOne((r) => r.url.endsWith('/shifts/blocks/11/assign'));
     expect(req.request.method).toBe('POST');
@@ -320,6 +329,7 @@ describe('ShiftBoardComponent', () => {
     flushDay();
 
     component.onStripDrop({ id: 11, data: SARA });
+    flushValidate();
 
     const first = httpMock.expectOne((r) => r.url.endsWith('/shifts/blocks/11/assign'));
     first.flush({
@@ -357,6 +367,7 @@ describe('ShiftBoardComponent', () => {
     component.onTimelineAssign(11);
     expect(component.pendingAssign()).toBe(11);
     component.onStripClick(SARA);
+    flushValidate();
 
     const req = httpMock.expectOne((r) => r.url.endsWith('/shifts/blocks/11/assign'));
     expect(req.request.body.employeeId).toBe(100);
@@ -682,5 +693,54 @@ describe('ShiftBoardComponent', () => {
     expect(component.schedule()?.blocks.length).toBe(1);
     httpMock.expectNone((r) => r.url.endsWith('/shifts/copy/commit'));
     httpMock.expectNone((r) => r.url.endsWith('/shifts/daily'));
+  });
+
+  it('should block the post and show inline errors on validate hard stops', async () => {
+    await setup();
+    flushRoles();
+    flushDay();
+
+    component.rowRoleId.set(10);
+    component.postBlock();
+    flushValidate({ isValid: false, warnings: [], errors: ['Unqualified for Cashier.', 'Collision detected.'] });
+
+    expect(component.rowError()).toBe('Unqualified for Cashier.; Collision detected.');
+    expect(component.showValidateModal()).toBe(false);
+    httpMock.expectNone((r) => r.url.endsWith('/shifts/blocks'));
+  });
+
+  it('should open the warnings modal and post on confirm', async () => {
+    await setup();
+    flushRoles();
+    flushDay();
+
+    component.rowRoleId.set(10);
+    component.postBlock();
+    flushValidate({ isValid: true, warnings: ['Overtime risk.'], errors: [] });
+
+    expect(component.showValidateModal()).toBe(true);
+    expect(component.validateWarnings()).toEqual(['Overtime risk.']);
+    httpMock.expectNone((r) => r.url.endsWith('/shifts/blocks'));
+
+    component.confirmValidatePost();
+
+    const post = httpMock.expectOne((r) => r.url.endsWith('/shifts/blocks'));
+    post.flush({ shiftId: 12 });
+    flushDay();
+
+    expect(component.showValidateModal()).toBe(false);
+    expect(component.rowError()).toBeNull();
+  });
+
+  it('should block the assign and show inline errors on validate hard stops', async () => {
+    await setup();
+    flushRoles();
+    flushDay();
+
+    component.onStripDrop({ id: 11, data: SARA });
+    flushValidate({ isValid: false, warnings: [], errors: ['Unqualified for Cashier.'] });
+
+    expect(component.actionError()).toBe('Unqualified for Cashier.');
+    httpMock.expectNone((r) => r.url.endsWith('/shifts/blocks/11/assign'));
   });
 });
