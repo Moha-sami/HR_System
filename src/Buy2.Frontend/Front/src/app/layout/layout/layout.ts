@@ -70,7 +70,9 @@ export class Layout implements OnInit {
       route: '/requests', 
       hasArrow: true,
       children: [
-        { labelKey: 'LAYOUT.NAV.REQUEST_TYPES', route: '/requests/types' }
+        { labelKey: 'LAYOUT.NAV.SUBMITTED_REQUESTS', route: '/requests/submitted' },
+        { labelKey: 'LAYOUT.NAV.REQUEST_TYPES', route: '/requests/types' },
+        { labelKey: 'LAYOUT.NAV.REQUESTS_HISTORY', route: '/requests/history' }
       ]
     },
     { icon: 'svg-time', labelKey: 'LAYOUT.NAV.TIME_AND_ATTENDANCE', route: '/attendance' },

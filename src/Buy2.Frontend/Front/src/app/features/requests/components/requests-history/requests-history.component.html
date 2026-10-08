@@ -1,0 +1,122 @@
+<div class="page-container">
+  <!-- Header -->
+  <div class="page-header">
+    <h1 class="page-title">Requests History</h1>
+    <div class="header-actions">
+      <div class="search-box">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="search-icon"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        <input type="text" placeholder="Search" />
+      </div>
+      <button class="btn btn-outline">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5h10"/><path d="M11 9h5"/><path d="M11 13h10"/><path d="M11 17h5"/><path d="M3 5v14"/><path d="m3 19 3-3"/><path d="m3 5 3 3"/></svg>
+        Sort
+      </button>
+      <button class="btn btn-outline">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+        Filter
+      </button>
+      <!-- Export Dropdown -->
+      <div class="export-wrapper">
+        <button class="btn btn-export" (click)="toggleExportMenu($event)">
+          Export
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        </button>
+        <div class="export-menu" *ngIf="showExportMenu">
+          <button class="export-item" (click)="exportCSV()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            CSV File
+          </button>
+          <button class="export-item" (click)="exportExcel()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            Excel File
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="table-container">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Employee Name</th>
+          <th>Request Type</th>
+          <th>Submission Date</th>
+          <th>Manager Decision</th>
+          <th>HR Decision</th>
+          <th>Status</th>
+          <th class="actions-header">...</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let request of historyData?.items">
+          <td class="col-bold">{{ request.employeeName }}</td>
+          <td>{{ request.requestType }}</td>
+          <td>
+            <div>{{ request.submittedAt | date:'MM/dd/yyyy' }}</div>
+            <div class="sub-text">{{ request.submittedAt | date:'hh:mm a' }}</div>
+          </td>
+          <td>
+            <span class="status-text"
+                  [class.text-approved]="request.managerStatus === 'Approved'"
+                  [class.text-rejected]="request.managerStatus === 'Rejected'"
+                  [class.text-pending]="request.managerStatus === 'Pending' || !request.managerStatus">
+              {{ request.managerStatus || 'Pending' }}
+            </span>
+          </td>
+          <td>
+            <span class="status-text"
+                  [class.text-approved]="request.hrStatus === 'Approved'"
+                  [class.text-rejected]="request.hrStatus === 'Rejected'"
+                  [class.text-pending]="request.hrStatus === 'Pending' || !request.hrStatus">
+              {{ request.hrStatus || 'Pending' }}
+            </span>
+          </td>
+          <td>
+            <span class="status-badge"
+                  [class.badge-approved]="request.status === 'Approved'"
+                  [class.badge-rejected]="request.status === 'Rejected'"
+                  [class.badge-pending]="request.status === 'Pending' || !request.status">
+              {{ request.status || 'Pending' }}
+            </span>
+          </td>
+          <td class="actions-cell">
+            <button class="action-btn view-btn" title="View">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </td>
+        </tr>
+        <tr *ngIf="!historyData?.items?.length">
+          <td colspan="7" class="empty-state">No history found</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  <div class="pagination" *ngIf="historyData && historyData.totalCount > 0">
+    <div class="pagination-left">
+      <button class="page-nav" [disabled]="currentPage === 1" (click)="goToPage(currentPage - 1)">Previous</button>
+      <div class="page-numbers">
+        <ng-container *ngFor="let page of getPaginationPages()">
+          <button *ngIf="page !== -1; else dots"
+                  class="page-num"
+                  [class.active]="currentPage === page"
+                  (click)="goToPage(page)">{{ page }}</button>
+          <ng-template #dots><span class="page-dots">...</span></ng-template>
+        </ng-container>
+      </div>
+      <button class="page-nav" [disabled]="currentPage === totalPages" (click)="goToPage(currentPage + 1)">Next</button>
+    </div>
+    <div class="pagination-right">
+      <span>Show</span>
+      <select class="page-size-select" (change)="onPageSizeChange($event)">
+        <option value="12">12</option>
+        <option value="20">20</option>
+        <option value="50">50</option>
+      </select>
+      <span>of {{ historyData?.totalCount || 0 }}</span>
+    </div>
+  </div>
+</div>

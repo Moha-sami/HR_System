@@ -22,7 +22,9 @@
       "EMPLOYEE_ASSIGNMENT": "تعيين الموظفين",
       "SHIFT_MARKET": "سوق الورديات",
       "SHIFT_TEMPLATES": "قوالب الورديات",
-      "REQUEST_TYPES": "أنواع الطلبات"
+      "REQUEST_TYPES": "أنواع الطلبات",
+      "SUBMITTED_REQUESTS": "الطلبات المقدمة",
+      "REQUESTS_HISTORY": "سجل الطلبات"
     }
   },
   "SCHEDULING": {
