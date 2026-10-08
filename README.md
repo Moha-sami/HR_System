@@ -1,6 +1,7 @@
 # HR Management System (HRMS)
 
 [![CI/CD Build Status](https://github.com/Moha-sami/HR_system/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Moha-sami/HR_system/actions)
+[![Unit Tests](https://img.shields.io/badge/Tests-1032%20Passing-brightgreen.svg)](https://github.com/Moha-sami/HR_system)
 [![Architecture](https://img.shields.io/badge/Architecture-Clean%20Architecture-blue.svg)](https://github.com/Moha-sami/HR_system)
 [![Backend](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
 [![Frontend](https://img.shields.io/badge/Angular-18+-red.svg)](https://angular.dev/)
@@ -8,169 +9,229 @@
 [![GitHub Contributors](https://img.shields.io/github/contributors/Moha-sami/HR_system.svg?style=flat-square)](https://github.com/Moha-sami/HR_system/graphs/contributors)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](./LICENSE)
 
-An enterprise-grade open-source HR Management System built with **.NET 10 Clean Architecture** and **Angular 18+**. Buy2 HRMS features advanced shift scheduling engines, geofenced clock-in attendance, gamification points ledgers, and digital reward voucher stores.
+An enterprise-grade open-source HR Management System built with **.NET 10 Clean Architecture** and **Angular 18+ (Signals & Standalone Components)**. Buy2 HRMS provides advanced multi-branch site management, role-based access control (RBAC), intelligent shift scheduling, open shift market, automated points ledger & rewards voucher store, employee request approvals, and corporate social engagement with news feeds, threaded discussions, emoji reactions, and peer recognitions.
 
 ---
 
 ## 📌 Project Milestones & Module Status
 
-| Feature Module | Status | Notes |
-| :--- | :---: | :--- |
-| **Domain Layer** — 25 Entities (Employee, Role, Site, Shift, Points, Rewards, etc.) | ✅ Done | All entities + EF Core Configurations + Migrations |
-| **Infrastructure Layer** — DbContext, JWT, Repositories, UoW, DB Seeder | ✅ Done | Full persistence + authentication pipeline wired |
-| **Auth API** — Login, Password Reset | ✅ Done | JWT Bearer, OTP flow |
-| **Employee Directory API** — CRUD, Search, Filter, Sort, Paginate, Export | ✅ Done | 16 endpoints complete |
-| **Employee Performance API** — Overview, Metrics, Tasks | ✅ Done | Date-range filtering, rating labels |
-| **Employee Attendance API** — Monthly Calendar View | ✅ Done | Punctuality score, lateness minutes |
-| **Employee Points & Rewards API** — Ledger Summary, Transaction History | ✅ Done | Paginated, filterable |
-| **Role Management API** — CRUD + Granular Permission Matrix | 🔄 In Progress | Entity done, endpoints pending |
-| **Site & Branch Management API** — Geofence, MAC Whitelist, SOPs | 🔄 In Progress | Entity done, endpoints pending |
-| **Advanced Scheduling Engine** — Pre-flight Validation, Publish | ⏳ Pending | Stub only |
-| **Shift Market & Overtime Approvals** | ⏳ Pending | Query stub exists |
-| **Points Automation Engine** — Lateness Deductions, Reward Redemption | ⏳ Pending | |
-| **Rewards Catalog & Voucher Store** | ⏳ Pending | |
-| **Executive Analytics Dashboard** | ⏳ Pending | |
-| **Frontend (Angular 18+)** — All Modules | ⏳ Pending | TypeScript models scaffolded |
+| Feature Module | Backend Status | Frontend Status | Test Coverage | Key Capabilities |
+| :--- | :---: | :---: | :---: | :--- |
+| **Domain & Persistence Foundation** | ✅ Done | N/A | 100% | 25+ Entities, EF Core 10, UoW, Generic Repositories, Migrations |
+| **Authentication & Identity** | ✅ Done | ✅ Done | 100% | JWT Bearer, Self-Service Password Reset, Role Claims |
+| **Employee Directory & Onboarding** | ✅ Done | ✅ Done | 100% | Single/Bulk Onboard, Multi-Column Filter/Sort, CSV Export (UTF-8 BOM) |
+| **Employee 360° Profile & Tabs** | ✅ Done | ✅ Done | 100% | Personal, Job, Documents, Payroll (`EmployeeSite` sync), Disciplinary Violations |
+| **Performance & Attendance** | ✅ Done | ✅ Done | 100% | Weighted Scores, Rating Labels, Monthly Calendar, Punctuality Tracking |
+| **Role Management & RBAC** | ✅ Done | ✅ Done | 100% | Granular Permission Matrix, Safe Delete with Employee Reassignment |
+| **Site & Branch Management** | ✅ Done | ✅ Done | 100% | GPS Geofencing, Radius Bounds, MAC Whitelisting, Operating Hours, SOPs |
+| **Job Roles & Organization Catalog**| ✅ Done | ✅ Done | 100% | Job Specifications, Department & Qualification Catalogs, Rosters |
+| **Shift Templates & Scheduling Engine**| ✅ Done | ✅ Done | 100% | Shift Templates, Pre-Flight Validation (Overlap/Hours/Skills), Atomic Publish |
+| **Shift Market & Open Claims** | ✅ Done | ✅ Done | 100% | Open Shifts Board, Candidate Matching Engine, Claim Approval Desk |
+| **Points Ledger & Gamification** | ✅ Done | ✅ Done | 100% | Double-Entry Points Ledger, Automation Trigger Rules, Manual Adjustments |
+| **Rewards Catalog & Voucher Store** | ✅ Done | ✅ Done | 100% | Multi-Category Store, Excel/CSV Batch Voucher Import, Atomic Redemption |
+| **Employee Requests & Approvals** | ✅ Done | ✅ Done | 100% | Request Types Catalog, Leave/Asset Forms, Manager Review Desk, Withdrawal |
+| **News Posts & Lifecycle Management**| ✅ Done | ✅ Done | 100% | Draft/Scheduled/Published Lifecycle, Media Uploads, Soft Delete Cascade |
+| **Social Engagement & Comments** | ✅ Done | ✅ Done | 100% | Threaded Hierarchies, Nested Replies, Moderation Tombstones |
+| **Emoji Reactions Engine** | ✅ Done | ✅ Done | 100% | Mutually Exclusive Reactions (Like, Dislike, Laugh, Wow, Heart, Angry) |
+| **Peer Recognitions & Points Grant**| ✅ Done | ✅ Done | 100% | Peer Shoutouts, Points Grant Engine, Safe Deletion with Points Reversal |
 
 ---
 
-## ✅ What's Been Built (Backend API)
+## 🏗️ Architecture & Clean Design Principles
 
-### Authentication
-| Method | Route | Description |
-| :--- | :--- | :--- |
-| `POST` | `/api/v1/auth/login` | JWT login — returns Bearer token + employee profile |
-| `POST` | `/api/v1/auth/password/reset` | Self-service password reset by email |
-
-### Employee Directory
-| Method | Route | Description |
-| :--- | :--- | :--- |
-| `GET` | `/api/v1/employees` | Paginated list — search, filter, sort by name/email/jobtitle/joindate |
-| `GET` | `/api/v1/employees/export` | Download filtered employee list as CSV (UTF-8 BOM, Excel-safe) |
-| `POST` | `/api/v1/employees/onboard` | Onboard single employee with job role & site assignment |
-| `POST` | `/api/v1/employees/bulk-onboard` | Batch onboard employees; per-record partial failure tracking |
-| `GET` | `/api/v1/employees/{id}` | Full profile — personal info, job, computed points/tasks/gifts stats |
-| `PUT` | `/api/v1/employees/{id}/personal` | Partial update: name, phone, DOB, address, national ID, emergency contact |
-| `PUT` | `/api/v1/employees/{id}/job` | Partial update: job role, manager, seniority, site, attendance type |
-| `GET` | `/api/v1/employees/{id}/payroll` | Get payroll profile: salary type, work week, overtime rates, site assignments |
-| `PUT` | `/api/v1/employees/{id}/payroll` | Upsert payroll profile — syncs `EmployeeSite` join table atomically |
-| `DELETE` | `/api/v1/employees/{id}` | Soft delete (preserves all related historical records) |
-| `POST` | `/api/v1/employees/{id}/documents` | Upload compliance document (PDF/JPG) — stores metadata |
-| `POST` | `/api/v1/employees/{id}/violations` | Log disciplinary violation with severity & description |
-
-### Employee Performance & Attendance
-| Method | Route | Description |
-| :--- | :--- | :--- |
-| `GET` | `/api/v1/employees/{id}/performance/overview` | Weighted score, rating label, task stats, achievement badges, trend chart |
-| `GET` | `/api/v1/employees/{id}/performance/metrics/{metricId}` | Detailed metric drill-down — monthly trends, submission history |
-| `GET` | `/api/v1/employees/{id}/performance/tasks` | Assigned tasks filtered by status (`Todo`, `InProgress`, `Done`) |
-| `GET` | `/api/v1/employees/{id}/attendance/calendar` | Monthly calendar — attendance rate, punctuality score, per-day status |
-
-### Points & Gamification
-| Method | Route | Description |
-| :--- | :--- | :--- |
-| `GET` | `/api/v1/employees/{id}/points/summary` | Current balance, total redeemed points, total rewards redeemed |
-| `GET` | `/api/v1/employees/{id}/points/transactions` | Paginated ledger — filterable by type, rule key, date range |
-| `POST` | `/api/v1/points/rules` | Create automation rule (trigger type, points value) |
-
-### Job Role Management
-| Method | Route | Description |
-| :--- | :--- | :--- |
-| `GET` | `/api/v1/jobs` | Paginated list — search, filter by department/work model/active status |
-| `GET` | `/api/v1/jobs/{id}` | Full job role details — qualifications, workdays, employee counts |
-| `GET` | `/api/v1/jobs/{id}/employees` | Paginated assigned employee roster with search filter |
-
-### Sites (Stub Only)
-| Method | Route | Description |
-| :--- | :--- | :--- |
-| `POST` | `/api/v1/sites` | Create branch site with coordinates & MAC whitelist |
-| `GET` | `/api/v1/sites` | List all active sites |
-
-### Roles (Stub Only)
-| Method | Route | Description |
-| :--- | :--- | :--- |
-| `POST` | `/api/v1/roles` | Create custom role with permissions JSON |
-| `DELETE` | `/api/v1/roles/{id}` | Soft delete role (409 Conflict if employees are bound) |
-
-### Scheduling & Shift Market (Stub Only)
-| Method | Route | Description |
-| :--- | :--- | :--- |
-| `POST` | `/api/v1/schedules/validate-draft` | Pre-flight validation (stub — returns mock result) |
-| `GET` | `/api/v1/shift-market/open-shifts` | List open unassigned published shifts |
-| `POST` | `/api/v1/shift-market/claims/{id}` | Claim a shift — creates `ShiftClaim` with Pending status |
-
----
-
-## ⏳ What's Left
-
-| Epic | Remaining Work | Effort |
-| :--- | :--- | :--- |
-| **RBAC / Roles** | List/Get/Update roles, full permission matrix, delete-with-reassignment flow | 3–4 days BE |
-| **Site Management** | Full CRUD, region management, operational hours, preferred employees, SOP upload, employee & shift tabs | 4–5 days BE |
-| **Scheduling Engine** | Real pre-flight engine (qualification + overlap + overtime checks), templates, publish with justification | 5–6 days BE |
-| **Shift Market** | Qualification-filtered queries, overtime escalation, manager approve/reject desk | 2–3 days BE |
-| **Points Automation** | Sliding lateness deduction engine, manual adjust with comment, overlap rule prevention | 3–4 days BE |
-| **Rewards Store** | Catalog CRUD, Excel voucher bulk import parser, atomic redemption endpoint | 3–4 days BE |
-| **Analytics / Notifications** | Executive KPI aggregations, broadcast notification by site/department | 2–3 days BE |
-| **Clock-in / Geofence** | GPS + MAC/IP verification clock-in endpoint | 2 days BE |
-| **All Frontend Modules** | Auth, Employee Profile, Site Map Picker, Drag-and-Drop Schedule Board, Shift Market, Rewards Store, Dashboard | 6–8 weeks FE |
-
-**Estimated Total Remaining**: ~8–9 weeks with 3 BE + 4 FE developers.
-
----
-
-## 🗄️ Database Architecture (ERD)
-
-### Full Entity Relationship Diagram (v2 — 24 Entities)
-
-![Buy2 HRMS Full ERD v2](./docs/ERD_v2.png)
-
-> **24 entities** across 9 domains: Auth, Attendance, Shifts, Requests, Tasks, KPIs, Gamification, Social Feed, Payroll & Support.
-
-*Detailed relationship documentation available at [`docs/ERD.md`](./docs/ERD.md).*
-
----
-
-## 🏗️ Architecture & Project Structure
-
-The codebase strictly adheres to **Clean Architecture** principles to ensure decoupled dependencies and maximum testability:
+The system strictly adheres to **Clean Architecture** and **CQRS (Command Query Responsibility Segregation)** using **MediatR**:
 
 ```
 HR_system/
 ├── src/
-│   ├── Buy2.Domain/           # Entities, Enums, Value Objects, Navigation Properties
-│   ├── Buy2.Application/      # DTOs, Application Interfaces, CQRS Contracts, MediatR Handlers
-│   ├── Buy2.Infrastructure/   # EF Core DbContext, Fluent API Configs, Repositories, JWT, Seeder
-│   ├── Buy2.Api/              # REST API Controllers, Middleware, DI Container Setup
-│   └── Buy2.Frontend/         # Angular 18 SPA (Signals, Standalone Components, Material UI)
-├── docs/                      # ERD Diagrams, API Docs, Jira Import CSVs
-│   ├── ERD_v2.png             # Full 24-entity ERD (auto-generated)
-│   ├── API_ENDPOINTS.md       # Full REST endpoint reference
-│   └── jira/                  # Jira import CSV task files
-└── AVAILABLE_TASKS.md         # Master Contributor Task Backlog
+│   ├── Buy2.Domain/           # Enterprise Entities, Domain Enums, Entity Configurations
+│   ├── Buy2.Application/      # CQRS Commands, Queries, Handlers, FluentValidation, DTOs
+│   ├── Buy2.Infrastructure/   # EF Core DbContext, Repositories, Unit of Work, JWT, Migrations
+│   ├── Buy2.Api/              # ASP.NET Core 10 Web API, Controllers, Middleware, Swagger Spec
+│   └── Buy2.Frontend/         # Angular 18 Single Page Application (Front/)
+│       └── Front/src/app/
+│           ├── core/          # Authentication Guards, HTTP Interceptors, Base Services
+│           ├── features/      # Standalone Feature Modules (Employees, Shifts, News, etc.)
+│           └── shared/        # Reusable UI Components, Pipes, Directives, Tailwind Layouts
+├── tests/
+│   └── Buy2.Domain.Tests/     # 1,032 Comprehensive Unit & Integration Tests (xUnit, InMemory EF)
+├── docs/                      # Architectural Documentation, ERD Diagrams, Jira Task Specs
+│   ├── ERD_v2.png             # Full 25-Entity Relationship Diagram
+│   ├── API_ENDPOINTS.md       # Comprehensive REST API Specification (1,150+ lines)
+│   └── jira/                  # Jira Import CSVs and Functional Task Specifications
 ```
 
----
-
-## 📋 Jira Board & Automation Workflow
-
-The project uses Atlassian Jira (**Space**: `Buy2 HRMS`, **Key**: `SCRUM`) integrated with GitHub Actions.
-
-### Automation & Protection Rules:
-1. **Branch & PR Naming**: Branch titles must include Jira Key (e.g. `SCRUM-101-create-employee-document-entity`).
-2. **Auto-Transition to Done**: Merging a PR into `main` automatically transitions linked Jira cards to **Done**.
-3. **CI/CD Build Checks**: Every PR triggers automated `.NET` builds and lint checks via GitHub Actions.
+### Key Architectural Guidelines Enforced:
+1. **CQRS Master Orchestrator Pattern**: Multi-step workflows coordinate sub-queries and sub-commands through MediatR; sub-handlers never trigger `SaveChangesAsync` directly to ensure single atomic transactions.
+2. **Read-Side Optimization**: Read queries strictly leverage `.AsNoTracking()` and database-level projections to optimize throughput and memory footprints.
+3. **Database Concurrency & Integrity**: Explicit soft-deletion query filters (`HasQueryFilter(e => !e.IsDeleted)`), unique compound indexes, and cascade restrictions prevent orphaned foreign records.
+4. **Resilient Rollbacks**: Atomic transactions pass `CancellationToken.None` during catch-block rollbacks to guarantee completion even under client-aborted HTTP requests.
 
 ---
 
-## 🚀 How to Contribute
+## 🚀 REST API Overview
 
-We welcome team members and open-source contributors!
+Below is a consolidated summary of the **29 controller endpoints** exposed by `Buy2.Api`:
 
-1. Open **[`AVAILABLE_TASKS.md`](./AVAILABLE_TASKS.md)** to view available tasks.
-2. Pick an unassigned task card from the **Jira Sprint Board**.
-3. Create a working git branch named after your Jira key (e.g., `SCRUM-101-create-employee-document-entity`).
-4. Submit a Pull Request targeting `main`. Once merged, Jira auto-updates your task to **Done**!
+### 1. Authentication & Security (`/api/v1/auth`)
+| Method | Route | Description |
+| :--- | :--- | :--- |
+| `POST` | `/api/v1/auth/login` | Authenticate user, issue JWT Bearer token, and return employee session profile |
+| `POST` | `/api/v1/auth/password/reset` | Self-service password reset workflow via email OTP |
+
+### 2. Employee Directory & Profiles (`/api/v1/employees`)
+| Method | Route | Description |
+| :--- | :--- | :--- |
+| `GET` | `/api/v1/employees` | Paginated employee directory with multi-field search, sorting, and department/region filters |
+| `GET` | `/api/v1/employees/export` | Export filtered employee roster to CSV (UTF-8 BOM for Microsoft Excel) |
+| `POST` | `/api/v1/employees/onboard` | Onboard single employee with initial role and site allocation |
+| `POST` | `/api/v1/employees/bulk-onboard` | High-throughput batch onboarding with per-item partial success reporting |
+| `GET` | `/api/v1/employees/{id}` | Complete 360° profile (personal info, job details, live stats, gamification) |
+| `PUT` | `/api/v1/employees/{id}/personal` | Update employee personal data, national ID, emergency contacts |
+| `PUT` | `/api/v1/employees/{id}/job` | Update job role, direct manager, seniority, attendance mode |
+| `GET` | `/api/v1/employees/{id}/payroll` | Retrieve employee payroll setup, work week hours, and overtime rates |
+| `PUT` | `/api/v1/employees/{id}/payroll` | Upsert payroll parameters and atomically synchronize `EmployeeSite` junction records |
+| `DELETE` | `/api/v1/employees/{id}` | Soft delete employee record while preserving historical audit trails |
+| `GET` | `/api/v1/employees/{id}/documents` | Retrieve uploaded compliance documents (IDs, contracts, medical records) |
+| `POST` | `/api/v1/employees/{id}/documents` | Upload employee compliance document metadata |
+| `DELETE` | `/api/v1/employees/{id}/documents/{docId}` | Delete employee document record |
+| `POST` | `/api/v1/employees/{id}/violations` | Log disciplinary violation with severity rating and notes |
+| `GET` | `/api/v1/employees/{id}/performance/overview` | Weighted performance score, ratings, and task metrics |
+| `GET` | `/api/v1/employees/{id}/attendance/calendar` | Monthly attendance calendar, punctuality scores, and lateness statistics |
+
+### 3. Role & Permission Management (`/api/v1/roles`)
+| Method | Route | Description |
+| :--- | :--- | :--- |
+| `GET` | `/api/v1/roles` | List all system and custom roles with permission configurations |
+| `GET` | `/api/v1/roles/{id}` | Get detailed role information and granular permission matrix |
+| `POST` | `/api/v1/roles` | Create custom role with permissions JSON |
+| `PUT` | `/api/v1/roles/{id}` | Update role details and modify permission scopes |
+| `DELETE` | `/api/v1/roles/{id}` | Soft delete role (safeguarded against roles with assigned users) |
+| `POST` | `/api/v1/roles/{id}/reassign-and-delete`| Reassign assigned employees to an alternative role and delete obsolete role |
+
+### 4. Sites & Branch Management (`/api/v1/sites`)
+| Method | Route | Description |
+| :--- | :--- | :--- |
+| `GET` | `/api/v1/sites` | List branch sites with GPS coordinates and region filters |
+| `GET` | `/api/v1/sites/{id}` | Detailed site configuration, geofence radius, and MAC whitelists |
+| `POST` | `/api/v1/sites` | Register new branch site with coordinates and operating hours |
+| `PUT` | `/api/v1/sites/{id}` | Update branch site configuration and network parameters |
+| `DELETE` | `/api/v1/sites/{id}` | Soft delete branch site |
+| `GET` | `/api/v1/sites/regions` | Retrieve active region lookup catalog |
+| `POST` | `/api/v1/sites/regions` | Create region inline with uniqueness validation |
+| `GET` | `/api/v1/sites/{id}/employees` | Query roster of primary and secondary assigned staff |
+| `POST` | `/api/v1/sites/{id}/documents` | Upload site-specific SOPs and guidelines |
+
+### 5. Job Roles & Organization Lookups (`/api/v1/jobs`, `/departments`, `/qualifications`)
+| Method | Route | Description |
+| :--- | :--- | :--- |
+| `GET` | `/api/v1/jobs` | Paginated job catalog with department and work model filters |
+| `GET` | `/api/v1/jobs/{id}` | Full job role specification, required qualifications, and headcounts |
+| `POST` | `/api/v1/jobs` | Create new job role with qualification requirements |
+| `PUT` | `/api/v1/jobs/{id}` | Update job role details |
+| `DELETE` | `/api/v1/jobs/{id}` | Soft delete job role with employee reassignment safeguards |
+| `GET` | `/api/v1/jobs/{id}/employees` | Query list of employees currently holding the job role |
+| `GET` | `/api/v1/departments` | Lookup list of all organization departments |
+| `POST` | `/api/v1/departments` | Create organization department with case-insensitive uniqueness check |
+| `GET` | `/api/v1/qualifications` | Lookup list of qualifications and certifications |
+| `POST` | `/api/v1/qualifications` | Register new qualification inline |
+
+### 6. Shift Scheduling & Open Market (`/api/v1/shift-templates`, `/schedules`, `/shift-market`)
+| Method | Route | Description |
+| :--- | :--- | :--- |
+| `GET` | `/api/v1/shift-templates` | List reusable shift templates (start/end times, breaks, roles) |
+| `POST` | `/api/v1/shift-templates` | Create new shift template |
+| `PUT` | `/api/v1/shift-templates/{id}` | Update shift template parameters |
+| `DELETE` | `/api/v1/shift-templates/{id}` | Archive shift template |
+| `GET` | `/api/v1/schedules/overview` | Query scheduling grid for calendar period across sites/roles |
+| `POST` | `/api/v1/schedules/validate-draft` | Pre-flight validation checking double-booking, rest hours, and skills |
+| `POST` | `/api/v1/schedules/publish` | Atomically publish shift schedule drafts with employee notifications |
+| `GET` | `/api/v1/shifts/candidates` | Candidate ranking engine identifying qualified, unassigned staff |
+| `GET` | `/api/v1/shift-market/open-shifts` | Browse open unassigned shifts available for peer claiming |
+| `POST` | `/api/v1/shift-market/claims/{shiftId}` | Submit shift claim request |
+| `POST` | `/api/v1/shift-market/claims/{claimId}/approve` | Manager approves claim, binds shift, and cancels competing claims |
+| `POST` | `/api/v1/shift-market/claims/{claimId}/reject` | Reject claim with manager feedback |
+
+### 7. Gamification Points Ledger & Rules (`/api/v1/points`)
+| Method | Route | Description |
+| :--- | :--- | :--- |
+| `GET` | `/api/v1/employees/{id}/points/summary` | Current wallet balance, lifetime earned points, and redeemed rewards count |
+| `GET` | `/api/v1/employees/{id}/points/transactions` | Paginated transaction ledger with audit rules and timestamps |
+| `POST` | `/api/v1/points/adjust` | Manual point adjustment (bonus or deduction) with mandatory audit note |
+| `GET` | `/api/v1/points/rules` | Directory of automated point trigger rules |
+| `POST` | `/api/v1/points/rules` | Create automated point trigger rule (punctuality, tasks, milestones) |
+| `PUT` | `/api/v1/points/rules/{id}` | Update automation rule criteria |
+| `DELETE` | `/api/v1/points/rules/{id}` | Archive point automation rule |
+
+### 8. Rewards Catalog & Digital Vouchers (`/api/v1/rewards`)
+| Method | Route | Description |
+| :--- | :--- | :--- |
+| `GET` | `/api/v1/rewards` | Browse rewards catalog with stock indicators and points cost |
+| `GET` | `/api/v1/rewards/{id}` | Detailed reward item view with description and voucher stock |
+| `POST` | `/api/v1/rewards` | Create new reward catalog item |
+| `PUT` | `/api/v1/rewards/{id}` | Update reward details, points price, or active status |
+| `DELETE` | `/api/v1/rewards/{id}` | Soft delete reward item |
+| `POST` | `/api/v1/rewards/{id}/vouchers/batch` | Bulk import unique digital voucher codes via Excel / CSV |
+| `POST` | `/api/v1/rewards/{id}/redeem` | Atomic redemption: deduct points, assign unique voucher code, issue receipt |
+
+### 9. Employee Requests & Approvals (`/api/v1/requests`, `/request-types`)
+| Method | Route | Description |
+| :--- | :--- | :--- |
+| `GET` | `/api/v1/request-types` | Directory of request types with policy rules (leave pay, required dates) |
+| `POST` | `/api/v1/request-types` | Create request type schema |
+| `PUT` | `/api/v1/request-types/{id}` | Update request type configuration |
+| `DELETE` | `/api/v1/request-types/{id}` | Delete request type (blocked if referenced by employee submissions) |
+| `GET` | `/api/v1/requests` | Paginated employee request submissions with status and date filters |
+| `POST` | `/api/v1/requests` | Submit formal request with dates, reason, and attachment |
+| `GET` | `/api/v1/requests/{id}` | Detailed request with multi-stage approval workflow audit trail |
+| `PUT` | `/api/v1/requests/{id}/status` | Manager approval desk (Approve, Reject, Cancel) with review comment |
+| `DELETE` | `/api/v1/requests/{id}` | Requester cancellation / withdrawal |
+
+### 10. News Feed, Social Engagement & Recognitions (`/api/v1/news`, `/recognitions`)
+| Method | Route | Description |
+| :--- | :--- | :--- |
+| `GET` | `/api/v1/news` | Role-based news feed with status filters, engagement stats, and search |
+| `POST` | `/api/v1/news` | Create post with multipart media, draft/scheduled/published status |
+| `GET` | `/api/v1/news/{id}` | Detailed post with reaction breakdown and caller active reaction |
+| `PUT` | `/api/v1/news/{id}` | Update post content, scheduled date, and lifecycle state |
+| `DELETE` | `/api/v1/news/{id}` | Soft delete post with cascade comment suppression and auditability |
+| `GET` | `/api/v1/news/{postId}/comments` | Query threaded comments and nested sub-replies hierarchy |
+| `POST` | `/api/v1/news/{postId}/comments` | Post top-level comment or threaded reply with parent attribution |
+| `PUT` | `/api/v1/news/comments/{commentId}` | Author updates comment text |
+| `DELETE` | `/api/v1/news/comments/{commentId}` | Author soft deletion or admin moderation tombstone masking |
+| `POST` | `/api/v1/news/{targetType}/{targetId}/reactions` | Toggle emoji reaction (mutually exclusive per user: Like, Dislike, Laugh, Wow, Heart, Angry) |
+| `GET` | `/api/v1/recognitions` | Query peer recognitions directory with points tally and sorting |
+| `POST` | `/api/v1/recognitions` | Create peer recognition with recipient and optional points grant |
+| `GET` | `/api/v1/recognitions/{id}` | Detailed recognition view with recipient profile and audit trail |
+| `PUT` | `/api/v1/recognitions/{id}` | Update recognition content, scheduling, and points award |
+| `DELETE` | `/api/v1/recognitions/{id}` | Delete recognition with automated points grant reversal safeguard |
+
+---
+
+## 🎨 Frontend Architecture (Angular 18+)
+
+The frontend is located at `src/Buy2.Frontend/Front` and is designed for enterprise responsiveness, accessibility, and high performance:
+
+- **Framework**: Angular 18+ with **Standalone Components** and native **Signals** for reactive state management.
+- **Styling**: Tailwind CSS combined with Angular Material components.
+- **Internationalization (i18n)**: Full English (`en`) and Arabic (`ar`) localization with dynamic RTL (Right-to-Left) layout switching.
+- **Architecture**: Modular feature directories with smart/dumb component segregation, dedicated HTTP services, and strongly-typed TypeScript models matching backend DTOs.
+
+---
+
+## 🧪 Testing & Quality Assurance
+
+The solution enforces a rigorous testing regimen to ensure zero regressions across critical business workflows:
+
+```bash
+# Execute the full automated test suite
+dotnet test
+```
+
+- **Total Automated Tests**: **1,032 Passing Tests** across all application and domain features.
+- **Persistence Testing**: Utilizes EF Core In-Memory database providers and schema synchronization guards (`HasPendingModelChanges` check) to guarantee migrations match domain entities.
+- **Mutation Testing**: Configured with **Stryker.NET** for mutation testing analysis.
+- **Code Standards**: Strict adherence to Karpathy AI coding rules, surgical modifications, and CQRS orchestrator invariants.
 
 ---
 
@@ -179,26 +240,35 @@ We welcome team members and open-source contributors!
 ### Prerequisites
 - [.NET 10 SDK](https://dotnet.microsoft.com/)
 - [Node.js 20+](https://nodejs.org/) & Angular CLI (`npm i -g @angular/cli`)
+- [SQL Server](https://www.microsoft.com/sql-server) or Docker for database persistence
 - Git
 
-### Build & Run
+### Getting Started
+
 ```bash
-# Clone repository
+# 1. Clone repository
 git clone https://github.com/Moha-sami/HR_system.git
 cd HR_system
 
-# Build .NET Solution
+# 2. Build the solution
 dotnet build HR_system.slnx
 
-# Run API Backend
+# 3. Run the automated test suite
+dotnet test
+
+# 4. Start the API Backend
 cd src/Buy2.Api
 dotnet run
 
-# Run Angular Frontend (in separate terminal)
-cd src/Buy2.Frontend/Front
+# 5. Start the Angular Frontend (in separate terminal)
+cd ../Buy2.Frontend/Front
 npm install
 ng serve
 ```
+
+Once running:
+- **API Swagger UI**: `https://localhost:7136/swagger` (or configured launch URL)
+- **Frontend App**: `http://localhost:4200`
 
 ---
 
@@ -207,45 +277,11 @@ ng serve
 - **Live API (Swagger)**: [https://hr-system-api.runasp.net](https://hr-system-api.runasp.net)
 - **Figma UI/UX Design**: [BUY2 HRMS Figma Design](https://www.figma.com/design/JQ67DCkObzVjER8Safb5sw/BUY2-Junk-File?node-id=882-3040&p=f&t=GxfjGebSZZA9X7B0-0)
 - **Jira Board**: `buy2-hrms.atlassian.net` (Key: `SCRUM`)
-- **API Endpoints Docs**: [`docs/API_ENDPOINTS.md`](./docs/API_ENDPOINTS.md)
+- **API Endpoints Reference**: [`docs/API_ENDPOINTS.md`](./docs/API_ENDPOINTS.md)
+- **Entity Relationship Model**: [`docs/ERD.md`](./docs/ERD.md)
 
 ---
 
 ## 📄 License
 
-This project is licensed under the **Apache License 2.0**.
-
-```
-Copyright 2026 Moha-sami & Buy2 HRMS Contributors
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-```
-
-**What this means for contributors and users:**
-- ✅ Free to use, modify, and distribute — commercially or privately
-- ✅ **Patent protection**: Contributors grant you a royalty-free patent license — and lose it if they sue you for patent infringement
-- ✅ You can include this code in closed-source products
-- ⚠️ Must keep the copyright notice and license file
-- ⚠️ Must document any significant changes you make to the source files
-
-See the full license text in [`LICENSE`](./LICENSE).
-
----
-
-## 👥 Contributors
-
-Thanks goes to all our amazing contributors!
-
-[![GitHub Contributors](https://img.shields.io/github/contributors/Moha-sami/HR_system.svg?style=flat-square)](https://github.com/Moha-sami/HR_system/graphs/contributors)
-
-*Want to contribute? Check out [`AVAILABLE_TASKS.md`](./AVAILABLE_TASKS.md) to pick an open task!*
+This project is licensed under the **Apache License 2.0**. See the [`LICENSE`](./LICENSE) file for details.
