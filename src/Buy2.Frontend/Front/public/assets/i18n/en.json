@@ -22,7 +22,9 @@
       "EMPLOYEE_ASSIGNMENT": "Employee Assignment",
       "SHIFT_MARKET": "Shift Market",
       "SHIFT_TEMPLATES": "Shift Templates",
-      "REQUEST_TYPES": "Request Types"
+      "REQUEST_TYPES": "Request Types",
+      "SUBMITTED_REQUESTS": "Submitted Requests",
+      "REQUESTS_HISTORY": "Requests History"
     }
   },
   "SCHEDULING": {
