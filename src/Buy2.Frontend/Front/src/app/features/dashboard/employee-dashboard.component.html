@@ -1,0 +1,126 @@
+<div class="p-6">
+  <h1 class="text-2xl font-semibold text-neutral-500">{{ 'DASHBOARD.TITLE' | translate }}</h1>
+
+  @if (loading()) {
+    <div class="flex items-center justify-center gap-3 py-10">
+      <span class="size-6 animate-spin rounded-full border-2 border-primary-200 border-t-primary-600"></span>
+      <span class="text-sm text-neutral-400">{{ 'COMMON.LOADING' | translate }}</span>
+    </div>
+  } @else if (error()) {
+    <div class="flex flex-col items-center gap-3 py-10" role="alert">
+      <p class="text-sm text-error-600">{{ 'DASHBOARD.ERROR' | translate }}</p>
+      <app-button variant="secondary" size="sm" (clicked)="load()">{{ 'DASHBOARD.RETRY' | translate }}</app-button>
+    </div>
+  } @else {
+    <div
+      class="mt-4 grid animate-[ledger-enter_480ms_cubic-bezier(0.22,1,0.36,1)_both] motion-reduce:animate-none grid-cols-1 divide-y divide-neutral-200 border-y border-neutral-200 sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+      <a [routerLink]="['/employees', employeeId(), 'points-rewards']" class="group flex items-baseline justify-between gap-4 px-5 py-4">
+        <span class="text-xs text-neutral-500">{{ 'DASHBOARD.KPI.POINTS_BALANCE' | translate }}</span>
+        <span class="text-2xl font-semibold tabular-nums text-neutral-500 transition-colors group-hover:text-primary-600">{{ points()?.currentBalance ?? 0 }}</span>
+      </a>
+      <a [routerLink]="['/employees', employeeId(), 'attendance']" class="group flex items-baseline justify-between gap-4 px-5 py-4">
+        <span class="text-xs text-neutral-500">{{ 'DASHBOARD.KPI.ATTENDANCE_RATE' | translate }}</span>
+        <span class="text-2xl font-semibold tabular-nums text-neutral-500 transition-colors group-hover:text-primary-600">
+          {{ attendanceRate() | number: '1.0-0' }}%
+        </span>
+      </a>
+      <a routerLink="/requests/submitted" class="group flex items-baseline justify-between gap-4 px-5 py-4">
+        <span class="text-xs text-neutral-500">{{ 'DASHBOARD.KPI.MY_PENDING' | translate }}</span>
+        <span class="text-2xl font-semibold tabular-nums text-neutral-500 transition-colors group-hover:text-primary-600">{{ pendingCount() }}</span>
+      </a>
+    </div>
+
+    @if (attendance(); as month) {
+      <section class="mt-8">
+        <div class="flex items-center gap-3">
+          <h2 class="text-sm font-semibold text-primary-600">{{ 'DASHBOARD.SECTIONS.ATTENDANCE' | translate }}</h2>
+          <span class="h-px flex-1 bg-neutral-200"></span>
+          <a [routerLink]="['/employees', employeeId(), 'attendance']" class="shrink-0 text-xs font-medium text-primary-600 hover:underline">
+            {{ 'DASHBOARD.SECTIONS.VIEW_ATTENDANCE' | translate }}
+          </a>
+        </div>
+
+        <div class="mt-3 grid grid-cols-1 divide-y divide-neutral-200 border-y border-neutral-200 sm:grid-cols-2 sm:divide-x sm:divide-y-0 lg:grid-cols-4">
+          <div class="flex items-baseline justify-between gap-4 px-5 py-4">
+            <span class="text-xs text-neutral-500">{{ 'DASHBOARD.EMPLOYEE.PUNCTUALITY' | translate }}</span>
+            <span class="text-xl font-semibold tabular-nums text-neutral-500">{{ month.summary.punctualityScore | number: '1.0-0' }}%</span>
+          </div>
+          <div class="flex items-baseline justify-between gap-4 px-5 py-4">
+            <span class="text-xs text-neutral-500">{{ 'DASHBOARD.EMPLOYEE.AVG_LATENESS' | translate }}</span>
+            <span class="text-xl font-semibold tabular-nums text-neutral-500">
+              {{ month.summary.averageLatenessMinutes | number: '1.0-0' }}
+              <span class="text-xs font-normal text-neutral-400">{{ 'DASHBOARD.EMPLOYEE.MINUTES' | translate }}</span>
+            </span>
+          </div>
+          <div class="flex items-baseline justify-between gap-4 px-5 py-4">
+            <span class="text-xs text-neutral-500">{{ 'DASHBOARD.EMPLOYEE.RECORDED_HOURS' | translate }}</span>
+            <span class="text-xl font-semibold tabular-nums text-neutral-500">{{ month.summary.recordedHours | number: '1.0-1' }}</span>
+          </div>
+          <div class="flex items-baseline justify-between gap-4 px-5 py-4">
+            <span class="text-xs text-neutral-500">{{ 'DASHBOARD.EMPLOYEE.TARGET_HOURS' | translate }}</span>
+            <span class="text-xl font-semibold tabular-nums text-neutral-500">{{ month.summary.targetHours | number: '1.0-1' }}</span>
+          </div>
+        </div>
+      </section>
+    }
+
+    <section class="mt-8">
+      <div class="flex items-center gap-3">
+        <h2 class="text-sm font-semibold text-primary-600">{{ 'DASHBOARD.SECTIONS.MY_REQUESTS' | translate }}</h2>
+        <span class="h-px flex-1 bg-neutral-200"></span>
+        <a routerLink="/requests/submitted" class="shrink-0 text-xs font-medium text-primary-600 hover:underline">
+          {{ 'DASHBOARD.SECTIONS.VIEW_ALL' | translate }}
+        </a>
+      </div>
+
+      <div class="mt-3">
+        @if (myRequests().length === 0) {
+          <p class="py-8 text-center text-sm text-neutral-400">{{ 'DASHBOARD.EMPLOYEE.REQUESTS_EMPTY' | translate }}</p>
+        } @else {
+          @for (request of myRequests(); track request.id) {
+            <div class="flex items-center justify-between gap-3 border-t border-neutral-100 py-3 first:border-t-0">
+              <div class="min-w-0">
+                <p class="truncate text-sm font-medium text-neutral-500">{{ request.requestType }}</p>
+                <p class="truncate text-xs text-neutral-400">{{ request.submittedAt | date: 'dd-MM-yyyy' }}</p>
+              </div>
+              <span [class]="requestStatus(request.status).pill">
+                {{ requestStatus(request.status).label | translate }}
+              </span>
+            </div>
+          }
+        }
+      </div>
+    </section>
+
+    @if (points(); as wallet) {
+      <section class="mt-8">
+        <div class="flex items-center gap-3">
+          <h2 class="text-sm font-semibold text-primary-600">{{ 'DASHBOARD.SECTIONS.POINTS' | translate }}</h2>
+          <span class="h-px flex-1 bg-neutral-200"></span>
+          <a [routerLink]="['/employees', employeeId(), 'points-rewards']" class="shrink-0 text-xs font-medium text-primary-600 hover:underline">
+            {{ 'DASHBOARD.SECTIONS.VIEW_POINTS' | translate }}
+          </a>
+        </div>
+
+        <div class="mt-3 grid grid-cols-1 divide-y divide-neutral-200 border-y border-neutral-200 sm:grid-cols-2 sm:divide-x sm:divide-y-0 lg:grid-cols-4">
+          <div class="flex items-baseline justify-between gap-4 px-5 py-4">
+            <span class="text-xs text-neutral-500">{{ 'DASHBOARD.KPI.POINTS_BALANCE' | translate }}</span>
+            <span class="text-xl font-semibold tabular-nums text-neutral-500">{{ wallet.currentBalance }}</span>
+          </div>
+          <div class="flex items-baseline justify-between gap-4 px-5 py-4">
+            <span class="text-xs text-neutral-500">{{ 'DASHBOARD.EMPLOYEE.POINTS_REDEEMED' | translate }}</span>
+            <span class="text-xl font-semibold tabular-nums text-neutral-500">{{ wallet.totalPointsRedeemed }}</span>
+          </div>
+          <div class="flex items-baseline justify-between gap-4 px-5 py-4">
+            <span class="text-xs text-neutral-500">{{ 'DASHBOARD.EMPLOYEE.REWARDS_REDEEMED' | translate }}</span>
+            <span class="text-xl font-semibold tabular-nums text-neutral-500">{{ wallet.totalRewardsRedeemed }}</span>
+          </div>
+          <div class="flex items-baseline justify-between gap-4 px-5 py-4">
+            <span class="text-xs text-neutral-500">{{ 'DASHBOARD.EMPLOYEE.REWARDS_COST' | translate }}</span>
+            <span class="text-xl font-semibold tabular-nums text-neutral-500">{{ wallet.totalRewardsCostPoints }}</span>
+          </div>
+        </div>
+      </section>
+    }
+  }
+</div>

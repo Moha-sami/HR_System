@@ -1,4 +1,68 @@
 {
+  "DASHBOARD": {
+    "TITLE": "Dashboard",
+    "ERROR": "Could not load dashboard data",
+    "RETRY": "Try again",
+    "KPI": {
+      "HEADCOUNT": "Headcount",
+      "PENDING_APPROVALS": "Pending approvals",
+      "OPEN_SHIFTS": "Open shifts · next 3 days",
+      "POINTS_BALANCE": "Points balance",
+      "ATTENDANCE_RATE": "Attendance rate",
+      "MY_PENDING": "My pending requests"
+    },
+    "SECTIONS": {
+      "COVERAGE": "Shift coverage",
+      "APPROVALS": "Pending approvals",
+      "BY_JOB": "Headcount by job",
+      "ATTENDANCE": "Attendance this month",
+      "MY_REQUESTS": "My requests",
+      "POINTS": "Points",
+      "VIEW_SCHEDULING": "Open scheduling",
+      "VIEW_ALL": "View all",
+      "VIEW_ATTENDANCE": "Open attendance",
+      "VIEW_POINTS": "Open points & rewards"
+    },
+    "TABLE": {
+      "SITE": "Site",
+      "STATUS": "Status",
+      "REGION": "Region",
+      "OPEN": "Open",
+      "FILLED": "Filled",
+      "TOTAL": "Total",
+      "JOB": "Job",
+      "EMPLOYEES": "Employees",
+      "SHARE": "Share",
+      "EMPTY_COVERAGE": "No sites yet",
+      "EMPTY_JOBS": "No jobs yet"
+    },
+    "STATUS": {
+      "FULL": "Full",
+      "PARTIAL": "Partial",
+      "CRITICAL": "Critical",
+      "NO_SHIFTS": "No shifts"
+    },
+    "DOCKET": {
+      "REVIEW": "Review",
+      "EMPTY": "No pending requests"
+    },
+    "EMPLOYEE": {
+      "PUNCTUALITY": "Punctuality",
+      "AVG_LATENESS": "Average lateness",
+      "RECORDED_HOURS": "Recorded hours",
+      "TARGET_HOURS": "Target hours",
+      "MINUTES": "min",
+      "POINTS_REDEEMED": "Points redeemed",
+      "REWARDS_REDEEMED": "Rewards redeemed",
+      "REWARDS_COST": "Spent on rewards",
+      "REQUESTS_EMPTY": "No requests yet",
+      "STATUS": {
+        "PENDING": "Pending",
+        "APPROVED": "Approved",
+        "REJECTED": "Rejected"
+      }
+    }
+  },
   "LAYOUT": {
     "LOGOUT": "Log Out",
     "LANGUAGE": {

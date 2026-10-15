@@ -48,16 +48,17 @@ export const routes: Routes = [
     component: Layout,
     canActivate: [authGuard], // ← uncomment when auth is ready
     children: [
-      // Default redirect → docs (temporary until dashboard is built)
-      { path: '', redirectTo: 'docs', pathMatch: 'full' },
+      // Default redirect → dashboard (home)
+      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
 
       // ──────────────────────────────────────────────────────────────────────
       // §8 — Analytics & Executive Insights
       // ──────────────────────────────────────────────────────────────────────
-      // {
-      //   path: 'dashboard',
-      //   loadChildren: () => import('./features/dashboard/dashboard.routes').then(m => m.DASHBOARD_ROUTES)
-      // },
+      {
+        path: 'dashboard',
+        loadChildren: () =>
+          import('./features/dashboard/dashboard.routes').then((m) => m.DASHBOARD_ROUTES),
+      },
 
       // ──────────────────────────────────────────────────────────────────────
       // §2.2 — Comprehensive Employee Profiles
