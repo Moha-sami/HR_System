@@ -1,17 +1,17 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { SubmittedRequests } from './submitted-requests';
+import { SubmittedRequestsComponent } from './submitted-requests.component';
 
-describe('SubmittedRequests', () => {
-  let component: SubmittedRequests;
-  let fixture: ComponentFixture<SubmittedRequests>;
+describe('SubmittedRequestsComponent', () => {
+  let component: SubmittedRequestsComponent;
+  let fixture: ComponentFixture<SubmittedRequestsComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [SubmittedRequests],
+      imports: [SubmittedRequestsComponent],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(SubmittedRequests);
+    fixture = TestBed.createComponent(SubmittedRequestsComponent);
     component = fixture.componentInstance;
     await fixture.whenStable();
   });

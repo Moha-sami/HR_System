@@ -51,3 +51,24 @@ export interface RegionDto {
   id: number;
   name: string;
 }
+
+// ─── Site shift-coverage overview (3-day window) ──────────────────────────────
+export type CoverageStatus = 'Full' | 'Partial' | 'Critical' | 'NoShifts';
+
+export interface DayCoverageDto {
+  date: string;
+  status: CoverageStatus;
+  totalShifts: number;
+  openShifts: number;
+  filledShifts: number;
+}
+
+export interface SiteShiftCoverageOverviewDto {
+  siteId: number;
+  siteName: string;
+  regionName: string;
+  address: string;
+  isSmartAssignmentEnabled: boolean;
+  isSmartPostingEnabled: boolean;
+  days: DayCoverageDto[];
+}

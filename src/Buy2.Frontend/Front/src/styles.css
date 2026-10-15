@@ -132,3 +132,128 @@
    ┌─────────┬──────────────────────┬──────────┐n   │ Size    │ Classes              │ Pixels   │n   ├─────────┼──────────────────────┼──────────┤n   │ sm      │ px-3 py-1.5 text-sm  │ 12px 6px, 14px │n   │ md      │ px-4 py-2 text-base  │ 16px 8px, 16px │n   │ lg      │ px-6 py-3 text-lg    │ 24px 12px, 18px │n   └─────────┴──────────────────────┴──────────┘
 
    ────────────────────────────────────────────────────── */
+
+/* ──────────────────────────────────────────────────────
+   Dashboard — ledger enter (authored motion moment)
+   ────────────────────────────────────────────────────── */
+@keyframes ledger-enter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ──────────────────────────────────────────────────────
+   Dashboard — themed browser surfaces (selection, focus)
+   ────────────────────────────────────────────────────── */
+.dashboard-ledger ::selection {
+  background: #d9e1f2;
+}
+
+.dashboard-ledger a:focus-visible {
+  outline: 2px solid #234199;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ──────────────────────────────────────────────────────
+   Dashboard — shift heat matrix (baked from live overdrive)
+   ────────────────────────────────────────────────────── */
+@keyframes dash-matrix-in {
+  from {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.dashboard-ledger .heat .ratio {
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  line-height: 1rem;
+}
+
+.dashboard-ledger .heat .squares {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 3px;
+  margin-top: 0.375rem;
+  min-height: 8px;
+}
+
+.dashboard-ledger .heat .sq {
+  width: 6px;
+  height: 6px;
+  border-radius: 2px;
+  animation: dash-matrix-in 380ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(var(--i, 0) * 45ms);
+}
+
+.dashboard-ledger .heat .sq.open {
+  background: transparent;
+  border: 1.5px solid currentColor;
+  opacity: 0.55;
+}
+
+.dashboard-ledger .heat-full {
+  background: #d7efdd;
+}
+
+.dashboard-ledger .heat-full .ratio {
+  color: #1b7a36;
+}
+
+.dashboard-ledger .heat-full .sq {
+  background: #289e45;
+  color: #289e45;
+}
+
+.dashboard-ledger .heat-partial {
+  background: #fdeeb6;
+}
+
+.dashboard-ledger .heat-partial .ratio {
+  color: #92400e;
+}
+
+.dashboard-ledger .heat-partial .sq {
+  background: #f5b800;
+  color: #b98600;
+}
+
+.dashboard-ledger .heat-critical {
+  background: #fbd7d9;
+}
+
+.dashboard-ledger .heat-critical .ratio {
+  color: #c1121f;
+}
+
+.dashboard-ledger .heat-critical .sq {
+  background: #ec1d27;
+  color: #ec1d27;
+}
+
+.dashboard-ledger .heat-none {
+  background: #f9fafb;
+}
+
+.dashboard-ledger .heat-none .ratio {
+  color: #9ca3af;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-ledger .heat .sq {
+    animation: none;
+  }
+}

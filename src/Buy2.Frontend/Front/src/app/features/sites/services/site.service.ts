@@ -1,12 +1,16 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import type { Observable } from 'rxjs';
+import { map } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import type {
   SiteListItemDto,
   CreateSiteDto,
   DeleteSiteDto,
   RegionDto,
+  CoverageStatus,
+  DayCoverageDto,
+  SiteShiftCoverageOverviewDto,
 } from '../models/site.models';
 
 export interface EmployeeListItemDto {
@@ -29,6 +33,21 @@ export interface PaginatedResult<T> {
 const API_BASE = environment.baseUrl;
 const JSON_BASE = environment.jsonServerUrl;
 
+// Backend serializes CoverageHealthStatus (Full, Partial, Critical, NoShifts) as numbers.
+const COVERAGE_STATUS_BY_INDEX: readonly CoverageStatus[] = ['Full', 'Partial', 'Critical', 'NoShifts'];
+
+interface RawDayCoverage extends Omit<DayCoverageDto, 'status'> {
+  status: number | CoverageStatus;
+}
+
+interface RawSiteShiftCoverageOverview extends Omit<SiteShiftCoverageOverviewDto, 'days'> {
+  days: RawDayCoverage[];
+}
+
+function normalizeCoverageStatus(status: number | CoverageStatus): CoverageStatus {
+  return typeof status === 'number' ? (COVERAGE_STATUS_BY_INDEX[status] ?? 'NoShifts') : status;
+}
+
 @Injectable({ providedIn: 'root' })
 export class SiteService {
   private readonly http = inject(HttpClient);
@@ -41,6 +60,18 @@ export class SiteService {
   // ── GET regions ──────────────────────────────────────────
   getRegions(): Observable<RegionDto[]> {
     return this.http.get<RegionDto[]>(`${API_BASE}/sites/regions`);
+  }
+
+  // ── GET 3-day site shift-coverage overview (dashboard) ──────────────────────
+  getShiftsOverview(): Observable<SiteShiftCoverageOverviewDto[]> {
+    return this.http.get<RawSiteShiftCoverageOverview[]>(`${API_BASE}/sites/shifts-overview`).pipe(
+      map((sites) =>
+        sites.map((site) => ({
+          ...site,
+          days: site.days.map((day) => ({ ...day, status: normalizeCoverageStatus(day.status) })),
+        })),
+      ),
+    );
   }
 
   // ── GET employees for preferred people ────────────────────────────────────

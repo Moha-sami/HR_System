@@ -1,4 +1,68 @@
 {
+  "DASHBOARD": {
+    "TITLE": "لوحة تحكم",
+    "ERROR": "تعذر تحميل بيانات لوحة التحكم",
+    "RETRY": "حاول مرة أخرى",
+    "KPI": {
+      "HEADCOUNT": "عدد الموظفين",
+      "PENDING_APPROVALS": "طلبات معلقة",
+      "OPEN_SHIFTS": "ورديات مفتوحة · الأيام الثلاثة القادمة",
+      "POINTS_BALANCE": "رصيد النقاط",
+      "ATTENDANCE_RATE": "نسبة الحضور",
+      "MY_PENDING": "طلباتي المعلقة"
+    },
+    "SECTIONS": {
+      "COVERAGE": "تغطية الورديات",
+      "APPROVALS": "الطلبات المعلقة",
+      "BY_JOB": "عدد الموظفين حسب الوظيفة",
+      "ATTENDANCE": "الحضور هذا الشهر",
+      "MY_REQUESTS": "طلباتي",
+      "POINTS": "النقاط",
+      "VIEW_SCHEDULING": "فتح الججالة",
+      "VIEW_ALL": "عرض الكل",
+      "VIEW_ATTENDANCE": "فتح الحضور",
+      "VIEW_POINTS": "فتح النقاط والمكافئات"
+    },
+    "TABLE": {
+      "SITE": "الموقع",
+      "STATUS": "الحالة",
+      "REGION": "المنطقة",
+      "OPEN": "مفتوحة",
+      "FILLED": "مؤسندة",
+      "TOTAL": "الإجمالي",
+      "JOB": "الوظيفة",
+      "EMPLOYEES": "الموظفون",
+      "SHARE": "النسبة",
+      "EMPTY_COVERAGE": "لا توجد مواقع بعد",
+      "EMPTY_JOBS": "لا توجد وظائف بعد"
+    },
+    "STATUS": {
+      "FULL": "مكتملة",
+      "PARTIAL": "جزئية",
+      "CRITICAL": "حرجة",
+      "NO_SHIFTS": "بدون ورديات"
+    },
+    "DOCKET": {
+      "REVIEW": "مراجعة",
+      "EMPTY": "لا توجد طلبات معلقة"
+    },
+    "EMPLOYEE": {
+      "PUNCTUALITY": "الالتزام بالمواعيد",
+      "AVG_LATENESS": "متوسط التأخِر",
+      "RECORDED_HOURS": "ساعات مسجلة",
+      "TARGET_HOURS": "ساعات مستهدفة",
+      "MINUTES": "دقيقة",
+      "POINTS_REDEEMED": "نقاط مستردة",
+      "REWARDS_REDEEMED": "مكافئات مستردة",
+      "REWARDS_COST": "نقاط صرفت على المكافئات",
+      "REQUESTS_EMPTY": "لا توجد طلبات بعد",
+      "STATUS": {
+        "PENDING": "قيد المراجعة",
+        "APPROVED": "مقبول",
+        "REJECTED": "مرفوض"
+      }
+    }
+  },
   "LAYOUT": {
     "LOGOUT": "تسجيل الخروج",
     "LANGUAGE": {

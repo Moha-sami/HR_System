@@ -4,6 +4,13 @@ import { Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { PaginatedResponse, SubmittedRequest, RequestHistoryItem, RequestDetails, RequestDecisionDto } from '../models/request';
 
+export interface SubmittedRequestsFilters {
+  search?: string;
+  managerStatus?: string;
+  hrStatus?: string;
+  overallStatus?: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -11,13 +18,24 @@ export class RequestService {
   private http = inject(HttpClient);
   private apiUrl = `${environment.baseUrl}/requests`;
 
-  getSubmittedRequests(pageNumber: number = 1, pageSize: number = 20, sortBy: string = 'SubmittedAt', sortDescending: boolean = true): Observable<PaginatedResponse<SubmittedRequest>> {
+  getSubmittedRequests(
+    pageNumber: number = 1,
+    pageSize: number = 20,
+    sortBy: string = 'SubmittedAt',
+    sortDescending: boolean = true,
+    filters?: SubmittedRequestsFilters,
+  ): Observable<PaginatedResponse<SubmittedRequest>> {
     let params = new HttpParams()
       .set('pageNumber', pageNumber)
       .set('pageSize', pageSize)
       .set('sortBy', sortBy)
       .set('sortDescending', sortDescending);
-    
+
+    if (filters?.search) params = params.set('search', filters.search);
+    if (filters?.managerStatus) params = params.set('managerStatus', filters.managerStatus);
+    if (filters?.hrStatus) params = params.set('hrStatus', filters.hrStatus);
+    if (filters?.overallStatus) params = params.set('overallStatus', filters.overallStatus);
+
     return this.http.get<PaginatedResponse<SubmittedRequest>>(`${this.apiUrl}/submitted`, { params });
   }
 

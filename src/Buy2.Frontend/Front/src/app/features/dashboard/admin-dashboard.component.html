@@ -1,0 +1,176 @@
+    <div class="dashboard-ledger bg-[color-mix(in_srgb,#234199_3.6%,#ffffff)] p-6">
+      <h1 class="text-2xl font-semibold text-neutral-500">{{ 'DASHBOARD.TITLE' | translate }}</h1>
+
+      @if (loading()) {
+        <div class="flex items-center justify-center gap-3 py-10">
+          <span class="size-6 animate-spin rounded-full border-2 border-primary-200 border-t-primary-600"></span>
+          <span class="text-sm text-neutral-500">{{ 'COMMON.LOADING' | translate }}</span>
+        </div>
+      }
+
+      @if (error()) {
+        <div role="alert" class="mt-4 flex items-center justify-between gap-3 rounded-lg border border-error-200 bg-error-50 px-4 py-3 text-sm text-error-600">
+          <span>{{ 'DASHBOARD.ERROR' | translate }}</span>
+          <app-button variant="ghost" size="sm" (clicked)="load()">{{ 'DASHBOARD.RETRY' | translate }}</app-button>
+        </div>
+      }
+
+      @if (!loading() && !error()) {
+        <div class="masthead mt-4 grid grid-cols-1 divide-y divide-[#c3d0ec] border-y border-[#c3d0ec] sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+          <a [routerLink]="['/employees']" class="group flex items-baseline justify-between gap-4 bg-[color-mix(in_srgb,#234199_8.4%,#ffffff)] px-5 py-4 transition-colors hover:bg-[color-mix(in_srgb,#234199_12%,#ffffff)]">
+            <span class="text-xs text-[#55617f]">{{ 'DASHBOARD.KPI.HEADCOUNT' | translate }}</span>
+            <span class="text-2xl font-semibold tabular-nums text-primary-700 transition-colors group-hover:text-primary-600">{{ headcount() }}</span>
+          </a>
+          <a [routerLink]="['/requests/submitted']" class="group flex items-baseline justify-between gap-4 bg-[color-mix(in_srgb,#234199_8.4%,#ffffff)] px-5 py-4 transition-colors hover:bg-[color-mix(in_srgb,#234199_12%,#ffffff)]">
+            <span class="text-xs text-[#55617f]">{{ 'DASHBOARD.KPI.PENDING_APPROVALS' | translate }}</span>
+            <span class="text-2xl font-semibold tabular-nums text-primary-700 transition-colors group-hover:text-primary-600">{{ pendingCount() }}</span>
+          </a>
+          <a [routerLink]="['/scheduling/shift-management']" class="group flex items-baseline justify-between gap-4 bg-[color-mix(in_srgb,#234199_8.4%,#ffffff)] px-5 py-4 transition-colors hover:bg-[color-mix(in_srgb,#234199_12%,#ffffff)]">
+            <span class="text-xs text-[#55617f]">{{ 'DASHBOARD.KPI.OPEN_SHIFTS' | translate }}</span>
+            <span class="text-2xl font-semibold tabular-nums text-primary-700 transition-colors group-hover:text-primary-600">{{ totals().open }}</span>
+          </a>
+        </div>
+
+        <div class="mt-8 grid grid-cols-1 gap-8 xl:grid-cols-12">
+          <section class="xl:col-span-9">
+            <div class="flex items-center gap-3">
+              <h2 class="text-sm font-semibold text-primary-700">{{ 'DASHBOARD.SECTIONS.COVERAGE' | translate }}</h2>
+              <span class="h-px flex-1 bg-[#b9c6e6]"></span>
+              <a [routerLink]="['/scheduling/shift-management']" class="shrink-0 text-xs font-medium text-primary-700 hover:underline">{{ 'DASHBOARD.SECTIONS.VIEW_SCHEDULING' | translate }}</a>
+            </div>
+            <div class="mt-3 overflow-x-auto">
+              <table class="cov w-full min-w-[640px] text-sm">
+                <thead>
+                  <tr class="border-b border-neutral-200">
+                    <th class="bg-primary-600 px-3 py-2 text-start text-xs font-medium text-white">{{ 'DASHBOARD.TABLE.SITE' | translate }}</th>
+                    <th class="bg-primary-600 px-3 py-2 text-start text-xs font-medium text-white">{{ 'DASHBOARD.TABLE.STATUS' | translate }}</th>
+                    <th class="bg-primary-600 px-3 py-2 text-start text-xs font-medium text-white">{{ 'DASHBOARD.TABLE.REGION' | translate }}</th>
+                    @for (day of dayHeaders(); track day.date) {
+                      <th class="bg-primary-600 px-3 py-2 text-center text-xs font-medium text-white">{{ day.label }}</th>
+                    }
+                    <th class="bg-primary-600 px-3 py-2 text-end text-xs font-medium text-white">{{ 'DASHBOARD.TABLE.OPEN' | translate }}</th>
+                    <th class="bg-primary-600 px-3 py-2 text-end text-xs font-medium text-white">{{ 'DASHBOARD.TABLE.FILLED' | translate }}</th>
+                    <th class="bg-primary-600 px-3 py-2 text-end text-xs font-medium text-white">{{ 'DASHBOARD.TABLE.TOTAL' | translate }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @if (coverage().length === 0) {
+                    <tr>
+                      <td colspan="9" class="px-3 py-6 text-center text-sm text-neutral-400">{{ 'DASHBOARD.TABLE.EMPTY_COVERAGE' | translate }}</td>
+                    </tr>
+                  }
+                  @for (site of coverage(); track site.siteId) {
+                    <tr class="border-b border-neutral-100 transition-colors hover:bg-[#f3f6fc]">
+                      <td class="px-3 py-2.5">
+                        <a class="font-medium text-neutral-500 hover:text-primary-700" [routerLink]="['/scheduling/shift-management', site.siteId]">{{ site.siteName }}</a>
+                      </td>
+                      <td class="px-3 py-2.5">
+                        <span [class]="pill(siteStatuses().get(site.siteId) ?? 'NoShifts')">{{ statusLabel(siteStatuses().get(site.siteId) ?? 'NoShifts') | translate }}</span>
+                      </td>
+                      <td class="px-3 py-2.5 text-neutral-400">{{ site.regionName || '—' }}</td>
+                      @for (day of site.days; track day.date) {
+                        @if (day.status === 'NoShifts') {
+                          <td class="heat heat-none px-2 py-2.5 text-center">
+                            <span class="ratio">—</span>
+                          </td>
+                        } @else {
+                          <td class="heat px-2 py-2.5 text-center" [class.heat-full]="day.status === 'Full'" [class.heat-partial]="day.status === 'Partial'" [class.heat-critical]="day.status === 'Critical'">
+                            <span class="ratio">{{ day.filledShifts }}/{{ day.totalShifts }}</span>
+                            <span class="squares">
+                              @for (s of filledOf(day); track $index) {
+                                <span class="sq" [style.--i]="$index"></span>
+                              }
+                              @for (s of openOf(day); track $index) {
+                                <span class="sq open" [style.--i]="filledOf(day).length + $index"></span>
+                              }
+                            </span>
+                          </td>
+                        }
+                      }
+                      <td class="px-3 py-2.5 text-end tabular-nums">{{ siteOpen(site) }}</td>
+                      <td class="px-3 py-2.5 text-end tabular-nums">{{ siteFilled(site) }}</td>
+                      <td class="px-3 py-2.5 text-end tabular-nums">{{ siteTotal(site) }}</td>
+                    </tr>
+                  }
+                </tbody>
+                <tfoot>
+                  <tr class="border-t-2 border-[#b9c6e6] font-semibold">
+                    <td colspan="3" class="px-3 py-2.5 text-start">{{ 'DASHBOARD.TABLE.TOTAL' | translate }}</td>
+                    @for (day of dayHeaders(); track day.date) {
+                      <td class="px-3"></td>
+                    }
+                    <td class="px-3 py-2.5 text-end tabular-nums">{{ totals().open }}</td>
+                    <td class="px-3 py-2.5 text-end tabular-nums">{{ totals().filled }}</td>
+                    <td class="px-3 py-2.5 text-end tabular-nums">{{ totals().total }}</td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </section>
+
+          <section class="xl:col-span-3">
+            <div class="flex items-center gap-3">
+              <h2 class="text-sm font-semibold text-primary-700">{{ 'DASHBOARD.SECTIONS.APPROVALS' | translate }}</h2>
+              <span class="h-px flex-1 bg-[#b9c6e6]"></span>
+              <a [routerLink]="['/requests/submitted']" class="shrink-0 text-xs font-medium text-primary-700 hover:underline">{{ 'DASHBOARD.SECTIONS.VIEW_ALL' | translate }}</a>
+            </div>
+            <div class="mt-3">
+              @if (pendingRequests().length === 0) {
+                <p class="py-3 text-sm text-neutral-400">{{ 'DASHBOARD.DOCKET.EMPTY' | translate }}</p>
+              }
+              @for (request of pendingRequests(); track request.id) {
+                <div class="flex items-center justify-between gap-3 border-t border-neutral-100 py-3 first:border-t-0">
+                  <div class="min-w-0">
+                    <p class="truncate text-sm font-medium text-neutral-500">{{ request.employeeName }}</p>
+                    <p class="truncate text-xs text-neutral-400">{{ request.requestType }} · {{ request.submittedAt | date: 'dd-MM-yyyy' }}</p>
+                  </div>
+                  <a class="shrink-0 text-xs font-medium text-primary-700 hover:underline" [routerLink]="['/requests/decision', request.id]">{{ 'DASHBOARD.DOCKET.REVIEW' | translate }}</a>
+                </div>
+              }
+            </div>
+          </section>
+        </div>
+
+        <section class="mt-8">
+          <div class="flex items-center gap-3">
+            <h2 class="text-sm font-semibold text-primary-700">{{ 'DASHBOARD.SECTIONS.BY_JOB' | translate }}</h2>
+            <span class="h-px flex-1 bg-[#b9c6e6]"></span>
+            <a [routerLink]="['/jobs']" class="shrink-0 text-xs font-medium text-primary-700 hover:underline">{{ 'DASHBOARD.SECTIONS.VIEW_ALL' | translate }}</a>
+          </div>
+          <div class="mt-3 overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="border-b border-neutral-200">
+                  <th class="bg-primary-600 px-3 py-2 text-start text-xs font-medium text-white">{{ 'DASHBOARD.TABLE.JOB' | translate }}</th>
+                  <th class="bg-primary-600 px-3 py-2 text-end text-xs font-medium text-white">{{ 'DASHBOARD.TABLE.EMPLOYEES' | translate }}</th>
+                  <th class="bg-primary-600 px-3 py-2 text-end text-xs font-medium text-white">{{ 'DASHBOARD.TABLE.SHARE' | translate }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                @if (jobLedger().length === 0) {
+                  <tr>
+                    <td colspan="3" class="px-3 py-6 text-center text-sm text-neutral-400">{{ 'DASHBOARD.TABLE.EMPTY_JOBS' | translate }}</td>
+                  </tr>
+                }
+                @for (job of jobLedger(); track job.id) {
+                  <tr class="border-b border-neutral-100 transition-colors hover:bg-[#f3f6fc]">
+                    <td class="px-3 py-2.5">
+                      <a class="font-medium text-neutral-500 hover:text-primary-700" [routerLink]="['/jobs/details', job.id]">{{ job.title }}</a>
+                    </td>
+                    <td class="px-3 py-2.5 text-end tabular-nums">{{ job.assignedEmployeesCount }}</td>
+                    <td class="px-3 py-2.5 text-end tabular-nums text-neutral-400">{{ shareOf(job) }}%</td>
+                  </tr>
+                }
+              </tbody>
+              <tfoot>
+                <tr class="border-t-2 border-[#b9c6e6] font-semibold">
+                  <td class="px-3 py-2.5 text-start">{{ 'DASHBOARD.TABLE.TOTAL' | translate }}</td>
+                  <td class="px-3 py-2.5 text-end tabular-nums">{{ totalAssigned() }}</td>
+                  <td class="px-3 py-2.5 text-end tabular-nums">100%</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </section>
+      }
+    </div>

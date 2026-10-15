@@ -1,17 +1,20 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideHttpClient } from '@angular/common/http';
+import { provideRouter } from '@angular/router';
 
-import { RequestDecision } from './request-decision';
+import { RequestDecisionComponent } from './request-decision.component';
 
-describe('RequestDecision', () => {
-  let component: RequestDecision;
-  let fixture: ComponentFixture<RequestDecision>;
+describe('RequestDecisionComponent', () => {
+  let component: RequestDecisionComponent;
+  let fixture: ComponentFixture<RequestDecisionComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [RequestDecision],
+      imports: [RequestDecisionComponent],
+      providers: [provideHttpClient(), provideRouter([])],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(RequestDecision);
+    fixture = TestBed.createComponent(RequestDecisionComponent);
     component = fixture.componentInstance;
     await fixture.whenStable();
   });
